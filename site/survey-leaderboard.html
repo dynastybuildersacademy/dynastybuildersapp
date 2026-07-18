@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Survey Prospecting Leaderboard · DBA</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,400&family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="auth.js?v=20260713"></script>
+<style>
+:root{
+  --navy:#0A1628;--navy2:#0F1E38;--navy3:#132240;
+  --gold:#C9A84C;--gold2:#E8C97A;--gold-dim:rgba(201,168,76,0.12);--border:rgba(201,168,76,0.2);
+  --green:#27AE60;--green2:#2DCA73;--green-dim:rgba(39,174,96,0.1);
+  --blue:#3498DB;--slate:#6B7C93;--cream:#FAF6EE;
+  --red:#E05252;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);min-height:100vh;}
+.bg{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 70% 50% at 15% 20%,rgba(201,168,76,.06),transparent 60%),
+  radial-gradient(ellipse 50% 70% at 85% 80%,rgba(45,202,115,.04),transparent 60%),
+  linear-gradient(160deg,#0A1628,#0E1C35 50%,#0A1628);}
+.bgrid{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:linear-gradient(rgba(201,168,76,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(201,168,76,.03) 1px,transparent 1px);
+  background-size:60px 60px;}
+.page{position:relative;z-index:1;max-width:1000px;margin:0 auto;padding:28px 22px 60px;}
+
+/* HEADER */
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;flex-wrap:wrap;gap:12px;}
+.header-left{display:flex;align-items:center;gap:14px;}
+.shield{font-size:1.8rem;}
+.header-title{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700;color:var(--gold2);}
+.header-sub{font-size:12px;color:var(--slate);margin-top:2px;font-family:'DM Mono',monospace;}
+.header-right{display:flex;gap:8px;align-items:center;}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:3px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:.06em;cursor:pointer;border:none;transition:all .2s;text-decoration:none;}
+.btn-gold{background:var(--gold);color:var(--navy);}
+.btn-gold:hover{opacity:.87;}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--gold);}.btn-outline:hover{background:var(--gold-dim);}
+.btn-ghost{background:transparent;border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.4);}.btn-ghost:hover{border-color:var(--border);color:var(--gold);}
+
+/* PERIOD SELECTOR */
+.period-bar{display:flex;gap:6px;margin-bottom:24px;flex-wrap:wrap;align-items:center;}
+.period-btn{padding:7px 14px;border-radius:3px;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:.07em;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--slate);transition:all .15s;}
+.period-btn.active{background:var(--gold-dim);border-color:var(--gold);color:var(--gold);}
+.period-sep{width:1px;height:20px;background:var(--border);}
+.custom-range{display:none;align-items:center;gap:6px;}
+.custom-range input{background:var(--navy2);border:1px solid var(--border);color:var(--cream);font-size:11px;padding:6px 10px;border-radius:3px;font-family:'DM Mono',monospace;}
+.period-badge{font-family:'DM Mono',monospace;font-size:11px;color:var(--slate);padding:7px 12px;border:1px solid rgba(255,255,255,.08);border-radius:3px;margin-left:auto;}
+
+/* KPI ROW */
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:28px;}
+.kpi{background:var(--navy3);border:1px solid var(--border);border-radius:4px;padding:16px;text-align:center;}
+.kpi-val{font-family:'Cormorant Garamond',serif;font-size:2.2rem;font-weight:700;color:var(--gold2);line-height:1;}
+.kpi-lbl{font-size:11px;color:var(--slate);text-transform:uppercase;letter-spacing:.09em;margin-top:5px;font-family:'Barlow Condensed',sans-serif;font-weight:600;}
+
+/* LEADERBOARD TABLE */
+.lb-card{background:var(--navy3);border:1px solid var(--border);border-radius:4px;overflow:hidden;margin-bottom:24px;}
+.lb-card-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);}
+.lb-card-title{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.08em;}
+.lb-card-meta{font-size:11px;color:var(--slate);font-family:'DM Mono',monospace;}
+.lb-table{width:100%;border-collapse:collapse;}
+.lb-table th{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--slate);padding:10px 16px;text-align:left;border-bottom:1px solid var(--border);background:rgba(255,255,255,.02);}
+.lb-table th.r{text-align:right;}
+.lb-table td{padding:12px 16px;border-bottom:1px solid rgba(201,168,76,.06);font-size:13px;}
+.lb-table tr:last-child td{border-bottom:none;}
+.lb-table tr:hover td{background:rgba(201,168,76,.04);}
+.rank-cell{font-family:'DM Mono',monospace;font-size:11px;color:var(--slate);width:36px;}
+.rank-1{color:var(--gold);font-weight:700;}
+.rank-2{color:#C0C0C0;font-weight:700;}
+.rank-3{color:#CD7F32;font-weight:700;}
+.agent-cell{font-weight:600;color:var(--cream);}
+.agent-id{font-family:'DM Mono',monospace;font-size:10px;color:var(--slate);margin-top:2px;}
+.num-cell{text-align:right;font-family:'DM Mono',monospace;font-size:13px;}
+.bar-cell{width:160px;}
+.bar-wrap{background:rgba(255,255,255,.06);border-radius:2px;height:6px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--gold),var(--gold2));transition:width .4s;}
+.trend-up{color:var(--green2);font-size:11px;}
+.trend-dn{color:var(--red);font-size:11px;}
+.badge-new{display:inline-block;background:rgba(39,174,96,.15);border:1px solid rgba(39,174,96,.3);color:var(--green2);font-size:9px;padding:1px 6px;border-radius:2px;font-family:'Barlow Condensed',sans-serif;font-weight:700;margin-left:6px;vertical-align:middle;}
+
+/* RECENT SURVEYS */
+.recent-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin-bottom:28px;}
+.survey-card{background:var(--navy3);border:1px solid var(--border);border-radius:4px;padding:16px;}
+.sc-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;}
+.sc-name{font-weight:600;font-size:14px;color:var(--cream);}
+.sc-date{font-family:'DM Mono',monospace;font-size:10px;color:var(--slate);}
+.sc-profile{font-size:11px;color:var(--gold);margin-bottom:6px;}
+.sc-agent{font-size:11px;color:var(--slate);}
+.sc-agent span{color:var(--gold2);}
+.sc-detail{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
+.sc-tag{font-size:10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);padding:2px 8px;border-radius:2px;color:var(--slate);}
+
+/* EMPTY / LOADING */
+.empty{text-align:center;padding:48px 20px;}
+.empty-icon{font-size:2.5rem;margin-bottom:12px;}
+.empty-title{font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--gold);margin-bottom:8px;}
+.empty-sub{font-size:13px;color:var(--slate);line-height:1.7;max-width:400px;margin:0 auto 20px;}
+.spinner{display:inline-block;width:20px;height:20px;border:2px solid rgba(201,168,76,.2);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-msg{font-family:'DM Mono',monospace;font-size:12px;color:var(--slate);margin-top:10px;}
+.error-box{background:rgba(224,82,82,.08);border:1px solid rgba(224,82,82,.25);border-radius:4px;padding:14px 16px;font-size:12px;color:#E05252;margin-bottom:20px;display:none;}
+.error-box.show{display:block;}
+</style>
+</head>
+<body>
+<div class="bg"></div><div class="bgrid"></div>
+<div class="page">
+
+<div class="header">
+  <div class="header-left">
+    <div class="shield">📋</div>
+    <div>
+      <div class="header-title">Survey Prospecting Leaderboard</div>
+      <div class="header-sub">// DBA · Financial Surveys → Monday.com</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <button class="btn btn-gold" onclick="loadData()">↻ Refresh</button>
+    <a href="survey.html" class="btn btn-outline" target="_blank">Open Survey →</a>
+    <a href="hub.html" class="btn btn-ghost">← Hub</a>
+  </div>
+</div>
+
+<!-- PERIOD SELECTOR -->
+<div class="period-bar">
+  <button class="period-btn active" onclick="setPeriod('all',this)">All Time</button>
+  <button class="period-btn" onclick="setPeriod('30',this)">Last 30 Days</button>
+  <button class="period-btn" onclick="setPeriod('7',this)">Last 7 Days</button>
+  <div class="period-sep"></div>
+  <button class="period-btn" onclick="setPeriod('custom',this)">Custom</button>
+  <div class="custom-range" id="custom-range">
+    <input type="date" id="range-from" onchange="applyCustomRange()">
+    <span style="color:var(--slate);font-size:11px;">to</span>
+    <input type="date" id="range-to" onchange="applyCustomRange()">
+  </div>
+  <div class="period-badge" id="period-badge">All Time</div>
+</div>
+
+<div class="error-box" id="error-box"></div>
+
+<!-- KPI ROW -->
+<div class="kpi-row">
+  <div class="kpi"><div class="kpi-val" id="kpi-total">—</div><div class="kpi-lbl">Total Surveys</div></div>
+  <div class="kpi"><div class="kpi-val" id="kpi-agents">—</div><div class="kpi-lbl">Agents Prospecting</div></div>
+  <div class="kpi"><div class="kpi-val" id="kpi-today">—</div><div class="kpi-lbl">Submitted Today</div></div>
+  <div class="kpi"><div class="kpi-val" id="kpi-week">—</div><div class="kpi-lbl">This Week</div></div>
+  <div class="kpi"><div class="kpi-val" id="kpi-top-profile">—</div><div class="kpi-lbl">Top Profile</div></div>
+</div>
+
+<!-- AGENT LEADERBOARD -->
+<div class="lb-card" id="agent-lb-card">
+  <div class="lb-card-header">
+    <div class="lb-card-title">🏆 Agent Rankings — Surveys Sent</div>
+    <div class="lb-card-meta" id="lb-updated">—</div>
+  </div>
+  <div id="agent-lb-body">
+    <div class="empty"><div class="spinner"></div><div class="loading-msg">Loading survey data…</div></div>
+  </div>
+</div>
+
+<!-- PROFILE BREAKDOWN -->
+<div class="lb-card">
+  <div class="lb-card-header">
+    <div class="lb-card-title">📊 Survey Breakdown by Profile</div>
+  </div>
+  <div id="profile-lb-body">
+    <div class="empty"><div class="spinner"></div></div>
+  </div>
+</div>
+
+<!-- RECENT SURVEYS -->
+<div style="font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.09em;margin-bottom:12px;">
+  📬 Recent Submissions
+</div>
+<div class="recent-grid" id="recent-grid">
+  <div class="empty" style="grid-column:1/-1"><div class="spinner"></div></div>
+</div>
+
+</div><!-- /page -->
+
+<script>
+AUTH.require('survey-leaderboard.html');
+const session = AUTH.getSession();
+
+// ── PERIOD STATE ──────────────────────────────────────────────
+let activePeriod = { mode: 'all', from: null, to: null };
+let allItems = [];
+
+function setPeriod(mode, btn) {
+  activePeriod.mode = mode;
+  document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const cr = document.getElementById('custom-range');
+  cr.style.display = mode === 'custom' ? 'flex' : 'none';
+  if (mode !== 'custom') render();
+  const labels = { all:'All Time', '30':'Last 30 Days', '7':'Last 7 Days', custom:'Custom Range' };
+  document.getElementById('period-badge').textContent = labels[mode] || mode;
+}
+
+function applyCustomRange() {
+  const from = document.getElementById('range-from').value;
+  const to   = document.getElementById('range-to').value;
+  if (from && to) {
+    activePeriod.from = from; activePeriod.to = to;
+    document.getElementById('period-badge').textContent = from + ' → ' + to;
+    render();
+  }
+}
+
+function filterItems(items) {
+  const now = new Date();
+  return items.filter(item => {
+    if (activePeriod.mode === 'all') return true;
+    const d = item._date;
+    if (!d) return activePeriod.mode === 'all';
+    if (activePeriod.mode === '30') return (now - d) / 86400000 <= 30;
+    if (activePeriod.mode === '7')  return (now - d) / 86400000 <= 7;
+    if (activePeriod.mode === 'custom' && activePeriod.from && activePeriod.to) {
+      const ds = d.toISOString().slice(0,10);
+      return ds >= activePeriod.from && ds <= activePeriod.to;
+    }
+    return true;
+  });
+}
+
+// ── LOAD DATA ─────────────────────────────────────────────────
+async function loadData() {
+  const boardId = localStorage.getItem('dba_survey_board_id') || TEAM.monday.boardSurveys;
+  showError('');
+
+  try {
+    // Fetch all items from the survey board
+    let cursor = null;
+    let items  = [];
+    do {
+      const cursorArg = cursor ? `, cursor: "${cursor}"` : '';
+      const res = await mondayQuery(`{
+        boards(ids: ${boardId}) {
+          items_page(limit: 100${cursorArg}) {
+            cursor
+            items {
+              id
+              name
+              column_values { id title text }
+              created_at
+            }
+          }
+        }
+      }`);
+      const page = res?.data?.boards?.[0]?.items_page;
+      if (!page) break;
+      items  = items.concat(page.items || []);
+      cursor = page.cursor || null;
+    } while (cursor);
+
+    // Parse items
+    allItems = items.map(item => {
+      const get = (...kws) => {
+        const cv = item.column_values.find(c => kws.some(k => (c.title||'').toLowerCase().includes(k)));
+        return cv?.text || '';
+      };
+      const dateStr = get('date','survey date') || item.created_at?.slice(0,10) || '';
+      return {
+        id:       item.id,
+        name:     item.name,
+        agent:    get('referring agent','agent','referred') || 'Untagged',
+        profile:  get('profile','type','category'),
+        date:     dateStr,
+        phone:    get('phone'),
+        email:    get('email'),
+        budget:   get('budget','premium'),
+        goals:    get('goals','interest'),
+        _date:    dateStr ? new Date(dateStr) : null,
+        _raw:     item
+      };
+    });
+
+    document.getElementById('lb-updated').textContent = 'Updated ' + new Date().toLocaleTimeString();
+    render();
+
+  } catch(e) {
+    showError('Could not load survey board: ' + e.message + '. Make sure the survey board is created and accessible.');
+  }
+}
+
+// ── RENDER ────────────────────────────────────────────────────
+function render() {
+  const items = filterItems(allItems);
+  const today = new Date().toISOString().slice(0,10);
+  const weekAgo = new Date(Date.now() - 7*86400000).toISOString().slice(0,10);
+
+  const todayCount = items.filter(i => i.date === today).length;
+  const weekCount  = items.filter(i => i.date >= weekAgo).length;
+
+  // Agent aggregation
+  const agentMap = {};
+  items.forEach(item => {
+    const a = item.agent || 'Untagged';
+    if (!agentMap[a]) agentMap[a] = { agent: a, count: 0, profiles: {}, latest: '' };
+    agentMap[a].count++;
+    agentMap[a].profiles[item.profile || 'General'] = (agentMap[a].profiles[item.profile || 'General']||0)+1;
+    if (!agentMap[a].latest || item.date > agentMap[a].latest) agentMap[a].latest = item.date;
+  });
+  const agentRows = Object.values(agentMap).sort((a,b) => b.count - a.count);
+  const maxCount  = agentRows[0]?.count || 1;
+
+  // Profile aggregation
+  const profileMap = {};
+  items.forEach(item => {
+    const p = item.profile || 'General';
+    profileMap[p] = (profileMap[p]||0)+1;
+  });
+  const profileRows = Object.entries(profileMap).sort((a,b) => b[1]-a[1]);
+  const maxProf = profileRows[0]?.[1] || 1;
+  const topProfile = profileRows[0]?.[0]?.replace(/^.*—\s*/,'').replace(/\s*\(.*\)/,'') || '—';
+
+  // KPIs
+  document.getElementById('kpi-total').textContent    = items.length.toLocaleString();
+  document.getElementById('kpi-agents').textContent   = agentRows.length;
+  document.getElementById('kpi-today').textContent    = todayCount;
+  document.getElementById('kpi-week').textContent     = weekCount;
+  document.getElementById('kpi-top-profile').textContent = topProfile.length > 12 ? topProfile.slice(0,10)+'…' : topProfile;
+
+  // Agent leaderboard
+  if (!agentRows.length) {
+    document.getElementById('agent-lb-body').innerHTML = emptyState('No survey data yet', 'Share the survey link with prospects to start tracking. Use the portal Prospecting Toolkit to copy your personalized survey link.');
+  } else {
+    document.getElementById('agent-lb-body').innerHTML = `
+      <table class="lb-table">
+        <thead><tr>
+          <th>#</th><th>Agent</th><th class="r">Surveys Sent</th>
+          <th class="r">This Week</th><th>Top Profile</th>
+          <th class="bar-cell">Share</th><th class="r">Last Sent</th>
+        </tr></thead>
+        <tbody>
+        ${agentRows.map((row, i) => {
+          const rank = i + 1;
+          const rCls = rank===1?'rank-1':rank===2?'rank-2':rank===3?'rank-3':'';
+          const topProf = Object.entries(row.profiles).sort((a,b)=>b[1]-a[1])[0]?.[0] || '—';
+          const weekCnt = items.filter(it => it.agent===row.agent && it.date>=weekAgo).length;
+          const pct = Math.round((row.count/maxCount)*100);
+          const isMe = session && (row.agent === session.agentId || row.agent === session.id || row.agent === session.name);
+          return `<tr${isMe?' style="background:rgba(201,168,76,.04);"':''}>
+            <td class="rank-cell ${rCls}">${rank}</td>
+            <td class="agent-cell">${row.agent}${isMe?' <span style="font-size:9px;color:var(--gold);font-family:\'Barlow Condensed\',sans-serif;font-weight:700;">(you)</span>':''}</td>
+            <td class="num-cell">${row.count}</td>
+            <td class="num-cell" style="color:${weekCnt>0?'var(--green2)':'var(--slate)'}">${weekCnt||'—'}</td>
+            <td style="font-size:12px;color:var(--slate);">${topProf.replace(/^.*—\s*/,'').slice(0,22)}</td>
+            <td class="bar-cell"><div class="bar-wrap"><div class="bar-fill" style="width:${pct}%"></div></div></td>
+            <td class="num-cell" style="font-size:11px;color:var(--slate);">${row.latest||'—'}</td>
+          </tr>`;
+        }).join('')}
+        </tbody>
+      </table>`;
+  }
+
+  // Profile breakdown
+  if (!profileRows.length) {
+    document.getElementById('profile-lb-body').innerHTML = emptyState('No data', '');
+  } else {
+    document.getElementById('profile-lb-body').innerHTML = `
+      <table class="lb-table">
+        <thead><tr><th>Profile Type</th><th class="r">Count</th><th class="bar-cell">Distribution</th><th class="r">%</th></tr></thead>
+        <tbody>
+        ${profileRows.map(([prof,cnt]) => {
+          const pct = Math.round((cnt/maxProf)*100);
+          const share = Math.round((cnt/items.length)*100);
+          return `<tr>
+            <td style="font-size:13px;">${prof||'General'}</td>
+            <td class="num-cell">${cnt}</td>
+            <td class="bar-cell"><div class="bar-wrap"><div class="bar-fill" style="width:${pct}%;background:linear-gradient(90deg,var(--green2),var(--gold2));"></div></div></td>
+            <td class="num-cell" style="color:var(--slate);">${share}%</td>
+          </tr>`;
+        }).join('')}
+        </tbody>
+      </table>`;
+  }
+
+  // Recent surveys (last 10)
+  const recent = [...items].sort((a,b) => (b.date||'').localeCompare(a.date||'')).slice(0,12);
+  if (!recent.length) {
+    document.getElementById('recent-grid').innerHTML = `<div class="empty" style="grid-column:1/-1">${emptyState('No surveys yet','')}</div>`;
+  } else {
+    document.getElementById('recent-grid').innerHTML = recent.map(item => {
+      const nameParts = item.name.split('—')[0].trim();
+      return `<div class="survey-card">
+        <div class="sc-top">
+          <div class="sc-name">${nameParts}</div>
+          <div class="sc-date">${item.date||'—'}</div>
+        </div>
+        <div class="sc-profile">${item.profile||'General'}</div>
+        <div class="sc-agent">Referred by: <span>${item.agent||'Direct'}</span></div>
+        <div class="sc-detail">
+          ${item.budget ? `<span class="sc-tag">Budget: $${item.budget}/mo</span>` : ''}
+          ${item.phone  ? `<span class="sc-tag">${item.phone}</span>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+  }
+}
+
+function emptyState(title, sub) {
+  return `<div class="empty">
+    <div class="empty-icon">📋</div>
+    <div class="empty-title">${title}</div>
+    ${sub ? `<div class="empty-sub">${sub}</div>` : ''}
+    <a href="create-survey-board.html" class="btn btn-gold">Create Survey Board →</a>
+  </div>`;
+}
+
+function showError(msg) {
+  const el = document.getElementById('error-box');
+  el.textContent = msg;
+  el.className = msg ? 'error-box show' : 'error-box';
+}
+
+// ── INIT ──────────────────────────────────────────────────────
+loadData();
+</script>
+</body>
+</html>

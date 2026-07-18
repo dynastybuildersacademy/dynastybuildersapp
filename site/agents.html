@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DBA — Agent Roster</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@700&family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="auth.js?v=20260713"></script>
+<style>
+:root{--navy:#0A1628;--navy2:#0F1E38;--navy3:#132240;--navy4:#1A2E50;
+  --gold:#C9A84C;--gold2:#E8C97A;--gold-dim:rgba(201,168,76,.12);
+  --green:#27AE60;--green2:#2DCA73;--green-dim:rgba(39,174,96,.1);
+  --red:#E05252;--warn:#E67E22;--slate:#6B7C93;--cream:#FAF6EE;
+  --border:rgba(201,168,76,.22);--bs:rgba(255,255,255,.06);}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);min-height:100vh;}
+.header{background:rgba(10,22,40,.97);border-bottom:1px solid var(--border);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.hl{display:flex;align-items:center;gap:12px;}
+.shield{font-size:1.4rem;}
+.header h1{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--gold);}
+.hr{display:flex;gap:8px;align-items:center;}
+.btn{padding:8px 16px;border-radius:3px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:.05em;cursor:pointer;border:none;transition:all .2s;text-decoration:none;display:inline-flex;align-items:center;gap:5px;}
+.btn-gold{background:var(--gold);color:var(--navy);}
+.btn-gold:hover{opacity:.87;}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--gold);}
+.btn-outline:hover{background:var(--gold-dim);}
+.btn-ghost{background:transparent;border:1px solid var(--bs);color:rgba(255,255,255,.4);}
+.btn-ghost:hover{border-color:var(--border);color:var(--gold);}
+.btn-green{background:rgba(39,174,96,.15);border:1px solid rgba(39,174,96,.3);color:var(--green2);}
+.btn-red{background:rgba(224,82,82,.1);border:1px solid rgba(224,82,82,.25);color:var(--red);}
+.btn-sm{padding:5px 11px;font-size:11px;}
+.content{padding:22px 24px;max-width:1060px;margin:0 auto;}
+
+/* TABS */
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:22px;}
+.tab{padding:10px 20px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;cursor:pointer;border-bottom:2px solid transparent;color:var(--slate);transition:all .15s;}
+.tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+.panel{display:none;}.panel.active{display:block;}
+
+/* ROSTER TABLE */
+.tbl-card{background:var(--navy3);border:1px solid var(--border);border-radius:4px;overflow:hidden;margin-bottom:22px;}
+.tbl-hdr{display:flex;align-items:center;justify-content:space-between;padding:13px 18px;border-bottom:1px solid var(--border);}
+.tbl-title{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.08em;}
+.tbl-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;}
+th{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--slate);padding:9px 14px;text-align:left;border-bottom:1px solid var(--border);background:rgba(255,255,255,.02);white-space:nowrap;}
+td{padding:10px 14px;border-bottom:1px solid rgba(201,168,76,.05);font-size:13px;vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(201,168,76,.03);}
+.agent-name{font-weight:600;}
+.role-badge{font-size:10px;font-family:'Barlow Condensed',sans-serif;font-weight:700;padding:2px 7px;border-radius:2px;text-transform:uppercase;letter-spacing:.04em;}
+.mono{font-family:'DM Mono',monospace;font-size:11px;color:var(--slate);}
+.sync-status{font-size:10px;font-family:'Barlow Condensed',sans-serif;font-weight:700;padding:2px 7px;border-radius:2px;}
+.ss-synced{background:rgba(39,174,96,.12);color:var(--green2);border:1px solid rgba(39,174,96,.25);}
+.ss-pending{background:rgba(230,126,34,.1);color:var(--warn);border:1px solid rgba(230,126,34,.2);}
+.ss-new{background:rgba(201,168,76,.1);color:var(--gold);border:1px solid rgba(201,168,76,.2);}
+
+/* EDIT MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;display:none;align-items:center;justify-content:center;padding:20px;}
+.modal-bg.open{display:flex;}
+.modal{background:var(--navy3);border:1px solid var(--border);border-radius:6px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;}
+.modal::before{content:'';display:block;height:3px;background:linear-gradient(90deg,transparent,var(--gold),transparent);}
+.modal-hdr{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);}
+.modal-title{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.08em;}
+.modal-close{background:transparent;border:none;color:var(--slate);font-size:18px;cursor:pointer;line-height:1;padding:0;}
+.modal-body{padding:20px;}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(201,168,76,.7);margin-bottom:6px;}
+.field input,.field select{width:100%;background:var(--navy);border:1px solid var(--border);color:var(--cream);font-family:'Barlow',sans-serif;font-size:13px;padding:10px 12px;border-radius:3px;outline:none;transition:border-color .2s;}
+.field input:focus,.field select:focus{border-color:var(--gold);}
+.field input[readonly]{opacity:.5;cursor:not-allowed;}
+.field select option{background:var(--navy3);}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media(max-width:480px){.field-row{grid-template-columns:1fr;}}
+.field-hint{font-size:10px;color:var(--slate);margin-top:4px;line-height:1.5;}
+.modal-footer{display:flex;gap:8px;justify-content:flex-end;padding:14px 20px;border-top:1px solid var(--border);}
+
+/* ADD AGENT FORM */
+.card{background:var(--navy3);border:1px solid var(--border);border-radius:4px;padding:20px;margin-bottom:16px;}
+.card-title{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--gold);margin-bottom:16px;}
+
+/* SNIPPET */
+pre{background:var(--navy);border:1px solid var(--border);border-radius:3px;padding:14px;font-family:'DM Mono',monospace;font-size:11px;line-height:1.7;color:var(--gold2);overflow-x:auto;white-space:pre-wrap;}
+.copy-btn{background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.3);color:var(--gold);padding:6px 14px;border-radius:3px;font-size:11px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-weight:600;}
+.copy-btn:hover{background:var(--gold);color:var(--navy);}
+
+/* SYNC RESULTS */
+.sync-log{background:var(--navy);border:1px solid var(--border);border-radius:3px;padding:14px;font-family:'DM Mono',monospace;font-size:11px;line-height:1.8;max-height:220px;overflow-y:auto;display:none;margin-top:12px;}
+.sl-ok{color:var(--green2);}
+.sl-warn{color:var(--warn);}
+.sl-err{color:var(--red);}
+.sl-info{color:var(--slate);}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--navy4);border:1px solid var(--border);border-radius:4px;padding:10px 18px;font-size:13px;transform:translateY(60px);opacity:0;transition:all .3s;z-index:999;color:var(--gold2);white-space:nowrap;}
+.toast.show{transform:translateY(0);opacity:1;}
+
+/* CHECKLIST */
+.checklist{list-style:none;padding:0;}
+.checklist li{padding:9px 0;border-bottom:1px solid rgba(201,168,76,.07);font-size:13px;display:flex;align-items:flex-start;gap:10px;color:var(--slate);}
+.checklist li::before{content:'☐';font-size:15px;color:var(--gold);flex-shrink:0;}
+.url-box{background:var(--navy);border:1px solid var(--border);border-radius:3px;padding:10px 14px;font-family:'DM Mono',monospace;font-size:12px;color:var(--gold2);word-break:break-all;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="hl"><div class="shield">👥</div><h1>Agent Roster &amp; Management</h1></div>
+  <div class="hr">
+    <button class="btn btn-gold" id="sync-all-btn" onclick="pullThenSync()" style="display:none;">☁ Pull &amp; Sync Monday.com</button>
+    <button class="btn btn-outline" id="pull-btn" onclick="loadFromMonday()" style="display:none;">↓ Pull from Monday</button>
+    <a href="hub.html" class="btn btn-ghost">← Hub</a>
+  </div>
+</div>
+
+<div class="content">
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('roster',this)">📋 Roster &amp; Edit</div>
+    <div class="tab" onclick="switchTab('add',this)">➕ Add New Agent</div>
+    <div class="tab" onclick="switchTab('sync',this)">☁ Monday.com Sync</div>
+  </div>
+
+  <!-- ── ROSTER TAB ── -->
+  <div class="panel active" id="panel-roster">
+    <div class="tbl-card">
+      <div class="tbl-hdr">
+        <div class="tbl-title">All Agents — <span id="roster-count">0</span> total</div>
+        <div style="display:flex;gap:8px;">
+          <input type="text" id="roster-search" placeholder="Search name, role, ID…"
+            oninput="filterRoster(this.value)"
+            style="background:var(--navy);border:1px solid var(--border);color:var(--cream);font-size:12px;padding:7px 12px;border-radius:3px;width:200px;outline:none;">
+          <button class="btn btn-sm btn-outline" onclick="syncAllToMonday()">☁ Sync All</button>
+        </div>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th>Name</th><th>Agent ID</th><th>Role / Level</th>
+            <th>PHP ID</th><th>Phone</th><th>Email</th>
+            <th>Upline</th><th>Licensed</th><th>Enrolled</th>
+            <th>Monday</th><th style="text-align:center;">Actions</th>
+          </tr></thead>
+          <tbody id="roster-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="sync-log" id="roster-sync-log"></div>
+  </div>
+
+  <!-- ── ADD AGENT TAB ── -->
+  <div class="panel" id="panel-add">
+    <div id="success-panel" style="display:none;background:rgba(39,174,96,.08);border:1px solid rgba(39,174,96,.25);border-radius:4px;padding:18px;margin-bottom:16px;">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--green2);margin-bottom:10px;">✅ Agent Onboarding Package Ready</div>
+      <div style="font-size:13px;color:var(--slate);margin-bottom:12px;">Share the items below with your new agent.</div>
+      <div style="margin-bottom:6px;font-size:11px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.08em;">Agent Tracker URL</div>
+      <div class="url-box" id="tracker-url" style="margin-bottom:12px;"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="copy-btn" onclick="copyUrl()">Copy URL</button>
+        <button class="copy-btn" onclick="copyCode()">Copy auth.js Snippet</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">New Agent Details</div>
+      <div class="field-row">
+        <div class="field"><label>First Name *</label><input type="text" id="f-first" placeholder="First name"></div>
+        <div class="field"><label>Last Name *</label><input type="text" id="f-last" placeholder="Last name"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>4-Digit PIN *</label><input type="text" id="f-pin" maxlength="4" placeholder="e.g. 5678"></div>
+        <div class="field">
+          <label>Role / Level *</label>
+          <select id="f-role">
+            <option value="trainee">Trainee (30%)</option>
+            <option value="associate">Associate (40%)</option>
+            <option value="field_associate">Field Associate (50%)</option>
+            <option value="director">Director (60%)</option>
+            <option value="producing_md">Producing MD (70%)</option>
+            <option value="marketing_director">Marketing Director (75%)</option>
+            <option value="senior_md">Senior MD (77%)</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>PHP Agent #</label><input type="text" id="f-phpid" placeholder="e.g. 10801"></div>
+        <div class="field"><label>Enrollment Date</label><input type="date" id="f-date"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Phone</label><input type="tel" id="f-phone" placeholder="(555) 000-0000"></div>
+        <div class="field"><label>Email</label><input type="email" id="f-email" placeholder="agent@email.com"></div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Upline (Sponsor)</label>
+          <select id="f-upline"><option value="">Select upline…</option></select>
+        </div>
+        <div class="field"><label>License States (comma-separated)</label><input type="text" id="f-states" placeholder="TX, CA"></div>
+      </div>
+    </div>
+
+    <div class="card" id="code-card" style="display:none;">
+      <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;">
+        auth.js Code Snippet
+        <button class="copy-btn" onclick="copyCode()">Copy Code</button>
+      </div>
+      <p style="font-size:12px;color:var(--slate);margin-bottom:12px;">Paste this into the AGENTS array in auth.js, then redeploy the ZIP to Netlify.</p>
+      <pre id="code-snippet"></pre>
+    </div>
+
+    <div class="card" id="checklist-card" style="display:none;">
+      <div class="card-title">Onboarding Checklist</div>
+      <ul class="checklist">
+        <li>Send agent their tracker URL — have them bookmark it on their phone</li>
+        <li>Paste the auth.js snippet into the AGENTS array and redeploy to Netlify</li>
+        <li>Have agent log in and bookmark the Hub on their device</li>
+        <li>Schedule Fast Start call — review PHP Quest Steps 1–5</li>
+        <li>Add to Monday.com Agent Roster (board 18411252280)</li>
+        <li>Invite to next BOM — confirm day and time with your team</li>
+        <li>Share the survey link for their first client meeting</li>
+      </ul>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-top:4px;">
+      <button class="btn btn-gold" onclick="generateAgent()">Generate Onboarding Package →</button>
+    </div>
+  </div>
+
+  <!-- ── SYNC TAB ── -->
+  <div class="panel" id="panel-sync">
+    <div class="card">
+      <div class="card-title">☁ Monday.com Roster Sync</div>
+      <p style="font-size:13px;color:var(--slate);line-height:1.7;margin-bottom:16px;">
+        Syncs all agents to the <strong style="color:var(--cream)">Agent Roster</strong> board (18411252280). <strong style="color:var(--gold2)">Pull &amp; Sync</strong> first pulls all existing items from Monday.com to build the ID map, then updates rows that exist and only creates genuinely new agents — no duplicates. <strong style="color:var(--gold2)">Pull from Monday</strong> loads existing data without writing.
+      </p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn btn-gold" onclick="pullThenSync()">&#9729; Pull &amp; Sync All Agents</button>
+        <button class="btn btn-outline" onclick="loadFromMonday()">&#8595; Pull from Monday</button>
+        <button class="btn btn-ghost btn-sm" onclick="clearSyncLog()">Clear Log</button>
+      </div>
+      <div class="sync-log" id="sync-log" style="display:block;margin-top:14px;min-height:60px;"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">How Editing Works</div>
+      <div style="font-size:13px;color:var(--slate);line-height:1.8;">
+        <strong style="color:var(--cream);">Edit in this page</strong> — Click the ✏️ edit button on any agent row in the Roster tab to open the edit modal. Change name, phone, email, role, PHP ID, upline, or license states, then click Save. Changes save to browser memory immediately.<br><br>
+        <strong style="color:var(--cream);">Sync to Monday.com</strong> — After editing, click <em>Sync All</em> to push the updated roster to Monday.com. Each agent row is matched by Agent ID and updated if found, or created if new.<br><br>
+        <strong style="color:var(--cream);">Permanent update (auth.js)</strong> — The AGENTS array in auth.js is the system source of truth. After editing agents here, copy the generated snippet from the Add Agent tab and update auth.js, then redeploy. Until you redeploy, edits live only in this session.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── EDIT AGENT MODAL ── -->
+<div class="modal-bg" id="edit-modal">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title">✏️ Edit Agent — <span id="edit-modal-name"></span></div>
+      <button class="modal-close" onclick="closeEditModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="edit-agent-id">
+      <div class="field-row">
+        <div class="field"><label>First Name</label><input type="text" id="edit-first"></div>
+        <div class="field"><label>Last Name</label><input type="text" id="edit-last"></div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Role / Level</label>
+          <select id="edit-role">
+            <option value="trainee">Trainee (30%)</option>
+            <option value="associate">Associate (40%)</option>
+            <option value="field_associate">Field Associate (50%)</option>
+            <option value="director">Director (60%)</option>
+            <option value="producing_md">Producing MD (70%)</option>
+            <option value="marketing_director">Marketing Director (75%)</option>
+            <option value="senior_md">Senior MD (77%)</option>
+            <option value="executive_md">Executive MD (78%)</option>
+            <option value="svp">SVP (79%)</option>
+            <option value="evp">EVP (80%)</option>
+            <option value="agency_builder">Agency Builder</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+        <div class="field"><label>PHP Agent #</label><input type="text" id="edit-phpid" placeholder="e.g. 10801"></div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Top 25 Board ID <span style="font-size:9px;color:var(--slate);">Monday board ID for agent's personal list</span></label>
+          <input type="text" id="edit-top25board" placeholder="e.g. 18216458584" style="font-family:'DM Mono',monospace;font-size:12px;">
+        </div>
+        <div class="field"><label>PIN</label><input type="text" id="edit-pin" placeholder="4-digit PIN" maxlength="4"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Phone</label><input type="tel" id="edit-phone" placeholder="(555) 000-0000"></div>
+        <div class="field"><label>Email</label><input type="email" id="edit-email" placeholder="agent@email.com"></div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Upline (Sponsor)</label>
+          <select id="edit-upline"><option value="">No upline (top level)</option></select>
+        </div>
+        <div class="field"><label>License States</label><input type="text" id="edit-states" placeholder="TX, CA"></div>
+      </div>
+      <div class="field"><label>Enrollment Date</label><input type="date" id="edit-date"></div>
+      <div class="field">
+        <label>Agent ID <span style="font-size:9px;color:var(--slate);">(read-only)</span></label>
+        <input type="text" id="edit-id-display" readonly>
+        <div class="field-hint">Agent ID cannot be changed — it is used as the login username and Monday.com lookup key.</div>
+      </div>
+      <div id="edit-snippet-wrap" style="display:none;margin-top:12px;">
+        <div style="font-size:10px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Updated auth.js Snippet</div>
+        <pre id="edit-snippet" style="font-size:10px;"></pre>
+        <button class="copy-btn" onclick="copyEditSnippet()">Copy Updated Snippet</button>
+        <div class="field-hint" style="margin-top:6px;">Paste this into auth.js to make the edit permanent, then redeploy.</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeEditModal()">Cancel</button>
+      <button class="btn btn-outline" onclick="saveEditAndSync()">Save &amp; Sync to Monday.com</button>
+      <button class="btn btn-gold" onclick="saveEdit()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+AUTH.require('agents.html');
+const session = AUTH.getSession();
+const isAdmin = session && session.level >= 60;
+
+// ── LOCAL EDITABLE ROSTER ─────────────────────────────────────
+// We keep a mutable copy so edits are reflected immediately in the UI
+let rosterData = AGENTS.map(a => ({...a}));
+let mondayItemMap = {}; // agentId → Monday item ID (discovered on sync)
+
+// ── TABS ──────────────────────────────────────────────────────
+function switchTab(id, el) {
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  el.classList.add('active');
+}
+
+// ── ROSTER ────────────────────────────────────────────────────
+function renderRoster(filter='') {
+  const fl = filter.toLowerCase();
+  const rows = rosterData.filter(a =>
+    !fl || a.name.toLowerCase().includes(fl) ||
+    a.id.toLowerCase().includes(fl) ||
+    a.role.toLowerCase().includes(fl) ||
+    (a.phpId||'').includes(fl)
+  );
+  document.getElementById('roster-count').textContent = rosterData.length;
+  document.getElementById('roster-body').innerHTML = rows.map(a => {
+    const upline = rosterData.find(u=>u.id===a.uplineId);
+    const isSynced = mondayItemMap[a.id];
+    return `<tr id="arow-${a.id}">
+      <td><div class="agent-name">${a.name}</div></td>
+      <td><div class="mono">${a.id}</div></td>
+      <td><span class="role-badge" style="background:${getRoleColor(a.role)}22;color:${getRoleColor(a.role)};border:1px solid ${getRoleColor(a.role)}44;">${getRoleLabel(a.role)}</span></td>
+      <td><div class="mono">${a.phpId||'—'}</div></td>
+      <td style="font-size:12px;">${a.phone||'—'}</td>
+      <td style="font-size:12px;">${a.email||'—'}</td>
+      <td style="font-size:12px;color:var(--slate);">${upline?.name||'—'}</td>
+      <td style="font-size:12px;">${(a.licenseStates||[]).join(', ')||'—'}</td>
+      <td class="mono">${a.enrollmentDate||'—'}</td>
+      <td><span class="sync-status ${isSynced?'ss-synced':'ss-new'}">${isSynced?'✓ Synced':'Not synced'}</span></td>
+      <td style="text-align:center;white-space:nowrap;">
+        <button class="btn btn-sm btn-outline" onclick="openEditModal('${a.id}')" style="margin-right:4px;">✏️ Edit</button>
+        <button class="btn btn-sm btn-green" onclick="syncOneToMonday('${a.id}')">☁</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function filterRoster(val) { renderRoster(val); }
+
+// ── EDIT MODAL ────────────────────────────────────────────────
+function openEditModal(agentId) {
+  const a = rosterData.find(x=>x.id===agentId);
+  if (!a) return;
+
+  // Populate upline dropdown (exclude self)
+  const ul = document.getElementById('edit-upline');
+  ul.innerHTML = '<option value="">No upline (top level)</option>';
+  rosterData.filter(x=>x.id!==agentId).forEach(x => {
+    const o = document.createElement('option');
+    o.value=x.id; o.textContent=x.name+' ('+getRoleLabel(x.role)+')';
+    if (x.id===a.uplineId) o.selected=true;
+    ul.appendChild(o);
+  });
+
+  const nameParts = a.name.split(' ');
+  document.getElementById('edit-agent-id').value   = a.id;
+  document.getElementById('edit-modal-name').textContent = a.name;
+  document.getElementById('edit-first').value      = nameParts[0]||'';
+  document.getElementById('edit-last').value       = nameParts.slice(1).join(' ')||'';
+  document.getElementById('edit-role').value       = a.role;
+  document.getElementById('edit-phpid').value      = a.phpId||'';
+  document.getElementById('edit-top25board').value = a.top25BoardId||'';
+  const pinField = document.getElementById('edit-pin');
+  if (pinField) pinField.value = a.pin||'';
+  document.getElementById('edit-phone').value      = a.phone||'';
+  document.getElementById('edit-email').value      = a.email||'';
+  document.getElementById('edit-states').value     = (a.licenseStates||[]).join(', ');
+  document.getElementById('edit-date').value       = a.enrollmentDate||'';
+  document.getElementById('edit-id-display').value = a.id;
+  document.getElementById('edit-snippet-wrap').style.display = 'none';
+
+  document.getElementById('edit-modal').classList.add('open');
+}
+
+function closeEditModal() {
+  document.getElementById('edit-modal').classList.remove('open');
+}
+
+function buildSnippet(agent) {
+  const upline = rosterData.find(u => u.id === agent.uplineId);
+  return `  {\n    id: "${agent.id}", name: "${agent.name}",\n    pin: "${agent.pin||'XXXX'}", role: "${agent.role}",\n    phpId: "${agent.phpId||''}", phone: "${agent.phone||''}",\n    email: "${agent.email||''}",\n    licenseStates: [${(agent.licenseStates||[]).map(s=>`"${s}"`).join(',')}],\n    enrollmentDate: "${agent.enrollmentDate||''}",\n    uplineId: ${agent.uplineId?`"${agent.uplineId}"`:null}\n  },`;
+}
+
+function saveEdit() {
+  const id     = document.getElementById('edit-agent-id').value;
+  const agent  = rosterData.find(a=>a.id===id);
+  if (!agent) return;
+
+  const first  = document.getElementById('edit-first').value.trim();
+  const last   = document.getElementById('edit-last').value.trim();
+  agent.name           = (first+' '+last).trim() || agent.name;
+  agent.role           = document.getElementById('edit-role').value;
+  agent.phpId          = document.getElementById('edit-phpid').value.trim();
+  agent.top25BoardId   = document.getElementById('edit-top25board')?.value.trim() || agent.top25BoardId || '';
+  const pinVal = document.getElementById('edit-pin')?.value.trim();
+  if (pinVal) agent.pin = pinVal;
+  agent.phone          = document.getElementById('edit-phone').value.trim();
+  agent.email          = document.getElementById('edit-email').value.trim();
+  agent.uplineId       = document.getElementById('edit-upline').value || null;
+  agent.enrollmentDate = document.getElementById('edit-date').value;
+  agent.licenseStates  = document.getElementById('edit-states').value.split(',').map(s=>s.trim()).filter(Boolean);
+
+  // Generate updated snippet
+  const upline = rosterData.find(u=>u.id===agent.uplineId);
+  const snippet = buildSnippet(agent);
+  document.getElementById('edit-snippet').textContent = snippet;
+  document.getElementById('edit-snippet-wrap').style.display = 'block';
+  document.getElementById('edit-modal-name').textContent = agent.name;
+
+  renderRoster(document.getElementById('roster-search').value);
+  toast(`${agent.name} updated — copy snippet to make permanent`);
+}
+
+async function saveEditAndSync() {
+  saveEdit();
+  const id = document.getElementById('edit-agent-id').value;
+  await syncOneToMonday(id);
+  closeEditModal();
+}
+
+function copyEditSnippet() {
+  navigator.clipboard.writeText(document.getElementById('edit-snippet').textContent)
+    .then(()=>toast('Snippet copied — paste into auth.js and redeploy'));
+}
+
+// ── MONDAY.COM SYNC ───────────────────────────────────────────
+const BOARD_ID = TEAM.monday.boardAgents; // 18411252280 — Agent Roster board
+
+function logSync(msg, cls='sl-info') {
+  const log = document.getElementById('sync-log') || document.getElementById('roster-sync-log');
+  if (!log) return;
+  log.style.display='block';
+  log.innerHTML += `<div class="${cls}">${msg}</div>`;
+  log.scrollTop = log.scrollHeight;
+}
+
+function clearSyncLog() {
+  ['sync-log','roster-sync-log'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.innerHTML='';el.style.display='none';}
+  });
+}
+
+// ── MONDAY.COM SYNC ───────────────────────────────────────────
+// Fetches column IDs ONCE, caches, reuses for all agents.
+// Writes to TEAM.monday.boardAgents = 18411252280
+
+let _cachedColIds   = null;  // column keyword → real Monday column ID
+let _cachedItemIds  = {};    // agentId → Monday item ID
+
+function logSync(msg, cls='sl-info') {
+  const log = document.getElementById('sync-log') || document.getElementById('roster-sync-log');
+  if (!log) { console.log('[Sync]', msg); return; }
+  log.style.display = 'block';
+  log.innerHTML += `<div class="${cls}">${msg}</div>`;
+  log.scrollTop = log.scrollHeight;
+}
+
+function clearSyncLog() {
+  ['sync-log','roster-sync-log'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.innerHTML=''; el.style.display='none'; }
+  });
+}
+
+// ── Step 1: resolve real column IDs from the board ────────────
+async function resolveColumns() {
+  if (_cachedColIds) return _cachedColIds;
+
+  logSync(`Fetching column IDs from board ${BOARD_ID}…`, 'sl-info');
+  const res = await mondayQuery(`{ boards(ids:${BOARD_ID}) { columns { id title type } } }`);
+
+  if (!res) throw new Error(`mondayQuery returned null — check API key and board ID ${BOARD_ID}`);
+  if (res.errors) throw new Error(`Monday API error: ${JSON.stringify(res.errors)}`);
+
+  const cols = res?.data?.boards?.[0]?.columns;
+  if (!cols || !cols.length) throw new Error(`Board ${BOARD_ID} not found or has no columns. Check the board ID and that the API key has access.`);
+
+  logSync(`Board ${BOARD_ID}: ${cols.length} columns — ${cols.map(c=>c.title+' ('+c.type+')').join(', ')}`, 'sl-info');
+
+  const findId = (...kws) => cols.find(c => kws.some(k => (c.title||'').toLowerCase().includes(k.toLowerCase())))?.id || null;
+
+  _cachedColIds = {
+    agentId:    findId('agent id','agent_id','agentid'),
+    firstName:  findId('first name','first_name','firstname'),
+    lastName:   findId('last name','last_name','lastname'),
+    phone:      findId('phone'),
+    email:      findId('email'),
+    phpId:      findId('php','php id','php agent','php #'),
+    role:       findId('role','level','position'),
+    upline:     findId('upline','sponsor'),
+    license:    findId('license state','licens'),
+    source:     findId('source'),
+    enrollment: findId('enrollment','enroll date','start date'),
+    status:     findId('status','access level','access'),
+  };
+
+  const mapped = Object.entries(_cachedColIds).filter(([,v])=>v).map(([k,v])=>`${k}→${v}`).join(', ');
+  const missing = Object.entries(_cachedColIds).filter(([,v])=>!v).map(([k])=>k);
+  logSync(`Mapped: ${mapped}`, 'sl-info');
+  if (missing.length) logSync(`⚠ No match found for: ${missing.join(', ')} — these columns won't be written`, 'sl-warn');
+
+  // Fetch valid labels for the status/color column so we don't guess
+  if (_cachedColIds.status) {
+    try {
+      const sr = await mondayQuery(`{ boards(ids:${BOARD_ID}) { columns(ids:["${_cachedColIds.status}"]) { settings_str } } }`);
+      const settings = JSON.parse(sr?.data?.boards?.[0]?.columns?.[0]?.settings_str || '{}');
+      const labels = Object.values(settings.labels || {});
+      logSync(`  Status column valid labels: ${labels.join(', ')}`, 'sl-info');
+      _cachedColIds._statusLabels = labels;
+    } catch(e) {
+      _cachedColIds._statusLabels = [];
+    }
+  }
+
+  return _cachedColIds;
+}
+
+// ── Step 2: fetch existing item IDs ────────────────────────────
+async function resolveItemIds() {
+  if (Object.keys(_cachedItemIds).length) return _cachedItemIds;
+
+  logSync('Checking for existing items on board…', 'sl-info');
+  const res = await mondayQuery(`{
+    boards(ids:${BOARD_ID}) {
+      items_page(limit:100) {
+        items { id name column_values { id title text } }
+      }
+    }
+  }`);
+
+  const items = res?.data?.boards?.[0]?.items_page?.items || [];
+  logSync(`Found ${items.length} existing items on board`, 'sl-info');
+
+  // Reuse buildItemMap which already handles agent ID / PHP ID / name matching correctly
+  _cachedItemIds = buildItemMap(items);
+  logSync(`Item map built: ${Object.keys(_cachedItemIds).length} existing agents found`, 'sl-info');
+
+  return _cachedItemIds;
+}
+
+// ── Step 3: build column_values object for one agent ──────────
+function buildCV(agent, cols) {
+  const upline = rosterData.find(u => u.id === agent.uplineId);
+  const cv = {};
+
+  if (cols.agentId)   cv[cols.agentId]   = agent.id;
+  if (cols.firstName) cv[cols.firstName] = (agent.name.split(' ')[0]) || '';
+  if (cols.lastName)  cv[cols.lastName]  = (agent.name.split(' ').slice(1).join(' ')) || '';
+  if (cols.phpId)     cv[cols.phpId]     = agent.phpId || '';
+  if (cols.role)      cv[cols.role]      = getRoleLabel(agent.role);
+  if (cols.upline)    cv[cols.upline]    = upline?.name || '';
+  if (cols.license)   cv[cols.license]   = (agent.licenseStates||[]).join(', ');
+  if (cols.source)    cv[cols.source]    = 'Agent Roster';
+
+  if (cols.phone && agent.phone) {
+    const d = agent.phone.replace(/\D/g,'');
+    if (d.length >= 7) cv[cols.phone] = { phone: d, countryShortName: 'US' };
+  }
+  if (cols.email && agent.email) {
+    cv[cols.email] = { email: agent.email, text: agent.email };
+  }
+  if (cols.enrollment && agent.enrollmentDate) {
+    cv[cols.enrollment] = { date: agent.enrollmentDate };
+  }
+  if (cols.status) {
+    // Board 18411252280 "Access Level" column uses: Standard, Analytics, Full
+    const roleLevel = agent.level || 0;
+    const accessLabel = roleLevel >= 100 ? 'Full'      // admin
+                      : roleLevel >= 60  ? 'Full'      // MD+
+                      : roleLevel >= 20  ? 'Analytics' // Associate+
+                      : 'Standard';                    // Trainee
+    cv[cols.status] = { label: accessLabel };
+  }
+
+  return cv;
+}
+
+// ── Step 4: write one agent ────────────────────────────────────
+async function syncOneToMonday(agentId) {
+  if (!AUTH.getMondayKey()) { toast('No Monday.com API key'); return; }
+  const agent = rosterData.find(a => a.id === agentId);
+  if (!agent) return;
+
+  try {
+    const cols = await resolveColumns();
+
+    // If called standalone (not from syncAll), ensure map is populated
+    if (!Object.keys(_cachedItemIds).length) {
+      await resolveItemIds();
+    }
+
+    const cv         = buildCV(agent, cols);
+    const cvStr      = JSON.stringify(JSON.stringify(cv));
+    const existingId = _cachedItemIds[agent.id];
+
+    if (existingId) {
+      const res = await mondayQuery(`mutation {
+        change_multiple_column_values(
+          board_id: ${BOARD_ID},
+          item_id: ${existingId},
+          column_values: ${cvStr}
+        ) { id }
+      }`);
+      if (res?.errors) throw new Error(JSON.stringify(res.errors));
+      logSync(`✓ Updated  ${agent.name}  (item ${existingId}, ${Object.keys(cv).length} cols)`, 'sl-ok');
+    } else {
+      // Dedup guard: search board by name before creating to catch stale cache
+      const searchRes = await mondayQuery(`{
+        boards(ids:${BOARD_ID}) {
+          items_page(limit:50) { items { id name } }
+        }
+      }`);
+      const existingByName = (searchRes?.data?.boards?.[0]?.items_page?.items || [])
+        .find(i => i.name.toLowerCase().trim() === agent.name.toLowerCase().trim());
+      if (existingByName) {
+        _cachedItemIds[agent.id] = existingByName.id;
+        const res2 = await mondayQuery(`mutation {
+          change_multiple_column_values(
+            board_id: ${BOARD_ID},
+            item_id: ${existingByName.id},
+            column_values: ${cvStr}
+          ) { id }
+        }`);
+        if (res2?.errors) throw new Error(JSON.stringify(res2.errors));
+        logSync(`✓ Found existing item for ${agent.name} — updated (no duplicate created)`, 'sl-ok');
+      } else {
+        const iname = agent.name.replace(/"/g,"'");
+        const res = await mondayQuery(`mutation {
+          create_item(
+            board_id: ${BOARD_ID},
+            item_name: "${iname}",
+            column_values: ${cvStr}
+          ) { id }
+        }`);
+        if (res?.errors) throw new Error(JSON.stringify(res.errors));
+        const resultId = res?.data?.create_item?.id;
+        if (!resultId) throw new Error('create_item returned no ID — check board permissions');
+        _cachedItemIds[agent.id] = resultId;
+        logSync(`✓ Created  ${agent.name}  (item ${resultId}, ${Object.keys(cv).length} cols)`, 'sl-ok');
+      }
+    }
+
+    const badge = document.querySelector(`#arow-${agent.id} .sync-status`);
+    if (badge) { badge.className='sync-status ss-synced'; badge.textContent='✓ Synced'; }
+    toast(`${agent.name} synced ✅`);
+
+  } catch(e) {
+    logSync(`✗ Failed  ${agent.name}: ${e.message}`, 'sl-err');
+    toast(`Sync failed for ${agent.name}: ${e.message.slice(0,60)}`);
+    console.error('[Sync error]', agent.name, e);
+  }
+}
+
+// ── SHARED: fetch ALL items from a board with pagination ──────
+async function fetchAllItems(boardId) {
+  let all = [], cursor = null;
+  for (let page = 0; page < 20; page++) { // max 2000 items
+    let q;
+    if (cursor) {
+      q = `{ next_items_page(limit:100, cursor:"${cursor}") { cursor items { id name column_values { id text } } } }`;
+    } else {
+      q = `{ boards(ids:${boardId}) { items_page(limit:100) { cursor items { id name column_values { id text } } } } }`;
+    }
+    const res = await mondayQuery(q);
+    let pg;
+    if (cursor) {
+      pg = res?.data?.next_items_page;
+    } else {
+      pg = res?.data?.boards?.[0]?.items_page;
+    }
+    if (!pg || !pg.items?.length) break;
+    all = all.concat(pg.items);
+    cursor = pg.cursor || null;
+    if (!cursor) break;
+  }
+  return all;
+}
+
+// ── BUILD ITEM MAP: boardItem → agentId ───────────────────────
+async function fetchColTitles(boardId) {
+  try {
+    const r = await mondayQuery(`{ boards(ids:${boardId}) { columns { id title } } }`);
+    const cols = r?.data?.boards?.[0]?.columns || [];
+    const map = {};
+    cols.forEach(col => { map[col.id] = col.title; });
+    logSync(`Column map: ${cols.map(c=>c.title).join(', ')}`, 'sl-info');
+    return map;
+  } catch(e) { logSync('⚠ colTitles fetch failed: '+e.message, 'sl-warn'); return {}; }
+}
+
+function buildItemMap(items, colTitles={}) {
+  const map = {}; // agentId → Monday item ID
+
+  items.forEach(item => {
+    // Helper: find column value by title keyword
+    const get = (...kws) => {
+      for (const kw of kws) {
+        const found = item.column_values.find(c =>
+          (c.title || '').toLowerCase().includes(kw.toLowerCase())
+        );
+        if (found?.text?.trim()) return found.text.trim();
+      }
+      return '';
+    };
+
+    const agentIdVal = get('agent id', 'agent_id', 'agentid');
+    const phpIdVal   = get('php', 'php id', 'php agent');
+
+    // Priority 1: Agent ID column exact match
+    if (agentIdVal && rosterData.find(a => a.id === agentIdVal)) {
+      map[agentIdVal] = item.id;
+      return;
+    }
+
+    // Priority 2: PHP ID column match
+    if (phpIdVal) {
+      const a = rosterData.find(a => a.phpId && a.phpId === phpIdVal);
+      if (a) { map[a.id] = item.id; return; }
+    }
+
+    // Priority 3: Exact name match (case-insensitive)
+    const itemNameLower = item.name.toLowerCase().trim();
+    const byName = rosterData.find(a => a.name.toLowerCase().trim() === itemNameLower);
+    if (byName) { map[byName.id] = item.id; return; }
+
+    // Priority 4: Partial name match (first + last)
+    const byPartial = rosterData.find(a => {
+      const parts = a.name.toLowerCase().split(' ');
+      return parts.length >= 2 && itemNameLower.includes(parts[0]) && itemNameLower.includes(parts[parts.length - 1]);
+    });
+    if (byPartial && !map[byPartial.id]) {
+      map[byPartial.id] = item.id;
+    }
+  });
+
+  return map;
+}
+
+// ── PULL FROM MONDAY ──────────────────────────────────────────
+async function loadFromMonday() {
+  if (!AUTH.getMondayKey()) { toast('No Monday.com API key'); return; }
+  clearSyncLog();
+  logSync('Pulling from board ' + BOARD_ID + '...', 'sl-info');
+
+  try {
+    const colTitles = await fetchColTitles(BOARD_ID);
+    const items = await fetchAllItems(BOARD_ID);
+    logSync('Found ' + items.length + ' items on board', 'sl-info');
+
+    _cachedItemIds = buildItemMap(items);
+
+    // ── Import board items → rosterData ─────────────────────────
+    // Build a helper to read a column value by keyword against the title map
+    const getField = (item, ...kws) => {
+      for (const kw of kws) {
+        const cv = item.column_values.find(c =>
+          (colTitles[c.id]||'').toLowerCase().includes(kw.toLowerCase())
+        );
+        if (cv?.text?.trim()) return cv.text.trim();
+      }
+      return '';
+    };
+
+    const importedAgents = items.map(item => {
+      // Try to match to an existing auth.js agent by item ID cache first,
+      // then fall back to name matching for fields like role/uplineId
+      // that aren't stored on the board.
+      const existingMatch = Object.entries(_cachedItemIds)
+        .find(([id, itemId]) => itemId === item.id);
+      const existingAgent = existingMatch
+        ? rosterData.find(a => a.id === existingMatch[0])
+        : null;
+
+      const agentIdFromBoard = getField(item, 'agent id', 'agent_id', 'agentid');
+      const phpId    = getField(item, 'php id', 'php #', 'php agent', 'php');
+      const firstName = getField(item, 'first name', 'firstname');
+      const lastName  = getField(item, 'last name', 'lastname');
+      const name = firstName && lastName ? firstName + ' ' + lastName
+                 : firstName || lastName || item.name;
+      const phone   = getField(item, 'phone');
+      const email   = getField(item, 'email');
+      const upline  = getField(item, 'upline', 'sponsor');
+      const roleRaw = getField(item, 'role', 'level', 'position');
+
+      // Resolve uplineId from name
+      const uplineAgent = upline
+        ? AGENTS.find(a => a.name.toLowerCase() === upline.toLowerCase())
+          || rosterData.find(a => a.name.toLowerCase() === upline.toLowerCase())
+        : null;
+
+      return {
+        id:          agentIdFromBoard || existingAgent?.id || ('imported_' + item.id),
+        name,
+        phpId:       phpId || existingAgent?.phpId || '',
+        role:        existingAgent?.role || (roleRaw ? roleRaw.toLowerCase().replace(/\s+/g,'_') : 'trainee'),
+        level:       existingAgent?.level ?? 0,
+        uplineId:    uplineAgent?.id || existingAgent?.uplineId || '',
+        phone:       phone || existingAgent?.phone || '',
+        email:       email || existingAgent?.email || '',
+        pin:         existingAgent?.pin || '1111',
+        enrollmentDate: existingAgent?.enrollmentDate || '',
+        licenseStates:  existingAgent?.licenseStates || [],
+        mondayItemId: item.id,   // cache the Monday item ID on the record
+      };
+    });
+
+    // Deduplicate by agent id — if the same id appears more than once
+    // (shouldn't happen but guards against board duplicates), keep the first.
+    const seen = new Set();
+    const deduped = importedAgents.filter(a => {
+      if (seen.has(a.id)) {
+        logSync('  ⚠ Duplicate agent ID on board: ' + a.name + ' (' + a.id + ') — skipped', 'sl-warn');
+        return false;
+      }
+      seen.add(a.id);
+      return true;
+    });
+
+    const removedCount = rosterData.length - deduped.length;
+    rosterData = deduped;
+
+    const matched = Object.keys(_cachedItemIds).length;
+    logSync('✓ Imported ' + deduped.length + ' agents from Monday', 'sl-ok');
+    if (removedCount > 0) {
+      logSync('✓ Removed ' + removedCount + ' agents no longer on the board', 'sl-ok');
+    }
+    deduped.forEach(a => {
+      logSync('  ✓ ' + a.name + (a.phpId ? ' (PHP ' + a.phpId + ')' : ''), 'sl-ok');
+    });
+
+    renderRoster('');
+    const lbl = document.getElementById('last-sync-label');
+    if (lbl) lbl.textContent = 'Pulled ' + items.length + ' items · ' + matched + ' matched · ' + new Date().toLocaleTimeString();
+    toast('Pulled ' + deduped.length + ' agents — roster updated');
+
+  } catch(e) {
+    logSync('✗ Pull failed: ' + e.message, 'sl-err');
+    toast('Pull failed: ' + e.message.slice(0, 80));
+    console.error('[Pull error]', e);
+  }
+}
+
+// ── PULL THEN SYNC ────────────────────────────────────────────
+async function pullThenSync() {
+  if (!AUTH.getMondayKey()) { toast('No Monday.com API key configured'); return; }
+  clearSyncLog();
+  _cachedColIds  = null;
+  _cachedItemIds = {};
+
+  logSync('[1/3] Fetching column IDs...', 'sl-info');
+  let cols;
+  try {
+    cols = await resolveColumns();
+  } catch(e) {
+    logSync('\u2717 ' + e.message, 'sl-err');
+    toast('Cannot sync: ' + e.message.slice(0, 80));
+    return;
+  }
+
+  logSync('[2/3] Pulling existing board items...', 'sl-info');
+  let allItems = [];
+  try {
+    allItems = await fetchAllItems(BOARD_ID);
+    logSync('Found ' + allItems.length + ' existing items', 'sl-info');
+    const colTitles2 = await fetchColTitles(BOARD_ID);
+    _cachedItemIds = buildItemMap(allItems, colTitles2);
+    logSync('Matched ' + Object.keys(_cachedItemIds).length + ' of ' + rosterData.length + ' agents to existing rows', 'sl-info');
+    // Show unmatched
+    const unmatched = rosterData.filter(a => !_cachedItemIds[a.id]).map(a => a.name);
+    if (unmatched.length) logSync('Will CREATE new rows for: ' + unmatched.join(', '), 'sl-warn');
+  } catch(e) {
+    logSync('\u26a0 Could not pull existing items: ' + e.message + ' \u2014 proceeding with create-only mode', 'sl-warn');
+  }
+
+  logSync('[3/3] Writing ' + rosterData.length + ' agents...', 'sl-info');
+  let updated = 0, created = 0, errors = 0;
+
+  for (const agent of rosterData) {
+    try {
+      const cv         = buildCV(agent, cols);
+      const cvStr      = JSON.stringify(JSON.stringify(cv));
+      const existingId = _cachedItemIds[agent.id];
+
+      if (existingId) {
+        // UPDATE
+        const res = await mondayQuery(
+          'mutation { change_multiple_column_values(board_id:' + BOARD_ID +
+          ', item_id:' + existingId +
+          ', column_values:' + cvStr + ') { id } }'
+        );
+        if (res?.errors) throw new Error(JSON.stringify(res.errors));
+        updated++;
+        logSync('\u21ba Updated  ' + agent.name + '  (item ' + existingId + ')', 'sl-ok');
+      } else {
+        // CREATE — only runs if no match was found
+        const iname = agent.name.replace(/"/g, "'");
+        const res = await mondayQuery(
+          'mutation { create_item(board_id:' + BOARD_ID +
+          ', item_name:"' + iname +
+          '", column_values:' + cvStr + ') { id } }'
+        );
+        if (res?.errors) throw new Error(JSON.stringify(res.errors));
+        const newId = res?.data?.create_item?.id;
+        if (!newId) throw new Error('No item ID returned — check board permissions');
+        _cachedItemIds[agent.id] = newId;
+        created++;
+        logSync('+ Created  ' + agent.name + '  (item ' + newId + ')', 'sl-ok');
+      }
+
+      const badge = document.querySelector('#arow-' + agent.id + ' .sync-status');
+      if (badge) { badge.className = 'sync-status ss-synced'; badge.textContent = '\u2713 Synced'; }
+
+    } catch(e) {
+      errors++;
+      logSync('\u2717 Failed  ' + agent.name + ': ' + e.message, 'sl-err');
+      console.error('[Sync error]', agent.name, e);
+    }
+    await new Promise(r => setTimeout(r, 200));
+  }
+
+  const summary = 'Done \u2014 ' + updated + ' updated, ' + created + ' created' + (errors ? ', ' + errors + ' failed' : '');
+  logSync('\n\u2550\u2550\u2550 ' + summary + ' \u2550\u2550\u2550', errors ? 'sl-warn' : 'sl-ok');
+  const lbl2 = document.getElementById('last-sync-label');
+  if (lbl2) lbl2.textContent = summary + ' \xb7 ' + new Date().toLocaleTimeString();
+  toast(summary);
+  renderRoster('');
+}
+
+// Legacy alias
+async function syncAllToMonday() { return pullThenSync(); }
+
+// ── GENERATE AGENT ONBOARDING PACKAGE ────────────────────────
+function generateAgent() {
+  const first  = document.getElementById('f-first')?.value.trim();
+  const last   = document.getElementById('f-last')?.value.trim();
+  const pin    = document.getElementById('f-pin')?.value.trim();
+  const role   = document.getElementById('f-role')?.value || 'trainee';
+  const phpId  = document.getElementById('f-phpid')?.value.trim() || '';
+  const phone  = document.getElementById('f-phone')?.value.trim() || '';
+  const email  = document.getElementById('f-email')?.value.trim() || '';
+  const upline = document.getElementById('f-upline')?.value || '';
+  const states = (document.getElementById('f-states')?.value || '').split(',').map(s=>s.trim()).filter(Boolean);
+  const dateVal= document.getElementById('f-date')?.value || new Date().toISOString().slice(0,10);
+
+  if (!first || !last) { toast('First and last name required'); return; }
+  if (!pin || pin.length < 4) { toast('4-digit PIN required'); return; }
+
+  // Generate agent ID: first 3 chars of first name + first 3 of last + 3-digit number
+  const base = (first.slice(0,3) + last.slice(0,3)).toLowerCase().replace(/[^a-z]/g,'');
+  const num  = String(Math.floor(Math.random()*900)+100);
+  const id   = base + num;
+  const name = first + ' ' + last;
+
+  // Build auth.js snippet
+  const snippet = `  {
+    id: "${id}", name: "${name}",
+    pin: "${pin}", role: "${role}",
+    phpId: "${phpId}", phone: "${phone}",
+    email: "${email}",
+    licenseStates: [${states.map(s=>`"${s}"`).join(',')}],
+    enrollmentDate: "${dateVal}",
+    uplineId: ${upline ? `"${upline}"` : null}
+  },`;
+
+  // Show results
+  const siteBase = window.location.origin + window.location.pathname.replace('agents.html','');
+  document.getElementById('tracker-url').textContent = siteBase + 'tracker.html';
+  document.getElementById('code-snippet').textContent = snippet;
+  document.getElementById('code-card').style.display = 'block';
+  document.getElementById('checklist-card').style.display = 'block';
+  document.getElementById('success-panel').style.display = 'block';
+
+  // Scroll to top of panel
+  document.getElementById('panel-add').scrollIntoView({ behavior:'smooth' });
+
+  toast(name + ' onboarding package generated ✅');
+
+  // Also add to rosterData in-session and re-render
+  const newAgent = { id, name, pin, role, phpId, phone, email, licenseStates:states, enrollmentDate:dateVal, uplineId:upline||null };
+  if (typeof rosterData !== 'undefined' && !rosterData.find(a=>a.id===id)) {
+    rosterData.push(newAgent);
+    renderRoster('');
+  }
+}
+
+function copyUrl() {
+  navigator.clipboard.writeText(document.getElementById('tracker-url').textContent).then(()=>toast('URL copied!')).catch(()=>toast('Copy failed'));
+}
+
+function copyCode() {
+  navigator.clipboard.writeText(document.getElementById('code-snippet').textContent).then(()=>toast('Snippet copied! Paste into AGENTS array in auth.js and redeploy.')).catch(()=>toast('Copy failed'));
+}
+
+
+function syncSingleAgent() {
+  const id = prompt('Enter agent ID (e.g. obi001):');
+  if (id) syncOneToMonday(id.trim());
+}
+
+
+function copyCode(){ navigator.clipboard.writeText(document.getElementById('code-snippet').textContent).then(()=>toast('auth.js snippet copied!')); }
+function copyUrl(){  navigator.clipboard.writeText(document.getElementById('tracker-url').textContent).then(()=>toast('Tracker URL copied!')); }
+function toast(msg){ const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800); }
+
+// ── INIT ──────────────────────────────────────────────────────
+// Populate upline dropdown in Add tab
+const ul = document.getElementById('f-upline');
+rosterData.filter(a=>['admin','agency_builder','marketing_director','director','field_associate'].includes(a.role)).forEach(a=>{
+  const o=document.createElement('option');o.value=a.id;o.textContent=a.name+' ('+getRoleLabel(a.role)+')';ul.appendChild(o);
+});
+document.getElementById('f-date').value = new Date().toISOString().slice(0,10);
+renderRoster();
+
+// Show admin controls for MD+
+if (isAdmin) {
+  ['sync-all-btn','pull-btn'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'inline-flex';
+  });
+}
+</script>
+</body>
+</html>

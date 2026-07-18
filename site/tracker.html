@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DBA — Call Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@700&family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="auth.js?v=20260713"></script>
+<style>
+:root{--navy:#0A1628;--navy-mid:#112040;--navy-light:#1A3158;--gold:#C9A84C;--gold-light:#E8C97A;--cream:#FAF6EE;--success:#27AE60;--warn:#E67E22;--danger:#C0392B;--slate:#6B7C93;--border:rgba(201,168,76,0.22);}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);min-height:100vh;}
+
+/* ── HEADER ── */
+.header{background:rgba(10,22,40,0.97);border-bottom:1px solid var(--border);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;backdrop-filter:blur(10px);}
+.header-left{display:flex;align-items:center;gap:12px;}
+.shield{width:30px;height:34px;background:linear-gradient(160deg,var(--gold) 0%,#7a5c14 100%);clip-path:polygon(50% 0%,100% 18%,100% 65%,50% 100%,0% 65%,0% 18%);display:flex;align-items:center;justify-content:center;font-size:12px;}
+.header h1{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--gold);}
+.header-right{display:flex;align-items:center;gap:8px;}
+.back-btn{font-size:12px;color:var(--gold);text-decoration:none;border:1px solid var(--border);padding:6px 12px;border-radius:3px;}
+.save-btn{font-size:12px;background:var(--gold);color:var(--navy);border:none;padding:7px 16px;border-radius:3px;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:0.05em;cursor:pointer;transition:opacity 0.2s;}
+.save-btn:hover{opacity:0.88;}
+.top25-btn{font-size:12px;background:rgba(201,168,76,0.15);color:var(--gold);border:1px solid rgba(201,168,76,0.3);padding:7px 14px;border-radius:3px;text-decoration:none;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:0.05em;}
+
+/* ── LAYOUT ── */
+.content{padding:20px 22px;max-width:900px;margin:0 auto;}
+
+/* ── AGENT STRIP ── */
+.agent-strip{background:var(--navy-mid);border:1px solid var(--border);border-radius:4px;padding:12px 18px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.agent-name-big{font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--gold);}
+.agent-meta{font-size:12px;color:var(--slate);}
+.session-badge{background:rgba(39,174,96,0.15);border:1px solid rgba(39,174,96,0.3);color:#2ecc71;padding:5px 12px;border-radius:20px;font-size:11px;font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:0.05em;}
+
+/* ── ACTIVITY COUNTERS ── */
+.counters{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px;margin-bottom:18px;}
+@media(max-width:640px){.counters{grid-template-columns:1fr 1fr;}}
+.counter{background:var(--navy-mid);border:1px solid var(--border);border-radius:6px;padding:16px 12px;text-align:center;transition:border-color 0.2s;position:relative;}
+.counter.at-goal{border-color:var(--success);}
+.counter-emoji{font-size:24px;margin-bottom:4px;}
+.counter-label{font-size:10px;color:var(--slate);text-transform:uppercase;letter-spacing:0.09em;margin-bottom:6px;}
+.counter-val{font-family:'Barlow Condensed',sans-serif;font-size:42px;font-weight:800;color:var(--gold-light);line-height:1;margin-bottom:6px;}
+.counter-val.at-goal{color:var(--success);}
+.counter-buttons{display:flex;gap:6px;justify-content:center;align-items:center;}
+.c-btn{width:36px;height:36px;border-radius:50%;border:1.5px solid var(--border);background:transparent;color:var(--cream);font-size:18px;font-weight:700;cursor:pointer;transition:all 0.15s;display:flex;align-items:center;justify-content:center;}
+.c-btn.plus{border-color:var(--gold);color:var(--gold);background:rgba(201,168,76,0.1);}
+.c-btn.plus:hover{background:var(--gold);color:var(--navy);}
+.c-btn.minus:hover{background:rgba(192,57,43,0.15);border-color:var(--danger);}
+.counter-goal{font-size:10px;color:var(--slate);margin-top:6px;}
+.progress-bar-sm{height:4px;background:rgba(201,168,76,0.12);border-radius:2px;margin-top:8px;}
+.progress-bar-fill{height:4px;border-radius:2px;transition:width 0.4s;}
+
+/* ── PRODUCTION POINTS PANEL ── */
+.pts-panel{background:var(--navy-mid);border:1px solid var(--gold);border-radius:6px;padding:18px 20px;margin-bottom:18px;position:relative;overflow:hidden;}
+.pts-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--gold) 0%,var(--gold-light) 100%);}
+.pts-panel-title{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.pts-total-display{font-family:'Barlow Condensed',sans-serif;font-size:48px;font-weight:800;color:var(--gold-light);line-height:1;margin-bottom:4px;}
+.pts-total-label{font-size:11px;color:var(--slate);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:16px;}
+.pts-entries{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;}
+.pts-entry{background:var(--navy);border:1px solid var(--border);border-radius:4px;padding:12px 14px;display:flex;align-items:center;gap:12px;}
+.pe-carrier{flex:1;}
+.pe-carrier-name{font-size:13px;font-weight:600;color:var(--cream);}
+.pe-carrier-detail{font-size:11px;color:var(--slate);margin-top:2px;}
+.pe-atp{font-family:'DM Mono',monospace;font-size:13px;color:var(--slate);}
+.pe-rate{font-family:'DM Mono',monospace;font-size:11px;color:var(--slate);margin-top:2px;text-align:right;}
+.pe-pts{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:var(--gold-light);min-width:70px;text-align:right;}
+.pe-del{background:transparent;border:none;color:var(--slate);cursor:pointer;font-size:16px;padding:0 4px;transition:color 0.15s;}
+.pe-del:hover{color:var(--danger);}
+
+/* ADD POLICY FORM */
+.add-policy-form{background:var(--navy);border:1px solid var(--border);border-radius:4px;padding:14px;}
+.apf-title{font-size:11px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:0.09em;margin-bottom:12px;}
+.apf-grid{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;align-items:end;}
+@media(max-width:640px){.apf-grid{grid-template-columns:1fr 1fr;}.apf-add-btn{grid-column:1/-1;}}
+.apf-field label{display:block;font-size:10px;color:var(--slate);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px;}
+.apf-field input,.apf-field select{width:100%;background:var(--navy-mid);border:1px solid var(--border);color:var(--cream);font-family:'Barlow',sans-serif;font-size:13px;padding:9px 11px;border-radius:3px;}
+.apf-field input:focus,.apf-field select:focus{outline:none;border-color:var(--gold);}
+.apf-field select option{background:var(--navy-mid);}
+.apf-add-btn{background:var(--gold);color:var(--navy);border:none;padding:10px 18px;border-radius:3px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.06em;cursor:pointer;white-space:nowrap;transition:opacity 0.2s;}
+.apf-add-btn:hover{opacity:0.87;}
+.pts-formula{font-size:11px;color:var(--slate);margin-top:10px;line-height:1.6;padding-top:10px;border-top:1px solid var(--border);}
+.pts-formula strong{color:var(--gold-light);}
+
+/* ── WEEKLY SUMMARY ── */
+.weekly-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:0;background:var(--border);border-radius:4px;overflow:hidden;margin-bottom:22px;}
+.ws{background:var(--navy-mid);padding:12px 10px;text-align:center;}
+.ws-val{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;color:var(--gold-light);}
+.ws-label{font-size:9px;color:var(--slate);text-transform:uppercase;letter-spacing:0.08em;margin-top:2px;}
+@media(max-width:640px){.weekly-strip{grid-template-columns:1fr 1fr 1fr;}}
+
+/* ── PROSPECT PIPELINE ── */
+.card{background:var(--navy-mid);border:1px solid var(--border);border-radius:4px;padding:18px 20px;margin-bottom:18px;}
+.card-title{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--gold);margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;}
+.add-prospect-form{display:grid;grid-template-columns:1fr 1fr auto;gap:10px;margin-bottom:14px;}
+@media(max-width:560px){.add-prospect-form{grid-template-columns:1fr;}}
+input[type=text],input[type=tel],input[type=number],select{background:var(--navy);border:1px solid var(--border);color:var(--cream);font-family:'Barlow',sans-serif;font-size:13px;padding:9px 12px;border-radius:3px;width:100%;}
+input:focus,select:focus{outline:none;border-color:var(--gold);}
+.btn-sm{padding:9px 16px;border-radius:3px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.05em;cursor:pointer;border:none;white-space:nowrap;}
+.btn-gold{background:var(--gold);color:var(--navy);}
+.prospect-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(201,168,76,0.07);}
+.prospect-row:last-child{border:none;}
+.prospect-name{font-weight:600;font-size:13px;flex:1;}
+.prospect-phone{font-size:11px;color:var(--slate);}
+.status-select{background:var(--navy);border:1px solid var(--border);color:var(--cream);font-size:11px;padding:4px 8px;border-radius:3px;width:auto;}
+.log-call-btn{padding:5px 12px;border-radius:3px;background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.3);color:var(--gold);font-size:11px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-weight:600;transition:all 0.15s;white-space:nowrap;}
+.log-call-btn:hover{background:var(--gold);color:var(--navy);}
+.del-btn{background:transparent;border:none;color:var(--slate);cursor:pointer;font-size:14px;padding:0 4px;}
+.del-btn:hover{color:var(--danger);}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--navy-mid);border:1px solid var(--gold);border-radius:4px;padding:10px 18px;font-size:13px;transform:translateY(60px);opacity:0;transition:all 0.3s;z-index:999;color:var(--gold-light);}
+.toast.show{transform:translateY(0);opacity:1;}
+</style>
+</head>
+<body>
+<script>AUTH.require('tracker.html');</script>
+
+<div class="header">
+  <div class="header-left">
+    <div class="shield">👑</div>
+    <h1>Call Tracker</h1>
+  </div>
+  <div class="header-right">
+    <a href="top25.html" class="top25-btn">⭐ Top 25</a>
+    <a href="hub.html" class="back-btn">← Hub</a>
+    <button class="save-btn" style="background:rgba(52,152,219,.18);border:1px solid rgba(52,152,219,.4);color:#5DADE2;margin-right:4px;" onclick="loadFromMonday()">☁ Load Totals</button>
+    <button class="save-btn" onclick="saveSession()">💾 Save Session</button>
+  </div>
+</div>
+
+<div class="content">
+
+  <!-- AGENT STRIP -->
+  <div class="agent-strip">
+    <div>
+      <div class="agent-name-big" id="agent-display">Loading…</div>
+      <div class="agent-meta" id="session-date"></div>
+    </div>
+    <div class="session-badge" id="session-status">● Session Active</div>
+  </div>
+
+  <!-- ACTIVITY COUNTERS (calls, contacts, appts, shows, recruits) -->
+  <div class="counters" id="counters"></div>
+
+  <!-- PERIOD TOTALS (loaded from Monday.com) -->
+  <div id="period-totals-bar" style="display:none;background:rgba(52,152,219,.06);border:1px solid rgba(52,152,219,.2);border-radius:4px;padding:12px 16px;margin-bottom:14px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;color:#5DADE2;text-transform:uppercase;letter-spacing:.09em;">☁ Period Totals from Monday.com</div>
+      <div style="font-size:10px;color:var(--slate);font-family:'DM Mono',monospace;" id="period-totals-updated"></div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;" id="period-totals-row"></div>
+    <div style="font-size:10px;color:var(--slate);margin-top:8px;">Today's session adds on top of these. Reload any time with ☁ Load Totals.</div>
+  </div>
+  <div style="background:var(--navy-mid);border:1px solid var(--border);border-radius:6px;padding:16px 18px;margin-bottom:14px;">
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.09em;margin-bottom:12px;">📈 Personal Points (Enter from PHP Bamboo)</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div>
+        <label style="display:block;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--slate);margin-bottom:6px;font-weight:600;">Submitted Points ($)</label>
+        <input type="number" id="personal-sp" min="0" step="100" placeholder="e.g. 12500"
+          style="width:100%;background:var(--navy);border:1px solid var(--border);color:var(--cream);font-family:'DM Mono',monospace;font-size:16px;font-weight:700;padding:12px 14px;border-radius:3px;outline:none;"
+          oninput="updatePersonalPoints()">
+        <div style="font-size:10px;color:var(--slate);margin-top:4px;">Total annual premium submitted this period</div>
+      </div>
+      <div>
+        <label style="display:block;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--slate);margin-bottom:6px;font-weight:600;">Paid Points ($)</label>
+        <input type="number" id="personal-pp" min="0" step="100" placeholder="e.g. 8000"
+          style="width:100%;background:var(--navy);border:1px solid var(--border);color:var(--cream);font-family:'DM Mono',monospace;font-size:16px;font-weight:700;padding:12px 14px;border-radius:3px;outline:none;"
+          oninput="updatePersonalPoints()">
+        <div style="font-size:10px;color:var(--slate);margin-top:4px;">Annual premium that has been paid and issued</div>
+      </div>
+    </div>
+    <div id="points-feedback" style="margin-top:10px;font-size:12px;color:var(--slate);display:none;"></div>
+  </div>
+
+  <!-- ══ PRODUCTION POINTS PANEL ══ -->
+  <div class="pts-panel">
+    <div class="pts-panel-title">⭐ Production Points — Submitted Policies &amp; Annuities</div>
+    <div class="pts-total-display" id="pts-total">$0</div>
+    <div class="pts-total-label">Total ATP This Session</div>
+
+    <!-- Submitted policies list -->
+    <div class="pts-entries" id="pts-entries">
+      <div style="color:var(--slate);font-size:13px;padding:6px 0;">No policies logged yet — add below.</div>
+    </div>
+
+    <!-- Add policy form -->
+    <div class="add-policy-form">
+      <div class="apf-title">+ Log Submitted Policy / Annuity</div>
+      <div class="apf-grid">
+        <div class="apf-field">
+          <label>Carrier</label>
+          <select id="atp-carrier">
+            <option value="">Select carrier…</option>
+            <optgroup label="Life — Term">
+              <option value="North American|term|1.0">North American (Term)</option>
+              <option value="Protective|term|1.0">Protective Life (Term)</option>
+              <option value="Pacific Life|term|1.0">Pacific Life (Term)</option>
+              <option value="Americo|term|1.0">Americo (Term)</option>
+              <option value="Global Atlantic|term|1.0">Global Atlantic (Term)</option>
+            </optgroup>
+            <optgroup label="Life — Permanent / IUL / Living Benefits">
+              <option value="North American|perm|1.0">North American (IUL/LB)</option>
+              <option value="Mutual of Omaha|perm|1.0">Mutual of Omaha</option>
+              <option value="Americo|perm|1.0">Americo (Permanent)</option>
+              <option value="Global Atlantic|perm|1.0">Global Atlantic (Permanent)</option>
+              <option value="Pacific Life|perm|1.0">Pacific Life (IUL)</option>
+              <option value="Foresters|perm|1.0">Foresters</option>
+            </optgroup>
+            <optgroup label="Annuity — Fixed Indexed (FIA)">
+              <option value="North American|fia|1.0">North American (FIA)</option>
+              <option value="Midland National|fia|1.0">Midland National (FIA)</option>
+              <option value="American Equity|fia|1.0">American Equity (FIA)</option>
+              <option value="Athene|fia|1.0">Athene (FIA)</option>
+              <option value="Global Atlantic|fia|1.0">Global Atlantic (FIA)</option>
+              <option value="Silac|fia|1.0">Silac Insurance (FIA)</option>
+            </optgroup>
+            <optgroup label="Other">
+              <option value="Other|other|1.0">Other Carrier</option>
+            </optgroup>
+          </select>
+        </div>
+        <div class="apf-field">
+          <label>Policy Type</label>
+          <select id="atp-type">
+            <option value="term">Term Life</option>
+            <option value="perm">Permanent / IUL / Living Benefits</option>
+            <option value="fia">Fixed Indexed Annuity</option>
+          </select>
+        </div>
+        <div class="apf-field">
+          <label>Client Name</label>
+          <input type="text" id="atp-client" placeholder="Client name">
+        </div>
+        <div class="apf-field">
+          <label>Annual Target Premium ($)</label>
+          <input type="number" id="atp-amount" min="0" step="100" placeholder="e.g. 1200">
+        </div>
+        <div class="apf-field">
+          <label>Face Amount ($)</label>
+          <input type="number" id="atp-face" min="0" step="10000" placeholder="e.g. 500000">
+        </div>
+        <button class="apf-add-btn" onclick="addPolicy()">+ Add Policy</button>
+      </div>
+      <div class="pts-formula">
+        <strong>How Production Points are calculated:</strong><br>
+        Production Points = Annual Target Premium (ATP) for life policies, or Commissionable Premium for annuities.<br>
+        ATP is the scheduled annual premium the client pays. For FIAs, commissionable premium = deposit amount.<br>
+        Points are reported exactly as submitted to the carrier — no multipliers applied here.
+      </div>
+    </div>
+  </div>
+
+  <!-- WEEKLY SUMMARY -->
+  <div class="weekly-strip">
+    <div class="ws"><div class="ws-val" id="w-calls">0</div><div class="ws-label">Calls</div></div>
+    <div class="ws"><div class="ws-val" id="w-contacts">0</div><div class="ws-label">Contacts</div></div>
+    <div class="ws"><div class="ws-val" id="w-appts">0</div><div class="ws-label">Appts</div></div>
+    <div class="ws"><div class="ws-val" id="w-recruits">0</div><div class="ws-label">Recruits</div></div>
+    <div class="ws"><div class="ws-val" id="w-pts">$0</div><div class="ws-label">Session ATP</div></div>
+  </div>
+
+  <!-- PROSPECT PIPELINE -->
+  <div class="card">
+    <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">
+      <span>🎯 Prospect Pipeline</span>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <span id="prospect-count" style="color:var(--slate);font-weight:400;font-size:11px;">0 prospects</span>
+        <button class="btn-sm btn-outline" onclick="loadFromTop25()" style="font-size:10px;padding:4px 10px;" title="Pull from your Top 25 Monday.com board">☁ Top 25</button>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+      <span style="font-size:12px;color:var(--slate);" id="prospect-count">0 prospects</span>
+      <button class="btn-sm btn-gold" onclick="openProspectModal(null)">+ Add Prospect</button>
+    </div>
+    <div id="prospect-list"><div style="color:var(--slate);font-size:13px;padding:8px 0;">No prospects yet — click Add Prospect to start tracking.</div></div>
+  </div>
+
+</div><!-- /content -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── CONFIG ────────────────────────────────────────────────────
+const MAKE_HOOK    = 'https://hook.us2.make.com/qjlvtcw189ehm53i4ji34heeys0lobkc'; // Make.com — Call Session Logged
+const MONDAY_BOARD = TEAM.monday.boardCallLog; // 18411252612
+
+// ── MONDAY COLUMN ID AUTO-DISCOVERY ──────────────────────────
+// Fetches real column IDs from the board on first save, caches in localStorage.
+// Maps columns by TITLE keyword — no manual setup needed.
+let _resolvedCols = null;
+
+async function getColIds() {
+  // 1. Already resolved this session
+  if (_resolvedCols) return _resolvedCols;
+
+  // 2. Cached from a previous session
+  try {
+    const stored = localStorage.getItem('dba_col_ids_v2');
+    if (stored) { _resolvedCols = JSON.parse(stored); return _resolvedCols; }
+  } catch {}
+
+  // 3. Fetch from Monday.com board
+  try {
+    const res = await mondayQuery(`{ boards(ids: ${MONDAY_BOARD}) { columns { id title type } } }`);
+    const cols = res?.data?.boards?.[0]?.columns || [];
+    if (!cols.length) return null;
+
+    // Match by title keywords — flexible to different board setups
+    const find = (...kws) => cols.find(c => kws.some(k => c.title.toLowerCase().includes(k.toLowerCase())))?.id || null;
+
+    _resolvedCols = {
+      agent_id:     find('agent id', 'agent_id', 'agentid'),
+      agent_name:   find('agent name', 'agent_name', 'agentname', 'name'),
+      role:         find('role', 'level'),
+      date:         find('date', 'session date'),
+      calls:        find('calls', 'call'),
+      contacts:     find('contacts', 'contact'),
+      appointments: find('appointments', 'appts', 'appt'),
+      shows:        find('shows', 'show'),
+      recruits:     find('recruits', 'recruit'),
+      points:       find('points', 'atp', 'production'),
+      week:         find('week'),
+      ri:           find('recruiting interview', 'r.i.', 'ri'),
+      ft:           find('client appt', 'f.t.', 'ft appt'),
+      fs:           find('fast start', 'f.s.', 'fs appt'),
+      gi:           find('guests invited', 'guest inv'),
+      gc:           find('guests confirmed', 'guest conf'),
+      ga:           find('guests attended', 'guest att'),
+      submitted_pts: find('submitted points', 'sub points', 'personal sub'),
+      paid_pts:     find('paid points', 'personal paid'),
+    };
+
+    // Cache for next session
+    localStorage.setItem('dba_col_ids_v2', JSON.stringify(_resolvedCols));
+    console.log('[Tracker] Column IDs resolved:', _resolvedCols);
+    return _resolvedCols;
+  } catch(e) {
+    console.warn('[Tracker] Could not fetch column IDs:', e.message);
+    return null;
+  }
+}
+
+// ── ACTIVITY COUNTERS (calls, contacts, appts, shows, recruits) ──
+const COUNTER_CONFIG = [
+  // ── Daily Activity ─────────────────────────────────────────
+  { id:'calls',    label:'Calls Made',      emoji:'📞', goal:20, desc:'Outbound calls dialed',             group:'activity' },
+  { id:'contacts', label:'Contacts',        emoji:'🤝', goal:5,  desc:'Answered / spoke to',               group:'activity' },
+  { id:'appts',    label:'Appts Set',       emoji:'📅', goal:2,  desc:'Confirmed appointments',            group:'activity' },
+  { id:'shows',    label:'Shows',           emoji:'✅', goal:1,  desc:'Appointments attended',             group:'activity' },
+  { id:'recruits', label:'Recruits',        emoji:'👥', goal:2,  desc:'Enrolled prospects',                group:'activity' },
+  // ── Interviews & Appointments ──────────────────────────────
+  { id:'ri',       label:'R.I.',            emoji:'🎯', goal:1,  desc:'Recruiting Interview conducted',    group:'appts' },
+  { id:'ft',       label:'F.T. Appts',      emoji:'💼', goal:1,  desc:'Client appt (Field Training)',      group:'appts' },
+  { id:'fs',       label:'F.S. Appts',      emoji:'🚀', goal:1,  desc:'Fast Start appointments',           group:'appts' },
+  // ── Personal Guest System ──────────────────────────────────
+  { id:'gi',       label:'Guests Invited',  emoji:'📨', goal:10, desc:'Personal guests invited to BOM',   group:'guests' },
+  { id:'gc',       label:'Guests Confirmed',emoji:'📲', goal:3,  desc:'Personal guests confirmed',         group:'guests' },
+  { id:'ga',       label:'Guests Attended', emoji:'🏢', goal:1,  desc:'Personal guests who attended',      group:'guests' },
+];
+
+let counts = { calls:0, contacts:0, appts:0, shows:0, recruits:0, ri:0, ft:0, fs:0, gi:0, gc:0, ga:0 };
+let policies  = []; // array of submitted policy entries
+let prospects = [];
+
+// ── INIT ──────────────────────────────────────────────────────
+const session = AUTH.getSession();
+if (!session) { window.location.href = 'index.html'; }
+
+// Clear old stale column ID cache (old key was dba_col_ids, new is dba_col_ids_v2)
+try { localStorage.removeItem('dba_col_ids'); } catch {}
+
+const params    = new URLSearchParams(location.search);
+const agentParam= params.get('agent');
+let   agentId   = session.agentId;
+if (agentParam && AGENTS.find(a => a.id === agentParam)) agentId = agentParam;
+const agent = getAgentById(agentId) || {};
+
+document.getElementById('agent-display').textContent = agent.name || session.name;
+document.getElementById('session-date').textContent  = 'Session: ' + new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+
+loadTodayData();
+renderCounters();
+renderPolicies();
+renderProspects();
+updateWeekly();
+
+// ── RENDER ACTIVITY COUNTERS ──────────────────────────────────
+function renderCounters() {
+  const el = document.getElementById('counters');
+  // Inject group headings between groups
+  let lastGroup = null;
+  const rows = [];
+  COUNTER_CONFIG.forEach(c => {
+    if (c.group !== lastGroup) {
+      lastGroup = c.group;
+      const labels = { activity:'Daily Activity', appts:'Interviews & Appointments', guests:'Personal Guest System (BOM)' };
+      rows.push(`<div style="grid-column:1/-1;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.1em;padding:4px 0 2px;border-bottom:1px solid var(--border);margin-top:4px;">${labels[c.group]||c.group}</div>`);
+    }
+    rows.push(buildCounter(c));
+  });
+  el.innerHTML = rows.join('');
+}
+
+function buildCounter(c) {
+  const val    = counts[c.id] || 0;
+  const pct    = Math.min(100, Math.round((val / c.goal) * 100));
+  const atGoal = val >= c.goal;
+  const barColor = pct < 50 ? '#C0392B' : pct < 100 ? '#E67E22' : '#27AE60';
+  return `
+    <div class="counter ${atGoal?'at-goal':''}" id="counter-${c.id}">
+      <div class="counter-emoji">${c.emoji}</div>
+      <div class="counter-label">${c.label}</div>
+      <input type="number" min="0" id="val-${c.id}" value="${val}"
+        oninput="setCount('${c.id}',this.value)"
+        style="width:100%;background:var(--navy);border:1px solid ${atGoal?'#27AE60':'var(--border)'};
+               color:${atGoal?'#27AE60':'var(--cream)'};font-family:'DM Mono',monospace;
+               font-size:1.4rem;font-weight:700;text-align:center;padding:6px 4px;
+               border-radius:3px;outline:none;margin:4px 0;">
+      <div class="counter-goal">Goal: ${c.goal} ${atGoal?'✅':''}</div>
+      <div class="progress-bar-sm"><div class="progress-bar-fill" style="width:${pct}%;background:${barColor};"></div></div>
+    </div>`;
+}
+
+function setCount(id, value) {
+  counts[id] = Math.max(0, parseInt(value) || 0);
+  const cfg  = COUNTER_CONFIG.find(c => c.id === id);
+  const atGoal = cfg && counts[id] >= cfg.goal;
+  const el = document.getElementById('counter-' + id);
+  const inp = document.getElementById('val-' + id);
+  if (el)  el.className  = 'counter' + (atGoal ? ' at-goal' : '');
+  if (inp) inp.style.borderColor = atGoal ? '#27AE60' : 'var(--border)';
+  if (inp) inp.style.color       = atGoal ? '#27AE60' : 'var(--cream)';
+  // Update goal label
+  const goalEl = el?.querySelector('.counter-goal');
+  if (goalEl && cfg) goalEl.textContent = 'Goal: ' + cfg.goal + (atGoal ? ' ✅' : '');
+  // Update progress bar
+  const pct = cfg ? Math.min(100, Math.round((counts[id] / cfg.goal) * 100)) : 0;
+  const barColor = pct < 50 ? '#C0392B' : pct < 100 ? '#E67E22' : '#27AE60';
+  const bar = el?.querySelector('.progress-bar-fill');
+  if (bar) { bar.style.width = pct + '%'; bar.style.background = barColor; }
+  saveTodayData();
+  updateWeekly();
+}
+
+// Keep adjust() for any legacy calls (e.g. callProspect increments calls)
+function adjust(id, delta) {
+  counts[id] = Math.max(0, (counts[id] || 0) + delta);
+  const inp = document.getElementById('val-' + id);
+  if (inp) { inp.value = counts[id]; setCount(id, counts[id]); }
+  else { saveTodayData(); updateWeekly(); }
+}
+
+// ── PRODUCTION POINTS — POLICY ENTRY ─────────────────────────
+// Production Points = Annual Target Premium (ATP) for life policies
+// For FIAs = Commissionable Premium (deposit amount)
+// No multiplication — the raw ATP is the production point value
+
+function updatePersonalPoints() {
+  const sp = parseInt(document.getElementById('personal-sp').value) || 0;
+  const pp = parseInt(document.getElementById('personal-pp').value) || 0;
+  const fb = document.getElementById('points-feedback');
+  if (sp > 0 || pp > 0) {
+    fb.style.display = 'block';
+    const ratio = sp > 0 ? Math.round((pp/sp)*100) : 0;
+    fb.innerHTML = `Paid/Submitted ratio: <strong style="color:var(--gold)">${ratio}%</strong>${ratio < 60 ? ' &nbsp;·&nbsp; <span style="color:#E67E22">Follow up on pending applications</span>' : ' &nbsp;·&nbsp; <span style="color:var(--green)">Strong conversion</span>'}`;
+  } else {
+    fb.style.display = 'none';
+  }
+}
+
+function getTotalATP() {
+  return policies.reduce((sum, p) => sum + (p.atp || 0), 0);
+}
+
+function addPolicy() {
+  const carrierRaw = document.getElementById('atp-carrier').value;
+  const typeVal    = document.getElementById('atp-type').value;
+  const client     = document.getElementById('atp-client').value.trim();
+  const atp        = parseFloat(document.getElementById('atp-amount').value) || 0;
+  const face       = parseFloat(document.getElementById('atp-face').value) || 0;
+
+  if (!atp) { toast('Enter the Annual Target Premium amount'); return; }
+  if (!client) { toast('Enter a client name'); return; }
+
+  const carrierParts = carrierRaw ? carrierRaw.split('|') : ['Other','other','1.0'];
+  const carrier      = carrierParts[0] || 'Other';
+  const policyType   = typeVal || carrierParts[1] || 'term';
+  const typeLabels   = { term:'Term Life', perm:'Permanent / IUL / Living Benefits', fia:'Fixed Indexed Annuity', other:'Other' };
+
+  policies.push({
+    id:        Date.now(),
+    carrier,
+    type:      policyType,
+    typeLabel: typeLabels[policyType] || policyType,
+    client,
+    atp,         // Annual Target Premium — this IS the production point value
+    face,
+    date:      new Date().toISOString()
+  });
+
+  // Clear inputs
+  document.getElementById('atp-carrier').value = '';
+  document.getElementById('atp-client').value  = '';
+  document.getElementById('atp-amount').value  = '';
+  document.getElementById('atp-face').value    = '';
+
+  renderPolicies();
+  saveTodayData();
+  updateWeekly();
+  toast(`✅ Policy added — $${atp.toLocaleString()} ATP logged`);
+}
+
+function removePolicy(id) {
+  policies = policies.filter(p => p.id !== id);
+  renderPolicies();
+  saveTodayData();
+  updateWeekly();
+}
+
+function renderPolicies() {
+  const total = getTotalATP();
+  document.getElementById('pts-total').textContent = '$' + total.toLocaleString();
+
+  const el = document.getElementById('pts-entries');
+  if (!policies.length) {
+    el.innerHTML = '<div style="color:var(--slate);font-size:13px;padding:6px 0;">No policies logged yet — add below.</div>';
+    return;
+  }
+  el.innerHTML = policies.map(p => `
+    <div class="pts-entry">
+      <div class="pe-carrier">
+        <div class="pe-carrier-name">${p.client} — ${p.carrier}</div>
+        <div class="pe-carrier-detail">${p.typeLabel} · Submitted ${new Date(p.date).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</div>
+      </div>
+      <div style="text-align:right;">
+        <div class="pe-atp">ATP: $${p.atp.toLocaleString()}</div>
+        ${p.face ? `<div class="pe-rate">Face: $${p.face.toLocaleString()}</div>` : ''}
+      </div>
+      <div class="pe-pts">$${p.atp.toLocaleString()}</div>
+      <button class="pe-del" onclick="removePolicy(${p.id})" title="Remove">✕</button>
+    </div>`).join('');
+}
+
+// ── WEEKLY SUMMARY ────────────────────────────────────────────
+function updateWeekly() {
+  const total = getTotalATP();
+  document.getElementById('w-calls').textContent    = counts.calls;
+  document.getElementById('w-contacts').textContent = counts.contacts;
+  document.getElementById('w-appts').textContent    = counts.appts;
+  document.getElementById('w-recruits').textContent = counts.recruits;
+  document.getElementById('w-pts').textContent      = '$' + total.toLocaleString();
+}
+
+// ── PROSPECTS ─────────────────────────────────────────────────
+// ── LOAD FROM TOP 25 BOARD ───────────────────────────────────
+async function loadFromTop25() {
+  if (!AUTH.getMondayKey()) { toast('Connect Monday.com API key first'); return; }
+  const session  = AUTH.getSession();
+  const boardId  = localStorage.getItem('dba_top25_board_' + (session?.agentId||'')) || '18216458584';
+
+  toast('Loading from Top 25 board…');
+  try {
+    // Fetch column titles
+    const colR = await mondayQuery(`{boards(ids:${boardId}){columns{id title}}}`);
+    const colT = {};
+    (colR?.data?.boards?.[0]?.columns||[]).forEach(c => { colT[c.id] = (c.title||'').toLowerCase(); });
+
+    // Fetch items
+    const r = await mondayQuery(`{boards(ids:${boardId}){items_page(limit:100){items{id name column_values{id text}}}}}`);
+    const items = r?.data?.boards?.[0]?.items_page?.items || [];
+
+    const get = (item,...kws) => {
+      for (const kw of kws) {
+        const cv = item.column_values.find(cv => (colT[cv.id]||'').includes(kw));
+        if (cv?.text?.trim()) return cv.text.trim();
+      }
+      return '';
+    };
+
+    let added = 0;
+    items.forEach(item => {
+      const name = item.name.trim();
+      if (!name) return;
+      // Skip if already in prospects list
+      if (prospects.find(p => p.name.toLowerCase() === name.toLowerCase())) return;
+
+      prospects.push({
+        id:       Date.now() + Math.random(),
+        name,
+        phone:    get(item, 'phone'),
+        email:    get(item, 'email'),
+        dateMet:  get(item, 'date') || new Date().toISOString().slice(0,10),
+        whereMet: 'Top 25 Board',
+        notes:    get(item, 'notes','occupation','occ'),
+        status:   get(item, 'status') || 'Fresh',
+        lastCall: null,
+        mondayItemId: item.id,
+      });
+      added++;
+    });
+
+    saveTodayData();
+    renderProspects();
+    const countEl = document.getElementById('prospect-count');
+    if (countEl) countEl.textContent = prospects.length + ' prospects';
+    toast(added + ' prospects loaded from Top 25 board');
+  } catch(e) {
+    toast('Failed to load: ' + e.message.slice(0,50));
+    console.error('[Top25 load]', e);
+  }
+}
+
+// ── PROSPECT MODAL ───────────────────────────────────────────
+function openProspectModal(pid) {
+  const p = pid ? prospects.find(x=>x.id===pid) : null;
+  document.getElementById('pm-id').value      = pid||'';
+  document.getElementById('pm-name').value    = p?.name    || '';
+  document.getElementById('pm-phone').value   = p?.phone   || '';
+  document.getElementById('pm-email').value   = p?.email   || '';
+  document.getElementById('pm-date').value    = p?.dateMet || new Date().toISOString().slice(0,10);
+  document.getElementById('pm-where').value   = p?.whereMet|| '';
+  document.getElementById('pm-notes').value   = p?.notes   || '';
+  document.getElementById('pm-status').value  = p?.status  || 'Fresh';
+  document.getElementById('pm-title').textContent = p ? 'Edit Prospect — '+p.name : 'Add Prospect';
+  document.getElementById('prospect-modal').classList.add('open');
+}
+
+function saveProspectModal() {
+  const pid  = parseInt(document.getElementById('pm-id').value)||null;
+  const name = document.getElementById('pm-name').value.trim();
+  if (!name) { toast('Name required'); return; }
+  const data = {
+    name,
+    phone:    document.getElementById('pm-phone').value.trim(),
+    email:    document.getElementById('pm-email').value.trim(),
+    dateMet:  document.getElementById('pm-date').value,
+    whereMet: document.getElementById('pm-where').value.trim(),
+    notes:    document.getElementById('pm-notes').value.trim(),
+    status:   document.getElementById('pm-status').value,
+    lastCall: null,
+  };
+  if (pid) {
+    const p = prospects.find(x=>x.id===pid);
+    if (p) Object.assign(p, data);
+    toast(name+' updated');
+  } else {
+    prospects.push({ id: Date.now(), ...data });
+    toast(name+' added');
+  }
+  document.getElementById('prospect-modal').classList.remove('open');
+  saveTodayData(); renderProspects();
+}
+
+function closeProspectModal(){document.getElementById('prospect-modal').classList.remove('open');}
+function addProspect(){openProspectModal(null);}
+
+function updateStatus(id, val) {
+  const p = prospects.find(x => x.id === id);
+  if (p) { p.status = val; saveTodayData(); renderProspects(); }
+}
+
+function logCall(id) {
+  const p = prospects.find(x => x.id === id);
+  if (!p) return;
+  p.lastCall = new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+  adjust('calls', 1);
+  saveTodayData();
+  renderProspects();
+  toast(`📞 Call logged for ${p.name}`);
+}
+
+function deleteProspect(id) {
+  prospects = prospects.filter(x => x.id !== id);
+  saveTodayData();
+  renderProspects();
+}
+
+function renderProspects() {
+  const el = document.getElementById('prospect-list');
+  document.getElementById('prospect-count').textContent = prospects.length + ' prospect' + (prospects.length !== 1 ? 's' : '');
+  if (!prospects.length) {
+    el.innerHTML = '<div style="color:var(--slate);font-size:13px;padding:8px 0;">No prospects yet — add names above.</div>';
+    return;
+  }
+  const STATUS_CYCLE = ['Fresh','Contacted','Scheduled','Closed','Dead'];
+  el.innerHTML = prospects.map(p => `
+    <div class="prospect-row">
+      <div style="flex:1;">
+        <div class="prospect-name">${p.name}</div>
+        ${p.phone ? `<div class="prospect-phone"><a href="tel:${p.phone}" style="color:var(--gold-light);text-decoration:none;">${p.phone}</a></div>` : ''}
+        ${p.lastCall ? `<div style="font-size:10px;color:var(--slate);">Last call: ${p.lastCall}</div>` : ''}
+      </div>
+      <select class="status-select" onchange="updateStatus(${p.id},this.value)">
+        ${STATUS_CYCLE.map(s => `<option ${s===p.status?'selected':''}>${s}</option>`).join('')}
+      </select>
+      <button class="log-call-btn" onclick="logCall(${p.id})">📞 Log Call</button>
+      <button class="del-btn"      onclick="deleteProspect(${p.id})">✕</button>
+    </div>`).join('');
+}
+
+// ── PERSISTENCE ───────────────────────────────────────────────
+function getTodayKey() { return `dba_tracker_${agentId}_${new Date().toISOString().slice(0,10)}`; }
+function saveTodayData() {
+  try { localStorage.setItem(getTodayKey(), JSON.stringify({ counts, policies, prospects })); } catch {}
+}
+function loadTodayData() {
+  try {
+    const d = JSON.parse(localStorage.getItem(getTodayKey()) || 'null');
+    if (d) {
+      counts    = { ...counts, ...(d.counts || {}) };
+      policies  = d.policies  || policies;
+      prospects = d.prospects || prospects;
+    }
+  } catch {}
+  // Sync loaded counts into input fields (rendered before this call)
+  Object.entries(counts).forEach(([id, val]) => {
+    const inp = document.getElementById('val-' + id);
+    if (inp) inp.value = val;
+  });
+}
+
+// ── LOAD PERIOD TOTALS FROM MONDAY.COM ───────────────────────
+// Reads all session rows for this agent from the Call Log board,
+// sums each column, and shows them as "period totals" above the counters.
+// Does NOT overwrite today's live session counts.
+async function loadFromMonday() {
+  if (!AUTH.getMondayKey()) { showToast('No Monday.com API key'); return; }
+
+  const btn = document.querySelector('button[onclick="loadFromMonday()"]');
+  if (btn) { btn.textContent = '☁ Loading…'; btn.disabled = true; }
+
+  try {
+    // Fetch all items for this agent from Call Log board
+    const boardId = MONDAY_BOARD;
+    let allItems = [], cursor = null;
+    do {
+      const cursorArg = cursor ? `, cursor:"${cursor}"` : '';
+      const res = await mondayQuery(`{
+        boards(ids:${boardId}) {
+          items_page(limit:100${cursorArg}) {
+            cursor
+            items { id name column_values { id title text } }
+          }
+        }
+      }`);
+      const page = res?.data?.boards?.[0]?.items_page;
+      if (!page) break;
+      allItems = allItems.concat(page.items || []);
+      cursor = page.cursor || null;
+    } while (cursor);
+
+    // Filter to this agent's rows
+    const myId   = agentId || session.agentId;
+    const myName = (agent?.name || session.name || '').toLowerCase();
+    const myRows = allItems.filter(item => {
+      const agCol = item.column_values.find(c =>
+        c.title.toLowerCase().includes('agent id') || c.title.toLowerCase().includes('agent_id')
+      );
+      if (agCol?.text) return agCol.text.toLowerCase() === myId.toLowerCase();
+      return item.name.toLowerCase().includes(myName);
+    });
+
+    if (!myRows.length) {
+      showToast('No sessions found in Monday.com for your agent ID');
+      if (btn) { btn.textContent = '☁ Load Totals'; btn.disabled = false; }
+      return;
+    }
+
+    // Sum every numeric column across all rows
+    const totals = {};
+    const colTitles = {};
+    myRows.forEach(item => {
+      item.column_values.forEach(cv => {
+        const num = parseFloat(cv.text);
+        if (!isNaN(num) && num > 0) {
+          totals[cv.id]    = (totals[cv.id]    || 0) + num;
+          colTitles[cv.id] = cv.title;
+        }
+      });
+    });
+
+    // Map to our known fields
+    const findTotal = (...kws) => {
+      const entry = Object.entries(totals).find(([id]) =>
+        kws.some(k => (colTitles[id]||'').toLowerCase().includes(k))
+      );
+      return entry ? Math.round(entry[1]) : 0;
+    };
+
+    const periodTotals = {
+      calls:        findTotal('calls','call'),
+      contacts:     findTotal('contacts','contact'),
+      appts:        findTotal('appointments','appts'),
+      shows:        findTotal('shows','show'),
+      recruits:     findTotal('recruits','recruit'),
+      ri:           findTotal('recruiting interview','r.i.','ri'),
+      ft:           findTotal('ft appt','f.t.','field training'),
+      fs:           findTotal('fast start','f.s.','fs appt'),
+      gi:           findTotal('guests invited','guest inv'),
+      gc:           findTotal('guests confirmed','guest conf'),
+      ga:           findTotal('guests attended','guest att'),
+      points:       findTotal('points','atp','production'),
+      submitted_pts:findTotal('submitted points','sub points'),
+      paid_pts:     findTotal('paid points','personal paid'),
+    };
+
+    // Pre-fill Submitted Points and Paid Points inputs if they have data
+    if (periodTotals.submitted_pts) {
+      const spEl = document.getElementById('personal-sp');
+      if (spEl && !spEl.value) { spEl.value = periodTotals.submitted_pts; updatePersonalPoints(); }
+    }
+    if (periodTotals.paid_pts) {
+      const ppEl = document.getElementById('personal-pp');
+      if (ppEl && !ppEl.value) { ppEl.value = periodTotals.paid_pts; updatePersonalPoints(); }
+    }
+
+    // Render the period totals bar
+    const BAR_FIELDS = [
+      { key:'calls',         label:'Calls',          color:'#5DADE2' },
+      { key:'contacts',      label:'Contacts',       color:'#5DADE2' },
+      { key:'appts',         label:'Appts',          color:'#5DADE2' },
+      { key:'shows',         label:'Shows',          color:'var(--green2)' },
+      { key:'recruits',      label:'Recruits',       color:'var(--gold2)' },
+      { key:'ri',            label:'R.I.',           color:'var(--gold)' },
+      { key:'ft',            label:'F.T.',           color:'var(--gold)' },
+      { key:'fs',            label:'F.S.',           color:'var(--gold)' },
+      { key:'gi',            label:'G. Invited',     color:'#BB8FCE' },
+      { key:'gc',            label:'G. Confirmed',   color:'#BB8FCE' },
+      { key:'ga',            label:'G. Attended',    color:'#BB8FCE' },
+      { key:'points',        label:'ATP ($)',         color:'var(--gold2)', fmt: v=>'$'+v.toLocaleString() },
+      { key:'submitted_pts', label:'Sub Pts ($)',     color:'var(--gold2)', fmt: v=>'$'+v.toLocaleString() },
+      { key:'paid_pts',      label:'Paid Pts ($)',    color:'var(--green2)', fmt: v=>'$'+v.toLocaleString() },
+    ];
+
+    const row = document.getElementById('period-totals-row');
+    row.innerHTML = BAR_FIELDS
+      .filter(f => periodTotals[f.key] > 0)
+      .map(f => `
+        <div style="text-align:center;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:3px;padding:8px 14px;min-width:70px;">
+          <div style="font-family:'DM Mono',monospace;font-size:16px;font-weight:700;color:${f.color};">${f.fmt ? f.fmt(periodTotals[f.key]) : periodTotals[f.key]}</div>
+          <div style="font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--slate);margin-top:3px;">${f.label}</div>
+        </div>`).join('') || '<div style="font-size:12px;color:var(--slate);">No matching numeric columns found on this board</div>';
+
+    document.getElementById('period-totals-updated').textContent =
+      `${myRows.length} sessions · updated ${new Date().toLocaleTimeString()}`;
+    document.getElementById('period-totals-bar').style.display = 'block';
+    showToast(`Loaded ${myRows.length} sessions from Monday.com ✅`);
+
+  } catch(e) {
+    showToast('Load failed: ' + e.message);
+    console.error('loadFromMonday error:', e);
+  }
+
+  if (btn) { btn.textContent = '☁ Load Totals'; btn.disabled = false; }
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  if (t) { t.textContent = msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 3000); }
+}
+
+// ── SAVE SESSION — writes to Monday.com + Make.com ────────────
+async function saveSession() {
+  const totalATP = getTotalATP();
+  const date     = new Date().toISOString().slice(0,10);
+  const week     = `${new Date().getFullYear()}-W${String(getISOWeek(new Date())).padStart(2,'0')}`;
+
+  const payload = {
+    agentId,
+    agentName:      agent.name || session.name,
+    agentRole:      session.role,
+    date,
+    week,
+    calls:          counts.calls,
+    contacts:       counts.contacts,
+    appointments:   counts.appts,
+    shows:          counts.shows,
+    recruits:       counts.recruits,
+    productionPts:  totalATP,    // ATP in dollars — real production points
+    policiesCount:  policies.length,
+    policies:       policies.map(p => ({
+      carrier:  p.carrier,
+      type:     p.typeLabel,
+      client:   p.client,
+      atp:      p.atp,
+      face:     p.face
+    })),
+    sessionSavedAt: new Date().toISOString()
+  };
+
+  // ── 1. Make.com fire-and-forget (Scenario 2) ─────────────────
+  if (MAKE_HOOK) {
+    fetch(MAKE_HOOK, {
+      method: 'POST',
+      mode:   'no-cors',
+      body:   JSON.stringify(payload)
+    }).catch(()=>{});
+  }
+
+  // ── 2. Monday.com — Call Production Log board ─────────────────
+  if (AUTH.getMondayKey()) {
+    // Monday.com column_values format:
+    //   text columns    → "column_id": "value"
+    //   numbers columns → "column_id": number
+    //   date columns    → "column_id": {"date":"YYYY-MM-DD"}
+    // Column IDs come from the actual board — run monday-setup.html to get them.
+    // The item NAME carries agent + date + ATP so it's readable even without columns.
+
+    // Auto-discover real column IDs from the board (cached after first call)
+    const cols = await getColIds();
+
+    const buildItem = (pol, resolvedCols) => {
+      const atp  = pol ? pol.atp : 0;
+      const sp = parseInt(document.getElementById('personal-sp')?.value)||0;
+      const pp = parseInt(document.getElementById('personal-pp')?.value)||0;
+      const itemName = pol
+        ? `${pol.client} — ${pol.carrier} (${pol.typeLabel}) $${atp.toLocaleString()} · ${agent.name||session.name} · ${date}`
+        : `${agent.name||session.name} · ${date} · ${counts.calls}C/${counts.contacts}K/${counts.appts}A · RI:${counts.ri} FT:${counts.ft} FS:${counts.fs} GI:${counts.gi} GC:${counts.gc} GA:${counts.ga}${sp?` SP:$${sp.toLocaleString()}`:''}${pp?` PP:$${pp.toLocaleString()}`:''}`;
+
+      // Only write column values for columns that were actually found on the board
+      const cv = {};
+      if (resolvedCols) {
+        if (resolvedCols.agent_id)     cv[resolvedCols.agent_id]     = agentId;
+        if (resolvedCols.agent_name)   cv[resolvedCols.agent_name]   = agent.name || session.name;
+        if (resolvedCols.role)         cv[resolvedCols.role]         = session.role;
+        if (resolvedCols.week)         cv[resolvedCols.week]         = week;
+        if (resolvedCols.date)         cv[resolvedCols.date]         = { date };
+        if (resolvedCols.calls)        cv[resolvedCols.calls]        = counts.calls;
+        if (resolvedCols.contacts)     cv[resolvedCols.contacts]     = counts.contacts;
+        if (resolvedCols.appointments) cv[resolvedCols.appointments] = counts.appts;
+        if (resolvedCols.shows)        cv[resolvedCols.shows]        = counts.shows;
+        if (resolvedCols.recruits)     cv[resolvedCols.recruits]     = counts.recruits;
+        if (resolvedCols.points)       cv[resolvedCols.points]       = atp;
+        // Interviews & Appointments
+        if (resolvedCols.ri) cv[resolvedCols.ri] = counts.ri;
+        if (resolvedCols.ft) cv[resolvedCols.ft] = counts.ft;
+        if (resolvedCols.fs) cv[resolvedCols.fs] = counts.fs;
+        // Guest System
+        if (resolvedCols.gi) cv[resolvedCols.gi] = counts.gi;
+        if (resolvedCols.gc) cv[resolvedCols.gc] = counts.gc;
+        if (resolvedCols.ga) cv[resolvedCols.ga] = counts.ga;
+        // Personal Points (entered manually from PHP Bamboo)
+        const _sp = parseInt(document.getElementById('personal-sp')?.value)||0;
+        const _pp = parseInt(document.getElementById('personal-pp')?.value)||0;
+        if (resolvedCols.submitted_pts && _sp) cv[resolvedCols.submitted_pts] = _sp;
+        if (resolvedCols.paid_pts && _pp)      cv[resolvedCols.paid_pts]      = _pp;
+      }
+
+      return { itemName, cv };
+    };
+
+    // Fetch existing items once to check for duplicates
+    let _existingItems = null;
+    const getExistingItems = async () => {
+      if (_existingItems) return _existingItems;
+      try {
+        const r = await mondayQuery(`{boards(ids:${MONDAY_BOARD}){items_page(limit:500){items{id name column_values{id title text}}}}}`);
+        _existingItems = r?.data?.boards?.[0]?.items_page?.items || [];
+      } catch(e) { _existingItems = []; }
+      return _existingItems;
+    };
+
+    const writeToMonday = async (pol) => {
+      const { itemName, cv } = buildItem(pol, cols);
+
+      // Dedup: check if policy with same client+carrier+type already exists
+      if (pol) {
+        const existing = await getExistingItems();
+        // Match by policy number column, or by item name containing client name
+        const policyNumCol = cols?.policy_num;
+        const duplicate = existing.find(item => {
+          if (policyNumCol && pol.policyNum) {
+            const pnCol = item.column_values.find(c => c.id === policyNumCol);
+            if (pnCol?.text && pnCol.text.trim() === pol.policyNum.trim()) return true;
+          }
+          // Fallback: same client name + carrier in item name
+          return item.name.toLowerCase().includes(pol.client.toLowerCase()) &&
+                 item.name.toLowerCase().includes((pol.carrier||'').toLowerCase());
+        });
+        if (duplicate) {
+          console.warn('[Tracker] Duplicate policy detected, updating existing:', duplicate.id);
+          await mondayQuery(`mutation{change_multiple_column_values(board_id:${MONDAY_BOARD},item_id:${duplicate.id},column_values:${JSON.stringify(JSON.stringify(cv))}){id}}`).catch(()=>{});
+          return;
+        }
+      }
+
+      const q = `mutation {
+        create_item(
+          board_id: ${MONDAY_BOARD},
+          item_name: "${itemName.replace(/"/g,"'").replace(/\n/g,' ')}",
+          column_values: ${JSON.stringify(JSON.stringify(cv))}
+        ) { id }
+      }`;
+      const res = await mondayQuery(q).catch(e => {
+        console.warn('Monday write failed:', e.message);
+        return null;
+      });
+      return res;
+    };
+
+    if (policies.length > 0) {
+      // One Monday item per submitted policy — ATP goes in the points column
+      for (const pol of policies) {
+        await writeToMonday(pol);
+      }
+    } else {
+      // Activity-only session (no policy submitted)
+      await writeToMonday(null);
+    }
+  }
+
+  // ── 3. Lights Out contest board ───────────────────────────────
+  updateLightsOutBoard(counts.recruits, totalATP);
+
+  // ── 4. LocalStorage backup ───────────────────────────────────
+  saveTodayData();
+
+  document.getElementById('session-status').textContent  = '✅ Saved ' + new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+  document.getElementById('session-status').style.background  = 'rgba(39,174,96,0.2)';
+  document.getElementById('session-status').style.borderColor = 'rgba(39,174,96,0.4)';
+  toast('Session saved! 💪');
+}
+
+// ── ISO WEEK ──────────────────────────────────────────────────
+function getISOWeek(date) {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+  return Math.ceil((((d - yearStart) / 86400000) + 1)/7);
+}
+
+// ── LIGHTS OUT BOARD ──────────────────────────────────────────
+async function updateLightsOutBoard(recruits, pts) {
+  if (!AUTH.getMondayKey()) return;
+  const tier = recruits >= 30 && pts >= 30000 ? 'Gold'
+             : recruits >= 20 && pts >= 20000 ? 'Silver'
+             : recruits >= 10 && pts >= 10000 ? 'Bronze' : 'None';
+  const colVals = {
+    agent_id:   { text: agentId },
+    agent_name: { text: agent.name || session.name },
+    recruits:   { number: recruits },
+    points:     { number: pts },
+    tier:       { text: tier },
+    updated_at: { date: new Date().toISOString().slice(0,10) }
+  };
+  mondayQuery(`mutation {
+    create_item(
+      board_id: ${TEAM.monday.boardLightsOut},
+      item_name: "${(agent.name||session.name).replace(/"/g,"'")} · Contest Update",
+      column_values: ${JSON.stringify(JSON.stringify(colVals))}
+    ) { id }
+  }`).catch(()=>{});
+}
+
+// ── TOAST ─────────────────────────────────────────────────────
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+</script>
+
+<div id="prospect-modal" style="position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:500;display:none;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#132240;border:1px solid rgba(201,168,76,.25);border-radius:6px;width:100%;max-width:480px;max-height:92vh;overflow-y:auto;">
+    <div style="height:3px;background:linear-gradient(90deg,transparent,#C9A84C,transparent);"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid rgba(201,168,76,.15);">
+      <div id="pm-title" style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;color:#E8C97A;text-transform:uppercase;">Add Prospect</div>
+      <button onclick="closeProspectModal()" style="background:transparent;border:none;color:#6B7C93;font-size:18px;cursor:pointer;">&#x2715;</button>
+    </div>
+    <div style="padding:18px 20px;">
+      <input type="hidden" id="pm-id">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div style="grid-column:1/-1;"><label style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(201,168,76,.7);display:block;margin-bottom:4px;">Name *</label>
+          <input type="text" id="pm-name" placeholder="Full name" style="width:100%;background:#0A1628;border:1px solid rgba(201,168,76,.2);color:#FAF6EE;font-size:13px;padding:9px 12px;border-radius:3px;outline:none;"></div>
+        <div><label style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(201,168,76,.7);display:block;margin-bottom:4px;">Phone</label>
+          <input type="tel" id="pm-phone" placeholder="(555) 000-0000" style="width:100%;background:#0A1628;border:1px solid rgba(201,168,76,.2);color:#FAF6EE;font-size:13px;padding:9px 12px;border-radius:3px;outline:none;"></div>
+        <div><label style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(201,168,76,.7);display:block;margin-bottom:4px;">Email</label>
+          <input type="email" id="pm-email" placeholder="prospect@email.com" style="width:100%;background:#0A1628;border:1px solid rgba(201,168,76,.2);color:#FAF6EE;font-size:13px;padding:9px 12px;border-radius:3px;outline:none;"></div>
+        <div><label style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(201,168,76,.7);display:block;margin-bottom:4px;">Date Met</label>
+          <input type="date" id="pm-date" style="width:100%;background:#0A1628;border:1px solid rgba(201,168,76,.2);color:#FAF6EE;font-size:13px;padding:9px 12px;border-radius:3px;outline:none;"></div>
+        <div><label style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(201,168,76,.7);display:block;margin-bottom:4px;">Where Met</label>
+          <input type="text" id="pm-where" placeholder="Church, gym, work, event…" style="width:100%;background:#0A1628;border:1px solid rgba(201,168,76,.2);color:#FAF6EE;font-size:13px;padding:9px 12px;border-radius:3px;outline:none;"></div>
+        <div><label style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(201,168,76,.7);display:block;margin-bottom:4px;">Status</label>
+          <select id="pm-status" style="width:100%;background:#0A1628;border:1px solid rgba(201,168,76,.2);color:#FAF6EE;font-size:13px;padding:9px 12px;border-radius:3px;outline:none;">
+            <option>Fresh</option><option>Contacted</option><option>Appointed</option><option>Showed</option><option>Enrolled</option><option>Not Interested</option>
+          </select></div>
+        <div style="grid-column:1/-1;"><label style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(201,168,76,.7);display:block;margin-bottom:4px;">Notes (Occupation, Interests, Context)</label>
+          <textarea id="pm-notes" rows="3" placeholder="e.g. Teacher at PUSD, interested in extra income, referred by Maria…" style="width:100%;background:#0A1628;border:1px solid rgba(201,168,76,.2);color:#FAF6EE;font-size:13px;padding:9px 12px;border-radius:3px;outline:none;resize:vertical;font-family:'Barlow',sans-serif;"></textarea></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;padding:12px 20px;border-top:1px solid rgba(201,168,76,.15);">
+      <button onclick="closeProspectModal()" style="background:transparent;border:1px solid rgba(255,255,255,.1);color:#6B7C93;padding:8px 16px;border-radius:3px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;">Cancel</button>
+      <button onclick="saveProspectModal()" style="background:#C9A84C;color:#0A1628;border:none;padding:8px 20px;border-radius:3px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;">Save Prospect</button>
+    </div>
+  </div>
+</div>
+<style>#prospect-modal.open{display:flex;}</style>
+
+</body>
+</html>

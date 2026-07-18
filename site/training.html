@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DBA — Training Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,400&family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="auth.js?v=20260713"></script>
+<style>
+:root{--navy:#0A1628;--navy-mid:#112040;--navy-light:#1A3158;--gold:#C9A84C;--gold-light:#E8C97A;--cream:#FAF6EE;--success:#27AE60;--warn:#E67E22;--danger:#C0392B;--slate:#6B7C93;--border:rgba(201,168,76,0.22);}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);min-height:100vh;}
+.header{background:rgba(10,22,40,0.97);border-bottom:1px solid var(--border);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;backdrop-filter:blur(10px);}
+.header-left{display:flex;align-items:center;gap:12px;}
+.shield{width:30px;height:34px;background:linear-gradient(160deg,var(--gold) 0%,#7a5c14 100%);clip-path:polygon(50% 0%,100% 18%,100% 65%,50% 100%,0% 65%,0% 18%);display:flex;align-items:center;justify-content:center;font-size:12px;}
+.header h1{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--gold);}
+.back-btn{font-size:12px;color:var(--gold);text-decoration:none;border:1px solid var(--border);padding:6px 12px;border-radius:3px;}
+/* TABS */
+.tab-bar{display:flex;border-bottom:1px solid var(--border);background:var(--navy-mid);overflow-x:auto;padding:0 22px;gap:0;}
+.tab{padding:13px 20px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;cursor:pointer;border-bottom:2px solid transparent;color:var(--slate);transition:all 0.2s;white-space:nowrap;flex-shrink:0;}
+.tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+.tab:hover:not(.active){color:var(--cream);}
+.content{padding:22px 24px;max-width:860px;margin:0 auto;}
+.panel{display:none;animation:fadeIn 0.3s ease;}
+.panel.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+/* MODULES */
+.page-title{font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--gold);margin-bottom:6px;}
+.page-sub{font-size:13px;color:var(--slate);margin-bottom:22px;line-height:1.6;}
+.module{background:var(--navy-mid);border:1px solid var(--border);border-radius:4px;margin-bottom:12px;overflow:hidden;}
+.module-hdr{padding:16px 20px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:background 0.15s;user-select:none;}
+.module-hdr:hover{background:rgba(201,168,76,0.04);}
+.mod-num{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;color:var(--gold);min-width:34px;}
+.mod-title{font-size:14px;font-weight:600;flex:1;}
+.mod-toggle{font-size:12px;color:var(--gold);transition:transform 0.25s;}
+.module-body{display:none;padding:16px 20px 20px;border-top:1px solid var(--border);font-size:13px;line-height:1.8;color:rgba(250,246,238,0.9);}
+.module-body.open{display:block;}
+.module-body ul{padding-left:20px;}
+.module-body li{margin-bottom:7px;}
+.module-body strong{color:var(--gold-light);}
+.script-box{background:var(--navy);border-left:3px solid var(--gold);padding:14px 16px;border-radius:0 4px 4px 0;margin:12px 0;font-size:13px;line-height:1.8;font-style:italic;}
+.table-sm{width:100%;border-collapse:collapse;margin:10px 0;font-size:12px;}
+.table-sm th{font-family:'Barlow Condensed',sans-serif;font-size:10px;color:var(--gold);letter-spacing:0.1em;text-transform:uppercase;padding:7px 10px;text-align:left;border-bottom:1px solid var(--gold);}
+.table-sm td{padding:8px 10px;border-bottom:1px solid rgba(201,168,76,0.07);}
+.table-sm tr:hover td{background:rgba(201,168,76,0.03);}
+/* ROLEPLAY */
+.rp-card{background:var(--navy-mid);border:1px solid var(--border);border-radius:4px;padding:20px;margin-bottom:16px;}
+.rp-card-title{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:0.09em;margin-bottom:14px;}
+.field-label{font-size:11px;color:rgba(250,246,238,0.6);font-weight:600;letter-spacing:0.09em;text-transform:uppercase;display:block;margin-bottom:6px;}
+select,input{width:100%;background:var(--navy);border:1px solid var(--border);color:var(--cream);font-family:'Barlow',sans-serif;font-size:13px;padding:10px 12px;border-radius:3px;margin-bottom:12px;}
+select:focus,input:focus{outline:none;border-color:var(--gold);}
+select option{background:var(--navy-mid);}
+.btn-gold{background:linear-gradient(135deg,var(--gold) 0%,#9a7018 100%);color:var(--navy);border:none;padding:11px 22px;border-radius:3px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;letter-spacing:0.06em;cursor:pointer;transition:opacity 0.2s;}
+.btn-gold:hover{opacity:0.87;}
+.chat-box{background:var(--navy);border:1px solid var(--border);border-radius:4px;overflow:hidden;margin-top:14px;}
+.chat-msgs{height:280px;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;}
+.chat-msgs::-webkit-scrollbar{width:3px;}
+.chat-msgs::-webkit-scrollbar-thumb{background:var(--gold);border-radius:2px;}
+.chat-msg{max-width:88%;padding:9px 13px;border-radius:4px;font-size:13px;line-height:1.55;}
+.chat-msg.user{align-self:flex-end;background:rgba(201,168,76,0.15);border:1px solid rgba(201,168,76,0.3);}
+.chat-msg.ai{align-self:flex-start;background:var(--navy-light);border:1px solid var(--border);}
+.chat-msg.ai .name{font-size:9px;color:var(--gold);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;}
+.chat-msg.typing span{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--slate);margin:0 1px;animation:blink 1s infinite;}
+.chat-msg.typing span:nth-child(2){animation-delay:0.2s;}
+.chat-msg.typing span:nth-child(3){animation-delay:0.4s;}
+@keyframes blink{0%,100%{opacity:0.2;}50%{opacity:1;}}
+.chat-input-row{display:flex;border-top:1px solid var(--border);}
+.chat-input{flex:1;background:transparent;border:none;padding:10px 14px;color:var(--cream);font-family:'Barlow',sans-serif;font-size:13px;}
+.chat-input:focus{outline:none;}
+.chat-input::placeholder{color:var(--slate);}
+.chat-send{background:var(--gold);border:none;padding:0 18px;color:var(--navy);cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;}
+.feedback-box{background:rgba(201,168,76,0.07);border:1px solid rgba(201,168,76,0.25);border-radius:4px;padding:16px;margin-top:14px;font-size:13px;line-height:1.8;display:none;}
+.score-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;}
+.score{background:var(--navy);border:1px solid var(--border);border-radius:4px;padding:10px 16px;text-align:center;min-width:90px;}
+.score-val{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:800;color:var(--gold-light);}
+.score-lbl{font-size:10px;color:var(--slate);text-transform:uppercase;letter-spacing:0.08em;margin-top:2px;}
+</style>
+</head>
+<body>
+<script>AUTH.require('training.html');</script>
+<div class="header">
+  <div class="header-left">
+    <div class="shield">👑</div>
+    <h1>Training Hub</h1>
+  </div>
+  <a href="hub.html" class="back-btn">← Hub</a>
+</div>
+<div class="tab-bar">
+  <div class="tab active" onclick="switchTab('fasttrack',this)">🚀 Fast Track</div>
+  <div class="tab" onclick="switchTab('sales',this)">💰 Sales Mastery</div>
+  <div class="tab" onclick="switchTab('recruiting',this)">👥 Recruiting</div>
+  <div class="tab" onclick="switchTab('leadership',this)">🏆 Leadership</div>
+  <div class="tab" onclick="switchTab('products',this)">📋 Products</div>
+  <div class="tab" onclick="switchTab('mindset',this)">🧠 Mindset</div>
+  <div class="tab" onclick="switchTab('roleplay',this)">🎭 AI Role-Play</div>
+</div>
+<div class="content">
+
+<!-- FAST TRACK -->
+<div class="panel active" id="panel-fasttrack">
+  <div class="page-title">New Agent Fast Track</div>
+  <div class="page-sub">Complete these 5 steps in your first 30 days to launch your income and hit Associate level.</div>
+  <div id="ft-modules"></div>
+</div>
+
+<!-- SALES -->
+<div class="panel" id="panel-sales">
+  <div class="page-title">Sales Mastery</div>
+  <div class="page-sub">The 5-step presentation process from connect to close. Practice until it flows naturally.</div>
+  <div id="sales-modules"></div>
+</div>
+
+<!-- RECRUITING -->
+<div class="panel" id="panel-recruiting">
+  <div class="page-title">Recruiting Excellence</div>
+  <div class="page-sub">Your income ceiling is your team's activity floor. Learn to build leaders, not just a downline.</div>
+  <div id="rec-modules"></div>
+</div>
+
+<!-- LEADERSHIP -->
+<div class="panel" id="panel-leadership">
+  <div class="page-title">Leadership Development</div>
+  <div class="page-sub">Atomic Habits applied to building your dynasty. Systems beat motivation every time.</div>
+  <div id="lead-modules"></div>
+</div>
+
+<!-- PRODUCTS -->
+<div class="panel" id="panel-products">
+  <div class="page-title">Product Knowledge</div>
+  <div class="page-sub">Know what you sell deeply enough to explain it in 60 seconds or 60 minutes.</div>
+  <table class="table-sm" style="margin-bottom:24px;">
+    <thead><tr><th>Level</th><th>Commission</th><th>4 Apps/Wk</th><th>Requirement</th></tr></thead>
+    <tbody>
+      <tr><td>Trainee</td><td style="color:var(--gold)">30%</td><td>$3,120/mo</td><td>Licensed</td></tr>
+      <tr><td>Associate</td><td style="color:var(--gold)">40%</td><td>$4,160/mo</td><td>2R / 2A / 2K pts</td></tr>
+      <tr><td>Field Associate</td><td style="color:var(--gold)">50%</td><td>$5,200/mo</td><td>4R / 4A / 4K pts</td></tr>
+      <tr><td>Director</td><td style="color:var(--gold)">60%</td><td>$6,240/mo</td><td>2P + 8T recruits</td></tr>
+      <tr><td style="font-weight:700">Mktg Director</td><td style="color:var(--gold-light);font-weight:700">75–115%</td><td style="color:var(--gold-light);font-weight:700">$7,800+/mo</td><td>Team GV milestones</td></tr>
+    </tbody>
+  </table>
+  <div id="prod-modules"></div>
+</div>
+
+<!-- MINDSET -->
+<div class="panel" id="panel-mindset">
+  <div class="page-title">Mindset Training</div>
+  <div class="page-sub">The Magic of Thinking Big — 13 principles for building the success mindset. Study one section per day and apply it immediately.</div>
+  <div class="rp-card" style="margin-bottom:20px;">
+    <div class="rp-card-title">📖 Daily Success Affirmation</div>
+    <p style="font-size:13px;line-height:1.8;color:rgba(250,246,238,.9);">I think big because my future is bigger than my fears. I believe in my abilities, act with confidence, eliminate excuses, take immediate action, serve people with excellence, and continually improve. I surround myself with winners, think like a leader, and pursue my goals with faith and persistence. Every day, I become a better version of myself, creating value for others and achieving the life God has called me to live.</p>
+  </div>
+  <div id="mindset-modules"></div>
+</div>
+
+<!-- ROLEPLAY -->
+<div class="panel" id="panel-roleplay">
+  <div class="page-title">AI Role-Play Coach</div>
+  <div class="page-sub">Practice scripts with an AI prospect. After 5 exchanges you get scored on rapport, discovery, and pitch clarity.</div>
+  <div class="rp-card">
+    <div class="rp-card-title">Select Your Scenario</div>
+    <label class="field-label">Scenario</label>
+    <select id="rp-scenario">
+      <option value="cold">Cold Call — Stranger picks up phone</option>
+      <option value="warm">Warm Market — Friend or family member</option>
+      <option value="objection_think">Objection — "I need to think about it"</option>
+      <option value="objection_afford">Objection — "I can't afford it"</option>
+      <option value="recruit">Recruit Invite — Business opportunity conversation</option>
+      <option value="bom_followup">BOM Follow-Up — They attended but went cold</option>
+      <option value="referral_ask">Asking a Happy Client for Referrals</option>
+    </select>
+    <button class="btn-gold" onclick="startRP()">🎭 Start Role-Play</button>
+  </div>
+  <div class="chat-box" id="rp-chatbox" style="display:none;">
+    <div class="chat-msgs" id="rp-msgs"></div>
+    <div class="chat-input-row">
+      <input class="chat-input" id="rp-input" placeholder="Your response to the prospect…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendRP();}">
+      <button class="chat-send" onclick="sendRP()">Send</button>
+    </div>
+  </div>
+  <div class="feedback-box" id="rp-feedback">
+    <strong style="color:var(--gold);font-family:'Barlow Condensed',sans-serif;font-size:15px;letter-spacing:0.05em;">📋 COACH FEEDBACK</strong>
+    <div id="feedback-text" style="margin-top:10px;"></div>
+    <div class="score-row" id="score-row"></div>
+    <button class="btn-gold" style="margin-top:14px;" onclick="startRP()">Try Again →</button>
+  </div>
+</div>
+
+</div><!-- /content -->
+
+<script>
+const session = AUTH.getSession();
+
+function switchTab(id, el) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  el.classList.add('active');
+}
+
+function buildModules(containerId, modules) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = modules.map((m,i) => `
+    <div class="module">
+      <div class="module-hdr" onclick="toggleMod(this)">
+        <div class="mod-num">0${i+1}</div>
+        <div class="mod-title">${m.title}</div>
+        <div class="mod-toggle">▼</div>
+      </div>
+      <div class="module-body">${m.body}</div>
+    </div>`).join('');
+}
+
+function toggleMod(hdr) {
+  const body = hdr.nextElementSibling;
+  const tog  = hdr.querySelector('.mod-toggle');
+  const open = body.classList.toggle('open');
+  tog.style.transform = open ? 'rotate(180deg)' : '';
+}
+
+// ── FAST TRACK CONTENT ────────────────────────────────────────
+buildModules('ft-modules', [
+  { title: 'Step 1 — Get Your License', body: `<ul>
+    <li>Complete PHP Quest pre-licensing course on <a href="https://app.phpbamboo.com" target="_blank" style="color:var(--gold);">Bamboo</a></li>
+    <li>Schedule your state Life & Health exam within 14 days</li>
+    <li>Pass the exam — PHP Quest prepares you for it</li>
+    <li>Submit your license copy to your upline: <strong>${getAgentById(session.agentId)?.uplineId ? getAgentById(getAgentById(session.agentId).uplineId)?.name : 'your sponsor'}</strong></li>
+    <li>Register on Integrity Connect for carrier appointments</li>
+  </ul><p style="margin-top:10px;color:var(--slate);">Goal: Licensed within 30 days of enrollment. Every day unlicensed is a day you can't earn.</p>` },
+  { title: 'Step 2 — Set Up Your Business Accounts', body: `<ul>
+    <li>Activate PHP Bamboo: <a href="https://app.phpbamboo.com/agent/signin" target="_blank" style="color:var(--gold);">app.phpbamboo.com</a></li>
+    <li>Register on Integrity Connect for carrier access</li>
+    <li>Bookmark your personal Call Tracker: <code style="background:var(--navy);padding:2px 6px;border-radius:2px;color:var(--gold-light);">tracker.html?agent=${session.agentId}</code></li>
+    <li>Save the financial survey link to send clients: <code style="background:var(--navy);padding:2px 6px;border-radius:2px;color:var(--gold-light);">survey.html</code></li>
+    <li>Join the Dynasty Builders team group chat</li>
+  </ul>` },
+  { title: 'Step 3 — Build Your Dream 20 List', body: `<ul>
+    <li>Write 20 names right now — people who have families, mortgages, or want to earn more</li>
+    <li>Don't pre-judge anyone. Your job is to sort, not decide</li>
+    <li>Add them to your <a href="portal.html" style="color:var(--gold);">Portal → Referrals</a> pipeline</li>
+    <li>Categories: warm market (family/friends), social media connections, coworkers, referrals</li>
+  </ul>
+  <div class="script-box">"Hey [Name], I recently started working with a financial protection company. I'm not trying to sell you anything today — I just want to share something I think every family should know. Can we get 20 minutes on the calendar this week?"</div>` },
+  { title: 'Step 4 — Run Your First Appointment', body: `<ul>
+    <li>Send the <a href="survey.html" target="_blank" style="color:var(--gold);">Financial Survey</a> link before every appointment</li>
+    <li>Review their answers before you meet — this is your discovery</li>
+    <li>Use the 5-step process: Connect → Discover → Present → Handle → Close</li>
+    <li>Practice with your upline before your first real appointment</li>
+    <li>Submit your first application — every policy protects a real family</li>
+  </ul>` },
+  { title: 'Step 5 — Bring Your First BOM Guest', body: `<ul>
+    <li><strong>Tuesday 7:00 PM</strong> and <strong>Saturday 10:30 AM</strong> — attend both if possible in your first month</li>
+    <li>Invite 10 people for every BOM. Expect 3 to confirm, 1 to show. That's the Captain System.</li>
+    <li>Arrive 20 minutes early to meet guests and introduce them to your upline</li>
+    <li>Follow up the same night: "What stood out most to you?"</li>
+    <li>First BOM guest who joins = your first personal recruit. 2 recruits = Associate promotion.</li>
+  </ul>` }
+]);
+
+// ── SALES CONTENT ─────────────────────────────────────────────
+buildModules('sales-modules', [
+  { title: 'Step 1 — Connect (Build Rapport in 2 Minutes)', body: `<p>People buy from people they trust. The first 2 minutes set the tone for the entire appointment.</p><ul>
+    <li>Use their name 2–3 times in the first 5 minutes</li>
+    <li>Find common ground before talking business — family, work, city they're from</li>
+    <li>Mirror their energy level — relaxed prospect needs a relaxed agent</li>
+    <li>Never start with product — start with them</li>
+  </ul>
+  <div class="script-box">"Before we dive in, tell me a little about your family — I like to understand who I'm actually talking to."</div>` },
+  { title: 'Step 2 — Discover (Ask, Don\'t Tell)', body: `<p>The best salespeople talk less and ask more. Use these discovery questions:</p><ul>
+    <li>"If something happened to you tomorrow, what's your biggest concern for your family?"</li>
+    <li>"Do you have any life insurance right now? Do you know what it would actually pay out?"</li>
+    <li>"On a scale of 1–10, how protected does your family feel financially right now?"</li>
+    <li>"What would need to happen for you to feel like your family was fully taken care of?"</li>
+  </ul><p style="margin-top:10px;color:var(--slate);">Let them talk. Their answers are your close.</p>` },
+  { title: 'Step 3 — Present (Living Benefits First)', body: `<ul>
+    <li>Lead with <strong>living benefits</strong> — most people have never heard of a policy that pays while you're alive</li>
+    <li>Show the illustration — always have visual proof</li>
+    <li>Anchor the premium to something they already spend money on</li>
+    <li>Keep it simple: "This policy pays your family if you die. AND it pays YOU if you have a heart attack, stroke, or cancer."</li>
+  </ul>
+  <div class="script-box">"What if I told you there's a policy that pays you while you're still alive — if you have a heart attack, stroke, or cancer diagnosis? That's what separates what we offer from what most people have. Let me show you the numbers."</div>` },
+  { title: 'Step 4 — Handle the 4 Core Objections', body: `<ul>
+    <li><strong>"I need to think about it"</strong> — "What specifically do you need to think about? Let me address that right now."</li>
+    <li><strong>"I can't afford it"</strong> — "Can your family afford it if something happens to you? This is $[X]/month — less than your phone bill."</li>
+    <li><strong>"I already have coverage"</strong> — "Great — does it have living benefits? Most group plans don't. Can I show you what you might be missing?"</li>
+    <li><strong>"I need to talk to my spouse"</strong> — "Of course. When can we all meet together? I can do [Day] or [Day]."</li>
+  </ul>` },
+  { title: 'Step 5 — Close (Ask for the Business)', body: `<p>Most agents lose the sale because they never clearly ask. Use one of these:</p><ul>
+    <li><strong>Assumptive:</strong> "Let's go ahead and get the paperwork started — do you have your ID handy?"</li>
+    <li><strong>Choice:</strong> "Does the $250,000 or $500,000 policy make more sense for your family's situation?"</li>
+    <li><strong>Urgency:</strong> "Underwriting is based on your age and health today. Rates go up every year — let's lock this in now."</li>
+    <li><strong>Emotion:</strong> "You just told me your biggest fear is your family struggling. This is how we solve that — today."</li>
+  </ul>` }
+]);
+
+// ── RECRUITING CONTENT ────────────────────────────────────────
+buildModules('rec-modules', [
+  { title: 'The Dream 20 System', body: `<p>Keep 20 active recruiting prospects in your pipeline at all times. Every time one converts or goes cold, add a new name.</p><ul>
+    <li>Best profile: 25–45 years old, money-motivated, coachable, has people skills</li>
+    <li>Sources: warm market, social media connections, referrals from clients, coworkers</li>
+    <li>Rule: Don't pre-judge. The person you least expect often becomes your best builder.</li>
+  </ul>` },
+  { title: 'Invite Scripts', body: `
+  <div class="script-box"><strong>Warm Market Text:</strong><br>"Hey [Name], I've been thinking about you. I'm growing a financial services team and you came to mind immediately. I'm not sure if it's for you, but can we get on a 15-minute call this week? I'd love to share what I'm doing."</div>
+  <div class="script-box" style="margin-top:10px;"><strong>Social Media DM:</strong><br>"Hey! I've been following your content — I love your hustle. I'm building a team in financial services and I think you'd be great at this. Would you be open to a quick 15-minute conversation?"</div>
+  <div class="script-box" style="margin-top:10px;"><strong>Referral from Client:</strong><br>"Who do you know who's ambitious, money-motivated, and might want to earn an extra $2K–5K a month? I'm not asking them to quit their job — I'm looking for someone to add to my team."</div>` },
+  { title: 'The Edification Formula', body: `<p>Before every prospect call or BOM, edify your upline. Edification removes you from the selling seat and positions your leader as the expert.</p>
+  <div class="script-box">"Before we talk, I want to tell you about [Upline Name]. They built a 6-figure income in this business and personally helped me get started. They're going to be on this call with us. You're going to want to hear everything they say."</div>
+  <p style="margin-top:10px;color:var(--slate);">Rule: Never edify less than 3 levels above the prospect's perception of you. If they think you're a beginner, point them to someone who clearly isn't.</p>` },
+  { title: 'BOM Follow-Up Formula (5-Touch System)', body: `<p>Most recruits say YES on the 3rd–5th contact. Don't quit after one "no response."</p><ul>
+    <li><strong>Night of BOM:</strong> "Hey, great meeting you tonight! What stood out most to you?"</li>
+    <li><strong>Day 2:</strong> Share an income story, PHP testimonial, or Lights Out highlight reel</li>
+    <li><strong>Day 4:</strong> "Have you had a chance to think about it? I'd love to get you started."</li>
+    <li><strong>Day 7:</strong> "I have one opening on my team this month. Are you in?"</li>
+    <li><strong>Day 14:</strong> "I'm reaching out one last time — I want to respect your time. If the timing ever feels right, I'm here."</li>
+  </ul>` }
+]);
+
+// ── LEADERSHIP CONTENT ────────────────────────────────────────
+buildModules('lead-modules', [
+  { title: 'Identity-Based Habits (Atomic Habits Applied)', body: `<p>You don't rise to the level of your goals — you fall to the level of your systems. Build the identity first.</p><ul>
+    <li>Say: "I am a $10K/month producer" not "I want to make $10K"</li>
+    <li>Every call you make is a vote for the identity of "consistent producer"</li>
+    <li>1% improvement daily = 37× better in a year</li>
+    <li>Stack habits: Morning prayer → Goals review → Power Hour calls</li>
+  </ul>` },
+  { title: 'The Daily Success Rhythm', body: `<table class="table-sm">
+    <thead><tr><th>Time Block</th><th>Activity</th></tr></thead>
+    <tbody>
+      <tr><td><strong style="color:var(--gold);">6–8 AM</strong></td><td>Morning routine — prayer/gratitude, exercise, read goals</td></tr>
+      <tr><td><strong style="color:var(--gold);">9–11 AM</strong></td><td>Power Hour — 20 calls minimum, no exceptions</td></tr>
+      <tr><td><strong style="color:var(--gold);">11 AM–1 PM</strong></td><td>Appointments and follow-ups</td></tr>
+      <tr><td><strong style="color:var(--gold);">3–5 PM</strong></td><td>Team 1-on-1s, coaching calls, BOM prep</td></tr>
+      <tr><td><strong style="color:var(--gold);">6–8 PM</strong></td><td>Protected family time — no business calls</td></tr>
+      <tr><td><strong style="color:var(--gold);">8–9 PM</strong></td><td>Personal development — books, training, mindset</td></tr>
+    </tbody>
+  </table>` },
+  { title: 'Duplication Formula', body: `<p>You can only scale what you can teach. If your system lives only in your head, it dies with your activity.</p><ul>
+    <li>Write your scripts down word-for-word and share them with your team</li>
+    <li>Run weekly 1-on-1s with every direct report (20 minutes, same day each week)</li>
+    <li>Host Fast Start coaching in every new agent's first 14 days</li>
+    <li>Celebrate publicly, correct privately</li>
+    <li>Your income ceiling = your team's activity floor. Raise the floor.</li>
+  </ul>` },
+  { title: 'Leadership Mindset Shifts', body: `<table class="table-sm">
+    <thead><tr><th>From</th><th>To</th></tr></thead>
+    <tbody>
+      <tr><td>I need to sell more</td><td style="color:var(--success);">I need to develop more leaders</td></tr>
+      <tr><td>My team works for me</td><td style="color:var(--success);">I work FOR my team</td></tr>
+      <tr><td>I'll do it — it's faster</td><td style="color:var(--success);">I'll teach it once, they run forever</td></tr>
+      <tr><td>Recognition feels awkward</td><td style="color:var(--success);">Recognition is rocket fuel — give it publicly</td></tr>
+      <tr><td>I need to find motivated people</td><td style="color:var(--success);">I create the environment that produces motivation</td></tr>
+    </tbody>
+  </table>` }
+]);
+
+// ── PRODUCTS CONTENT ──────────────────────────────────────────
+buildModules('prod-modules', [
+  { title: 'Term Life Insurance', body: `<ul>
+    <li><strong>What it is:</strong> Pure death benefit — pays only if the insured dies within the term period</li>
+    <li><strong>Terms available:</strong> 10, 20, or 30 years</li>
+    <li><strong>Best for:</strong> Income replacement, mortgage protection, young families with tight budgets</li>
+    <li><strong>Key pitch:</strong> "This is your foundation. Highest face amount for the lowest premium. Start here, upgrade later."</li>
+    <li><strong>Limitation:</strong> No cash value, no payout if you outlive the term</li>
+  </ul>` },
+  { title: 'Permanent Life with Living Benefits', body: `<ul>
+    <li><strong>What it is:</strong> Lifetime coverage that also pays YOU while alive if you have a critical illness</li>
+    <li><strong>Living Benefit triggers:</strong> Heart attack, stroke, cancer, chronic illness, terminal diagnosis</li>
+    <li><strong>Why it's powerful:</strong> "90% of insurance claims are filed while someone is still alive. Why not have a policy that pays for that?"</li>
+    <li>Builds cash value over time that can be borrowed against</li>
+  </ul>
+  <div class="script-box">"What if your life insurance policy paid you $80,000 the same month you were diagnosed with cancer — while you were still fighting it? That's what living benefits do. Most people have never heard of this."</div>` },
+  { title: 'Fixed Indexed Annuities (FIA)', body: `<ul>
+    <li><strong>What it is:</strong> A savings vehicle that grows tax-deferred, linked to a stock index with a <em>floor</em> — you can never lose principal</li>
+    <li><strong>Best for:</strong> Pre-retirees, Baby Boomers, people who lost money in market crashes</li>
+    <li><strong>Key feature:</strong> Guaranteed lifetime income rider — never outlive your money</li>
+    <li><strong>Key pitch:</strong> "What if your retirement savings could never go down, only up? And then pay you a guaranteed check every month for the rest of your life?"</li>
+  </ul>` }
+]);
+
+// ── MINDSET — THE MAGIC OF THINKING BIG ─────────────────────
+buildModules('mindset-modules', [
+  { title: '1 — Believe You Can Succeed', body: `
+    <p><strong style="color:var(--gold-light);">"Believe big, and you'll grow big."</strong></p>
+    <p style="margin:10px 0;">Your thinking determines your success — not talent, luck, or background. The size of your belief is the size of your results.</p>
+    <ul>
+      <li>Think success, not failure — before every call, every appointment, every conversation</li>
+      <li>Never underestimate yourself. You were selected for this business. That means something.</li>
+      <li>Remind yourself daily: <em>I am capable of greatness in this industry</em></li>
+      <li>Replace "I'm not sure I can" with "How do I make this happen?"</li>
+    </ul>
+    <p style="margin-top:10px;color:var(--slate);">Action: Write down 3 things you genuinely believe you're capable of achieving in this business in the next 12 months. Read them every morning.</p>` },
+
+  { title: '2 — Eliminate Excuses', body: `
+    <p>Excuses are mental traps that keep average people average. The most common ones in this business:</p>
+    <ul>
+      <li><strong>Health:</strong> "I'm too tired." — Top producers are exhausted too. They go anyway.</li>
+      <li><strong>Intelligence:</strong> "I'm not smart enough." — You don't need a degree. You need a work ethic.</li>
+      <li><strong>Age:</strong> "I'm too young / too old." — Every age has an advantage. Use yours.</li>
+      <li><strong>Luck:</strong> "Others got lucky." — Luck = preparation + consistency + time.</li>
+      <li><strong>Experience:</strong> "I don't know enough yet." — You learn by doing, not waiting.</li>
+    </ul>
+    <p style="margin-top:10px;"><strong style="color:var(--gold-light);">Remember: Attitude beats aptitude. Enthusiasm beats intelligence. Consistent action beats talent.</strong></p>
+    <p style="margin-top:10px;color:var(--slate);">Action: Write your top 2 excuses. Beside each one, write the counter-argument you'll use the next time that voice shows up.</p>` },
+
+  { title: '3 — Build Confidence Through Action', body: `
+    <p>Confidence is not a feeling you wait for — it's a result of action. The fastest path to confidence is doing the thing you're afraid of.</p>
+    <ul>
+      <li><strong>Action destroys fear.</strong> The call you're avoiding is the one you most need to make.</li>
+      <li>Speak up in every meeting — your silence signals doubt, your voice signals belief</li>
+      <li>Walk faster — physical energy generates mental energy</li>
+      <li>Make eye contact — it signals conviction in your product and yourself</li>
+      <li>Smile first — it disarms resistance before you say a word</li>
+      <li>Sit in the front — wherever you are, show up like a leader</li>
+      <li>Store positive memories — replay your wins, not your losses</li>
+    </ul>
+    <div class="script-box">"I act confident before I feel confident, because I know the feeling follows the action."</div>` },
+
+  { title: '4 — Think Bigger', body: `
+    <p>Small thinkers talk about problems. Big thinkers talk about opportunities. The language you use shapes the reality you create.</p>
+    <ul>
+      <li>Use positive language in every client interaction — replace "I'll try" with "I will"</li>
+      <li>See possibilities instead of limitations — <em>"How could this work?"</em> not <em>"Why it won't"</em></li>
+      <li>Focus on the big objective: building a team of 50+ agents, not just the next appointment</li>
+      <li>Add value to people in every interaction — leave them better than you found them</li>
+      <li>Compliment generously and specifically — vague praise is forgettable, specific praise is powerful</li>
+      <li>Avoid petty arguments — they cost you energy and credibility</li>
+    </ul>
+    <p style="margin-top:10px;"><strong style="color:var(--gold-light);">Ask before every decision: "Will this matter five years from now?"</strong></p>
+    <p style="color:var(--slate);margin-top:8px;">If yes — give it everything. If no — don't give it another minute.</p>` },
+
+  { title: '5 — Become Creative', body: `
+    <p>Creativity is not a personality trait — it's a discipline. Creativity begins with the belief that a solution exists.</p>
+    <ul>
+      <li>Believe every problem in your business has a solution — your job is to find it</li>
+      <li>Remove the word "impossible" from your vocabulary — replace it with "not yet figured out"</li>
+      <li>Write down ideas immediately — your best ideas expire in minutes if not captured</li>
+      <li>Improve one thing every week — your pitch, your follow-up system, your scheduling process</li>
+      <li>Listen more than you speak — clients tell you exactly how to close them if you pay attention</li>
+      <li>Join groups outside your profession — fresh perspectives break stale patterns</li>
+      <li>Experiment constantly — run small tests before assuming something won't work</li>
+    </ul>
+    <p style="margin-top:10px;color:var(--slate);">Action: Identify one bottleneck in your business right now. Write 5 possible solutions without judging any of them. Pick one and test it this week.</p>` },
+
+  { title: '6 — Increase Your Self-Worth', body: `
+    <p>People — clients, recruits, and partners — treat you the way you signal you deserve to be treated. Raise your signal.</p>
+    <ul>
+      <li><strong>Dress professionally every day</strong> — how you show up physically tells people how seriously to take you</li>
+      <li>Think your work matters — because it does. You are helping families protect their futures.</li>
+      <li>Give yourself positive affirmations daily — your internal monologue is your most powerful sales pitch</li>
+      <li>Sell yourself on yourself every day — if you don't believe in you, no one else will</li>
+      <li>Spend time with people who raise your standard, not lower it</li>
+    </ul>
+    <div class="script-box">"Would the person I want to become worry about this? Would they give up over this? No. So neither will I."</div>` },
+
+  { title: '7 — Protect Your Environment', body: `
+    <p>Environment is the most underrated success factor. You cannot think big in a small-thinking environment.</p>
+    <ul>
+      <li><strong>Stay around positive thinkers</strong> — attend every team event, every BOM, every call</li>
+      <li>Avoid dream killers — people who have never built what you're building have no authority over your future</li>
+      <li>Seek advice only from people who have what you want — everyone else is speculating</li>
+      <li>Build friendships with growth-minded individuals inside and outside this business</li>
+      <li>Make your digital environment work for you too — what you consume shapes what you believe is possible</li>
+    </ul>
+    <p style="margin-top:10px;"><strong style="color:var(--gold-light);">Environment shapes expectations. Change your environment, change your ceiling.</strong></p>
+    <p style="color:var(--slate);margin-top:8px;">Action: Identify one person in your life who drains your ambition. Reduce that exposure by 50% this week.</p>` },
+
+  { title: '8 — Develop Winning Attitudes', body: `
+    <p>Three attitudes separate the top 5% from everyone else in this industry:</p>
+    <ul>
+      <li><strong style="color:var(--gold-light);">1. I'm enthusiastic.</strong> Energy is contagious. Clients feel your belief before they hear your words.</li>
+      <li><strong style="color:var(--gold-light);">2. You are important.</strong> Every person in front of you deserves your full attention and your best effort.</li>
+      <li><strong style="color:var(--gold-light);">3. Service comes first.</strong> When you lead with giving, earning follows naturally.</li>
+    </ul>
+    <p style="margin-top:10px;">Additional habits that compound over time:</p>
+    <ul>
+      <li>Do more than expected — always leave people thinking "that was more than I anticipated"</li>
+      <li>Celebrate others publicly and often — recognition is free and powerful</li>
+      <li>Make people feel valued — not just as clients, but as human beings</li>
+      <li>Bring energy wherever you go — be the person who raises the room</li>
+    </ul>` },
+
+  { title: '9 — Master Relationships', body: `
+    <p><strong style="color:var(--gold-light);">Success in this business is entirely dependent on how well you build and maintain relationships.</strong></p>
+    <ul>
+      <li>Learn and use names immediately — nothing signals respect faster</li>
+      <li>Practice courtesy in every interaction — texts, emails, calls, and in-person meetings</li>
+      <li>Encourage others to talk — ask great questions, then listen without interrupting</li>
+      <li>Find reasons to like people, not reasons to disqualify them</li>
+      <li>Focus on others' strengths — acknowledge what they're good at and they'll trust you with their weaknesses</li>
+      <li>Congratulate and encourage often — most people receive almost no recognition in their daily lives</li>
+    </ul>
+    <div class="script-box">"People will forget what you said. People will forget what you did. But people will never forget how you made them feel." — Maya Angelou</div>` },
+
+  { title: '10 — Take Immediate Action', body: `
+    <p>The single biggest difference between those who succeed and those who don't in this business is not skill — it's speed of action.</p>
+    <ul>
+      <li><strong>Don't wait for perfect conditions</strong> — they don't exist and they never will</li>
+      <li>Start before you're ready — ready is a feeling, action is a decision</li>
+      <li>Solve problems as they appear — don't let small issues compound into big excuses</li>
+      <li>Action creates momentum — the hardest part is always the first step</li>
+      <li><strong>"Now" is the magic word</strong> — every hour of delay is an hour of compounding lost</li>
+    </ul>
+    <p style="margin-top:10px;"><strong style="color:var(--gold-light);">The cure for fear is action. The cure for procrastination is action. The cure for doubt is action.</strong></p>
+    <p style="color:var(--slate);margin-top:8px;">Action: What is one thing you've been delaying in your business? Do it in the next 24 hours. No exceptions.</p>` },
+
+  { title: '11 — Turn Defeat into Victory', body: `
+    <p>Every top earner in this company has a story of rejection, failure, or setback. The difference is what they did next.</p>
+    <ul>
+      <li>Learn from every setback — ask "what would I do differently?" not "why does this happen to me?"</li>
+      <li>Never blame others — blame freezes you; responsibility empowers you</li>
+      <li>Believe solutions exist — if one approach didn't work, another one will</li>
+      <li>Rest when necessary, but never quit — fatigue is temporary, quitting is permanent</li>
+      <li>Every no contains data — use rejection to refine your approach, not abandon it</li>
+    </ul>
+    <div class="script-box">"I did not fail. I found 10,000 ways that do not work." — Thomas Edison</div>
+    <p style="margin-top:10px;color:var(--slate);">Action: Think of your most recent loss or rejection. Write down the one lesson it taught you and one adjustment you'll make going forward.</p>` },
+
+  { title: '12 — Live by Goals', body: `
+    <p>Your subconscious works 24 hours a day toward whatever goals you consistently and vividly visualize. Give it clear instructions.</p>
+    <ul>
+      <li>Create a clear vision for your future — what does your life look like at MD level? At Senior MD?</li>
+      <li>Picture specifically where you'll be in 10 years — income, team size, lifestyle</li>
+      <li>Focus on the next concrete step — not the whole mountain, just the next foothold</li>
+      <li>Build better habits every 30 days — compound small improvements across every area of your business</li>
+      <li>Invest in yourself continuously — books, courses, coaching, events</li>
+    </ul>
+    <p style="margin-top:10px;"><strong style="color:var(--gold-light);">Write your goals, review them daily, and take at least one action toward each of them every week.</strong></p>
+    <p style="color:var(--slate);margin-top:8px;">Action: Write your 90-day goal, your 1-year goal, and your 5-year goal right now. Be specific — include income, team size, and promotion level.</p>` },
+
+  { title: '13 — Think Like a Leader', body: `
+    <p>Leadership is not a title — it's a way of thinking and acting every single day, whether or not anyone is watching.</p>
+    <ul>
+      <li><strong>Put yourself in others' shoes</strong> — understand what your recruit or client is actually worried about</li>
+      <li>Handle every situation with empathy first, solution second</li>
+      <li>Demand progress from yourself before you demand it from others</li>
+      <li>Spend time in daily reflection — what went well, what didn't, what changes tomorrow</li>
+      <li>Praise publicly and correct privately — always</li>
+      <li>Set high standards and model them yourself</li>
+    </ul>
+    <p style="margin-top:10px;"><strong style="color:var(--gold-light);">Leadership is influence through service. The more people you genuinely serve, the more they willingly follow.</strong></p>
+    <p style="color:var(--slate);margin-top:8px;">Core message: <em>"Success is not determined by intelligence, talent, or luck — it is determined by the size of your thinking, the strength of your belief, and your willingness to take consistent action."</em></p>` }
+]);
+
+// ── ROLE-PLAY ─────────────────────────────────────────────────
+const RP_SYSTEMS = {
+  cold: "You are a prospect named Chris who just received a cold call from a life insurance agent. You're politely skeptical but curious. You have a spouse and two kids, a mortgage. Be realistic. After the agent sends 5 messages, break character: give honest coaching feedback and scores (1–10) for Rapport, Discovery, and Pitch Clarity.",
+  warm: "You are the agent's old friend from college. You're open to catching up but a bit hesitant about the insurance pitch. After 5 agent messages, give coaching feedback and scores for Rapport, Discovery, Pitch Clarity.",
+  objection_think: "You are a prospect who just heard a life insurance presentation and keeps saying 'I need to think about it.' You're not hostile, just noncommittal. After 5 agent messages, give coaching feedback and score the objection-handling (1–10).",
+  objection_afford: "You are a prospect who keeps saying 'I can't afford it.' You have a family and genuinely tight finances but also spend on non-essentials. After 5 agent messages, give coaching feedback and score.",
+  recruit: "You are a prospect being recruited into PHP Agency. You have a full-time job and are curious about extra income but skeptical about MLM. After 5 agent messages, give coaching feedback on their recruiting skills.",
+  bom_followup: "You attended a business opportunity meeting last week and said you were interested, but you've gone cold. The agent is following up. Be somewhat evasive. After 5 messages, give coaching feedback.",
+  referral_ask: "You just got a life insurance policy 3 weeks ago. Your agent is asking for referrals. You feel a little awkward about it. After 5 messages, give coaching feedback on how well they asked for referrals."
+};
+
+let rpHistory = [], rpTurns = 0;
+
+async function startRP() {
+  rpHistory = []; rpTurns = 0;
+  const scenario = document.getElementById('rp-scenario').value;
+  document.getElementById('rp-chatbox').style.display = 'block';
+  document.getElementById('rp-feedback').style.display = 'none';
+  document.getElementById('rp-msgs').innerHTML = '';
+  addRPMsg('ai', '🎭 Role-play started. I\'m your prospect. You can speak first — begin the conversation!');
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:250,
+      system: RP_SYSTEMS[scenario],
+      messages:[{role:'user',content:'Start the role-play from your side. Set the scene briefly then give your opening line.'}]
+    })
+  }).catch(()=>null);
+  if (res) {
+    const d = await res.json();
+    const txt = d?.content?.[0]?.text||'(API key required for role-play)';
+    addRPMsg('ai', txt);
+    rpHistory.push({role:'assistant',content:txt});
+  }
+}
+
+async function sendRP() {
+  const input = document.getElementById('rp-input');
+  const msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+  addRPMsg('user', msg);
+  rpHistory.push({role:'user',content:msg});
+  rpTurns++;
+  const scenario = document.getElementById('rp-scenario').value;
+  const isFinal = rpTurns >= 5;
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:isFinal?600:250,
+      system: RP_SYSTEMS[scenario] + (isFinal?' THIS IS THE 5TH EXCHANGE. Now break character completely and give your coaching feedback with numeric scores.' : ''),
+      messages: rpHistory
+    })
+  }).catch(()=>null);
+  if (!res) return;
+  const d = await res.json();
+  const reply = d?.content?.[0]?.text||'';
+  rpHistory.push({role:'assistant',content:reply});
+  if (isFinal) {
+    showFeedback(reply);
+  } else {
+    addRPMsg('ai', reply);
+  }
+}
+
+function showFeedback(text) {
+  document.getElementById('rp-chatbox').style.display = 'none';
+  const fb = document.getElementById('rp-feedback');
+  fb.style.display = 'block';
+  const scoreMatches = text.match(/(\d+)\s*\/\s*10/g) || [];
+  const scoreLabels = ['Rapport','Discovery','Pitch Clarity'];
+  const scores = scoreMatches.slice(0,3).map((s,i)=>({val:s.replace(/\s/g,''),lbl:scoreLabels[i]||'Score'}));
+  document.getElementById('feedback-text').innerHTML = text.replace(/\n/g,'<br>');
+  document.getElementById('score-row').innerHTML = scores.map(s=>`
+    <div class="score"><div class="score-val">${s.val}</div><div class="score-lbl">${s.lbl}</div></div>`).join('');
+  fb.scrollIntoView({behavior:'smooth'});
+}
+
+function addRPMsg(role, text) {
+  const msgs = document.getElementById('rp-msgs');
+  const div = document.createElement('div');
+  div.className = 'chat-msg ' + role;
+  if (role === 'ai') div.innerHTML = '<div class="name">Prospect</div>' + text;
+  else div.textContent = text;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+</script>
+</body>
+</html>

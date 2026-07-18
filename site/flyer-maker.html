@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DBA Flyer Maker</title>
+<script src="auth.js?v=20260713"></script>
+<style>
+:root{
+  --navy:#0A1628;--navy-mid:#112040;--navy-light:#1A3158;
+  --gold:#C9A84C;--gold-light:#E8C97A;--cream:#FAF6EE;
+  --slate:#6B7C93;--border:rgba(201,168,76,0.22);
+  --red:#e8002d;--green:#2ecc71;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--navy);color:var(--cream);font-family:'Barlow',sans-serif;min-height:100vh;}
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600&display=swap');
+
+/* NAV */
+.topbar{background:var(--navy-mid);border-bottom:1px solid var(--border);padding:0 20px;height:52px;display:flex;align-items:center;gap:16px;}
+.topbar-brand{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px;color:var(--gold);letter-spacing:.5px;}
+.topbar-sep{color:var(--border);font-size:18px;}
+.topbar-title{font-size:14px;color:var(--slate);}
+.back-btn{margin-left:auto;font-size:13px;color:var(--gold);text-decoration:none;opacity:.8;}
+.back-btn:hover{opacity:1;}
+
+/* LAYOUT */
+.layout{display:grid;grid-template-columns:360px 1fr;min-height:calc(100vh - 52px);}
+@media(max-width:800px){.layout{grid-template-columns:1fr;}}
+
+/* PANEL */
+.panel{background:var(--navy-mid);border-right:1px solid var(--border);padding:20px;overflow-y:auto;}
+.panel-section{margin-bottom:24px;}
+.panel-section-title{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+label{display:block;font-size:12px;color:var(--slate);margin-bottom:4px;margin-top:10px;}
+input,select,textarea{width:100%;background:var(--navy);border:1px solid var(--border);color:var(--cream);font-family:'Barlow',sans-serif;font-size:13px;padding:9px 12px;border-radius:4px;}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--gold);}
+textarea{resize:vertical;min-height:80px;}
+.api-row{display:flex;gap:8px;align-items:flex-end;}
+.api-row input{flex:1;}
+.api-toggle{font-size:11px;color:var(--slate);cursor:pointer;white-space:nowrap;padding:9px 10px;border:1px solid var(--border);border-radius:4px;background:var(--navy);}
+.api-toggle:hover{border-color:var(--gold);color:var(--gold);}
+
+/* TEMPLATE CHIPS */
+.template-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.template-chip{background:var(--navy);border:1px solid var(--border);border-radius:6px;padding:10px;cursor:pointer;transition:all .15s;text-align:center;}
+.template-chip:hover{border-color:var(--gold);background:rgba(201,168,76,.07);}
+.template-chip.active{border-color:var(--gold);background:rgba(201,168,76,.12);}
+.chip-icon{font-size:20px;margin-bottom:4px;}
+.chip-label{font-size:11px;font-weight:600;color:var(--cream);}
+.chip-desc{font-size:10px;color:var(--slate);margin-top:2px;}
+
+/* BUTTONS */
+.btn-generate{width:100%;background:var(--gold);color:var(--navy);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;letter-spacing:.5px;padding:13px;border:none;border-radius:4px;cursor:pointer;margin-top:4px;}
+.btn-generate:hover{background:var(--gold-light);}
+.btn-generate:disabled{opacity:.5;cursor:not-allowed;}
+.btn-row{display:flex;gap:8px;margin-top:12px;}
+.btn-sm{flex:1;padding:9px;font-size:12px;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:.5px;border:1px solid var(--border);background:transparent;color:var(--cream);border-radius:4px;cursor:pointer;}
+.btn-sm:hover{border-color:var(--gold);color:var(--gold);}
+.btn-sm.primary{background:var(--gold);color:var(--navy);border-color:var(--gold);}
+.btn-sm.primary:hover{background:var(--gold-light);}
+
+/* CANVAS AREA */
+.canvas-area{padding:24px;display:flex;flex-direction:column;align-items:center;gap:20px;}
+.canvas-wrap{position:relative;width:100%;max-width:600px;}
+#flyer-canvas{border-radius:8px;box-shadow:0 8px 40px rgba(0,0,0,.6);width:100%;display:block;}
+.canvas-placeholder{width:100%;max-width:600px;aspect-ratio:4/5;background:var(--navy-mid);border:2px dashed var(--border);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--slate);}
+.placeholder-icon{font-size:48px;opacity:.4;}
+.placeholder-text{font-size:14px;opacity:.7;}
+
+/* STATUS */
+.status-bar{width:100%;max-width:600px;background:var(--navy-mid);border:1px solid var(--border);border-radius:6px;padding:12px 16px;font-size:13px;min-height:44px;}
+.status-bar.error{border-color:var(--red);color:#ff6b6b;}
+.status-bar.success{border-color:var(--green);color:var(--green);}
+.status-bar.loading{color:var(--gold);}
+
+/* HISTORY */
+.history-row{display:flex;gap:8px;flex-wrap:wrap;width:100%;max-width:600px;}
+.hist-thumb{width:60px;height:75px;object-fit:cover;border-radius:4px;cursor:pointer;border:2px solid transparent;opacity:.7;}
+.hist-thumb:hover,.hist-thumb.active{opacity:1;border-color:var(--gold);}
+
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.2);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* TONE CHIPS */
+.tone-row{display:flex;gap:6px;flex-wrap:wrap;}
+.tone-chip{font-size:11px;padding:5px 10px;border:1px solid var(--border);border-radius:20px;cursor:pointer;background:var(--navy);}
+.tone-chip:hover{border-color:var(--gold);}
+.tone-chip.active{background:rgba(201,168,76,.15);border-color:var(--gold);color:var(--gold);}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="topbar-brand">DBA</span>
+  <span class="topbar-sep">|</span>
+  <span class="topbar-title">AI Flyer Maker</span>
+  <a class="back-btn" href="hub.html">&#8592; Hub</a>
+</div>
+
+<div class="layout">
+  <!-- LEFT PANEL -->
+  <div class="panel">
+
+    <!-- API KEY -->
+    <div class="panel-section">
+      <div class="panel-section-title">OpenAI API Key</div>
+      <div id="key-status-row" style="font-size:12px;padding:8px 10px;border-radius:4px;margin-bottom:8px;display:none;"></div>
+      <div class="api-row">
+        <input type="password" id="openai-key" placeholder="sk-... (paste your key)" autocomplete="off" oninput="onKeyInput()">
+        <span class="api-toggle" onclick="toggleKeyVis()">Show</span>
+      </div>
+      <div style="display:flex;gap:6px;margin-top:6px;">
+        <button class="btn-sm" onclick="saveKeyForAccount()" id="save-key-btn" style="flex:none;padding:6px 12px;font-size:11px;">Save to My Account</button>
+        <button class="btn-sm" id="clear-key-btn" onclick="clearKey()" style="flex:none;padding:6px 12px;font-size:11px;display:none;">Clear</button>
+      </div>
+      <div style="font-size:11px;color:var(--slate);margin-top:6px;">Optional: OpenAI key for future DALL-E image generation. Flyers currently use Claude AI.</div>
+    </div>
+
+    <!-- TEMPLATE -->
+    <div class="panel-section">
+      <div class="panel-section-title">Flyer Type</div>
+      <div class="template-grid">
+        <div class="template-chip active" onclick="setTemplate('recruit')" id="tpl-recruit">
+          <div class="chip-icon">&#127775;</div>
+          <div class="chip-label">Recruiting</div>
+          <div class="chip-desc">Income opportunity</div>
+        </div>
+        <div class="template-chip" onclick="setTemplate('event')" id="tpl-event">
+          <div class="chip-icon">&#127891;</div>
+          <div class="chip-label">Event / BOM</div>
+          <div class="chip-desc">Meeting invite</div>
+        </div>
+        <div class="template-chip" onclick="setTemplate('insurance')" id="tpl-insurance">
+          <div class="chip-icon">&#128106;</div>
+          <div class="chip-label">Family Protection</div>
+          <div class="chip-desc">Life insurance</div>
+        </div>
+        <div class="template-chip" onclick="setTemplate('lights_out')" id="tpl-lights_out">
+          <div class="chip-icon">&#9889;</div>
+          <div class="chip-label">Lights Out 2026</div>
+          <div class="chip-desc">PHP Vegas event</div>
+        </div>
+        <div class="template-chip" onclick="setTemplate('annuity')" id="tpl-annuity">
+          <div class="chip-icon">&#128200;</div>
+          <div class="chip-label">Retirement</div>
+          <div class="chip-desc">Annuity / IUL</div>
+        </div>
+        <div class="template-chip" onclick="setTemplate('custom')" id="tpl-custom">
+          <div class="chip-icon">&#9999;</div>
+          <div class="chip-label">Custom</div>
+          <div class="chip-desc">Your own idea</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DETAILS -->
+    <div class="panel-section">
+      <div class="panel-section-title">Details</div>
+
+      <label>Headline / Main Message</label>
+      <input type="text" id="headline" placeholder="e.g. Build Income While Protecting Families">
+
+      <label>Call to Action</label>
+      <input type="text" id="cta" placeholder="e.g. DM me to learn more">
+
+      <label>Agent Name on Flyer</label>
+      <input type="text" id="agent-name" placeholder="Your name">
+
+      <label>Custom Details (optional)</label>
+      <textarea id="details" placeholder="Event date, time, location, phone number, stats..."></textarea>
+    </div>
+
+    <!-- TONE -->
+    <div class="panel-section">
+      <div class="panel-section-title">Visual Tone</div>
+      <div class="tone-row">
+        <div class="tone-chip active" onclick="setTone(this,'bold')">Bold &amp; Dark</div>
+        <div class="tone-chip" onclick="setTone(this,'gold')">Gold &amp; Luxury</div>
+        <div class="tone-chip" onclick="setTone(this,'clean')">Clean &amp; Light</div>
+        <div class="tone-chip" onclick="setTone(this,'urgent')">Urgent &amp; Red</div>
+        <div class="tone-chip" onclick="setTone(this,'vibrant')">Vibrant</div>
+      </div>
+    </div>
+
+    <!-- GENERATION MODE -->
+    <div class="panel-section">
+      <div class="panel-section-title">Generation Mode</div>
+      <div class="template-grid" style="margin-bottom:10px;">
+        <div class="template-chip active" onclick="setGenMode('claude')" id="mode-claude">
+          <div class="chip-icon">&#129302;</div>
+          <div class="chip-label">Claude HTML</div>
+          <div class="chip-desc">Instant, free, branded</div>
+        </div>
+        <div class="template-chip" onclick="setGenMode('dalle')" id="mode-dalle">
+          <div class="chip-icon">&#127748;</div>
+          <div class="chip-label">DALL-E Image</div>
+          <div class="chip-desc">AI photo-quality image</div>
+        </div>
+      </div>
+      <div id="dalle-options" style="display:none;">
+        <label>DALL-E Model</label>
+        <select id="model-select" style="margin-bottom:8px;">
+          <option value="dall-e-3">DALL-E 3 (HD -- requires OpenAI Tier 1+)</option>
+          <option value="dall-e-2">DALL-E 2 (Standard)</option>
+        </select>
+        <label>Image Size</label>
+        <select id="size-select">
+          <option value="1024x1792">Portrait / Story (DALL-E 3 only)</option>
+          <option value="1024x1024" selected>Square (1:1)</option>
+          <option value="1792x1024">Landscape (DALL-E 3 only)</option>
+        </select>
+        <div style="font-size:11px;color:var(--slate);margin-top:6px;">DALL-E 2 forces square. Portrait/landscape needs DALL-E 3.</div>
+      </div>
+    </div>
+
+    <button class="btn-generate" onclick="generateFlyer()" id="gen-btn">
+      &#10024; Generate Flyer
+    </button>
+
+    <div class="btn-row" style="margin-top:12px;display:none;" id="action-btns">
+      <button class="btn-sm primary" id="download-btn" onclick="downloadFlyer()">&#8595; Download</button>
+      <button class="btn-sm" id="print-btn" onclick="printFlyer()">&#128438; Print / PDF</button>
+      <button class="btn-sm" onclick="generateFlyer()">&#8635; Redo</button>
+    </div>
+
+  </div>
+
+  <!-- CANVAS AREA -->
+  <div class="canvas-area">
+    <div id="status-bar" class="status-bar" style="display:none;"></div>
+
+    <div id="canvas-wrap" class="canvas-wrap">
+      <div class="canvas-placeholder" id="placeholder">
+        <div class="placeholder-icon">&#128444;</div>
+        <div class="placeholder-text">Your flyer will appear here</div>
+        <div style="font-size:12px;color:var(--slate);opacity:.6;">Fill in the details and click Generate</div>
+      </div>
+      <img id="flyer-canvas" style="display:none;" alt="Generated flyer">
+    </div>
+
+    <div class="history-row" id="history-row"></div>
+  </div>
+</div>
+
+<script>
+// ── STATE ──────────────────────────────────────────────────────
+let currentTemplate = 'recruit';
+let currentTone     = 'bold';
+let generatedImages = [];
+let currentImageUrl = '';
+let currentFlyerHtml = '';
+let genMode = 'claude'; // 'claude' or 'dalle'
+
+function setGenMode(mode) {
+  genMode = mode;
+  document.querySelectorAll('[id^="mode-"]').forEach(el => el.classList.remove('active'));
+  document.getElementById('mode-' + mode).classList.add('active');
+  document.getElementById('dalle-options').style.display = mode === 'dalle' ? 'block' : 'none';
+  // Update download button label
+  const dlBtn = document.getElementById('download-btn');
+  if (dlBtn) dlBtn.innerHTML = mode === 'dalle' ? '&#8595; Download PNG' : '&#8595; Download HTML';
+  const prBtn = document.getElementById('print-btn');
+  if (prBtn) prBtn.style.display = mode === 'dalle' ? 'none' : 'inline-block';
+}
+
+// ── INIT ──────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  // Require login
+  if (!AUTH.require('flyer-maker.html')) return;
+  const session = AUTH.getSession();
+
+  // Pre-fill agent name
+  document.getElementById('agent-name').value = session?.name || '';
+
+  // Load key from AUTH (built-in org key or saved override)
+  const activeKey = AUTH.getOpenAIKey();
+  if (activeKey) {
+    document.getElementById('openai-key').value = activeKey;
+    showKeyStatus('global');
+  }
+});
+
+// ── TEMPLATE PRESETS ──────────────────────────────────────────
+const TEMPLATES = {
+  recruit: {
+    headline: 'Earn What You\'re Worth. Build Your Own Business.',
+    cta: 'DM me to learn more',
+    details: 'Work from home. Set your own hours. Unlimited income potential. No experience required.',
+    tone: 'bold'
+  },
+  event: {
+    headline: 'You\'re Invited to Our Business Overview Meeting',
+    cta: 'RSVP to reserve your seat',
+    details: 'Learn how everyday people are building 6-figure incomes in financial services.',
+    tone: 'gold'
+  },
+  insurance: {
+    headline: 'Protect Your Family. Build Wealth at the Same Time.',
+    cta: 'Get your free protection review',
+    details: 'Life insurance with living benefits. Term. Permanent. Fixed Indexed Annuities.',
+    tone: 'clean'
+  },
+  lights_out: {
+    headline: 'PHP Lights Out 2026 -- Las Vegas',
+    cta: 'Grab your tickets before they\'re gone',
+    details: 'August 3-6 | MGM Grand Garden Arena | Tony Robbins | Patrick Bet-David | $375 per ticket or $1,300 four-pack',
+    tone: 'urgent'
+  },
+  annuity: {
+    headline: 'Never Outlive Your Money. Retire With Confidence.',
+    cta: 'Book a free retirement strategy call',
+    details: 'Fixed Indexed Annuities. Tax-deferred growth. Guaranteed income for life.',
+    tone: 'gold'
+  },
+  custom: {
+    headline: '',
+    cta: '',
+    details: '',
+    tone: 'bold'
+  }
+};
+
+function setTemplate(tpl) {
+  currentTemplate = tpl;
+  document.querySelectorAll('.template-chip').forEach(c => c.classList.remove('active'));
+  document.getElementById('tpl-' + tpl).classList.add('active');
+  const preset = TEMPLATES[tpl];
+  if (preset.headline) document.getElementById('headline').value = preset.headline;
+  if (preset.cta)      document.getElementById('cta').value = preset.cta;
+  if (preset.details)  document.getElementById('details').value = preset.details;
+  setToneByName(preset.tone);
+}
+
+// ── TONE ──────────────────────────────────────────────────────
+const TONE_PROMPTS = {
+  bold:    'dark navy and deep black background, bold gold typography, dramatic cinematic lighting, high contrast, premium financial brand aesthetic',
+  gold:    'rich gold and champagne tones, dark navy accents, luxury feel, elegant serif typography, soft glowing light, wealth and success visual language',
+  clean:   'clean white and light gray background, navy blue accents, modern sans-serif typography, professional corporate financial style, minimal and crisp',
+  urgent:  'bold red and black background, high energy, urgent call-to-action design, bright white text, event poster style, dynamic diagonal elements',
+  vibrant: 'vibrant gradient background with purple to blue to gold, modern energetic design, bold typography, millennial financial brand aesthetic'
+};
+
+function setTone(el, tone) {
+  currentTone = tone;
+  document.querySelectorAll('.tone-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+}
+function setToneByName(tone) {
+  currentTone = tone;
+  document.querySelectorAll('.tone-chip').forEach(c => {
+    c.classList.toggle('active', c.getAttribute('onclick').includes("'" + tone + "'"));
+  });
+}
+
+function toggleKeyVis() {
+  const inp = document.getElementById('openai-key');
+  const btn = inp.nextElementSibling;
+  if (inp.type === 'password') { inp.type = 'text'; btn.textContent = 'Hide'; }
+  else { inp.type = 'password'; btn.textContent = 'Show'; }
+}
+
+function getActiveKey() {
+  return document.getElementById('openai-key').value.trim() || AUTH.getOpenAIKey();
+}
+
+function onKeyInput() {
+  const val = document.getElementById('openai-key').value.trim();
+  document.getElementById('clear-key-btn').style.display = val ? 'block' : 'none';
+}
+
+function saveKeyForAccount() {
+  const key = document.getElementById('openai-key').value.trim();
+  if (!key || !key.startsWith('sk-')) {
+    setStatus('Paste a valid OpenAI key (starts with sk-) first.', 'error');
+    return;
+  }
+  const session = AUTH.getSession();
+  const isAdmin = session && session.level >= 100;
+  if (isAdmin && confirm('Save as GLOBAL key for ALL agents? (Cancel to save for your account only)')) {
+    AUTH.saveOpenAIKey(key);
+    showKeyStatus('global');
+    setStatus('Global key saved -- all agents will use this key automatically.', 'success');
+  } else {
+    AUTH.saveOpenAIKey(key);
+    showKeyStatus('agent');
+    setStatus('Key saved to your account on this device.', 'success');
+  }
+  document.getElementById('clear-key-btn').style.display = 'block';
+}
+
+function clearKey() {
+  const session = AUTH.getSession();
+  localStorage.removeItem('dba_openai_key');
+  document.getElementById('openai-key').value = '';
+  document.getElementById('key-status-row').style.display = 'none';
+  document.getElementById('clear-key-btn').style.display = 'none';
+}
+
+function showKeyStatus(type) {
+  const row = document.getElementById('key-status-row');
+  row.style.display = 'block';
+  row.style.cssText += ';display:block;';
+  document.getElementById('clear-key-btn').style.display = 'block';
+  if (type === 'global') {
+    row.style.background = 'rgba(201,168,76,.1)';
+    row.style.border = '1px solid rgba(201,168,76,.3)';
+    row.style.color = 'var(--gold)';
+    row.innerHTML = '&#10003; Global team key active -- all agents can generate flyers';
+  } else {
+    row.style.background = 'rgba(46,204,113,.08)';
+    row.style.border = '1px solid rgba(46,204,113,.25)';
+    row.style.color = '#2ecc71';
+    row.innerHTML = '&#10003; Your key saved -- ready to generate';
+  }
+}
+
+// ── GENERATE FLYER ────────────────────────────────────────────
+async function generateFlyer() {
+  const headline = document.getElementById('headline').value.trim();
+  const cta      = document.getElementById('cta').value.trim();
+  const agentNm  = document.getElementById('agent-name').value.trim();
+  const details  = document.getElementById('details').value.trim();
+
+  if (!headline) { setStatus('Add a headline first.', 'error'); return; }
+
+  if (genMode === 'dalle') {
+    await generateFlyerDalle(headline, cta, agentNm, details);
+  } else {
+    await generateFlyerClaude(headline, cta, agentNm, details);
+  }
+}
+
+async function generateFlyerDalle(headline, cta, agentNm, details) {
+  const key  = document.getElementById('openai-key').value.trim() || AUTH.getOpenAIKey();
+  const size = document.getElementById('size-select')?.value || '1024x1024';
+  const dalleModel = document.getElementById('model-select')?.value || 'dall-e-3';
+
+  if (!key) { setStatus('Enter your OpenAI API key to use DALL-E image generation.', 'error'); return; }
+
+  // Save key
+  // Save key scoped to agent
+  const _sess = AUTH.getSession();
+  AUTH.saveOpenAIKey(key);
+  showKeyStatus('agent');
+
+  setStatus('<span class="spinner"><\/span> Generating flyer...', 'loading');
+  const btn = document.getElementById('gen-btn');
+  btn.disabled = true;
+  btn.textContent = 'Generating...';
+
+  // Step 1: Use Claude to write a detailed DALL-E prompt
+  let dallePrompt = '';
+  try {
+    const claudeRes = await fetch('/api/ai', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 400,
+        messages: [{
+          role: 'user',
+          content: `Write a detailed DALL-E image generation prompt for a professional marketing flyer for a life insurance and financial services agency called Dynasty Builders Academy (DBA), part of PHP Agency.
+
+Flyer type: ${currentTemplate}
+Headline: "${headline}"
+Call to action: "${cta}"
+${details ? 'Details: ' + details : ''}
+${agentNm ? 'Agent name: ' + agentNm : ''}
+Visual tone: ${TONE_PROMPTS[currentTone]}
+Size/format: ${size === '1024x1792' ? 'tall portrait, Instagram story style' : size === '1024x1024' ? 'square' : 'landscape banner'}
+
+Write ONLY the DALL-E prompt. No explanation. Make it vivid, specific, and describe the layout, colors, typography style, imagery, and mood. Include the headline text in quotes. Do NOT include phone numbers or email addresses. Keep under 900 characters.`
+        }]
+      })
+    });
+    const cd = await claudeRes.json();
+    dallePrompt = cd?.content?.[0]?.text?.trim() || '';
+  } catch(e) {
+    dallePrompt = '';
+  }
+
+  // Fallback prompt if Claude fails
+  if (!dallePrompt) {
+    dallePrompt = `Professional marketing flyer for Dynasty Builders Academy life insurance agency. ${TONE_PROMPTS[currentTone]}. Headline text: "${headline}". Call to action: "${cta}". ${details}. ${size === '1024x1792' ? 'Tall portrait format.' : size === '1024x1024' ? 'Square format.' : 'Landscape format.'} High quality, print-ready design.`;
+  }
+
+  // Now call DALL-E with the prompt
+  setStatus('<span class="spinner"><\/span> Generating image with DALL-E...', 'loading');
+  try {
+    const dalleModel = document.getElementById('model-select')?.value || 'dall-e-3';
+    const payload = { model: dalleModel, prompt: dallePrompt, n: 1,
+      size: dalleModel === 'dall-e-2' ? '1024x1024' : size };
+    if (dalleModel === 'dall-e-3') {
+      payload.quality = 'hd';
+      payload.style = currentTone === 'clean' ? 'natural' : 'vivid';
+    }
+    const res = await fetch('/api/openai', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (data.error) { setStatus('OpenAI Error: ' + data.error.message, 'error'); return; }
+    const imgUrl = data?.data?.[0]?.url;
+    if (!imgUrl) { setStatus('No image returned. Try again.', 'error'); return; }
+
+    currentImageUrl = imgUrl;
+    currentFlyerHtml = '';
+    const img = document.getElementById('flyer-canvas');
+    img.src = imgUrl; img.style.display = 'block';
+    // Hide iframe if visible
+    const iframe = document.getElementById('flyer-iframe');
+    if (iframe) iframe.style.display = 'none';
+    document.getElementById('placeholder').style.display = 'none';
+    document.getElementById('action-btns').style.display = 'flex';
+    document.getElementById('download-btn').innerHTML = '&#8595; Download PNG';
+    document.getElementById('print-btn').style.display = 'none';
+    generatedImages.unshift({ url: imgUrl, headline });
+    renderHistory();
+    setStatus('&#10003; Image generated! Download or regenerate.', 'success');
+  } catch(e) {
+    setStatus('DALL-E failed: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '&#10024; Generate Flyer';
+  }
+}
+
+async function generateFlyerClaude(headline, cta, agentNm, details) {
+  const btn = document.getElementById('gen-btn');
+  btn.disabled = true;
+  btn.innerHTML = 'Generating...';
+  setStatus('<span class="spinner"><\/span> Building your flyer with Claude...', 'loading');
+
+  try {
+    const claudeRes = await fetch('/api/ai', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 4000,
+        messages: [{
+          role: 'user',
+          content: `Create a stunning single-page HTML marketing flyer for Dynasty Builders Academy (DBA), a life insurance and financial services agency part of PHP Agency.
+
+Flyer type: ${currentTemplate}
+Headline: "${headline}"
+Call to action: "${cta}"
+Agent name: "${agentNm}"
+Extra details: "${details}"
+Visual tone: ${currentTone}
+
+Tone styles:
+- bold: dark navy #0A1628 background, gold #C9A84C accents, white text, cinematic
+- gold: gold/champagne gradient bg, navy text, luxury elegant
+- clean: white bg, navy text, professional minimal corporate
+- urgent: dark red #8B0000 and black bg, white text, bold high energy
+- vibrant: purple to gold gradient bg, modern energetic
+
+Rules:
+- Return ONLY a complete HTML document, no markdown fences, no explanation
+- Fixed outer div exactly 600px x 750px
+- All CSS inline or in a style tag
+- Use @import for Google Fonts: Barlow Condensed, Barlow
+- Strong visual hierarchy: oversized headline, body text, bold CTA
+- Always include "Dynasty Builders Academy" and tagline "Making Dreams Come True, One Policy at a Time"
+- Show agent name prominently if provided
+- NO external images -- use CSS gradients, geometric shapes, borders only
+- Make it look like a real professional social media marketing flyer`
+        }]
+      })
+    });
+
+    const cd = await claudeRes.json();
+    if (cd.error) { setStatus('Error: ' + (cd.error.message || 'Generation failed'), 'error'); return; }
+
+    let flyerHtml = (cd?.content?.[0]?.text || '').trim()
+      .replace(/^```html?\n?/i, '').replace(/^```\n?/i, '').replace(/```$/m, '').trim();
+
+    if (!flyerHtml) { setStatus('No flyer generated. Try again.', 'error'); return; }
+
+    // Render in iframe
+    const wrap = document.getElementById('canvas-wrap');
+    document.getElementById('placeholder').style.display = 'none';
+    document.getElementById('flyer-canvas').style.display = 'none';
+
+    let iframe = document.getElementById('flyer-iframe');
+    if (!iframe) {
+      iframe = document.createElement('iframe');
+      iframe.id = 'flyer-iframe';
+      iframe.style.cssText = 'width:100%;border:none;border-radius:8px;box-shadow:0 8px 40px rgba(0,0,0,.6);aspect-ratio:4/5;display:block;';
+      iframe.scrolling = 'no';
+      wrap.appendChild(iframe);
+    }
+    const doc = iframe.contentDocument || iframe.contentWindow.document;
+    doc.open(); doc.write(flyerHtml); doc.close();
+
+    currentFlyerHtml = flyerHtml;
+    currentImageUrl = 'html';
+    document.getElementById('action-btns').style.display = 'flex';
+    generatedImages.unshift({ html: flyerHtml, headline });
+    renderHistory();
+
+    setStatus('&#10003; Flyer ready! Download as HTML or Print to PDF.', 'success');
+
+  } catch(e) {
+    setStatus('Generation failed: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '&#10024; Generate Flyer';
+  }
+}
+
+function setStatus(html, type = '') {
+  const el = document.getElementById('status-bar');
+  el.innerHTML = html;
+  el.style.display = 'block';
+  el.className = 'status-bar ' + type;
+}
+
+// ── DOWNLOAD ──────────────────────────────────────────────────
+async function downloadFlyer() {
+  const agentNm = document.getElementById('agent-name').value.trim().replace(/\s+/g, '_') || 'flyer';
+  if (currentFlyerHtml) {
+    // Download as HTML file
+    const blob = new Blob([currentFlyerHtml], {type:'text/html'});
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url; a.download = `DBA_Flyer_${agentNm}_${Date.now()}.html`; a.click();
+    URL.revokeObjectURL(url);
+    setStatus('Downloaded! Open the HTML file in Chrome then Print > Save as PDF for best quality.', 'success');
+  } else if (currentImageUrl && currentImageUrl !== 'html') {
+    try {
+      const res  = await fetch(currentImageUrl);
+      const blob = await res.blob();
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href = url; a.download = `DBA_Flyer_${agentNm}_${Date.now()}.png`; a.click();
+      URL.revokeObjectURL(url);
+    } catch(e) { window.open(currentImageUrl, '_blank'); }
+  }
+}
+
+function printFlyer() {
+  const iframe = document.getElementById('flyer-iframe');
+  if (iframe) { iframe.contentWindow.print(); return; }
+  if (currentFlyerHtml) {
+    const w = window.open('','_blank');
+    w.document.write(currentFlyerHtml);
+    w.document.close();
+    w.print();
+  }
+}
+
+// ── HISTORY ───────────────────────────────────────────────────
+function renderHistory() {
+  const row = document.getElementById('history-row');
+  row.innerHTML = generatedImages.slice(0, 6).map((item, i) =>
+    `<div class="hist-thumb${i===0?' active':''}" onclick="selectHistory(${i})" title="Variation ${i+1}"
+      style="width:60px;height:75px;border-radius:4px;overflow:hidden;cursor:pointer;border:2px solid ${i===0?'var(--gold)':'transparent'};opacity:${i===0?1:.7};">
+      <iframe scrolling="no" style="width:600px;height:750px;border:none;transform:scale(0.1);transform-origin:0 0;pointer-events:none;"></iframe>
+    </div>`
+  ).join('');
+  // Populate iframe srcdoc
+  row.querySelectorAll('iframe').forEach((f,i) => {
+    if (generatedImages[i]?.html) {
+      const d = f.contentDocument || f.contentWindow.document;
+      d.open(); d.write(generatedImages[i].html); d.close();
+    }
+  });
+}
+
+function selectHistory(i) {
+  const item = generatedImages[i];
+  if (!item) return;
+  if (item.html) {
+    currentFlyerHtml = item.html;
+    currentImageUrl = 'html';
+    const iframe = document.getElementById('flyer-iframe');
+    if (iframe) { const d = iframe.contentDocument||iframe.contentWindow.document; d.open();d.write(item.html);d.close(); }
+  }
+  document.querySelectorAll('.hist-thumb').forEach((el,j) => {
+    el.classList.toggle('active', j===i);
+    el.style.borderColor = j===i ? 'var(--gold)' : 'transparent';
+    el.style.opacity = j===i ? '1' : '0.7';
+  });
+}
+</script>
+</body>
+</html>

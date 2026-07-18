@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DBA — Promotion Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700&family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="auth.js?v=20260713"></script>
+<style>
+:root{--navy:#0A1628;--navy-mid:#112040;--navy-light:#1A3158;--gold:#C9A84C;--gold-light:#E8C97A;--cream:#FAF6EE;--php-red:#C0392B;--success:#27AE60;--warn:#E67E22;--slate:#6B7C93;--border:rgba(201,168,76,0.22);}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);min-height:100vh;}
+.header{background:rgba(10,22,40,0.97);border-bottom:1px solid var(--border);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.header-left{display:flex;align-items:center;gap:12px;}
+.shield{width:30px;height:34px;background:linear-gradient(160deg,var(--gold) 0%,#7a5c14 100%);clip-path:polygon(50% 0%,100% 18%,100% 65%,50% 100%,0% 65%,0% 18%);display:flex;align-items:center;justify-content:center;font-size:12px;}
+.header h1{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--gold);}
+.back-btn{font-size:12px;color:var(--gold);text-decoration:none;border:1px solid var(--border);padding:6px 12px;border-radius:3px;}
+.tab-bar{display:flex;border-bottom:1px solid var(--border);background:var(--navy-mid);overflow-x:auto;padding:0 22px;}
+.tab{padding:13px 18px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;cursor:pointer;border-bottom:2px solid transparent;color:var(--slate);transition:all 0.2s;white-space:nowrap;}
+.tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+.content{padding:22px 24px;max-width:1000px;margin:0 auto;}
+.panel{display:none;animation:fadeIn 0.3s ease;}
+.panel.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.page-title{font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--gold);margin-bottom:6px;}
+.page-sub{font-size:13px;color:var(--slate);margin-bottom:22px;line-height:1.6;}
+
+/* ── 16-LEVEL GRID ── */
+.levels-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:28px;}
+@media(max-width:800px){.levels-grid{grid-template-columns:repeat(2,1fr);}}
+.level-card{background:var(--navy-mid);border:1px solid var(--border);border-radius:4px;padding:14px;position:relative;transition:border-color 0.2s;}
+.level-card.mine{border-color:var(--gold);background:rgba(201,168,76,0.07);}
+.level-card.mine::after{content:'YOU';position:absolute;top:8px;right:8px;font-size:8px;background:var(--gold);color:var(--navy);padding:2px 5px;border-radius:2px;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:0.08em;}
+.lc-php{font-size:9px;color:var(--slate);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px;font-family:'Barlow Condensed',sans-serif;font-weight:600;}
+.lc-name{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:var(--cream);line-height:1.2;margin-bottom:6px;}
+.lc-comm{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:800;color:var(--gold-light);line-height:1;}
+.lc-bonus{font-size:10px;color:var(--slate);margin-top:2px;}
+.lc-timeframe{font-size:10px;color:var(--warn);margin-top:6px;font-weight:600;}
+
+/* ── SYSTEM FLOW ── */
+.flow-container{display:flex;flex-direction:column;gap:0;margin-bottom:28px;}
+.flow-step{display:flex;gap:0;align-items:stretch;}
+.flow-week{width:110px;flex-shrink:0;display:flex;align-items:center;justify-content:flex-end;padding-right:20px;}
+.flow-week-label{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;color:var(--php-red);text-transform:uppercase;letter-spacing:0.08em;text-align:right;}
+.flow-line{display:flex;flex-direction:column;align-items:center;width:40px;flex-shrink:0;}
+.flow-dot{width:16px;height:16px;border-radius:50%;background:var(--php-red);border:3px solid var(--navy-mid);flex-shrink:0;z-index:1;}
+.flow-connector{width:2px;background:rgba(192,57,43,0.35);flex:1;min-height:20px;}
+.flow-box{flex:1;padding:0 0 24px 16px;}
+.flow-card{background:var(--navy-mid);border:1px solid var(--border);border-left:4px solid var(--php-red);border-radius:0 6px 6px 0;padding:16px 18px;}
+.flow-card.mine{border-color:var(--gold);border-left-color:var(--gold);background:rgba(201,168,76,0.06);}
+.fc-stage{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:700;color:var(--cream);margin-bottom:2px;}
+.fc-milestone{font-size:11px;font-weight:700;color:var(--php-red);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:10px;}
+.fc-tasks{display:flex;flex-wrap:wrap;gap:6px;}
+.fc-task{background:rgba(192,57,43,0.1);border:1px solid rgba(192,57,43,0.3);border-radius:3px;padding:4px 10px;font-size:11px;color:var(--cream);}
+.flow-card.mine .fc-task{background:rgba(201,168,76,0.1);border-color:rgba(201,168,76,0.3);}
+
+/* ── MY PROGRESS ── */
+.my-card{background:linear-gradient(135deg,rgba(201,168,76,0.1) 0%,var(--navy-mid) 60%);border:1px solid rgba(201,168,76,0.35);border-radius:6px;padding:22px;margin-bottom:24px;}
+.req-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;}
+@media(max-width:480px){.req-grid{grid-template-columns:1fr;}}
+.req-item{background:var(--navy);border:1px solid var(--border);border-radius:3px;padding:12px 14px;}
+.req-label{font-size:10px;color:var(--slate);text-transform:uppercase;letter-spacing:0.09em;margin-bottom:6px;}
+.req-vals{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+.req-cur{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;}
+.req-cur.done{color:var(--success);}
+.req-cur.todo{color:var(--gold-light);}
+.req-goal{font-size:12px;color:var(--slate);}
+.prog-bar{height:6px;background:rgba(201,168,76,0.1);border-radius:3px;overflow:hidden;}
+.prog-fill{height:6px;border-radius:3px;transition:width 0.7s ease;}
+.pf-done{background:linear-gradient(90deg,var(--success),#2ecc71);}
+.pf-prog{background:linear-gradient(90deg,var(--gold),var(--gold-light));}
+.promo-cta{background:rgba(39,174,96,0.12);border:1px solid rgba(39,174,96,0.3);border-radius:4px;padding:14px 16px;display:flex;align-items:center;gap:12px;font-size:13px;color:var(--success);font-weight:600;}
+.section-title{font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--gold);margin:24px 0 14px;}
+
+/* ── TEAM GRID ── */
+.team-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media(max-width:600px){.team-grid{grid-template-columns:1fr;}}
+.agent-card{background:var(--navy-mid);border:1px solid var(--border);border-radius:4px;padding:18px;position:relative;transition:border-color 0.2s;}
+.agent-card.ready{border-color:var(--success);}
+.agent-card.ready::before{content:'PROMO READY';position:absolute;top:10px;right:10px;font-size:9px;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:0.07em;background:rgba(39,174,96,0.15);color:var(--success);padding:3px 8px;border-radius:2px;border:1px solid rgba(39,174,96,0.3);}
+.ac-name{font-size:14px;font-weight:700;margin-bottom:2px;}
+.ac-path{font-size:11px;color:var(--gold);font-family:'Barlow Condensed',sans-serif;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:12px;}
+.rr-head{display:flex;justify-content:space-between;font-size:11px;color:var(--slate);margin-bottom:3px;}
+.rr-val{color:var(--cream);font-weight:600;}
+.ac-upline{font-size:10px;color:var(--slate);margin-top:10px;padding-top:8px;border-top:1px solid rgba(201,168,76,0.08);}
+
+/* ── CAPTAIN SYSTEM ── */
+.captain-wrap{background:linear-gradient(135deg,rgba(192,57,43,0.08) 0%,var(--navy-mid) 60%);border:1px solid rgba(192,57,43,0.3);border-radius:6px;padding:22px;margin-bottom:22px;}
+.captain-nums{display:flex;gap:0;border-radius:4px;overflow:hidden;border:1px solid var(--border);margin-top:14px;}
+.cn-unit{flex:1;text-align:center;padding:16px 8px;background:var(--navy-light);}
+.cn-unit:not(:last-child){border-right:1px solid var(--border);}
+.cn-num{font-family:'Barlow Condensed',sans-serif;font-size:42px;font-weight:800;color:var(--cream);line-height:1;}
+.cn-lbl{font-size:10px;color:var(--slate);text-transform:uppercase;letter-spacing:0.09em;margin-top:5px;}
+.cn-sub{font-size:11px;color:var(--php-red);font-weight:600;margin-top:3px;}
+.captain-steps{display:flex;flex-direction:column;gap:10px;margin-top:16px;}
+.captain-step{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;background:var(--navy);border:1px solid var(--border);border-radius:4px;font-size:13px;}
+.cs-num{width:24px;height:24px;border-radius:50%;background:var(--php-red);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;flex-shrink:0;}
+.captain-stat{background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.2);border-radius:4px;padding:12px 16px;margin-top:12px;font-size:13px;line-height:1.7;}
+.captain-stat strong{color:var(--gold);}
+</style>
+</head>
+<body>
+<script>AUTH.require('promotions.html');</script>
+<div class="header">
+  <div class="header-left"><div class="shield">👑</div><h1>PHP Promotions & System</h1></div>
+  <a href="agency-md-tracker.html" class="back-btn" style="margin-right:8px;">🏆 Agency MD Tracker</a>
+  <a href="my-clients.html" class="back-btn" style="margin-right:8px;">📊 My Clients</a>
+  <a href="hub.html" class="back-btn">← Hub</a>
+</div>
+<div class="tab-bar">
+  <div class="tab active" onclick="sw('levels',this)">📊 All 16 Levels</div>
+  <div class="tab" onclick="sw('mypath',this)">🎯 My Path</div>
+  <div class="tab" onclick="sw('flow',this)">🗺️ System Flow</div>
+  <div class="tab" onclick="sw('team',this)">👥 Team Progress</div>
+  <div class="tab" onclick="sw('captain',this)">⚓ Captain System</div>
+</div>
+<div class="content">
+
+<!-- TAB 1: ALL 16 LEVELS -->
+<div class="panel active" id="panel-levels">
+  <div class="page-title">PHP Agency — All 16 Levels</div>
+  <div class="page-sub">Official commission structure from PHP Agency Core Foundation #1. Commissions shown are personal production rates. Bonus rate applies with overrides and team volume.</div>
+  <div class="levels-grid" id="levels-grid"></div>
+  <div style="font-size:11px;color:var(--slate);font-style:italic;">*The PHP compensation guidelines are subject to change at any given time without prior notice. ©PHP Agency 2023</div>
+</div>
+
+<!-- TAB 2: MY PATH -->
+<div class="panel" id="panel-mypath">
+  <div class="page-title">Your Promotion Path</div>
+  <div class="page-sub" id="mypath-sub">Tracking your progress toward the next level.</div>
+  <div id="june-md-card"></div>
+  <div id="my-card"></div>
+</div>
+
+<!-- TAB 3: SYSTEM FLOW -->
+<div class="panel" id="panel-flow">
+  <div class="page-title">PHP System Flow</div>
+  <div class="page-sub">The proven path from New Associate to Marketing Director. Follow the system exactly as designed — "How Much? How Fast? Do It Right The First Time."</div>
+  <div class="flow-container" id="flow-container"></div>
+</div>
+
+<!-- TAB 4: TEAM PROGRESS -->
+<div class="panel" id="panel-team">
+  <div class="page-title">Team Promotion Progress</div>
+  <div class="page-sub">Agents actively working toward their next level. Connect Monday.com for live tracking.</div>
+  <div class="team-grid" id="team-grid"></div>
+</div>
+
+<!-- TAB 5: CAPTAIN SYSTEM -->
+<div class="panel" id="panel-captain">
+  <div class="page-title">The Captains System</div>
+  <div class="page-sub">The Captain's System assists associates in the Base Shop with confirming their guests and following up the next day.</div>
+  <div class="captain-wrap">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--php-red);margin-bottom:4px;">How It Works: 10 → 3 → 1</div>
+    <div style="font-size:13px;color:var(--slate);line-height:1.6;">If you have a guest for the BOM, notify the Base Shop Coordinator with the guest's name and number. The coordinator confirms attendance and follows up.</div>
+    <div class="captain-nums">
+      <div class="cn-unit"><div class="cn-num">10</div><div class="cn-lbl">Invites</div><div class="cn-sub">Send to Coordinator</div></div>
+      <div class="cn-unit"><div class="cn-num">3</div><div class="cn-lbl">Show Up</div><div class="cn-sub">Confirmed & Called</div></div>
+      <div class="cn-unit"><div class="cn-num">1</div><div class="cn-lbl">Gets Started</div><div class="cn-sub">New Agent Enrolled</div></div>
+    </div>
+  </div>
+  <div class="captain-stat">
+    <strong>100</strong> invitations → 30 people showing up → <strong>10</strong> people getting started<br>
+    <strong>250</strong> invitations → 75 people showing up → <strong>25</strong> people getting started<br><br>
+    If you have <strong>10+ invites</strong> to any given BOM, you are considered a <strong style="color:var(--gold);">"Captain"</strong>.
+  </div>
+  <div class="section-title" style="margin-top:20px;">How to Use the Captain System</div>
+  <div class="captain-steps">
+    <div class="captain-step"><div class="cs-num">1</div><div>Email your list of invites to your office Base Shop Coordinator <strong>a day before or by noon the day of BOM</strong>.</div></div>
+    <div class="captain-step"><div class="cs-num">2</div><div>Make sure your guests were called by the Base Shop Coordinator or yourself <strong>to confirm their attendance</strong>.</div></div>
+    <div class="captain-step"><div class="cs-num">3</div><div>Follow up if a guest doesn't show up. They are now on a <strong>systematized follow-up process</strong>. Either you, the office assistant, or the Base Shop Coordinator can follow up for an in-person interview.</div></div>
+  </div>
+  <div style="background:rgba(201,168,76,0.06);border:1px solid rgba(201,168,76,0.2);border-radius:4px;padding:14px;margin-top:16px;font-size:13px;line-height:1.8;color:var(--slate);">
+    <strong style="color:var(--gold);">Most people using the Captain System</strong> put the law of numbers in their favor and run a more predictable business for recruiting new agents and getting clients.<br><br>
+    If someone does not get started or show up, <strong style="color:var(--cream);">focus on following up until they specify they are truly not interested.</strong><br><br>
+    This system allows you to keep track of individuals who have visited the office and creates a <strong style="color:var(--cream);">follow-up driven business</strong>.
+  </div>
+</div>
+
+</div>
+
+<script>
+const session  = AUTH.getSession();
+const myAgent  = AUTH.getAgent();
+const myStats  = DEMO_STATS[session.agentId] || {};
+
+// ── JUNE 2026 MD PROMOTION CAMPAIGN CARD ────────────────────────
+(function renderJuneMdCard() {
+  const el = document.getElementById('june-md-card');
+  if (!el) return;
+  const campaign = JUNE_MD_PROMO;
+  const mine = campaign.stats[session.agentId];
+
+  const today = new Date('2026-06-17'); // data as-of date
+  const deadline1 = new Date(campaign.deadline);
+  const deadline2 = new Date(campaign.paidPtsDeadline);
+  const daysLeft1 = Math.max(0, Math.round((deadline1 - today) / 86400000));
+  const daysLeft2 = Math.max(0, Math.round((deadline2 - today) / 86400000));
+
+  if (!mine) {
+    el.innerHTML = `<div class="my-card" style="margin-bottom:18px;">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--gold);margin-bottom:4px;">⚽ June 2026 MD Promotion Push</div>
+      <div style="font-size:12px;color:var(--slate);">No June campaign data on file for your account yet. Check with your upline MD if you believe this is in error — full agency standings are tracked separately.</div>
+    </div>`;
+    return;
+  }
+
+  const pct = (val, target) => Math.min(100, Math.round((val/target)*100));
+  const rPct = pct(mine.recruits, campaign.targets.recruits);
+  const aPct = pct(mine.apps, campaign.targets.apps);
+  const sPct = pct(mine.subPts, campaign.targets.subPts);
+  const pPct = pct(mine.paidPts, campaign.targets.paidPts);
+  const rDone = mine.recruits >= campaign.targets.recruits;
+  const aDone = mine.apps >= campaign.targets.apps;
+  const sDone = mine.subPts >= campaign.targets.subPts;
+  const pDone = mine.paidPts >= campaign.targets.paidPts;
+  const allDone = rDone && aDone && sDone && pDone;
+
+  el.innerHTML = `<div class="my-card" style="margin-bottom:18px;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:4px;">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--gold);">⚽ June 2026 MD Promotion Push</div>
+      <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;">
+        <div style="font-size:11px;background:rgba(192,57,43,0.15);border:1px solid rgba(192,57,43,0.4);color:#E8A0A0;padding:3px 10px;border-radius:3px;font-weight:700;">⏰ ${daysLeft1} day${daysLeft1===1?'':'s'} left · Recruits/Apps/Submitted Pts due ${campaign.deadline}</div>
+        <div style="font-size:11px;background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.35);color:var(--gold);padding:3px 10px;border-radius:3px;font-weight:700;">⏰ ${daysLeft2} days left · Paid Points due ${campaign.paidPtsDeadline}</div>
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--slate);margin-bottom:16px;">25 Recruits · 25 Submitted Apps · 25,000 Submitted Points · 25,000 Paid Points (Non-MD Base) — data as of ${campaign.asOf}</div>
+    <div class="req-grid">
+      <div class="req-item">
+        <div class="req-label">Recruits</div>
+        <div class="req-vals"><div class="req-cur ${rDone?'done':'todo'}">${mine.recruits}</div><div class="req-goal">of ${campaign.targets.recruits} ${rDone?'✅':''}</div></div>
+        <div class="prog-bar"><div class="prog-fill ${rDone?'pf-done':'pf-prog'}" style="width:${rPct}%"></div></div>
+      </div>
+      <div class="req-item">
+        <div class="req-label">Submitted Apps</div>
+        <div class="req-vals"><div class="req-cur ${aDone?'done':'todo'}">${mine.apps}</div><div class="req-goal">of ${campaign.targets.apps} ${aDone?'✅':''}</div></div>
+        <div class="prog-bar"><div class="prog-fill ${aDone?'pf-done':'pf-prog'}" style="width:${aPct}%"></div></div>
+      </div>
+      <div class="req-item">
+        <div class="req-label">Submitted Points</div>
+        <div class="req-vals"><div class="req-cur ${sDone?'done':'todo'}">${mine.subPts.toLocaleString()}</div><div class="req-goal">of ${campaign.targets.subPts.toLocaleString()} ${sDone?'✅':''}</div></div>
+        <div class="prog-bar"><div class="prog-fill ${sDone?'pf-done':'pf-prog'}" style="width:${sPct}%"></div></div>
+      </div>
+      <div class="req-item">
+        <div class="req-label">Paid Points</div>
+        <div class="req-vals"><div class="req-cur ${pDone?'done':'todo'}">${mine.paidPts.toLocaleString()}</div><div class="req-goal">of ${campaign.targets.paidPts.toLocaleString()} ${pDone?'✅':''}</div></div>
+        <div class="prog-bar"><div class="prog-fill ${pDone?'pf-done':'pf-prog'}" style="width:${pPct}%"></div></div>
+      </div>
+    </div>
+    ${allDone ? '<div class="promo-cta">🎉 All three June MD criteria met — congratulations! Contact your upline to confirm your promotion.</div>' : ''}
+  </div>`;
+})();
+
+function sw(id, el) {
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  el.classList.add('active');
+}
+
+// ── ALL 16 LEVELS ─────────────────────────────────────────────
+const LEVEL_DATA = [
+  { n:1,  label:'Trainee',                      role:'trainee',          comm:'30%',   bonus:null,     time:'Week 1'  },
+  { n:2,  label:'Associate',                    role:'associate',        comm:'40%',   bonus:null,     time:'Month 1' },
+  { n:3,  label:'Field Associate',              role:'field_associate',  comm:'50%',   bonus:null,     time:'Month 1–3' },
+  { n:4,  label:'Director',                     role:'director',         comm:'60%',   bonus:null,     time:'Month 3–6' },
+  { n:5,  label:'Producing Marketing Director', role:'producing_md',     comm:'70%',   bonus:'120%',   time:'Month 6–12' },
+  { n:6,  label:'Marketing Director',           role:'marketing_director',comm:'75%',  bonus:'120%',   time:'Month 6–12' },
+  { n:7,  label:'Senior Marketing Director',    role:'senior_md',        comm:'77%',   bonus:'122%',   time:'Ongoing' },
+  { n:8,  label:'Executive Marketing Director', role:'executive_md',     comm:'78%',   bonus:'123%',   time:'Ongoing' },
+  { n:9,  label:'Senior Vice-President',        role:'svp',              comm:'79%',   bonus:'124%',   time:'Ongoing' },
+  { n:10, label:'Executive Vice-President',     role:'evp',              comm:'80%',   bonus:'125%',   time:'Ongoing' },
+  { n:11, label:"President's Council",          role:'presidents_council',comm:'81%',  bonus:'126%',   time:'Ongoing' },
+  { n:12, label:"Chairman's Council",           role:'chairmans_council',comm:'82%',   bonus:'127%',   time:'Ongoing' },
+  { n:13, label:'Board Council',                role:'board_council',    comm:'82.5%', bonus:'127.5%', time:'Ongoing' },
+  { n:14, label:'Senior Board Council',         role:'senior_board_council',comm:'83%',bonus:'128%',  time:'Ongoing' },
+  { n:15, label:'Executive Board Council',      role:'exec_board_council',comm:'83.5%',bonus:'128.5%',time:'Ongoing' },
+  { n:16, label:'Sr. Executive Board Council',  role:'senior_exec_board',comm:'84%',   bonus:'129%',   time:'Ongoing' },
+];
+
+document.getElementById('levels-grid').innerHTML = LEVEL_DATA.map(l => {
+  const mine = l.role === session.role;
+  return `<div class="level-card ${mine?'mine':''}">
+    <div class="lc-php">Level ${l.n}</div>
+    <div class="lc-name">${l.label}</div>
+    <div class="lc-comm">${l.comm}</div>
+    ${l.bonus ? `<div class="lc-bonus">Up to ${l.bonus} with overrides</div>` : ''}
+    <div class="lc-timeframe">${l.time}</div>
+  </div>`;
+}).join('');
+
+// ── MY PATH ───────────────────────────────────────────────────
+const myReq = PHP_PROMO_REQS[session.role];
+if (myReq) {
+  const p = myReq.personal;
+  const t = myReq.team;
+  let html = `<div class="my-card">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--gold);margin-bottom:4px;">
+      ${getRoleLabel(session.role)} → ${myReq.next}
+    </div>
+    <div style="font-size:12px;color:var(--slate);margin-bottom:16px;">${myReq.timeframe} · ${myReq.notes}</div>
+    <div class="req-grid">`;
+
+  if (p) {
+    const rPct = Math.min(100,Math.round(((myStats.recruits||0)/p.recruits)*100));
+    const pPct = p.points ? Math.min(100,Math.round(((myStats.pts||0)/p.points)*100)) : 0;
+    const rDone = (myStats.recruits||0) >= p.recruits;
+    const pDone = !p.points || (myStats.pts||0) >= p.points;
+    if (p.recruits) html += `<div class="req-item">
+      <div class="req-label">Personal Recruits</div>
+      <div class="req-vals"><div class="req-cur ${rDone?'done':'todo'}">${myStats.recruits||0}</div><div class="req-goal">of ${p.recruits} ${rDone?'✅':''}</div></div>
+      <div class="prog-bar"><div class="prog-fill ${rDone?'pf-done':'pf-prog'}" style="width:${rPct}%"></div></div>
+    </div>`;
+    if (p.points) html += `<div class="req-item">
+      <div class="req-label">Production Points (ATP)</div>
+      <div class="req-vals"><div class="req-cur ${pDone?'done':'todo'}">${(myStats.pts||0).toLocaleString()}</div><div class="req-goal">of ${p.points.toLocaleString()} ${pDone?'✅':''}</div></div>
+      <div class="prog-bar"><div class="prog-fill ${pDone?'pf-done':'pf-prog'}" style="width:${pPct}%"></div></div>
+    </div>`;
+  }
+  if (t) html += `<div class="req-item" style="grid-column:1/-1;">
+    <div class="req-label">Team Requirement</div>
+    <div style="font-size:13px;color:var(--warn);margin-top:4px;">${t.notes||''}</div>
+  </div>`;
+
+  html += `</div>${myReq.personal && (myStats.recruits||0)>=myReq.personal.recruits ? '<div class="promo-cta">🎉 Personal recruit requirement met — contact your upline to start the promotion process!</div>' : ''}</div>`;
+  document.getElementById('my-card').innerHTML = html;
+  document.getElementById('mypath-sub').textContent = `${session.name} · ${getRoleLabel(session.role)} → ${myReq.next} · ${myReq.timeframe}`;
+} else {
+  document.getElementById('my-card').innerHTML = `<div class="my-card" style="text-align:center;padding:32px;">
+    <div style="font-size:36px;margin-bottom:12px;">🏆</div>
+    <div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--gold);">You are ${getRoleLabel(session.role)}</div>
+    <div style="font-size:13px;color:var(--slate);margin-top:8px;">Focus on team development, GV milestones, and coaching your agents to the next level.</div>
+  </div>`;
+}
+
+// ── SYSTEM FLOW ───────────────────────────────────────────────
+document.getElementById('flow-container').innerHTML = PHP_SYSTEM_FLOW.map((step, i) => {
+  const mine = (
+    (step.week==='WEEK 1' && session.role==='trainee') ||
+    (step.week==='MONTH 1' && session.role==='associate') ||
+    (step.week==='MONTH 1 ON' && session.role==='field_associate') ||
+    (step.week==='MONTH 3–6' && session.role==='director') ||
+    (step.week==='MONTH 6–12' && (session.role==='producing_md'||session.role==='marketing_director'))
+  );
+  const isLast = i === PHP_SYSTEM_FLOW.length - 1;
+  return `
+  <div class="flow-step">
+    <div class="flow-week"><div class="flow-week-label">${step.week}</div></div>
+    <div class="flow-line">
+      <div class="flow-dot" style="${mine?'background:var(--gold);border-color:var(--navy-mid);width:20px;height:20px;':''}"></div>
+      ${!isLast ? '<div class="flow-connector"></div>' : ''}
+    </div>
+    <div class="flow-box">
+      <div class="flow-card ${mine?'mine':''}">
+        <div class="fc-stage">${step.stage}</div>
+        <div class="fc-milestone">${step.milestone}</div>
+        <div class="fc-tasks">${step.tasks.map(t=>`<span class="fc-task">${t}</span>`).join('')}</div>
+        ${mine ? '<div style="margin-top:10px;font-size:12px;color:var(--gold);font-weight:600;">← YOU ARE HERE</div>' : ''}
+      </div>
+    </div>
+  </div>`;
+}).join('');
+
+// ── TEAM PROGRESS ─────────────────────────────────────────────
+const visible = session.level >= 60 ? AGENTS : [myAgent, ...getDirectReports(session.agentId)].filter(Boolean);
+const teamHtml = visible.map(ag => {
+  const req = PHP_PROMO_REQS[ag.role];
+  if (!req || !req.personal) return '';
+  const s = DEMO_STATS[ag.id] || {};
+  const p = req.personal;
+  const rPct = Math.min(100, Math.round(((s.recruits||0)/p.recruits)*100));
+  const rDone = (s.recruits||0) >= p.recruits;
+  const ready = rDone;
+  const upline = ag.uplineId ? getAgentById(ag.uplineId) : null;
+  return `<div class="agent-card ${ready?'ready':''}">
+    <div class="ac-name">${ag.name}</div>
+    <div class="ac-path">${getRoleLabel(ag.role)} → ${req.next}</div>
+    <div class="rr-head"><span>Recruits</span><span class="rr-val">${s.recruits||0} / ${p.recruits} ${rDone?'✅':''}</span></div>
+    <div class="prog-bar" style="margin-bottom:8px;"><div class="prog-fill ${rDone?'pf-done':'pf-prog'}" style="width:${rPct}%"></div></div>
+    ${upline ? `<div class="ac-upline">Upline: ${upline.name} · ${getRoleLabel(upline.role)}</div>` : ''}
+  </div>`;
+}).filter(Boolean).join('');
+document.getElementById('team-grid').innerHTML = teamHtml || '<div style="color:var(--slate);padding:20px;">No agents to display at your level.</div>';
+</script>
+</body>
+</html>

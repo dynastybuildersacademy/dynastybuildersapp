@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="theme-color" content="#04060C">
+<title>DBA Leaderboard — Dynasty Builders Academy</title>
+<script src="auth.js?v=20260713"></script>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:ital,wght@0,300;0,500;0,700;0,900;1,700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#04060C;--s1:#080C18;--s2:#0C1220;--s3:#101828;
+  --bd:#1A2840;--bd2:#243250;
+  --gold:#FFB800;--gd:rgba(255,184,0,0.08);--gm:rgba(255,184,0,0.22);
+  --green:#00E5A0;--grd:rgba(0,229,160,0.08);
+  --blue:#3D9BE9;--red:#FF4040;--purple:#A78BFA;--orange:#FF8C00;
+  --silver:#B0C4D8;--bronze:#CD7F32;
+  --text:#E8F0F8;--dim:#3A5070;--muted:#5A7090;
+  --display:'Bebas Neue',display;
+  --body:'Barlow Condensed',sans-serif;
+  --mono:'Fira Code',monospace;
+}
+
+html,body{background:var(--bg);color:var(--text);font-family:var(--body);
+  min-height:100vh;overflow-x:hidden;}
+
+/* ATMOSPHERE */
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 60% 40% at 50% 0%,rgba(255,184,0,0.07),transparent 60%),
+    radial-gradient(ellipse 30% 60% at 0% 100%,rgba(0,229,160,0.05),transparent 60%),
+    radial-gradient(ellipse 40% 40% at 100% 60%,rgba(61,155,233,0.04),transparent 60%);}
+
+/* diagonal stripe overlay */
+body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:repeating-linear-gradient(
+    -45deg,transparent,transparent 40px,
+    rgba(255,184,0,0.012) 40px,rgba(255,184,0,0.012) 41px);}
+
+.shell{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:24px 18px 80px;}
+
+/* ── HEADER ── */
+.hdr{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;
+  margin-bottom:32px;padding-bottom:20px;border-bottom:1px solid var(--bd);}
+.hdr-back{font-family:var(--mono);font-size:.58rem;color:var(--muted);text-decoration:none;
+  display:flex;align-items:center;gap:5px;transition:color .15s;}
+.hdr-back:hover{color:var(--green);}
+.hdr-center{text-align:center;}
+.hdr-title{font-family:var(--display);font-size:clamp(2rem,6vw,3.5rem);
+  letter-spacing:.12em;color:var(--text);line-height:1;
+  text-shadow:0 0 40px rgba(255,184,0,0.2);}
+.hdr-title span{color:var(--gold);}
+.hdr-sub{font-family:var(--mono);font-size:.58rem;color:var(--muted);
+  letter-spacing:.12em;margin-top:4px;}
+.hdr-right{display:flex;justify-content:flex-end;align-items:center;gap:8px;}
+.refresh-btn{font-family:var(--mono);font-size:.56rem;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;background:var(--gd);color:var(--gold);
+  border:1px solid var(--gm);border-radius:3px;padding:6px 14px;cursor:pointer;
+  transition:all .15s;display:flex;align-items:center;gap:5px;}
+.refresh-btn:hover{background:var(--gm);}
+.refresh-btn.spinning .r-ico{animation:sp .7s linear infinite;}
+@keyframes sp{to{transform:rotate(360deg);}}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);
+  animation:blink 2s ease infinite;flex-shrink:0;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+.last-update{font-family:var(--mono);font-size:.52rem;color:var(--muted);}
+
+/* ── TABS ── */
+.tabs{display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid var(--bd);}
+.tab{font-family:var(--display);font-size:1.1rem;letter-spacing:.1em;
+  padding:10px 28px;cursor:pointer;color:var(--muted);
+  border-bottom:3px solid transparent;transition:all .2s;margin-bottom:-1px;}
+.tab:hover{color:var(--text);}
+.tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+
+/* ── PERIOD SELECTOR ── */
+.period-row{display:flex;align-items:center;gap:8px;margin-bottom:20px;flex-wrap:wrap;}
+.period-lbl{font-family:var(--mono);font-size:.56rem;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--muted);}
+.period-btn{font-family:var(--mono);font-size:.56rem;font-weight:700;letter-spacing:.07em;
+  text-transform:uppercase;padding:5px 14px;border-radius:20px;cursor:pointer;
+  border:1px solid var(--bd);background:var(--s2);color:var(--muted);transition:all .15s;}
+.period-btn:hover{border-color:var(--gold);color:var(--gold);}
+.period-btn.active{background:var(--gd);border-color:var(--gm);color:var(--gold);}
+
+/* ── HERO STATS ── */
+.hero-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px;}
+.hs{background:var(--s1);border:1.5px solid var(--bd);border-radius:8px;
+  padding:16px 18px;position:relative;overflow:hidden;text-align:center;}
+.hs::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.hs-calls::before{background:var(--blue);}
+.hs-contacts::before{background:var(--green);}
+.hs-appts::before{background:var(--gold);}
+.hs-pts::before{background:var(--orange);}
+.hs-v{font-family:var(--display);font-size:2.5rem;letter-spacing:.04em;
+  line-height:1;color:var(--text);margin-bottom:3px;}
+.hs-l{font-family:var(--mono);font-size:.5rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);}
+
+/* ── LEADERBOARD TABLE ── */
+.lb-wrap{background:var(--s1);border:1.5px solid var(--bd);border-radius:10px;overflow:hidden;}
+.lb-head{padding:14px 20px;border-bottom:1px solid var(--bd);
+  display:flex;align-items:center;justify-content:space-between;}
+.lb-head-t{font-family:var(--display);font-size:1.2rem;letter-spacing:.1em;color:var(--text);}
+.lb-head-s{font-family:var(--mono);font-size:.54rem;color:var(--muted);}
+table{width:100%;border-collapse:collapse;}
+thead th{font-family:var(--mono);font-size:.52rem;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--muted);padding:10px 16px;border-bottom:1px solid var(--bd);text-align:left;
+  background:var(--s2);}
+thead th:not(:first-child){text-align:right;}
+tbody tr{transition:background .12s;border-bottom:1px solid rgba(26,40,64,.5);}
+tbody tr:last-child{border-bottom:none;}
+tbody tr:hover{background:rgba(255,184,0,0.03);}
+tbody td{padding:12px 16px;font-size:.92rem;vertical-align:middle;}
+tbody td:not(:first-child){text-align:right;}
+
+/* RANK CELL */
+.rank-cell{display:flex;align-items:center;gap:14px;}
+.rank-num{font-family:var(--display);font-size:1.5rem;letter-spacing:.05em;
+  min-width:32px;text-align:center;}
+.rank-1{color:var(--gold);}
+.rank-2{color:var(--silver);}
+.rank-3{color:var(--bronze);}
+.rank-n{color:var(--dim);}
+.rank-medal{font-size:1.2rem;min-width:24px;text-align:center;}
+
+/* AGENT CELL */
+.agent-cell{display:flex;align-items:center;gap:10px;}
+.ag-av{width:36px;height:36px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--display);font-size:.85rem;letter-spacing:.05em;
+  flex-shrink:0;border:1.5px solid;}
+.ag-info{}
+.ag-name{font-weight:700;font-size:.95rem;color:var(--text);letter-spacing:.01em;}
+.ag-role{font-family:var(--mono);font-size:.5rem;color:var(--muted);margin-top:1px;}
+
+/* STAT CELLS */
+.stat-cell{font-family:var(--mono);font-size:.82rem;color:var(--text);}
+.stat-cell.top{color:var(--gold);font-weight:700;}
+.bar-cell{min-width:100px;}
+.mini-bar{height:4px;border-radius:2px;background:var(--bd);margin-top:5px;}
+.mini-bar-fill{height:4px;border-radius:2px;transition:width .6s ease;}
+
+/* MILESTONE BADGES */
+.milestone-badges{display:flex;gap:3px;flex-wrap:wrap;justify-content:flex-end;}
+.mb{font-family:var(--mono);font-size:.46rem;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;padding:2px 6px;border-radius:2px;}
+.mb-bronze{background:rgba(205,127,50,.12);color:var(--bronze);border:1px solid rgba(205,127,50,.3);}
+.mb-silver{background:rgba(176,196,216,.1);color:var(--silver);border:1px solid rgba(176,196,216,.25);}
+.mb-gold{background:var(--gd);color:var(--gold);border:1px solid var(--gm);}
+
+/* EMPTY / LOADING */
+.lb-empty{padding:48px 20px;text-align:center;}
+.lb-empty-ico{font-size:2.5rem;margin-bottom:12px;opacity:.3;}
+.lb-empty-t{font-family:var(--display);font-size:1.2rem;letter-spacing:.08em;color:var(--muted);margin-bottom:6px;}
+.lb-empty-s{font-family:var(--mono);font-size:.62rem;color:var(--dim);}
+.loading-row{display:flex;align-items:center;gap:12px;padding:14px 16px;
+  border-bottom:1px solid rgba(26,40,64,.4);}
+.shimmer{border-radius:4px;background:linear-gradient(90deg,var(--s2) 25%,var(--s3) 50%,var(--s2) 75%);
+  background-size:200% 100%;animation:shimmer 1.5s infinite;}
+@keyframes shimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+
+/* PANEL TOGGLE */
+.lb-panel{display:none;}
+.lb-panel.active{display:block;}
+
+/* CONFIG BANNER */
+.config-banner{background:rgba(255,184,0,0.06);border:1px solid var(--gm);
+  border-radius:6px;padding:12px 16px;margin-bottom:16px;
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.cb-ico{font-size:1rem;flex-shrink:0;}
+.cb-text{font-family:var(--mono);font-size:.62rem;color:var(--muted);flex:1;line-height:1.6;}
+.cb-text strong{color:var(--gold);}
+.cb-btn{font-family:var(--mono);font-size:.56rem;font-weight:700;letter-spacing:.07em;
+  text-transform:uppercase;background:var(--gd);color:var(--gold);
+  border:1px solid var(--gm);border-radius:3px;padding:5px 12px;cursor:pointer;
+  white-space:nowrap;transition:all .15s;}
+.cb-btn:hover{background:var(--gm);}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(12px);
+  background:var(--s1);border:1px solid var(--bd);border-radius:6px;
+  padding:10px 18px;font-family:var(--mono);font-size:.62rem;color:var(--text);
+  opacity:0;pointer-events:none;transition:all .22s;z-index:100;
+  box-shadow:0 8px 28px rgba(0,0,0,.6);}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+@media(max-width:600px){
+  .hdr{grid-template-columns:1fr;gap:12px;}
+  .hdr-right{justify-content:flex-start;}
+  .hero-stats{grid-template-columns:repeat(2,1fr);}
+  .tabs .tab{padding:10px 16px;font-size:.95rem;}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- HEADER -->
+<div class="hdr">
+  <a class="hdr-back" href="hub.html">← Hub</a>
+  <div class="hdr-center">
+    <div class="hdr-title">DBA <span>LEADERBOARD</span></div>
+    <div class="hdr-sub">Dynasty Builders Academy · Live from Monday.com</div>
+  </div>
+  <div class="hdr-right">
+    <div class="live-dot"></div>
+    <div class="last-update" id="last-update">—</div>
+    <button class="refresh-btn" onclick="loadAll()">
+      <span class="r-ico">↻</span> Refresh
+    </button>
+  </div>
+</div>
+
+<!-- CONFIG BANNER (shown when API key not set) -->
+<div class="config-banner" id="config-banner" style="display:none;">
+  <div class="cb-ico">⚙️</div>
+  <div class="cb-text">
+    <strong>Monday.com API key not configured.</strong> Showing sample data. 
+    Enter your Monday.com API key in <a href="monday-setup.html" style="color:var(--gold);">Board Setup</a> to load live data.
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('production')" id="tab-production">Production</div>
+  <div class="tab" onclick="switchTab('recruiting')" id="tab-recruiting">Recruiting</div>
+  <div class="tab" onclick="switchTab('incentives')" id="tab-incentives">MGM Incentives</div>
+</div>
+
+<!-- PERIOD SELECTOR -->
+<div class="period-row">
+  <span class="period-lbl">Period:</span>
+  <button class="period-btn active" onclick="setPeriod('week',this)">This Week</button>
+  <button class="period-btn" onclick="setPeriod('month',this)">This Month</button>
+  <button class="period-btn" onclick="setPeriod('all',this)">All Time</button>
+</div>
+
+<!-- HERO STATS -->
+<div class="hero-stats">
+  <div class="hs hs-calls">
+    <div class="hs-v" id="total-calls">—</div>
+    <div class="hs-l">Total Calls</div>
+  </div>
+  <div class="hs hs-contacts">
+    <div class="hs-v" id="total-contacts">—</div>
+    <div class="hs-l">Total Contacts</div>
+  </div>
+  <div class="hs hs-appts">
+    <div class="hs-v" id="total-appts">—</div>
+    <div class="hs-l">Appointments</div>
+  </div>
+  <div class="hs hs-pts">
+    <div class="hs-v" id="total-pts">—</div>
+    <div class="hs-l">Production Pts</div>
+  </div>
+</div>
+
+<!-- ── PRODUCTION PANEL ── -->
+<div class="lb-panel active" id="panel-production">
+  <div class="lb-wrap">
+    <div class="lb-head">
+      <div><div class="lb-head-t">PRODUCTION LEADERBOARD</div><div class="lb-head-s">Calls · Contacts · Appointments · Points · Hours</div></div>
+    </div>
+    <table>
+      <thead><tr>
+        <th style="width:40px;">#</th>
+        <th>Agent</th>
+        <th>Calls</th>
+        <th>Contacts</th>
+        <th>Appts</th>
+        <th>Points</th>
+        <th>Hours</th>
+        <th>Score</th>
+      </tr></thead>
+      <tbody id="production-body">
+        <!-- shimmer loading rows -->
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ── RECRUITING PANEL ── -->
+<div class="lb-panel" id="panel-recruiting">
+  <div class="lb-wrap">
+    <div class="lb-head">
+      <div><div class="lb-head-t">RECRUITING LEADERBOARD</div><div class="lb-head-s">Personal recruits this period · tracked via tracker weekly log</div></div>
+    </div>
+    <table>
+      <thead><tr>
+        <th style="width:40px;">#</th>
+        <th>Agent</th>
+        <th>Recruits</th>
+        <th>Milestone</th>
+        <th>Reward</th>
+      </tr></thead>
+      <tbody id="recruiting-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ── MGM INCENTIVES PANEL ── -->
+<div class="lb-panel" id="panel-incentives">
+  <div class="lb-wrap">
+    <div class="lb-head">
+      <div><div class="lb-head-t">MGM GRAND — WALKING ON STAGE</div>
+      <div class="lb-head-s">May 1 – June 30 · Bronze 10R/10K · Silver 20R/20K · Gold 30R/30K PAID</div></div>
+    </div>
+    <table>
+      <thead><tr>
+        <th style="width:40px;">#</th>
+        <th>Agent</th>
+        <th>Recruits</th>
+        <th>Paid Pts</th>
+        <th>Tier</th>
+        <th>Status</th>
+      </tr></thead>
+      <tbody id="incentives-body"></tbody>
+    </table>
+  </div>
+
+  <!-- Tier Legend -->
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px;">
+    <div style="background:rgba(205,127,50,.08);border:1.5px solid rgba(205,127,50,.3);border-radius:7px;padding:14px;text-align:center;">
+      <div style="font-size:1.4rem;margin-bottom:4px;">🥉</div>
+      <div style="font-family:var(--display);font-size:1rem;letter-spacing:.08em;color:var(--bronze);">BRONZE</div>
+      <div style="font-family:var(--mono);font-size:.6rem;color:var(--muted);margin-top:4px;">10R + 10K Paid<br>1 NLA — Attend</div>
+    </div>
+    <div style="background:rgba(176,196,216,.06);border:1.5px solid rgba(176,196,216,.25);border-radius:7px;padding:14px;text-align:center;">
+      <div style="font-size:1.4rem;margin-bottom:4px;">🥈</div>
+      <div style="font-family:var(--display);font-size:1rem;letter-spacing:.08em;color:var(--silver);">SILVER</div>
+      <div style="font-family:var(--mono);font-size:.6rem;color:var(--muted);margin-top:4px;">20R + 20K Paid<br>2 NLA — Mid Section</div>
+    </div>
+    <div style="background:var(--gd);border:1.5px solid var(--gm);border-radius:7px;padding:14px;text-align:center;">
+      <div style="font-size:1.4rem;margin-bottom:4px;">🥇</div>
+      <div style="font-family:var(--display);font-size:1rem;letter-spacing:.08em;color:var(--gold);">GOLD</div>
+      <div style="font-family:var(--mono);font-size:.6rem;color:var(--muted);margin-top:4px;">30R + 30K Paid<br>3 NLA — First 5 Rows</div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /shell -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ══ CONFIG ════════════════════════════════════════════════════════════════
+const PROD_BOARD_ID   = 18411252612;  // DBA Call Production Log
+const RECRUIT_BOARD_ID= 18409897469;  // Recruiting Pipeline
+
+// Column IDs on Production board (update after running monday-setup.html)
+const PROD_COLS = {
+  agent_name:   'text_mm2n6fhg',   // Agent Name text column
+  agent_id:     'text_mm2nfjex',   // Agent ID
+  calls:        '',                 // Numbers — paste from monday-setup
+  contacts:     '',
+  appts_total:  '',
+  appts_ri:     '',
+  appts_client: '',
+  appts_fs:     '',
+  hours:        '',
+  score:        '',
+  date:         'date_mm2nev7c',
+};
+
+let currentPeriod = 'week';
+let currentTab    = 'production';
+let allData       = [];
+let weekData      = {};
+
+// ══ MONDAY API ════════════════════════════════════════════════════════════
+async function mondayQuery(query) {
+  const key = AUTH.getMondayKey();
+  if (!key) throw new Error('No Monday.com API key — enter it in Board Setup');
+  const resp = await fetch('https://api.monday.com/v2', {
+    method:  'POST',
+    headers: {
+      'Content-Type':  'application/json',
+      'Authorization': key,
+      'API-Version':   '2024-01',
+    },
+    body: JSON.stringify({ query }),
+  });
+  if (!resp.ok) throw new Error('Monday API error: ' + resp.status);
+  return await resp.json();
+}
+
+// ══ LOAD ALL DATA ═════════════════════════════════════════════════════════
+async function loadAll() {
+  const btn = document.querySelector('.refresh-btn');
+  btn.classList.add('spinning');
+  showShimmer('production-body', 8);
+  showShimmer('recruiting-body', 5);
+  showShimmer('incentives-body', 5);
+
+  if (!AUTH.getMondayKey()) {
+    document.getElementById('config-banner').style.display = 'flex';
+    loadSampleData();
+    btn.classList.remove('spinning');
+    return;
+  }
+
+  try {
+    await Promise.all([loadProductionData(), loadRecruitingData()]);
+    document.getElementById('last-update').textContent =
+      'Updated ' + new Date().toLocaleTimeString('en-US', {hour:'numeric',minute:'2-digit'});
+    showToast('✓ Leaderboard refreshed');
+  } catch(e) {
+    console.error('[Leaderboard]', e);
+    document.getElementById('config-banner').style.display = 'flex';
+    loadSampleData();
+    showToast('⚠ Using sample data — check Monday.com connection');
+  }
+
+  btn.classList.remove('spinning');
+}
+
+// ── PRODUCTION DATA ───────────────────────────────────────────────────────
+async function loadProductionData() {
+  // Query all items from Production board
+  const q = `query {
+    boards(ids: ${PROD_BOARD_ID}) {
+      items_page(limit: 500) {
+        items {
+          name
+          column_values {
+            id
+            text
+            value
+          }
+        }
+      }
+    }
+  }`;
+
+  const data = await mondayQuery(q);
+  const items = data?.data?.boards?.[0]?.items_page?.items || [];
+
+  // Parse items into agent production records
+  const agentMap = {};
+
+  items.forEach(function(item) {
+    const cols = {};
+    item.column_values.forEach(function(cv) { cols[cv.id] = cv.text; });
+
+    const agentName = cols[PROD_COLS.agent_name] || item.name.split(' -- ')[0] || item.name;
+    const date      = cols[PROD_COLS.date]  || '';
+    const calls     = parseInt(cols[PROD_COLS.calls])    || 0;
+    const contacts  = parseInt(cols[PROD_COLS.contacts]) || 0;
+    const appts     = parseInt(cols[PROD_COLS.appts_total]) || 0;
+    const hours     = parseFloat(cols[PROD_COLS.hours])  || 0;
+    const score     = parseInt(cols[PROD_COLS.score])    || 0;
+
+    // Filter by period
+    if (!matchesPeriod(date)) return;
+
+    if (!agentMap[agentName]) {
+      agentMap[agentName] = { name:agentName, calls:0, contacts:0, appts:0, hours:0, score:0, points:0, sessions:0 };
+    }
+    const ag = agentMap[agentName];
+    ag.calls    += calls;
+    ag.contacts += contacts;
+    ag.appts    += appts;
+    ag.hours    += hours;
+    ag.score    += score;
+    ag.sessions++;
+  });
+
+  // If column IDs not configured — use item name parsing as fallback
+  if (Object.keys(agentMap).length === 0) {
+    items.forEach(function(item) {
+      const name = item.name.split(' -- ')[0] || item.name;
+      if (!agentMap[name]) agentMap[name] = {name, calls:0, contacts:0, appts:0, hours:0, score:0, sessions:0};
+      agentMap[name].sessions++;
+    });
+  }
+
+  const sorted = Object.values(agentMap).sort(function(a,b){ return b.calls - a.calls; });
+  allData = sorted;
+
+  renderProductionLeaderboard(sorted);
+  renderIncentivesLeaderboard(sorted);
+  updateHeroStats(sorted);
+}
+
+// ── RECRUITING DATA ───────────────────────────────────────────────────────
+async function loadRecruitingData() {
+  // Pull recruits from week localStorage data across all agents
+  const recruits = {};
+  const now = new Date();
+
+  if (typeof TEAM !== 'undefined') {
+    TEAM.forEach(function(a) {
+      let total = 0;
+      // Check weekly keys for this period
+      for (let w = 0; w < 8; w++) {
+        const d = new Date(now);
+        d.setDate(d.getDate() - w * 7);
+        const jan1 = new Date(d.getFullYear(), 0, 1);
+        const week = Math.ceil(((d - jan1) / 86400000 + jan1.getDay() + 1) / 7);
+        const key  = d.getFullYear() + '_W' + week;
+        const wkData = JSON.parse(localStorage.getItem('week_' + key) || '{}');
+        if (wkData.agent === a.id || !wkData.agent) {
+          if (currentPeriod === 'week' && w === 0)   total += wkData.recruits || 0;
+          else if (currentPeriod !== 'week')          total += wkData.recruits || 0;
+        }
+      }
+      if (total > 0) recruits[a.fname + ' ' + (a.lname||'')] = total;
+    });
+  }
+
+  // Also try Monday Recruiting board for recruit count
+  try {
+    const q = `query {
+      boards(ids: ${RECRUIT_BOARD_ID}) {
+        items_page(limit: 200) {
+          items { name column_values { id text } }
+        }
+      }
+    }`;
+    const data = await mondayQuery(q);
+    const items = data?.data?.boards?.[0]?.items_page?.items || [];
+    const agentCounts = {};
+    items.forEach(function(item) {
+      const cols = {};
+      item.column_values.forEach(function(cv){ cols[cv.id] = cv.text; });
+      const agentId = cols['text_mm2n6fhg'] || '';
+      const agentName = cols['text_mm2n9fqk'] || '';
+      if (agentName && agentId) {
+        agentCounts[agentName] = (agentCounts[agentName]||0) + 1;
+      }
+    });
+    Object.assign(recruits, agentCounts);
+  } catch(e) { /* use localStorage data */ }
+
+  const sorted = Object.entries(recruits)
+    .map(function([name, count]){ return {name, recruits: count}; })
+    .sort(function(a,b){ return b.recruits - a.recruits; });
+
+  weekData = recruits;
+  renderRecruitingLeaderboard(sorted);
+}
+
+// ══ RENDER FUNCTIONS ══════════════════════════════════════════════════════
+function renderProductionLeaderboard(agents) {
+  const tbody = document.getElementById('production-body');
+  if (!agents.length) { tbody.innerHTML = emptyRow(8, 'No production data for this period'); return; }
+
+  const max = agents[0].calls || 1;
+  tbody.innerHTML = agents.map(function(a, i) {
+    const rank  = i + 1;
+    const medal = rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':'';
+    const cls   = rank===1?'rank-1':rank===2?'rank-2':rank===3?'rank-3':'rank-n';
+    const pct   = Math.round((a.calls / max) * 100);
+    const role  = getRoleLabel(a.name);
+    const av    = initials(a.name);
+    const color = getAgentColor(i);
+
+    return `<tr>
+      <td><div class="rank-cell">
+        <div class="rank-num ${cls}">${rank}</div>
+        <div class="rank-medal">${medal}</div>
+      </div></td>
+      <td><div class="agent-cell">
+        <div class="ag-av" style="background:${color.bg};border-color:${color.border};color:${color.text};">${av}</div>
+        <div class="ag-info"><div class="ag-name">${esc(a.name)}</div><div class="ag-role">${role}</div></div>
+      </div></td>
+      <td><div class="stat-cell ${rank===1?'top':''}">
+        ${fmt(a.calls)}
+        <div class="mini-bar"><div class="mini-bar-fill" style="width:${pct}%;background:var(--blue);"></div></div>
+      </div></td>
+      <td class="stat-cell">${fmt(a.contacts)}</td>
+      <td class="stat-cell">${fmt(a.appts)}</td>
+      <td class="stat-cell">${fmt(a.points||0)}</td>
+      <td class="stat-cell">${a.hours ? a.hours.toFixed(1)+'h' : '—'}</td>
+      <td><div class="stat-cell" style="color:${scoreColor(a.score)};">${a.score||'—'}</div></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderRecruitingLeaderboard(agents) {
+  const tbody = document.getElementById('recruiting-body');
+  if (!agents.length) { tbody.innerHTML = emptyRow(5, 'No recruiting data — log recruits in Call Tracker+'); return; }
+
+  tbody.innerHTML = agents.map(function(a, i) {
+    const rank   = i + 1;
+    const medal  = rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':'';
+    const cls    = rank===1?'rank-1':rank===2?'rank-2':rank===3?'rank-3':'rank-n';
+    const ms     = getMilestone(a.recruits);
+    const reward = ms.reward;
+    const color  = getAgentColor(i);
+
+    return `<tr>
+      <td><div class="rank-cell">
+        <div class="rank-num ${cls}">${rank}</div>
+        <div class="rank-medal">${medal}</div>
+      </div></td>
+      <td><div class="agent-cell">
+        <div class="ag-av" style="background:${color.bg};border-color:${color.border};color:${color.text};">${initials(a.name)}</div>
+        <div class="ag-info"><div class="ag-name">${esc(a.name)}</div></div>
+      </div></td>
+      <td class="stat-cell ${rank===1?'top':''}">${a.recruits}</td>
+      <td><div class="milestone-badges">${ms.badges}</div></td>
+      <td><div class="stat-cell" style="color:var(--green);font-family:var(--mono);font-size:.75rem;">${reward}</div></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderIncentivesLeaderboard(agents) {
+  const tbody = document.getElementById('incentives-body');
+  if (!agents.length) { tbody.innerHTML = emptyRow(6, 'No data — production data populates this automatically'); return; }
+
+  tbody.innerHTML = agents.map(function(a, i) {
+    const rank   = i + 1;
+    const cls    = rank===1?'rank-1':rank===2?'rank-2':rank===3?'rank-3':'rank-n';
+    const color  = getAgentColor(i);
+    const pts    = a.points || 0;
+    const recs   = weekData[a.name] || 0;
+    const tier   = getMGMTier(recs, pts);
+
+    return `<tr>
+      <td><div class="rank-cell"><div class="rank-num ${cls}">${rank}</div></div></td>
+      <td><div class="agent-cell">
+        <div class="ag-av" style="background:${color.bg};border-color:${color.border};color:${color.text};">${initials(a.name)}</div>
+        <div class="ag-info"><div class="ag-name">${esc(a.name)}</div></div>
+      </div></td>
+      <td class="stat-cell">${recs || '—'}</td>
+      <td class="stat-cell">${fmt(pts) || '—'}</td>
+      <td><span style="font-family:var(--mono);font-size:.65rem;font-weight:700;color:${tier.color};">${tier.label}</span></td>
+      <td><div style="font-family:var(--mono);font-size:.62rem;color:${tier.color};">${tier.status}</div></td>
+    </tr>`;
+  }).join('');
+}
+
+function updateHeroStats(agents) {
+  const totals = agents.reduce(function(acc, a) {
+    acc.calls    += a.calls    || 0;
+    acc.contacts += a.contacts || 0;
+    acc.appts    += a.appts    || 0;
+    acc.points   += a.points   || 0;
+    return acc;
+  }, {calls:0, contacts:0, appts:0, points:0});
+
+  document.getElementById('total-calls').textContent    = fmt(totals.calls);
+  document.getElementById('total-contacts').textContent = fmt(totals.contacts);
+  document.getElementById('total-appts').textContent    = fmt(totals.appts);
+  document.getElementById('total-pts').textContent      = fmt(totals.points);
+}
+
+// ══ HELPERS ═══════════════════════════════════════════════════════════════
+function matchesPeriod(dateStr) {
+  if (currentPeriod === 'all' || !dateStr) return true;
+  const date = new Date(dateStr);
+  const now  = new Date();
+  if (currentPeriod === 'week') {
+    const weekAgo = new Date(now); weekAgo.setDate(now.getDate() - 7);
+    return date >= weekAgo;
+  }
+  if (currentPeriod === 'month') {
+    return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+  }
+  return true;
+}
+
+function getMilestone(r) {
+  if (r >= 10) return { badges:'<span class="mb mb-gold">10 Recruits</span>', reward:'$200 + Dinner' };
+  if (r >= 6)  return { badges:'<span class="mb mb-silver">6 Recruits</span>', reward:'$100' };
+  if (r >= 3)  return { badges:'<span class="mb mb-bronze">3 Recruits</span>', reward:'$50' };
+  if (r >= 1)  return { badges:'<span class="mb mb-bronze">1 Recruit</span>',  reward:'$25 (top 10)' };
+  return { badges:'—', reward:'—' };
+}
+
+function getMGMTier(recruits, pts) {
+  if (recruits >= 30 && pts >= 30000) return {label:'🥇 GOLD',   color:'var(--gold)',   status:'Walking on Stage — 1st 5 Rows'};
+  if (recruits >= 20 && pts >= 20000) return {label:'🥈 SILVER', color:'var(--silver)', status:'Walking on Stage — Mid Section'};
+  if (recruits >= 10 && pts >= 10000) return {label:'🥉 BRONZE', color:'var(--bronze)', status:'Walking on Stage — Attend'};
+  const rNeed  = Math.max(0, 10 - recruits);
+  const pNeed  = Math.max(0, 10000 - pts);
+  return {label:'Tracking', color:'var(--muted)', status:`Need ${rNeed}R + ${fmt(pNeed)}pts for Bronze`};
+}
+
+function getRoleLabel(name) {
+  if (typeof TEAM === 'undefined') return 'Agent';
+  const t = TEAM.find(function(a){ return (a.fname+' '+(a.lname||'')).trim() === name.trim(); });
+  if (!t) return 'Agent';
+  return (typeof safeRole==='function') ? safeRole(t.role).label : t.role;
+}
+
+function getAgentColor(i) {
+  const palette = [
+    {bg:'rgba(255,184,0,0.1)',    border:'rgba(255,184,0,0.35)',    text:'var(--gold)'},
+    {bg:'rgba(0,229,160,0.08)',   border:'rgba(0,229,160,0.3)',     text:'var(--green)'},
+    {bg:'rgba(61,155,233,0.1)',   border:'rgba(61,155,233,0.3)',    text:'var(--blue)'},
+    {bg:'rgba(167,139,250,0.08)', border:'rgba(167,139,250,0.3)',   text:'var(--purple)'},
+    {bg:'rgba(255,140,0,0.08)',   border:'rgba(255,140,0,0.3)',     text:'var(--orange)'},
+    {bg:'rgba(176,196,216,0.08)', border:'rgba(176,196,216,0.25)',  text:'var(--silver)'},
+  ];
+  return palette[i % palette.length];
+}
+
+function initials(name) {
+  const parts = name.trim().split(' ');
+  return (parts[0]?.[0]||'') + (parts[1]?.[0]||'');
+}
+
+function fmt(n) {
+  if (!n && n !== 0) return '—';
+  return Number(n).toLocaleString();
+}
+
+function scoreColor(s) {
+  if (s >= 80) return 'var(--green)';
+  if (s >= 50) return 'var(--gold)';
+  if (s >= 20) return 'var(--orange)';
+  return 'var(--muted)';
+}
+
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function emptyRow(cols, msg) {
+  return `<tr><td colspan="${cols}">
+    <div class="lb-empty">
+      <div class="lb-empty-ico">📊</div>
+      <div class="lb-empty-t">No Data</div>
+      <div class="lb-empty-s">${msg}</div>
+    </div>
+  </td></tr>`;
+}
+
+function showShimmer(tbodyId, rows) {
+  const tbody = document.getElementById(tbodyId);
+  if (!tbody) return;
+  tbody.innerHTML = Array(rows).fill(0).map(function(_,i){
+    return `<tr class="loading-row">
+      <td><div class="shimmer" style="width:32px;height:20px;"></div></td>
+      <td><div style="display:flex;gap:10px;align-items:center;">
+        <div class="shimmer" style="width:36px;height:36px;border-radius:8px;"></div>
+        <div class="shimmer" style="width:${100+i*20}px;height:14px;border-radius:3px;"></div>
+      </div></td>
+      <td><div class="shimmer" style="width:40px;height:14px;border-radius:3px;margin-left:auto;"></div></td>
+    </tr>`;
+  }).join('');
+}
+
+// ══ SAMPLE DATA (when Monday not connected) ════════════════════════════════
+function loadSampleData() {
+  const sample = [
+    {name:'Obi Iroezi',       calls:87, contacts:24, appts:8, points:12000, hours:18.2, score:94},
+    {name:'Jennifer Iroezi',  calls:72, contacts:19, appts:6, points:9800,  hours:14.8, score:88},
+    {name:'Gio Tsagaresvilli',calls:65, contacts:17, appts:5, points:7500,  hours:13.1, score:82},
+    {name:'Daniel Uko',       calls:54, contacts:13, appts:4, points:5200,  hours:10.8, score:71},
+    {name:'Mayah Thomsen',    calls:48, contacts:11, appts:3, points:4100,  hours:9.6,  score:65},
+    {name:'Jacinta Abanobi',  calls:42, contacts:9,  appts:3, points:3800,  hours:8.4,  score:60},
+    {name:'Goodluck Nwaka',   calls:38, contacts:8,  appts:2, points:2900,  hours:7.6,  score:54},
+    {name:'Frank Iketuonye',  calls:31, contacts:7,  appts:2, points:2200,  hours:6.2,  score:48},
+  ];
+  allData = sample;
+  renderProductionLeaderboard(sample);
+  renderIncentivesLeaderboard(sample);
+  updateHeroStats(sample);
+
+  const sampleR = [
+    {name:'Obi Iroezi', recruits:7},
+    {name:'Gio Tsagaresvilli', recruits:4},
+    {name:'Jennifer Iroezi', recruits:3},
+    {name:'Daniel Uko', recruits:1},
+  ];
+  renderRecruitingLeaderboard(sampleR);
+  document.getElementById('last-update').textContent = 'Sample data';
+}
+
+// ══ UI CONTROLS ════════════════════════════════════════════════════════════
+function switchTab(name) {
+  currentTab = name;
+  document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
+  document.querySelectorAll('.lb-panel').forEach(function(p){ p.classList.remove('active'); });
+  document.getElementById('tab-' + name).classList.add('active');
+  document.getElementById('panel-' + name).classList.add('active');
+}
+
+function setPeriod(p, btn) {
+  currentPeriod = p;
+  document.querySelectorAll('.period-btn').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  loadAll();
+}
+
+let toastT;
+function showToast(msg) {
+  clearTimeout(toastT);
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  toastT = setTimeout(function(){ t.classList.remove('show'); }, 2400);
+}
+
+// ══ INIT ══════════════════════════════════════════════════════════════════
+loadAll();
+// Auto-refresh every 5 minutes
+setInterval(loadAll, 300000);
+</script>
+</body>
+</html>

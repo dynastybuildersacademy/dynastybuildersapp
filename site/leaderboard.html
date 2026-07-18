@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dynasty Builders Academy — Team Leaderboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+:root {
+  --navy: #0A1628;
+  --navy-mid: #112040;
+  --navy-light: #1A3158;
+  --gold: #C9A84C;
+  --gold-light: #E8C97A;
+  --gold-pale: #F5E8C0;
+  --cream: #FAF6EE;
+  --success: #27AE60;
+  --warn: #E67E22;
+  --danger: #C0392B;
+  --slate: #6B7C93;
+  --border: rgba(201,168,76,0.22);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);min-height:100vh;overflow-x:hidden;}
+
+/* ── HEADER ── */
+.header{
+  background:linear-gradient(180deg,rgba(201,168,76,0.1) 0%,transparent 100%);
+  border-bottom:1px solid var(--border);
+  padding:18px 28px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:100;backdrop-filter:blur(12px);
+  background-color:rgba(10,22,40,0.95);
+}
+.header-left{display:flex;align-items:center;gap:14px;}
+.shield{width:38px;height:44px;background:linear-gradient(160deg,var(--gold) 0%,#7a5c14 100%);clip-path:polygon(50% 0%,100% 18%,100% 65%,50% 100%,0% 65%,0% 18%);display:flex;align-items:center;justify-content:center;font-size:16px;}
+.header h1{font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--gold);font-weight:700;}
+.header p{font-size:11px;color:var(--slate);letter-spacing:0.08em;text-transform:uppercase;}
+
+/* ── CONTROLS BAR ── */
+.controls{
+  display:flex;flex-wrap:wrap;align-items:center;gap:10px;
+  padding:16px 28px;
+  border-bottom:1px solid var(--border);
+  background:var(--navy-mid);
+}
+.ctrl-group{display:flex;align-items:center;gap:8px;}
+.ctrl-label{font-size:11px;color:var(--slate);text-transform:uppercase;letter-spacing:0.07em;white-space:nowrap;}
+select,input[type=month]{
+  background:var(--navy);border:1px solid var(--border);
+  color:var(--cream);font-family:'Barlow',sans-serif;font-size:13px;
+  padding:7px 12px;border-radius:3px;cursor:pointer;
+  appearance:none;-webkit-appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23C9A84C'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 10px center;padding-right:28px;
+}
+select:focus,input:focus{outline:1px solid var(--gold);border-color:var(--gold);}
+.filter-btn{
+  padding:7px 16px;border-radius:3px;font-family:'Barlow Condensed',sans-serif;
+  font-size:13px;font-weight:600;letter-spacing:0.05em;cursor:pointer;
+  border:1px solid var(--border);background:transparent;color:var(--cream);
+  transition:all 0.2s;
+}
+.filter-btn.active{background:var(--gold);color:var(--navy);border-color:var(--gold);}
+.filter-btn:hover:not(.active){border-color:var(--gold);color:var(--gold);}
+.spacer{flex:1;}
+.export-btn{
+  display:flex;align-items:center;gap:7px;padding:8px 18px;
+  background:linear-gradient(135deg,var(--gold) 0%,#a87e2a 100%);
+  color:var(--navy);border:none;border-radius:3px;cursor:pointer;
+  font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;
+  letter-spacing:0.06em;text-transform:uppercase;transition:opacity 0.2s;
+}
+.export-btn:hover{opacity:0.88;}
+.export-btn svg{flex-shrink:0;}
+
+/* ── PODIUM ── */
+.podium-wrap{padding:28px 28px 0;display:flex;gap:16px;justify-content:center;align-items:flex-end;}
+.podium-card{
+  flex:1;max-width:220px;border-radius:4px;padding:20px 16px;
+  text-align:center;position:relative;overflow:hidden;
+  border:1px solid var(--border);
+}
+.podium-card.p1{background:linear-gradient(160deg,rgba(201,168,76,0.18) 0%,var(--navy-mid) 60%);border-color:var(--gold);}
+.podium-card.p2{background:linear-gradient(160deg,rgba(192,192,192,0.1) 0%,var(--navy-mid) 60%);border-color:#a0a8b8;}
+.podium-card.p3{background:linear-gradient(160deg,rgba(205,127,50,0.1) 0%,var(--navy-mid) 60%);border-color:#9a7a4a;}
+.podium-rank{font-family:'Cormorant Garamond',serif;font-size:38px;font-weight:700;line-height:1;}
+.p1 .podium-rank{color:var(--gold);}
+.p2 .podium-rank{color:#c0c8d8;}
+.p3 .podium-rank{color:#b8854a;}
+.podium-medal{font-size:26px;margin-bottom:6px;}
+.podium-name{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--cream);margin:6px 0 2px;letter-spacing:0.03em;}
+.podium-role{font-size:11px;color:var(--slate);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;}
+.podium-pts{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:800;color:var(--gold-light);}
+.podium-pts span{font-size:12px;font-weight:400;color:var(--slate);margin-left:2px;}
+.podium-stats{display:flex;justify-content:center;gap:14px;margin-top:10px;}
+.pstat{text-align:center;}
+.pstat-val{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;color:var(--cream);}
+.pstat-lbl{font-size:10px;color:var(--slate);}
+
+/* ── TABLE ── */
+.table-wrap{padding:20px 28px 40px;overflow-x:auto;}
+table{width:100%;border-collapse:collapse;}
+thead tr{border-bottom:1px solid var(--gold);background:transparent;}
+th{
+  font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;
+  color:var(--gold);letter-spacing:0.1em;text-transform:uppercase;
+  padding:10px 14px;text-align:left;white-space:nowrap;
+}
+th.num{text-align:right;}
+tbody tr{border-bottom:1px solid rgba(201,168,76,0.08);transition:background 0.15s;}
+tbody tr:hover{background:rgba(201,168,76,0.04);}
+tbody tr.me{background:rgba(201,168,76,0.08);border-left:3px solid var(--gold);}
+td{padding:12px 14px;font-size:13px;vertical-align:middle;}
+td.num{text-align:right;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:600;}
+.rank-cell{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;width:44px;}
+.rank-top{color:var(--gold);}
+.agent-name{font-weight:600;font-size:14px;}
+.agent-role{font-size:10px;color:var(--slate);text-transform:uppercase;letter-spacing:0.07em;margin-top:1px;}
+.badge{display:inline-block;padding:2px 8px;border-radius:2px;font-size:10px;font-weight:600;font-family:'Barlow Condensed',sans-serif;letter-spacing:0.05em;}
+.badge-md{background:rgba(201,168,76,0.18);color:var(--gold);border:1px solid rgba(201,168,76,0.3);}
+.badge-dir{background:rgba(39,174,96,0.15);color:#2ecc71;border:1px solid rgba(39,174,96,0.3);}
+.badge-fa{background:rgba(52,152,219,0.15);color:#5dade2;border:1px solid rgba(52,152,219,0.3);}
+.badge-assoc{background:rgba(155,89,182,0.15);color:#bb8fce;border:1px solid rgba(155,89,182,0.3);}
+.badge-train{background:rgba(107,124,147,0.15);color:var(--slate);border:1px solid rgba(107,124,147,0.3);}
+.bar-wrap{width:90px;background:rgba(201,168,76,0.1);border-radius:2px;height:5px;display:inline-block;vertical-align:middle;}
+.bar-fill{height:5px;border-radius:2px;background:linear-gradient(90deg,var(--gold) 0%,var(--gold-light) 100%);}
+.trend{font-size:11px;font-weight:600;}
+.trend.up{color:var(--success);}
+.trend.dn{color:var(--danger);}
+.trend.eq{color:var(--slate);}
+
+/* ── SUMMARY STRIP ── */
+.summary{display:flex;flex-wrap:wrap;gap:1px;background:var(--border);margin:0 28px 4px;border-radius:4px;overflow:hidden;}
+.sum-card{flex:1;min-width:120px;background:var(--navy-mid);padding:14px 18px;}
+.sum-label{font-size:10px;color:var(--slate);text-transform:uppercase;letter-spacing:0.09em;}
+.sum-val{font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:800;color:var(--gold-light);margin-top:2px;}
+
+/* ── LOADING/EMPTY ── */
+.state-msg{text-align:center;padding:60px 20px;color:var(--slate);}
+.state-msg .icon{font-size:40px;margin-bottom:12px;}
+.state-msg p{font-size:14px;}
+
+/* ── PDF HIDDEN ELEMENTS ── */
+@media print{.controls,.header,.no-print{display:none!important;}}
+</style>
+<script src="auth.js?v=20260713"></script>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="shield">👑</div>
+    <div>
+      <h1>Team Leaderboard</h1>
+      <p>Dynasty Builders Academy · Live Rankings</p>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <div id="live-badge" style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--slate);">
+      <span style="width:7px;height:7px;border-radius:50%;background:var(--success);display:inline-block;"></span>
+      Live Data
+    </div>
+    <a href="hub.html" style="font-size:11px;color:var(--gold);text-decoration:none;border:1px solid rgba(201,168,76,.3);padding:7px 14px;border-radius:3px;" onmouseover="this.style.background='rgba(201,168,76,.1)'" onmouseout="this.style.background=''">&larr; Hub</a>
+  </div>
+</div>
+
+<!-- CONTROLS -->
+<div class="controls" id="controls-bar">
+  <div class="ctrl-group">
+    <span class="ctrl-label">Period</span>
+    <button class="filter-btn active" data-period="week" onclick="setPeriod('week',this)">This Week</button>
+    <button class="filter-btn" data-period="month" onclick="setPeriod('month',this)">This Month</button>
+    <button class="filter-btn" data-period="custom" onclick="setPeriod('custom',this)">Monthly</button>
+  </div>
+  <div class="ctrl-group" id="month-picker-wrap" style="display:none;">
+    <span class="ctrl-label">Month</span>
+    <input type="month" id="month-picker" value="" onchange="loadData()">
+  </div>
+  <div class="ctrl-group">
+    <span class="ctrl-label">Team</span>
+    <select id="team-filter" onchange="renderAll()">
+      <option value="all">All Agents</option>
+      <option value="md">Marketing Directors</option>
+      <option value="director">Directors</option>
+      <option value="fa">Field Associates</option>
+    </select>
+  </div>
+  <div class="ctrl-group">
+    <span class="ctrl-label">Sort by</span>
+    <select id="sort-col" onchange="renderAll()">
+      <option value="pts">Points</option>
+      <option value="calls">Calls</option>
+      <option value="contacts">Contacts</option>
+      <option value="appts">Appointments</option>
+      <option value="recruits">Recruits</option>
+    </select>
+  </div>
+  <div class="spacer"></div>
+  <button class="export-btn no-print" onclick="exportPDF()">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    Export PDF
+  </button>
+  <button class="export-btn no-print" onclick="exportCSV()" style="background:var(--navy-light);color:var(--gold);border:1px solid var(--gold);">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+    CSV
+  </button>
+</div>
+
+<!-- SUMMARY STRIP -->
+<div class="summary" id="summary-strip"></div>
+
+<!-- PODIUM -->
+<div class="podium-wrap" id="podium"></div>
+
+<!-- TABLE -->
+<div class="table-wrap">
+  <table id="lb-table">
+    <thead>
+      <tr>
+        <th style="width:44px;">#</th>
+        <th>Agent</th>
+        <th>Level</th>
+        <th class="num">Calls</th>
+        <th class="num">Contacts</th>
+        <th class="num">Appts</th>
+        <th class="num">Recruits</th>
+        <th class="num">Points</th>
+        <th class="num" style="min-width:110px;">Progress</th>
+        <th class="num no-print">vs Prior</th>
+      </tr>
+    </thead>
+    <tbody id="lb-body"></tbody>
+  </table>
+  <div id="state-msg" class="state-msg" style="display:none;">
+    <div class="icon">📊</div>
+    <p>Loading leaderboard data…</p>
+  </div>
+</div>
+
+<div style="padding:0 28px 20px;font-size:11px;color:var(--slate);text-align:right;" id="last-updated"></div>
+
+<script>
+// ─── CONFIG ───────────────────────────────────────────────────
+const MONDAY_API   = 'https://api.monday.com/v2';
+const BOARD_ID     = '18411252612'; // Call Production Log
+
+// ─── STATE ────────────────────────────────────────────────────
+let period   = 'week';
+let allData  = [];
+let priorData = [];
+
+// ─── DEMO DATA (used when no API key) ─────────────────────────
+const DEMO = [
+  {id:'obi001',  name:'Obi Iroezi',       role:'admin',              calls:98,  contacts:41, appts:18, recruits:9,  pts:9200, prev:{calls:85, pts:7800}},
+  {id:'jen001',  name:'Jen Iroezi',        role:'agency_builder',     calls:84,  contacts:35, appts:14, recruits:7,  pts:7600, prev:{calls:78, pts:6900}},
+  {id:'mag001',  name:'Magdalene O.',      role:'marketing_director', calls:76,  contacts:29, appts:11, recruits:5,  pts:6100, prev:{calls:70, pts:5800}},
+  {id:'chi001',  name:'Chidozie N.',       role:'director',           calls:65,  contacts:24, appts:9,  recruits:4,  pts:4800, prev:{calls:55, pts:4200}},
+  {id:'sha001',  name:'Shantesa Archie',   role:'field_associate',    calls:61,  contacts:22, appts:8,  recruits:5,  pts:4400, prev:{calls:50, pts:3800}},
+  {id:'jac001',  name:'Jacinta U.',        role:'field_associate',    calls:54,  contacts:18, appts:6,  recruits:3,  pts:3600, prev:{calls:58, pts:3900}},
+  {id:'cos001',  name:'Cosmas E.',         role:'associate',          calls:48,  contacts:15, appts:5,  recruits:2,  pts:2800, prev:{calls:40, pts:2200}},
+  {id:'gio001',  name:'Gio M.',            role:'field_associate',    calls:45,  contacts:14, appts:5,  recruits:3,  pts:2600, prev:{calls:45, pts:2600}},
+  {id:'nin001',  name:'Nina R.',           role:'associate',          calls:39,  contacts:12, appts:4,  recruits:2,  pts:2100, prev:{calls:30, pts:1800}},
+  {id:'and001',  name:'Andrew T.',         role:'associate',          calls:35,  contacts:11, appts:3,  recruits:1,  pts:1800, prev:{calls:38, pts:2000}},
+  {id:'mau001',  name:'Maureen I.',        role:'trainee',            calls:28,  contacts:8,  appts:2,  recruits:1,  pts:1200, prev:{calls:20, pts:800}},
+  {id:'lil001',  name:'Lily A.',           role:'trainee',            calls:22,  contacts:6,  appts:2,  recruits:0,  pts:900,  prev:{calls:18, pts:700}},
+];
+
+const ROLE_LABELS = {
+  admin:'Marketing Director', agency_builder:'Agency Builder',
+  marketing_director:'Mktg Director', director:'Director',
+  field_associate:'Field Associate', associate:'Associate',
+  trainee:'Trainee', guest:'Guest'
+};
+const ROLE_BADGE = {
+  admin:'badge-md', agency_builder:'badge-md', marketing_director:'badge-md',
+  director:'badge-dir', field_associate:'badge-fa',
+  associate:'badge-assoc', trainee:'badge-train', guest:'badge-train'
+};
+const ROLE_FILTER = {
+  md:['admin','agency_builder','marketing_director'],
+  director:['director'], fa:['field_associate'],
+  all:Object.keys(ROLE_LABELS)
+};
+
+// ─── PERIOD CONTROL ───────────────────────────────────────────
+function setPeriod(p, btn) {
+  period = p;
+  document.querySelectorAll('[data-period]').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const picker = document.getElementById('month-picker-wrap');
+  picker.style.display = p === 'custom' ? 'flex' : 'none';
+  if (p !== 'custom') loadData();
+}
+
+// ─── DATE HELPERS ─────────────────────────────────────────────
+function getDateRange() {
+  const now = new Date();
+  if (period === 'week') {
+    const day = now.getDay();
+    const start = new Date(now); start.setDate(now.getDate() - day);
+    start.setHours(0,0,0,0);
+    return { start, end: now };
+  }
+  if (period === 'month') {
+    return {
+      start: new Date(now.getFullYear(), now.getMonth(), 1),
+      end: now
+    };
+  }
+  // custom month
+  const val = document.getElementById('month-picker').value;
+  if (!val) return { start: new Date(now.getFullYear(), now.getMonth(), 1), end: now };
+  const [y,m] = val.split('-').map(Number);
+  return {
+    start: new Date(y, m-1, 1),
+    end:   new Date(y, m, 0, 23, 59, 59)
+  };
+}
+
+// ─── LOAD DATA ────────────────────────────────────────────────
+async function loadData() {
+  const MONDAY_KEY = AUTH.getMondayKey(); // read fresh each call, not cached at parse time
+  if (!MONDAY_KEY) {
+    allData = DEMO;
+    renderAll();
+    document.getElementById('last-updated').textContent = 'Demo mode — connect Monday.com API key to load live data';
+    return;
+  }
+  document.getElementById('state-msg').style.display = 'block';
+  document.getElementById('lb-body').innerHTML = '';
+  try {
+    const { start, end } = getDateRange();
+    // Must fetch column `title` so parseItems can match by column name
+    const q = `{boards(ids:${BOARD_ID}){items_page(limit:500){items{id name created_at column_values{id text}}}}}`;
+    const res = await fetch(MONDAY_API, {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':MONDAY_KEY},
+      body:JSON.stringify({query:q})
+    });
+    const data = await res.json();
+    const items = data?.data?.boards?.[0]?.items_page?.items || [];
+    allData = parseItems(items, start, end);
+    renderAll();
+  } catch(e) {
+    allData = DEMO;
+    renderAll();
+    console.warn('Monday load failed, using demo:', e);
+  }
+  document.getElementById('state-msg').style.display = 'none';
+  document.getElementById('last-updated').textContent = 'Last updated: ' + new Date().toLocaleString();
+}
+
+function parseItems(items, start, end) {
+  const map = {};
+  items.forEach(item => {
+    // Build lowercase-title → text lookup from actual column titles
+    const byTitle = {};
+    (item.column_values || []).forEach(c => {
+      const key = (c.title||'').toLowerCase().trim();
+      if (key) byTitle[key] = c.text || '';
+    });
+    const get = (...kws) => {
+      for (const kw of kws) {
+        for (const [k, v] of Object.entries(byTitle)) {
+          if (k.includes(kw.toLowerCase())) return v;
+        }
+      }
+      return '';
+    };
+
+    // Require agentId — skip foreign rows (BOM guests, survey leads, etc.)
+    const agentId = get('agent id','agent_id','agentid');
+    if (!agentId) return;
+
+    // Date filter
+    const dateStr    = get('session date','date');
+    const sessionDate = dateStr ? new Date(dateStr) : new Date(item.created_at || '');
+    if (start && !isNaN(sessionDate) && sessionDate < start) return;
+    if (end   && !isNaN(sessionDate) && sessionDate > end)   return;
+
+    // Always use roster name/role — never raw Monday item names
+    const roster = AGENTS.find(a => a.id === agentId);
+    const name   = roster?.name || get('agent name','agent_name') || agentId;
+    const role   = roster?.role || get('role','level') || 'trainee';
+
+    if (!map[agentId]) {
+      map[agentId] = { id:agentId, name, role, calls:0, contacts:0, appts:0, recruits:0, pts:0, prev:{calls:0,pts:0} };
+    }
+    const n = v => { const x = parseInt(v); return isNaN(x) ? 0 : x; };
+    map[agentId].calls    += n(get('calls','call'));
+    map[agentId].contacts += n(get('contacts','contact'));
+    map[agentId].appts    += n(get('appointments','appts','appt'));
+    map[agentId].recruits += n(get('recruits','recruit'));
+    map[agentId].pts      += n(get('points','atp','production'));
+  });
+  return Object.values(map).sort((a,b) => b.pts - a.pts);
+}
+
+// ─── RENDER ALL ───────────────────────────────────────────────
+function renderAll() {
+  const sorted = getSorted();
+  renderSummary(sorted);
+  renderPodium(sorted);
+  renderTable(sorted);
+}
+
+function getSorted() {
+  const sortKey = document.getElementById('sort-col').value;
+  const filterRole = document.getElementById('team-filter').value;
+  const allowed = ROLE_FILTER[filterRole] || ROLE_FILTER.all;
+  return [...allData]
+    .filter(a => allowed.includes(a.role))
+    .sort((a,b) => (b[sortKey] || b.pts) - (a[sortKey] || a.pts));
+}
+
+function renderTable(sorted) {
+  if (!sorted) sorted = getSorted();
+  const maxPts = sorted[0]?.pts || 1;
+  const tbody = document.getElementById('lb-body');
+  tbody.innerHTML = '';
+  sorted.forEach((ag, i) => {
+    const rank = i + 1;
+    const pct  = Math.round((ag.pts / maxPts) * 100);
+    const delta = ag.pts - (ag.prev?.pts || ag.pts);
+    const trendHtml = delta > 0
+      ? `<span class="trend up">▲ ${delta.toLocaleString()}</span>`
+      : delta < 0
+      ? `<span class="trend dn">▼ ${Math.abs(delta).toLocaleString()}</span>`
+      : `<span class="trend eq">—</span>`;
+    const rankCls = rank <= 3 ? 'rank-top' : '';
+    tbody.innerHTML += `
+      <tr>
+        <td class="rank-cell ${rankCls}">${rank <= 3 ? ['🥇','🥈','🥉'][rank-1] : rank}</td>
+        <td><div class="agent-name">${ag.name}</div><div class="agent-role">${ROLE_LABELS[ag.role]||ag.role}</div></td>
+        <td><span class="badge ${ROLE_BADGE[ag.role]||'badge-train'}">${ROLE_LABELS[ag.role]||ag.role}</span></td>
+        <td class="num">${ag.calls.toLocaleString()}</td>
+        <td class="num">${ag.contacts.toLocaleString()}</td>
+        <td class="num">${ag.appts.toLocaleString()}</td>
+        <td class="num">${ag.recruits.toLocaleString()}</td>
+        <td class="num" style="color:var(--gold-light);font-weight:700;">${ag.pts.toLocaleString()}</td>
+        <td class="num">
+          <div style="display:flex;align-items:center;gap:7px;justify-content:flex-end;">
+            <div class="bar-wrap"><div class="bar-fill" style="width:${pct}%"></div></div>
+            <span style="font-size:11px;color:var(--slate);min-width:28px">${pct}%</span>
+          </div>
+        </td>
+        <td class="num no-print">${trendHtml}</td>
+      </tr>`;
+  });
+  if (!sorted.length) {
+    tbody.innerHTML = '<tr><td colspan="10" class="state-msg"><p>No data for selected period / filter</p></td></tr>';
+  }
+}
+
+function renderSummary(sorted) {
+  const total = sorted.reduce((a,b)=>({
+    calls:a.calls+b.calls, contacts:a.contacts+b.contacts,
+    appts:a.appts+b.appts, recruits:a.recruits+b.recruits, pts:a.pts+b.pts
+  }),{calls:0,contacts:0,appts:0,recruits:0,pts:0});
+  const strip = document.getElementById('summary-strip');
+  const periodLabel = period==='week'?'Week':period==='month'?'Month':'Selected Month';
+  strip.innerHTML = `
+    <div class="sum-card"><div class="sum-label">Agents Active</div><div class="sum-val">${sorted.length}</div></div>
+    <div class="sum-card"><div class="sum-label">Total Calls · ${periodLabel}</div><div class="sum-val">${total.calls.toLocaleString()}</div></div>
+    <div class="sum-card"><div class="sum-label">Total Contacts</div><div class="sum-val">${total.contacts.toLocaleString()}</div></div>
+    <div class="sum-card"><div class="sum-label">Total Appointments</div><div class="sum-val">${total.appts.toLocaleString()}</div></div>
+    <div class="sum-card"><div class="sum-label">Team Recruits</div><div class="sum-val">${total.recruits.toLocaleString()}</div></div>
+    <div class="sum-card"><div class="sum-label">Total Points</div><div class="sum-val" style="color:var(--gold)">${total.pts.toLocaleString()}</div></div>`;
+}
+
+function renderPodium(sorted) {
+  const top3 = sorted.slice(0,3);
+  const wrap = document.getElementById('podium');
+  if (!top3.length) { wrap.innerHTML = ''; return; }
+  // Order: 2nd, 1st, 3rd
+  const order = [top3[1], top3[0], top3[2]].filter(Boolean);
+  const classes = top3[1] ? ['p2','p1','p3'] : ['p1'];
+  wrap.innerHTML = order.map((ag, i) => {
+    const cls = classes[i];
+    const medals = ['🥇','🥈','🥉'];
+    const rankNum = [2,1,3][i];
+    return `
+    <div class="podium-card ${cls}" style="${cls==='p1'?'transform:translateY(-12px);':''}">
+      <div class="podium-medal">${medals[rankNum-1]}</div>
+      <div class="podium-rank">#${rankNum}</div>
+      <div class="podium-name">${ag.name}</div>
+      <div class="podium-role">${ROLE_LABELS[ag.role]||ag.role}</div>
+      <div class="podium-pts">${ag.pts.toLocaleString()}<span>pts</span></div>
+      <div class="podium-stats">
+        <div class="pstat"><div class="pstat-val">${ag.calls}</div><div class="pstat-lbl">Calls</div></div>
+        <div class="pstat"><div class="pstat-val">${ag.recruits}</div><div class="pstat-lbl">Recruits</div></div>
+        <div class="pstat"><div class="pstat-val">${ag.appts}</div><div class="pstat-lbl">Appts</div></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─── EXPORT PDF ───────────────────────────────────────────────
+async function exportPDF() {
+  const btn = document.querySelector('.export-btn');
+  btn.textContent = 'Generating…';
+  btn.disabled = true;
+
+  const period_str = period === 'custom'
+    ? document.getElementById('month-picker').value || 'Monthly'
+    : period === 'week' ? 'This Week' : 'This Month';
+
+  const el = document.createElement('div');
+  el.style.cssText = 'font-family:Barlow,sans-serif;background:#0A1628;color:#FAF6EE;padding:24px;';
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #C9A84C;padding-bottom:14px;margin-bottom:20px;">
+      <div>
+        <h1 style="font-family:Cormorant Garamond,serif;font-size:26px;color:#C9A84C;margin:0;">Dynasty Builders Academy</h1>
+        <p style="font-size:12px;color:#6B7C93;margin:2px 0 0;letter-spacing:0.08em;text-transform:uppercase;">Team Leaderboard · ${period_str} · Generated ${new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}</p>
+      </div>
+      <div style="text-align:right;font-size:11px;color:#6B7C93;">agent.yourdynastybuilder.com</div>
+    </div>
+    ${document.getElementById('summary-strip').outerHTML}
+    <br>
+    <table style="width:100%;border-collapse:collapse;margin-top:8px;">
+      <thead>
+        <tr style="border-bottom:1px solid #C9A84C;">
+          <th style="font-size:10px;color:#C9A84C;text-align:left;padding:8px;letter-spacing:0.1em;text-transform:uppercase;">#</th>
+          <th style="font-size:10px;color:#C9A84C;text-align:left;padding:8px;letter-spacing:0.1em;text-transform:uppercase;">Agent</th>
+          <th style="font-size:10px;color:#C9A84C;text-align:left;padding:8px;letter-spacing:0.1em;text-transform:uppercase;">Level</th>
+          <th style="font-size:10px;color:#C9A84C;text-align:right;padding:8px;letter-spacing:0.1em;text-transform:uppercase;">Calls</th>
+          <th style="font-size:10px;color:#C9A84C;text-align:right;padding:8px;letter-spacing:0.1em;text-transform:uppercase;">Contacts</th>
+          <th style="font-size:10px;color:#C9A84C;text-align:right;padding:8px;letter-spacing:0.1em;text-transform:uppercase;">Appts</th>
+          <th style="font-size:10px;color:#C9A84C;text-align:right;padding:8px;letter-spacing:0.1em;text-transform:uppercase;">Recruits</th>
+          <th style="font-size:10px;color:#C9A84C;text-align:right;padding:8px;letter-spacing:0.1em;text-transform:uppercase;">Points</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${getSorted().map((ag,i)=>`
+          <tr style="border-bottom:1px solid rgba(201,168,76,0.1);">
+            <td style="padding:9px 8px;font-size:15px;font-weight:800;color:${i<3?'#C9A84C':'#FAF6EE'}">${['🥇','🥈','🥉'][i]||i+1}</td>
+            <td style="padding:9px 8px;font-weight:600;">${ag.name}</td>
+            <td style="padding:9px 8px;font-size:11px;color:#6B7C93;text-transform:uppercase;">${ROLE_LABELS[ag.role]||ag.role}</td>
+            <td style="padding:9px 8px;text-align:right;">${ag.calls}</td>
+            <td style="padding:9px 8px;text-align:right;">${ag.contacts}</td>
+            <td style="padding:9px 8px;text-align:right;">${ag.appts}</td>
+            <td style="padding:9px 8px;text-align:right;">${ag.recruits}</td>
+            <td style="padding:9px 8px;text-align:right;font-weight:700;color:#E8C97A;">${ag.pts.toLocaleString()}</td>
+          </tr>`).join('')}
+      </tbody>
+    </table>
+    <div style="margin-top:24px;font-size:10px;color:#6B7C93;text-align:center;">Dynasty Builders Academy · yourdynastybuilder.com · Obi & Jen Iroezi · 310-995-6507</div>`;
+
+  document.body.appendChild(el);
+  const filename = `DBA_Leaderboard_${period_str.replace(/\s+/g,'_')}_${new Date().toISOString().slice(0,10)}.pdf`;
+  await html2pdf().set({
+    margin:[8,8,8,8], filename,
+    image:{type:'jpeg',quality:0.95},
+    html2canvas:{scale:2,backgroundColor:'#0A1628',useCORS:true},
+    jsPDF:{unit:'mm',format:'a4',orientation:'landscape'}
+  }).from(el).save();
+  document.body.removeChild(el);
+  btn.textContent = '✓ Downloaded';
+  setTimeout(()=>{btn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Export PDF';btn.disabled=false;},2500);
+}
+
+// ─── EXPORT CSV ───────────────────────────────────────────────
+function exportCSV() {
+  const rows = [['Rank','Name','Level','Calls','Contacts','Appts','Recruits','Points']];
+  getSorted().forEach((ag,i)=>rows.push([i+1,ag.name,ROLE_LABELS[ag.role]||ag.role,ag.calls,ag.contacts,ag.appts,ag.recruits,ag.pts]));
+  const csv = rows.map(r=>r.map(v=>`"${v}"`).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download = `DBA_Leaderboard_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+// ─── INIT ─────────────────────────────────────────────────────
+const now = new Date();
+document.getElementById('month-picker').value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+loadData();
+setInterval(loadData, 60000); // refresh every 60s
+</script>
+</body>
+</html>

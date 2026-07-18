@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dynasty Builders Academy — Agent Login</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="auth.js?v=20260713"></script>
+<style>
+:root{--navy:#0A1628;--navy-mid:#112040;--navy-light:#1A3158;--gold:#C9A84C;--gold-light:#E8C97A;--cream:#FAF6EE;--slate:#6B7C93;--border:rgba(201,168,76,0.22);}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);min-height:100vh;display:flex;}
+
+/* ── SPLIT LAYOUT ── */
+.left{flex:1;background:linear-gradient(160deg,var(--navy-mid) 0%,var(--navy) 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 48px;position:relative;overflow:hidden;border-right:1px solid var(--border);}
+.left::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 50% at 50% 60%,rgba(201,168,76,0.08) 0%,transparent 70%);}
+.right{width:480px;min-width:360px;display:flex;align-items:center;justify-content:center;padding:48px 40px;background:var(--navy-mid);}
+@media(max-width:768px){.left{display:none;}.right{width:100%;padding:40px 24px;}}
+
+/* ── BRAND BLOCK ── */
+.brand{position:relative;text-align:center;}
+.shield-lg{width:72px;height:84px;background:linear-gradient(160deg,var(--gold) 0%,#7a5c14 100%);clip-path:polygon(50% 0%,100% 18%,100% 65%,50% 100%,0% 65%,0% 18%);display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 24px;}
+.brand h1{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:700;color:var(--gold);line-height:1.1;margin-bottom:6px;}
+.brand h2{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:400;color:var(--cream);opacity:0.7;margin-bottom:28px;}
+.tagline{font-size:13px;color:var(--slate);font-style:italic;letter-spacing:0.03em;}
+
+/* ── STATS ── */
+.stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:44px;width:100%;max-width:380px;}
+.stat{text-align:center;}
+.stat-val{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:800;color:var(--gold-light);}
+.stat-label{font-size:11px;color:var(--slate);text-transform:uppercase;letter-spacing:0.09em;margin-top:2px;}
+
+/* ── LOGIN FORM ── */
+.login-wrap{width:100%;}
+.login-wrap h3{font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--gold);margin-bottom:6px;}
+.login-wrap p{font-size:13px;color:var(--slate);margin-bottom:28px;}
+
+.field{margin-bottom:18px;}
+label{display:block;font-size:11px;font-weight:600;color:rgba(250,246,238,0.6);letter-spacing:0.09em;text-transform:uppercase;margin-bottom:7px;}
+select{width:100%;background:var(--navy);border:1px solid var(--border);color:var(--cream);font-family:'Barlow',sans-serif;font-size:14px;padding:12px 14px;border-radius:4px;transition:border-color 0.2s;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23C9A84C'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;}
+select:focus{outline:none;border-color:var(--gold);}
+select option{background:var(--navy-mid);}
+
+/* ── PIN INPUTS ── */
+.pin-row{display:flex;gap:12px;justify-content:center;margin-bottom:8px;}
+.pin-digit{width:56px;height:64px;background:var(--navy);border:1.5px solid var(--border);border-radius:6px;text-align:center;font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:700;color:var(--gold-light);caret-color:var(--gold);transition:border-color 0.2s;}
+.pin-digit:focus{outline:none;border-color:var(--gold);background:rgba(201,168,76,0.05);}
+.pin-dot{width:56px;height:64px;background:var(--navy);border:1.5px solid var(--border);border-radius:6px;display:flex;align-items:center;justify-content:center;}
+.pin-dot .dot{width:10px;height:10px;border-radius:50%;background:var(--gold);}
+.pin-hint{text-align:center;font-size:11px;color:var(--slate);margin-top:4px;}
+
+/* ── BUTTON ── */
+.login-btn{width:100%;background:linear-gradient(135deg,var(--gold) 0%,#a07020 100%);border:none;color:var(--navy);font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;padding:15px;border-radius:4px;cursor:pointer;transition:opacity 0.2s;margin-top:8px;}
+.login-btn:hover{opacity:0.88;}
+.login-btn:disabled{opacity:0.5;cursor:not-allowed;}
+
+/* ── ERROR ── */
+.error{background:rgba(192,57,43,0.12);border:1px solid rgba(192,57,43,0.3);border-radius:4px;padding:10px 14px;font-size:13px;color:#e87070;margin-top:12px;display:none;}
+
+
+</style>
+</head>
+<body>
+
+<div class="left">
+  <div class="brand">
+    <div class="shield-lg">👑</div>
+    <h1>Dynasty Builders<br>Academy</h1>
+    <h2>PHP Agency Operating System</h2>
+    <div class="tagline">"Making Dreams Come True, One Policy at a Time"</div>
+
+    <div class="stats">
+      <div class="stat"><div class="stat-val">12</div><div class="stat-label">Active Agents</div></div>
+      <div class="stat"><div class="stat-val">50%</div><div class="stat-label">Avg Commission</div></div>
+      <div class="stat"><div class="stat-val">5K+</div><div class="stat-label">Monthly Pts</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="right">
+  <div class="login-wrap">
+    <h3>Agent Sign In</h3>
+    <p>Select your name and enter your 4-digit PIN</p>
+
+    <div class="field">
+      <label>Your Name</label>
+      <div style="position:relative;">
+        <input type="text" id="agent-search" autocomplete="off"
+          placeholder="Type to search your name…"
+          style="width:100%;background:var(--navy);border:1px solid var(--border);color:var(--cream);font-family:'Barlow',sans-serif;font-size:14px;padding:11px 14px;border-radius:4px;outline:none;margin-bottom:6px;"
+          oninput="filterAgents(this.value)" onfocus="showDropdown()" onblur="setTimeout(hideDropdown,200)">
+        <div id="agent-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:#132240;border:1px solid var(--border);border-radius:4px;max-height:220px;overflow-y:auto;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,.5);">
+        </div>
+      </div>
+      <input type="hidden" id="agent-select">
+      <div id="selected-agent-name" style="font-size:12px;color:var(--gold);min-height:18px;margin-top:2px;"></div>
+    </div>
+
+    <div class="field">
+      <label>4-Digit PIN</label>
+      <div class="pin-row" id="pin-display">
+        <div class="pin-dot"><div class="dot" style="opacity:0" id="dot-0"></div></div>
+        <div class="pin-dot"><div class="dot" style="opacity:0" id="dot-1"></div></div>
+        <div class="pin-dot"><div class="dot" style="opacity:0" id="dot-2"></div></div>
+        <div class="pin-dot"><div class="dot" style="opacity:0" id="dot-3"></div></div>
+      </div>
+      <input type="password" inputmode="numeric" maxlength="4" id="pin-input"
+        placeholder="Enter PIN"
+        style="width:100%;background:var(--navy);border:1px solid var(--border);color:var(--cream);font-family:'Barlow',sans-serif;font-size:16px;padding:12px 14px;border-radius:4px;letter-spacing:0.3em;text-align:center;margin-top:10px;"
+        oninput="updatePinDots()" onkeydown="if(event.key==='Enter')doLogin()">
+      <div class="pin-hint">Your PIN was set when you joined DBA</div>
+    </div>
+
+    <button class="login-btn" id="login-btn" onclick="doLogin()" disabled>Sign In →</button>
+    <div class="error" id="error-msg"></div>
+
+
+  </div>
+</div>
+
+<script>
+// Redirect if already logged in
+if (AUTH.getSession()) window.location.href = 'hub.html';
+
+// ── AGENT SEARCH DROPDOWN ────────────────────────────────────
+let selectedAgentId = '';
+let filteredAgents  = AGENTS.slice();
+
+function filterAgents(q) {
+  const query = q.trim().toLowerCase();
+  filteredAgents = query
+    ? AGENTS.filter(a => a.name.toLowerCase().includes(query))
+    : AGENTS.slice();
+  renderDropdown();
+  showDropdown();
+}
+
+function renderDropdown() {
+  const dd = document.getElementById('agent-dropdown');
+  if (!filteredAgents.length) {
+    dd.innerHTML = '<div style="padding:10px 14px;font-size:13px;color:var(--slate);">No agents found</div>';
+    return;
+  }
+  dd.innerHTML = filteredAgents.slice(0, 30).map(a =>
+    `<div onclick="selectAgent('${a.id}','${a.name.replace(/'/g,"\\'")}','${getRoleLabel(a.role)}')"
+      style="padding:10px 14px;font-size:13px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.05);transition:background .1s;"
+      onmouseover="this.style.background='rgba(201,168,76,.1)'" onmouseout="this.style.background=''">
+      <span style="font-weight:600;">${a.name}</span>
+      <span style="font-size:11px;color:var(--slate);margin-left:6px;">${getRoleLabel(a.role)}</span>
+    </div>`
+  ).join('') + (filteredAgents.length > 30
+    ? `<div style="padding:8px 14px;font-size:11px;color:var(--slate);">…and ${filteredAgents.length-30} more — keep typing to narrow</div>`
+    : '');
+}
+
+function selectAgent(id, name, role) {
+  selectedAgentId = id;
+  document.getElementById('agent-select').value     = id;
+  document.getElementById('agent-search').value     = name;
+  document.getElementById('selected-agent-name').textContent = role;
+  hideDropdown();
+  document.getElementById('pin-input').focus();
+  checkReady();
+}
+
+function showDropdown() {
+  renderDropdown();
+  document.getElementById('agent-dropdown').style.display = 'block';
+}
+
+function hideDropdown() {
+  document.getElementById('agent-dropdown').style.display = 'none';
+}
+
+// Legacy stub
+function onAgentChange() { checkReady(); }
+
+function updatePinDots() {
+  const val = document.getElementById('pin-input').value;
+  for (let i = 0; i < 4; i++) {
+    document.getElementById('dot-'+i).style.opacity = i < val.length ? '1' : '0';
+  }
+  checkReady();
+}
+
+function checkReady() {
+  const agentId = document.getElementById('agent-select').value || selectedAgentId;
+  const pin     = document.getElementById('pin-input').value;
+  document.getElementById('login-btn').disabled = !(agentId && pin.length === 4);
+}
+
+function doLogin() {
+  const agentId = document.getElementById('agent-select').value;
+  const pin     = document.getElementById('pin-input').value;
+  const errEl   = document.getElementById('error-msg');
+  const btn     = document.getElementById('login-btn');
+  errEl.style.display = 'none';
+
+  const result = AUTH.login(agentId, pin);
+  if (result.success) {
+    btn.textContent = 'Welcome ' + result.session.name.split(' ')[0] + '! Redirecting…';
+    btn.disabled = true;
+    // Fire background Monday sync — doesn't block redirect
+    syncMondayAgentsInBackground();
+    setTimeout(() => window.location.href = 'hub.html', 600);
+  } else {
+    errEl.textContent = '⚠️ ' + result.error;
+    errEl.style.display = 'block';
+    document.getElementById('pin-input').value = '';
+    updatePinDots();
+    document.getElementById('pin-input').focus();
+  }
+}
+
+// ── BACKGROUND MONDAY SYNC ────────────────────────────────────
+// Runs silently after login. Compares Monday Agent Roster board
+// against AGENTS array. Stores any new/updated agents in localStorage
+// so hub.html can surface a notification for admins.
+async function syncMondayAgentsInBackground() {
+  try {
+    const key = AUTH.getMondayKey();
+    if (!key) return;
+
+    // Fetch column titles
+    const isLocal = window.location.hostname === 'localhost';
+    const proxy   = isLocal ? 'https://api.monday.com/v2' : '/api/monday';
+    const mkReq   = (q) => ({
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...(isLocal ? { 'Authorization': key } : {}) },
+      body: JSON.stringify(isLocal ? { query: q } : { query: q, apiKey: key })
+    });
+    const colRes = await fetch(proxy, mkReq(`{ boards(ids:${TEAM.monday.boardAgents}) { columns { id title } } }`));
+    const colData = await colRes.json();
+    const cols = colData?.data?.boards?.[0]?.columns || [];
+    const colMap = {};
+    cols.forEach(c => { colMap[c.id] = (c.title||'').toLowerCase(); });
+    if (!cols.length) return;
+
+    // Fetch board items
+    const itemRes = await fetch(proxy, mkReq(`{ boards(ids:${TEAM.monday.boardAgents}) { items_page(limit:200) { items { id name column_values { id text } } } } }`));
+    const itemData = await itemRes.json();
+    const items = itemData?.data?.boards?.[0]?.items_page?.items || [];
+    if (!items.length) return;
+
+    const getVal = (item, ...kws) => {
+      for (const kw of kws) {
+        const cv = item.column_values.find(cv => (colMap[cv.id]||'').includes(kw));
+        if (cv?.text?.trim()) return cv.text.trim();
+      }
+      return '';
+    };
+
+    // Find agents on Monday not in AGENTS array
+    const knownIds   = new Set(AGENTS.map(a => a.id.toLowerCase()));
+    const knownNames = new Set(AGENTS.map(a => a.name.toLowerCase()));
+    const newAgents  = [];
+    const updatedAgents = [];
+
+    items.forEach(item => {
+      const mondayId   = getVal(item, 'agent id', 'agent_id', 'agentid');
+      const mondayRole = getVal(item, 'role', 'level', 'position');
+      const mondayPhp  = getVal(item, 'php', 'php id');
+      const mondayPhone= getVal(item, 'phone');
+      const mondayEmail= getVal(item, 'email');
+      const mondayPin  = getVal(item, 'pin', 'passcode');
+      const itemName   = item.name.trim();
+
+      if (!mondayId && !itemName) return;
+      const searchId   = (mondayId || '').toLowerCase();
+      const searchName = itemName.toLowerCase();
+
+      const existingById   = searchId   && AGENTS.find(a => a.id.toLowerCase() === searchId);
+      const existingByName = AGENTS.find(a => a.name.toLowerCase() === searchName);
+      const existing = existingById || existingByName;
+
+      if (!existing) {
+        // Completely new agent — not in auth.js at all
+        const suggestedId = mondayId || (itemName.toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,6) + Math.floor(Math.random()*900+100));
+        newAgents.push({
+          id:    suggestedId,
+          name:  itemName,
+          pin:   mondayPin || 'XXXX',
+          role:  mondayRole || 'trainee',
+          phpId: mondayPhp || '',
+          phone: mondayPhone || '',
+          email: mondayEmail || '',
+          mondayItemId: item.id,
+        });
+      } else {
+        // Agent exists — check for role/PHP updates from Monday
+        const changes = {};
+        if (mondayRole && mondayRole !== getRoleLabel(existing.role)) changes.role = mondayRole;
+        if (mondayPhp  && mondayPhp  !== existing.phpId)              changes.phpId = mondayPhp;
+        if (mondayPhone && mondayPhone !== existing.phone)             changes.phone = mondayPhone;
+        if (Object.keys(changes).length) {
+          updatedAgents.push({ id: existing.id, name: existing.name, changes, mondayItemId: item.id });
+        }
+      }
+    });
+
+    // Store results for hub notification
+    const syncResult = {
+      checkedAt:    new Date().toISOString(),
+      boardId:      TEAM.monday.boardAgents,
+      totalOnBoard: items.length,
+      totalInAuth:  AGENTS.length,
+      newAgents,
+      updatedAgents,
+    };
+    localStorage.setItem('dba_monday_agent_sync', JSON.stringify(syncResult));
+
+    console.log(`[BG Sync] Board: ${items.length} items, auth.js: ${AGENTS.length} agents, New: ${newAgents.length}, Updates: ${updatedAgents.length}`);
+
+  } catch(e) {
+    // Silent — never interrupt login
+    console.warn('[BG Sync] Failed silently:', e.message);
+  }
+}
+</script>
+</body>
+</html>

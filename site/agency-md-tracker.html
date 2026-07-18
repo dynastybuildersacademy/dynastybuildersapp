@@ -1,0 +1,1612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agency MD Promotion Tracker — Dynasty Builders Academy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0A1628;--navy2:#0F1E38;--navy3:#132240;--navy4:#1A2E50;
+  --gold:#C9A84C;--gold2:#E8C97A;--gold-dim:rgba(201,168,76,.12);
+  --green:#27AE60;--green2:#2DCA73;--green-dim:rgba(39,174,96,.1);
+  --blue:#3498DB;--blue2:#5DADE2;--blue-dim:rgba(52,152,219,.1);
+  --purple:#9B59B6;--orange:#E67E22;--red:#E05252;
+  --slate:#6B7C93;--cream:#FAF6EE;--border:rgba(201,168,76,.2);--bs:rgba(255,255,255,.06);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);min-height:100vh;}
+.bg{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 70% 50% at 15% 20%,rgba(52,152,219,.05),transparent 55%),
+  radial-gradient(ellipse 50% 70% at 85% 80%,rgba(201,168,76,.05),transparent 60%),
+  linear-gradient(160deg,#0A1628,#0E1C35 50%,#0A1628);}
+.bgrid{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:linear-gradient(rgba(201,168,76,.03) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(201,168,76,.03) 1px,transparent 1px);
+  background-size:60px 60px;}
+.page{position:relative;z-index:1;max-width:1320px;margin:0 auto;padding:24px 18px 72px;}
+
+/* HEADER */
+.hdr{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:8px;}
+.hl{display:flex;align-items:center;gap:14px;}
+.shield{width:46px;height:46px;border-radius:10px;background:linear-gradient(135deg,var(--gold),var(--gold2));
+  display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 4px 16px rgba(201,168,76,.25);}
+.hdr-title{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:800;color:var(--cream);letter-spacing:.2px;}
+.hdr-sub{font-size:12px;color:var(--slate);letter-spacing:.3px;margin-top:2px;}
+.hr{display:flex;gap:8px;flex-wrap:wrap;}
+.btn{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:.3px;
+  padding:9px 16px;border-radius:5px;border:1px solid var(--border);background:var(--navy3);color:var(--cream);
+  cursor:pointer;transition:.15s;text-decoration:none;display:inline-flex;align-items:center;gap:6px;}
+.btn:hover{border-color:var(--gold);transform:translateY(-1px);}
+.btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--navy);border:none;}
+.btn-gold:hover{box-shadow:0 4px 16px rgba(201,168,76,.35);}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--slate);}
+.btn-outline{background:transparent;border:1px solid var(--blue2);color:var(--blue2);}
+
+.crit-bar{font-size:12px;color:var(--slate);margin-bottom:18px;}
+.crit-bar strong{color:var(--gold2);font-weight:700;}
+
+/* DEADLINE BADGES */
+.deadlines{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;}
+.dl-badge{font-size:11px;font-weight:700;padding:5px 12px;border-radius:4px;display:flex;align-items:center;gap:6px;}
+.dl-red{background:rgba(192,57,43,.12);border:1px solid rgba(192,57,43,.35);color:#E8A0A0;}
+.dl-gold{background:var(--gold-dim);border:1px solid rgba(201,168,76,.35);color:var(--gold2);}
+
+/* SUMMARY */
+.summary{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px;}
+@media(max-width:900px){.summary{grid-template-columns:repeat(2,1fr);}}
+.sum-card{background:var(--navy3);border:1px solid var(--border);border-radius:8px;padding:14px 16px;}
+.sum-label{font-size:10px;color:var(--slate);text-transform:uppercase;letter-spacing:.1em;font-weight:700;margin-bottom:6px;}
+.sum-val{font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:800;color:var(--gold);}
+.sum-val.green{color:var(--green2);}
+.sum-val.blue{color:var(--blue2);}
+.sum-val.red{color:#E8A0A0;}
+
+/* TOOLBAR + FILTERS */
+.toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px;}
+.search-box{background:var(--navy);border:1px solid var(--border);color:var(--cream);font-size:13px;
+  padding:9px 14px;border-radius:5px;outline:none;width:220px;font-family:'Barlow',sans-serif;}
+.search-box::placeholder{color:var(--slate);}
+.sel{background:var(--navy);border:1px solid var(--border);color:var(--cream);font-size:12px;
+  padding:9px 12px;border-radius:5px;outline:none;font-family:'Barlow',sans-serif;cursor:pointer;}
+.filter-row{display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap;margin-bottom:16px;
+  background:var(--navy3);border:1px solid var(--border);border-radius:8px;padding:14px 16px;}
+.filter-group{display:flex;flex-direction:column;gap:5px;}
+.filter-label{font-size:10px;color:var(--slate);text-transform:uppercase;letter-spacing:.08em;font-weight:700;}
+
+/* TABLE */
+.tbl-card{background:var(--navy3);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+table{width:100%;border-collapse:collapse;}
+thead th{background:var(--navy4);font-family:'Barlow Condensed',sans-serif;font-size:10.5px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.06em;color:var(--gold2);text-align:left;padding:11px 12px;
+  border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none;}
+thead th:hover{color:var(--gold);}
+thead th.sorted::after{content:' ▾';color:var(--gold);}
+thead th.sorted-asc::after{content:' ▴';color:var(--gold);}
+tbody td{padding:10px 12px;font-size:12.5px;border-bottom:1px solid rgba(201,168,76,.08);vertical-align:middle;}
+tbody tr:hover{background:rgba(201,168,76,.04);}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr.top1{background:rgba(201,168,76,.08);}
+.rank-badge{font-family:'DM Mono',monospace;font-weight:600;color:var(--slate);}
+.rank-badge.r1{color:var(--gold2);font-weight:700;}
+.agent-name{font-weight:600;color:var(--cream);}
+.agent-sub{font-size:10.5px;color:var(--slate);margin-top:1px;}
+.level-pill{font-size:9.5px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;padding:2px 7px;
+  border-radius:3px;background:rgba(52,152,219,.1);color:var(--blue2);border:1px solid rgba(52,152,219,.25);}
+.metric-cell{display:flex;flex-direction:column;gap:4px;min-width:88px;}
+.metric-val{font-family:'DM Mono',monospace;font-size:12px;font-weight:600;}
+.metric-val.done{color:var(--green2);}
+.metric-val input{width:64px;background:var(--navy);border:1px solid var(--border);color:var(--cream);
+  font-family:'DM Mono',monospace;font-size:11.5px;padding:3px 6px;border-radius:3px;outline:none;}
+.metric-val input:focus{border-color:var(--gold);}
+.mini-bar{height:5px;border-radius:3px;background:rgba(255,255,255,.06);overflow:hidden;}
+.mini-fill{height:100%;border-radius:3px;transition:width .3s;}
+.mf-red{background:var(--red);}
+.mf-yellow{background:var(--orange);}
+.mf-green{background:var(--green2);}
+.avg-cell{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:14px;}
+.verdict-pill{font-size:10px;font-weight:700;letter-spacing:.03em;padding:3px 9px;border-radius:3px;white-space:nowrap;}
+.v-closest{background:var(--gold-dim);color:var(--gold2);border:1px solid rgba(201,168,76,.4);}
+.v-ontrack{background:var(--green-dim);color:var(--green2);border:1px solid rgba(39,174,96,.3);}
+.v-push{background:rgba(192,57,43,.1);color:#E8A0A0;border:1px solid rgba(192,57,43,.3);}
+.empty-row td{text-align:center;padding:36px 14px;color:var(--slate);font-size:13px;}
+.edit-hint{font-size:9.5px;color:var(--slate);text-align:center;margin-top:2px;}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(5,12,24,.75);z-index:50;display:none;
+  align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.show{display:flex;}
+.modal{background:var(--navy3);border:1px solid var(--border);border-radius:12px;max-width:480px;width:100%;
+  padding:26px;box-shadow:0 20px 60px rgba(0,0,0,.5);}
+.modal-title{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;color:var(--gold2);margin-bottom:4px;}
+.modal-sub{font-size:12px;color:var(--slate);margin-bottom:18px;}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;
+  letter-spacing:.06em;margin-bottom:6px;}
+.field input,.field select{width:100%;background:var(--navy);border:1px solid var(--border);color:var(--cream);
+  font-size:14px;padding:10px 12px;border-radius:6px;outline:none;font-family:'Barlow',sans-serif;}
+.field input:focus,.field select:focus{border-color:var(--gold);}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;}
+.btn-cancel{background:transparent;border:1px solid var(--border);color:var(--slate);}
+.spinner{display:inline-block;width:13px;height:13px;border:2px solid rgba(201,168,76,.25);
+  border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--navy4);border:1px solid var(--gold);
+  color:var(--cream);padding:12px 20px;border-radius:8px;font-size:13px;font-weight:600;z-index:100;
+  box-shadow:0 8px 24px rgba(0,0,0,.4);transform:translateY(20px);opacity:0;transition:.25s;}
+.toast.show{transform:translateY(0);opacity:1;}
+
+@media(max-width:900px){
+  .tbl-card{overflow-x:auto;}
+  table{min-width:920px;}
+}
+</style>
+</head>
+<body>
+<div class="bg"></div><div class="bgrid"></div>
+<div class="page">
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hl">
+    <div class="shield">🏆</div>
+    <div>
+      <div class="hdr-title">Agency MD Promotion Tracker</div>
+      <div class="hdr-sub">// June 2026 — All Agents · Non-MD Base Figures</div>
+    </div>
+  </div>
+  <div class="hr">
+    <button class="btn btn-gold" onclick="openEditModal()">+ Add / Edit Agent</button>
+    <button class="btn btn-outline" onclick="syncProductionFromPolicies()" id="sync-production-btn">☁ Sync Production from Policies</button>
+    <button class="btn btn-outline" onclick="syncRecruitsFromRoster()" id="sync-recruits-btn">☁ Sync Recruits from Agent Roster</button>
+    <button class="btn btn-outline" onclick="exportCsv()">⬇ Export CSV</button>
+    <button class="btn btn-ghost" onclick="resetToSeed()">↺ Reset to Original Data</button>
+    <a href="promotions.html" class="btn btn-ghost">🎯 Promotions</a>
+    <a href="hub.html" class="btn btn-ghost">← Hub</a>
+  </div>
+</div>
+
+<div id="sync-status" style="display:none;margin-bottom:16px;font-size:12px;color:var(--slate);background:var(--navy3);border:1px solid var(--border);border-radius:6px;padding:10px 14px;"></div>
+
+<div class="crit-bar">Criteria: <strong>25 Recruits</strong> · <strong>25 Submitted Apps</strong> · <strong>25,000 Submitted Points</strong> · <strong>25,000 Paid Points</strong> — Non-MD Base figures, period 06/01–06/17/2026</div>
+
+<div class="deadlines">
+  <div class="dl-badge dl-red">⏰ Recruits / Apps / Submitted Points due <span id="dl1-date">June 20, 2026</span> — <span id="dl1-days"></span></div>
+  <div class="dl-badge dl-gold">⏰ Paid Points due <span id="dl2-date">June 30, 2026</span> — <span id="dl2-days"></span></div>
+</div>
+
+<div id="data-warning" style="display:none;background:rgba(192,57,43,.08);border:1px solid rgba(192,57,43,.3);border-radius:8px;padding:12px 16px;font-size:11.5px;color:#E8A0A0;margin-bottom:18px;line-height:1.6;">⚠️ <span id="data-warning-text"></span></div>
+
+<!-- SUMMARY -->
+<div class="summary">
+  <div class="sum-card">
+    <div class="sum-label">Total Agents</div>
+    <div class="sum-val" id="sum-total">0</div>
+  </div>
+  <div class="sum-card">
+    <div class="sum-label">Met All 4 Criteria</div>
+    <div class="sum-val green" id="sum-met">0</div>
+  </div>
+  <div class="sum-card">
+    <div class="sum-label">50%+ Avg Progress</div>
+    <div class="sum-val blue" id="sum-ontrack">0</div>
+  </div>
+  <div class="sum-card">
+    <div class="sum-label">Zero Activity</div>
+    <div class="sum-val red" id="sum-zero">0</div>
+  </div>
+  <div class="sum-card">
+    <div class="sum-label">Agency Avg Progress</div>
+    <div class="sum-val" id="sum-avgprogress">0%</div>
+  </div>
+</div>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <input type="text" class="search-box" id="search-box" placeholder="Search agent name…" oninput="render()">
+  <div style="display:flex;gap:8px;align-items:center;">
+    <span style="font-size:11px;color:var(--slate);">Quick view:</span>
+    <select class="sel" id="quick-view" onchange="applyQuickView()">
+      <option value="all">All agents</option>
+      <option value="top15">Top 15 closest</option>
+      <option value="met">Met all 4 criteria</option>
+      <option value="zero">Zero activity</option>
+    </select>
+  </div>
+</div>
+
+<!-- FILTERS -->
+<div class="filter-row">
+  <div class="filter-group">
+    <label class="filter-label">Level</label>
+    <select class="sel" id="filter-level" onchange="render()">
+      <option value="__all__">All levels</option>
+    </select>
+  </div>
+  <div class="filter-group">
+    <label class="filter-label">Min Avg Progress</label>
+    <select class="sel" id="filter-minavg" onchange="render()">
+      <option value="0">No minimum</option>
+      <option value="0.25">25%+</option>
+      <option value="0.5">50%+</option>
+      <option value="0.75">75%+</option>
+      <option value="1">100% (qualified)</option>
+    </select>
+  </div>
+  <button class="btn btn-ghost" onclick="clearFilters()" style="align-self:flex-end;">✕ Clear filters</button>
+</div>
+
+<!-- TABLE -->
+<div class="tbl-card">
+  <table>
+    <thead>
+      <tr>
+        <th data-sort="rank">Rank</th>
+        <th data-sort="name">Agent</th>
+        <th data-sort="level">Level</th>
+        <th data-sort="recruits">Recruits</th>
+        <th data-sort="apps">Sub. Apps</th>
+        <th data-sort="subPts">Sub. Points</th>
+        <th data-sort="paidPts">Paid Points</th>
+        <th data-sort="avg">Avg Progress</th>
+        <th>Verdict</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody id="tbl-body"></tbody>
+  </table>
+</div>
+
+</div>
+
+<!-- ADD/EDIT MODAL -->
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">Add an Agent</div>
+    <div class="modal-sub">Stored locally in this tracker. Updates recalculate rank and progress immediately.</div>
+    <div class="field">
+      <label>Agent Name *</label>
+      <input type="text" id="f-name" placeholder="e.g. Jane Doe">
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>PHP Code</label>
+        <input type="text" id="f-phpcode" placeholder="(optional)">
+      </div>
+      <div class="field">
+        <label>Level</label>
+        <select id="f-level">
+          <option value="trainee">Trainee</option>
+          <option value="associate">Associate</option>
+          <option value="field associate">Field Associate</option>
+          <option value="director" selected>Director</option>
+          <option value="producing_md">Producing MD</option>
+          <option value="marketing director">Marketing Director</option>
+        </select>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Recruits</label>
+        <input type="number" id="f-recruits" placeholder="0" step="1">
+      </div>
+      <div class="field">
+        <label>Submitted Apps</label>
+        <input type="number" id="f-apps" placeholder="0" step="0.5">
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Submitted Points</label>
+        <input type="number" id="f-subpts" placeholder="0.00" step="0.01">
+      </div>
+      <div class="field">
+        <label>Paid Points</label>
+        <input type="number" id="f-paidpts" placeholder="0.00" step="0.01">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-cancel" onclick="closeEditModal()">Cancel</button>
+      <button class="btn btn-gold" onclick="saveAgent()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="auth.js?v=20260713"></script>
+<script>
+AUTH.require('agency-md-tracker.html');
+const session = AUTH.getSession();
+const STORE_KEY = 'dba_agency_md_tracker';
+
+const SEED_AGENTS = [
+  {
+    "name": "Magdaline Ibezim",
+    "phpCode": "1218244",
+    "level": "director",
+    "recruits": 18.0,
+    "apps": 12.5,
+    "subPts": 19576.55,
+    "paidPts": 7011.97
+  },
+  {
+    "name": "IFUNANYA IBEZIM",
+    "phpCode": "1217942",
+    "level": "trainee",
+    "recruits": 18.0,
+    "apps": 12.5,
+    "subPts": 19576.55,
+    "paidPts": 7011.97
+  },
+  {
+    "name": "Goodluck Nwaka",
+    "phpCode": "1338076",
+    "level": "director",
+    "recruits": 15.0,
+    "apps": 11.5,
+    "subPts": 18167.85,
+    "paidPts": 7000.99
+  },
+  {
+    "name": "Cosmas Abanobi",
+    "phpCode": "1353718",
+    "level": "director",
+    "recruits": 14.0,
+    "apps": 10.5,
+    "subPts": 16929.98,
+    "paidPts": 5398.42
+  },
+  {
+    "name": "Jacinta Abanobi",
+    "phpCode": "1353757",
+    "level": "director",
+    "recruits": 13.0,
+    "apps": 10.0,
+    "subPts": 16576.04,
+    "paidPts": 5060.07
+  },
+  {
+    "name": "Brittany Casey",
+    "phpCode": "1068135",
+    "level": "producer marketing director",
+    "recruits": 3.0,
+    "apps": 5.0,
+    "subPts": 3565.97,
+    "paidPts": 632.86
+  },
+  {
+    "name": "Bryan Martinez",
+    "phpCode": "614385",
+    "level": "field associate",
+    "recruits": 3.0,
+    "apps": 5.0,
+    "subPts": 3565.97,
+    "paidPts": 641.15
+  },
+  {
+    "name": "Anulika Eleodi",
+    "phpCode": "794123",
+    "level": "director",
+    "recruits": 2.0,
+    "apps": 3.0,
+    "subPts": 3140.46,
+    "paidPts": 1266.8
+  },
+  {
+    "name": "Soroush Nasirzadeh",
+    "phpCode": "52906",
+    "level": "director",
+    "recruits": 1.0,
+    "apps": 3.0,
+    "subPts": 3140.46,
+    "paidPts": 1029.42
+  },
+  {
+    "name": "Ola   E. Ojeikere",
+    "phpCode": "288823",
+    "level": "director",
+    "recruits": 1.0,
+    "apps": 3.0,
+    "subPts": 3140.46,
+    "paidPts": 1135.14
+  },
+  {
+    "name": "Daniel Daniel",
+    "phpCode": "1037509",
+    "level": "field associate",
+    "recruits": 3.0,
+    "apps": 2.0,
+    "subPts": 3118.4,
+    "paidPts": 2179.43
+  },
+  {
+    "name": "Irene Ibekwe",
+    "phpCode": "1401452",
+    "level": "associate",
+    "recruits": 3.0,
+    "apps": 1.5,
+    "subPts": 2226.42,
+    "paidPts": 0.0
+  },
+  {
+    "name": "Maureen Onyia-Ekwuazi",
+    "phpCode": "1401491",
+    "level": "trainee",
+    "recruits": 2.0,
+    "apps": 0.5,
+    "subPts": 1065.42,
+    "paidPts": 0.0
+  },
+  {
+    "name": "Anthony Brooks",
+    "phpCode": "1286007",
+    "level": "field associate",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 139.44,
+    "paidPts": -687.47
+  },
+  {
+    "name": "NWANNEKA UCHE Azubuike",
+    "phpCode": "71194",
+    "level": "field associate",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 39.0,
+    "paidPts": 957.39
+  },
+  {
+    "name": "Micheline Magoua  zyzy",
+    "phpCode": "116088",
+    "level": "associate",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 39.0,
+    "paidPts": 972.06
+  },
+  {
+    "name": "Pascaline Tchinda Fopa",
+    "phpCode": "945561",
+    "level": "field associate",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 39.0,
+    "paidPts": 969.06
+  },
+  {
+    "name": "Pretty Ulrich Kamlen Tchatchet",
+    "phpCode": "420532",
+    "level": "field associate",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 39.0,
+    "paidPts": 995.74
+  },
+  {
+    "name": "Rosine Ornira  Fouelefack Epse Takam",
+    "phpCode": "152260",
+    "level": "trainee",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 39.0,
+    "paidPts": 969.06
+  },
+  {
+    "name": "Glorious Adeneye",
+    "phpCode": "1032537",
+    "level": "field associate",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 39.0,
+    "paidPts": 303.14
+  },
+  {
+    "name": "Amaka Iruobe",
+    "phpCode": "1301592",
+    "level": "field associate",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 1.78
+  },
+  {
+    "name": "Anderline Nwokorie",
+    "phpCode": "1037165",
+    "level": "field associate",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 649.86
+  },
+  {
+    "name": "Abisola Fuller",
+    "phpCode": "1160254",
+    "level": "field associate",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 6.78
+  },
+  {
+    "name": "Adetoun Durodola",
+    "phpCode": "142538",
+    "level": "associate",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 9.27
+  },
+  {
+    "name": "Eli Miller",
+    "phpCode": "999784",
+    "level": "trainee",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 14.74
+  },
+  {
+    "name": "Daniel Okonko",
+    "phpCode": "102808",
+    "level": "trainee",
+    "recruits": 1.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 0.0
+  },
+  {
+    "name": "DORIS UKA",
+    "phpCode": "1280799",
+    "level": "field associate",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": -142.38
+  },
+  {
+    "name": "Chinyere Ezekwesili",
+    "phpCode": "711339",
+    "level": "associate",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 2.58
+  },
+  {
+    "name": "Chidi Amarikwa",
+    "phpCode": "1289491",
+    "level": "field associate",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 0.53
+  },
+  {
+    "name": "Chidinma Okonko",
+    "phpCode": "860804",
+    "level": "director",
+    "recruits": 1.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 22.03
+  },
+  {
+    "name": "Catherine Irhia",
+    "phpCode": "1002051",
+    "level": "trainee",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 2179.43
+  },
+  {
+    "name": "Cherri Sims",
+    "phpCode": "1070407",
+    "level": "field associate",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 3.71
+  },
+  {
+    "name": "Aretha Olufowobi",
+    "phpCode": "1081085",
+    "level": "marketing director",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 96.94
+  },
+  {
+    "name": "Bianca R Lopez",
+    "phpCode": "1303382",
+    "level": "field associate",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 33.0
+  },
+  {
+    "name": "COLLETTE THOMPSON",
+    "phpCode": "1240757",
+    "level": "associate",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 3.45
+  },
+  {
+    "name": "Blessing Irhia",
+    "phpCode": "1007642",
+    "level": "trainee",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 2179.43
+  },
+  {
+    "name": "Alexis Yvonne",
+    "phpCode": "1395820",
+    "level": "trainee",
+    "recruits": 2.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 0.0
+  },
+  {
+    "name": "Akinsope Coker",
+    "phpCode": "1009673",
+    "level": "associate",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 2.05
+  },
+  {
+    "name": "Emmanuel Odogwu",
+    "phpCode": "1030594",
+    "level": "associate",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 4.38
+  },
+  {
+    "name": "Emily Uju",
+    "phpCode": "1021449",
+    "level": "associate",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 1.5
+  },
+  {
+    "name": "Ikenna Ogbonna",
+    "phpCode": "1049629",
+    "level": "field associate",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 1.92
+  },
+  {
+    "name": "Irene Iyamu",
+    "phpCode": "1187226",
+    "level": "director",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 20.54
+  },
+  {
+    "name": "Isioma Okonkwo",
+    "phpCode": "802599",
+    "level": "associate",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 12.45
+  },
+  {
+    "name": "Ivy Iheanyichukwu",
+    "phpCode": "1033736",
+    "level": "trainee",
+    "recruits": 1.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 0.0
+  },
+  {
+    "name": "Jana Wise Christopher",
+    "phpCode": "1101961",
+    "level": "director",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 3.06
+  },
+  {
+    "name": "Jennifer Iroezi",
+    "phpCode": "46925",
+    "level": "director",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 3.49
+  },
+  {
+    "name": "John Opara",
+    "phpCode": "1155412",
+    "level": "field associate",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 2.28
+  },
+  {
+    "name": "Emmanuel Nwokeji",
+    "phpCode": "1346473",
+    "level": "trainee",
+    "recruits": 1.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 0.0
+  },
+  {
+    "name": "Francis Nwadiba",
+    "phpCode": "1411448",
+    "level": "trainee",
+    "recruits": 1.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 0.0
+  },
+  {
+    "name": "Fidelis Orji",
+    "phpCode": "1404220",
+    "level": "associate",
+    "recruits": 2.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 0.0
+  },
+  {
+    "name": "Faoziath. ADJANA",
+    "phpCode": "662802",
+    "level": "field associate",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 3.0
+  },
+  {
+    "name": "Faith Onwuka",
+    "phpCode": "868625",
+    "level": "associate",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 14.13
+  },
+  {
+    "name": "Headley Pinnock",
+    "phpCode": "1215138",
+    "level": "trainee",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 2.18
+  },
+  {
+    "name": "Genevieve Opanweze",
+    "phpCode": "136529",
+    "level": "field associate",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 3.5
+  },
+  {
+    "name": "Heidi Perry",
+    "phpCode": "766977",
+    "level": "field associate",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 1.05
+  },
+  {
+    "name": "Emmanuel Okereke",
+    "phpCode": "1405796",
+    "level": "trainee",
+    "recruits": 1.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 0.0
+  },
+  {
+    "name": "Lilly Uzondu-Umeojiako",
+    "phpCode": "1397343",
+    "level": "associate",
+    "recruits": 2.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 0.0
+  },
+  {
+    "name": "Lawrence Okezie Chibueze Jr.",
+    "phpCode": "71592",
+    "level": "associate",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 157.19
+  },
+  {
+    "name": "Kenneth Morales",
+    "phpCode": "266163",
+    "level": "associate",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 3.83
+  },
+  {
+    "name": "Kawi Brooks",
+    "phpCode": "1286458",
+    "level": "field associate",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 4.29
+  },
+  {
+    "name": "KIMBERLEY GAYLE",
+    "phpCode": "1088320",
+    "level": "director",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 21.81
+  },
+  {
+    "name": "Jude Akalawu",
+    "phpCode": "1404326",
+    "level": "trainee",
+    "recruits": 1.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 0.0
+  },
+  {
+    "name": "Joyce Azubuike",
+    "phpCode": "36876",
+    "level": "trainee",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 2.14
+  },
+  {
+    "name": "Joy Obieshi",
+    "phpCode": "426059",
+    "level": "trainee",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": -90.4
+  },
+  {
+    "name": "Joy Mojokwu",
+    "phpCode": "1412126",
+    "level": "trainee",
+    "recruits": 1.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 0.0
+  },
+  {
+    "name": "Lucy Ngozi Nzeogu",
+    "phpCode": "1169813",
+    "level": "director",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 16.69
+  },
+  {
+    "name": "Ngozi Eke",
+    "phpCode": "1004621",
+    "level": "trainee",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 1.5
+  },
+  {
+    "name": "Obi & Jennifer Iroezi",
+    "phpCode": "10146",
+    "level": "senior marketing director",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 6.52
+  },
+  {
+    "name": "Omolara O. Isokpehi",
+    "phpCode": "1024740",
+    "level": "director",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 46.46
+  },
+  {
+    "name": "Olubunmi Pinmiloye",
+    "phpCode": "1261485",
+    "level": "field associate",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 3.93
+  },
+  {
+    "name": "Mahussi Catherine Houssa",
+    "phpCode": "774746",
+    "level": "associate",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 23.29
+  },
+  {
+    "name": "Maureen Myers",
+    "phpCode": "1414341",
+    "level": "trainee",
+    "recruits": 1.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 0.0
+  },
+  {
+    "name": "Ramel Ashourkarim",
+    "phpCode": "1332421",
+    "level": "field associate",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 6.15
+  },
+  {
+    "name": "Osaretin Ogbomo",
+    "phpCode": "914653",
+    "level": "associate",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 12.45
+  },
+  {
+    "name": "Samson Aminu",
+    "phpCode": "149025",
+    "level": "trainee",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 14.13
+  },
+  {
+    "name": "Regina Ofoedu",
+    "phpCode": "1409333",
+    "level": "trainee",
+    "recruits": 4.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 0.0
+  },
+  {
+    "name": "Sarah Morris",
+    "phpCode": "1267601",
+    "level": "associate",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 1.46
+  },
+  {
+    "name": "Sildevie Nguetcho",
+    "phpCode": "1082931",
+    "level": "field associate",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 7.53
+  },
+  {
+    "name": "Silver Francis",
+    "phpCode": "1297055",
+    "level": "field associate",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 0.53
+  },
+  {
+    "name": "Stella Udoh",
+    "phpCode": "1355121",
+    "level": "trainee",
+    "recruits": 1.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 0.0
+  },
+  {
+    "name": "Success Akpan",
+    "phpCode": "839714",
+    "level": "associate",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 5.62
+  },
+  {
+    "name": "Taiye Ojeikere",
+    "phpCode": "1297599",
+    "level": "field associate",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 2.91
+  },
+  {
+    "name": "Tejoni Miller",
+    "phpCode": "1098350",
+    "level": "field associate",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 4.2
+  },
+  {
+    "name": "Tolani Yesufu",
+    "phpCode": "67186",
+    "level": "field associate",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 157.19
+  },
+  {
+    "name": "Udo Ekekeulu",
+    "phpCode": "787187",
+    "level": "director",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 48.29
+  },
+  {
+    "name": "Ufuoma Adesola",
+    "phpCode": "1165862",
+    "level": "director",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 44.9
+  },
+  {
+    "name": "Uzoma Amaefula",
+    "phpCode": "1374613",
+    "level": "trainee",
+    "recruits": 1.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 0.0
+  },
+  {
+    "name": "Zahana Yeo",
+    "phpCode": "568400",
+    "level": "field associate",
+    "recruits": 0.0,
+    "apps": 0.0,
+    "subPts": 0.0,
+    "paidPts": 0.07
+  }
+];
+
+const TARGETS = { recruits: 25, apps: 25, subPts: 25000, paidPts: 25000 };
+const DEADLINE_1 = '2026-06-20'; // recruits/apps/subPts
+const DEADLINE_2 = '2026-06-30'; // paidPts
+const AS_OF = '2026-06-17';
+const KNOWN_DUPLICATE_NOTE = 'Magdaline Ibezim and IFUNANYA IBEZIM show identical totals across all 4 metrics. Ifunanya appears in the underlying Policy Detail export as Magdaline\'s CLIENT on a closed policy, not as a separate producing agent — verify in PHP Bamboo before treating this as two distinct candidates.';
+
+let agents = [];
+let editingIndex = null;
+let sortKey = 'avg';
+let sortDir = 'desc';
+
+function load() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(STORE_KEY) || 'null');
+    agents = (stored && Array.isArray(stored) && stored.length) ? stored : SEED_AGENTS.map(a => ({...a}));
+  } catch(e) {
+    agents = SEED_AGENTS.map(a => ({...a}));
+  }
+}
+function save() { localStorage.setItem(STORE_KEY, JSON.stringify(agents)); }
+
+function resetToSeed() {
+  if (!confirm('Reset all data back to the original June 2026 leaderboard export? This will discard any manual edits or added agents.')) return;
+  agents = SEED_AGENTS.map(a => ({...a}));
+  save();
+  populateLevelFilter();
+  render();
+  showToast('Reset to original leaderboard data');
+}
+
+// ── DERIVED METRICS ──────────────────────────────────────────
+function pct(val, target) { return target ? Math.min(val / target, 9.99) : 0; }
+function withMetrics(a) {
+  const rPct = pct(a.recruits, TARGETS.recruits);
+  const aPct = pct(a.apps, TARGETS.apps);
+  const sPct = pct(a.subPts, TARGETS.subPts);
+  const pPct = pct(a.paidPts, TARGETS.paidPts);
+  const avg = (rPct + aPct + sPct + pPct) / 4;
+  const allMet = a.recruits >= TARGETS.recruits && a.apps >= TARGETS.apps && a.subPts >= TARGETS.subPts && a.paidPts >= TARGETS.paidPts;
+  const isZero = a.recruits===0 && a.apps===0 && a.subPts===0 && a.paidPts===0;
+  return { ...a, rPct, aPct, sPct, pPct, avg, allMet, isZero };
+}
+
+function verdict(a, rank) {
+  if (a.allMet) return { label:'✅ Qualified', cls:'v-ontrack' };
+  if (rank === 1) return { label:'🥇 Closest overall', cls:'v-closest' };
+  if (a.avg >= 0.5) return { label:'On track if pace holds', cls:'v-ontrack' };
+  return { label:'Needs a strong push', cls:'v-push' };
+}
+
+function barClass(p) {
+  if (p >= 1) return 'mf-green';
+  if (p >= 0.5) return 'mf-yellow';
+  return 'mf-red';
+}
+
+// ── DEADLINE COUNTDOWN ───────────────────────────────────────
+function renderDeadlines() {
+  const today = new Date(AS_OF);
+  const d1 = new Date(DEADLINE_1);
+  const d2 = new Date(DEADLINE_2);
+  const days1 = Math.max(0, Math.round((d1-today)/86400000));
+  const days2 = Math.max(0, Math.round((d2-today)/86400000));
+  document.getElementById('dl1-days').textContent = `${days1} day${days1===1?'':'s'} left (as of ${AS_OF})`;
+  document.getElementById('dl2-days').textContent = `${days2} day${days2===1?'':'s'} left (as of ${AS_OF})`;
+}
+
+function checkDataWarnings() {
+  const warnEl = document.getElementById('data-warning');
+  const textEl = document.getElementById('data-warning-text');
+  const hasIbezimPair = agents.some(a=>a.name.toLowerCase().includes('magdaline ibezim')) &&
+                         agents.some(a=>a.name.toLowerCase().includes('ifunanya ibezim'));
+  if (hasIbezimPair) {
+    textEl.textContent = KNOWN_DUPLICATE_NOTE;
+    warnEl.style.display = 'block';
+  } else {
+    warnEl.style.display = 'none';
+  }
+}
+
+// ── LEVEL FILTER ─────────────────────────────────────────────
+function populateLevelFilter() {
+  const sel = document.getElementById('filter-level');
+  const current = sel.value;
+  sel.innerHTML = '<option value="__all__">All levels</option>';
+  const levels = [...new Set(agents.map(a => a.level).filter(Boolean))].sort();
+  levels.forEach(lv => {
+    const opt = document.createElement('option');
+    opt.value = lv;
+    opt.textContent = lv.replace(/_/g,' ').replace(/\b\w/g, c=>c.toUpperCase());
+    sel.appendChild(opt);
+  });
+  if (levels.includes(current)) sel.value = current;
+}
+
+// ── QUICK VIEW ───────────────────────────────────────────────
+function applyQuickView() {
+  const v = document.getElementById('quick-view').value;
+  document.getElementById('search-box').value = '';
+  document.getElementById('filter-level').value = '__all__';
+  document.getElementById('filter-minavg').value = '0';
+  if (v === 'met') document.getElementById('filter-minavg').value = '1';
+  render(v);
+}
+
+function clearFilters() {
+  document.getElementById('search-box').value = '';
+  document.getElementById('filter-level').value = '__all__';
+  document.getElementById('filter-minavg').value = '0';
+  document.getElementById('quick-view').value = 'all';
+  render();
+}
+
+// ── SORT ─────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('thead th[data-sort]').forEach(th => {
+    th.addEventListener('click', () => {
+      const key = th.dataset.sort;
+      if (sortKey === key) { sortDir = sortDir === 'desc' ? 'asc' : 'desc'; }
+      else { sortKey = key; sortDir = 'desc'; }
+      render();
+    });
+  });
+});
+
+function applySortHeaderStyles() {
+  document.querySelectorAll('thead th[data-sort]').forEach(th => {
+    th.classList.remove('sorted','sorted-asc');
+    if (th.dataset.sort === sortKey) th.classList.add(sortDir === 'desc' ? 'sorted' : 'sorted-asc');
+  });
+}
+
+// ── RENDER ───────────────────────────────────────────────────
+function render(quickView) {
+  const q = document.getElementById('search-box').value.trim().toLowerCase();
+  const levelFilter = document.getElementById('filter-level').value;
+  const minAvg = parseFloat(document.getElementById('filter-minavg').value) || 0;
+
+  let rows = agents.map(withMetrics);
+
+  // Base rank is always computed off the FULL set sorted by avg desc,
+  // so "rank" stays meaningful even when filters narrow the visible rows.
+  const fullRanked = [...rows].sort((a,b)=>b.avg-a.avg);
+  const rankMap = new Map(fullRanked.map((a,i)=>[a.name+'::'+a.phpCode, i+1]));
+  rows = rows.map(a => ({ ...a, rank: rankMap.get(a.name+'::'+a.phpCode) }));
+
+  if (q) rows = rows.filter(a => a.name.toLowerCase().includes(q));
+  if (levelFilter !== '__all__') rows = rows.filter(a => a.level === levelFilter);
+  if (minAvg > 0) rows = rows.filter(a => minAvg >= 1 ? a.allMet : a.avg >= minAvg);
+
+  if (quickView === 'top15') rows = [...rows].sort((a,b)=>b.avg-a.avg).slice(0,15);
+  if (quickView === 'zero') rows = rows.filter(a => a.isZero);
+
+  switch(sortKey) {
+    case 'rank':     rows.sort((a,b)=>(sortDir==='desc'?b.rank-a.rank:a.rank-b.rank)); break;
+    case 'name':     rows.sort((a,b)=>sortDir==='desc'?b.name.localeCompare(a.name):a.name.localeCompare(b.name)); break;
+    case 'level':    rows.sort((a,b)=>sortDir==='desc'?b.level.localeCompare(a.level):a.level.localeCompare(b.level)); break;
+    case 'recruits': rows.sort((a,b)=>sortDir==='desc'?b.recruits-a.recruits:a.recruits-b.recruits); break;
+    case 'apps':      rows.sort((a,b)=>sortDir==='desc'?b.apps-a.apps:a.apps-b.apps); break;
+    case 'subPts':    rows.sort((a,b)=>sortDir==='desc'?b.subPts-a.subPts:a.subPts-b.subPts); break;
+    case 'paidPts':   rows.sort((a,b)=>sortDir==='desc'?b.paidPts-a.paidPts:a.paidPts-b.paidPts); break;
+    case 'avg':       rows.sort((a,b)=>sortDir==='desc'?b.avg-a.avg:a.avg-b.avg); break;
+  }
+  applySortHeaderStyles();
+
+  const tbody = document.getElementById('tbl-body');
+  if (!rows.length) {
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="10">No agents match your search and filters.</td></tr>`;
+  } else {
+    tbody.innerHTML = rows.map(a => {
+      const idx = agents.findIndex(x => x.name === a.name && x.phpCode === a.phpCode);
+      const v = verdict(a, a.rank);
+      const levelLabel = (a.level||'').replace(/_/g,' ').replace(/\b\w/g, c=>c.toUpperCase());
+      const fmtN = (n,d=0) => Number(n||0).toLocaleString(undefined,{minimumFractionDigits:d,maximumFractionDigits:d});
+      return `<tr class="${a.rank===1?'top1':''}">
+        <td><span class="rank-badge ${a.rank===1?'r1':''}">#${a.rank}</span></td>
+        <td><div class="agent-name">${a.name}</div>${a.phpCode?`<div class="agent-sub">PHP ${a.phpCode}</div>`:''}</td>
+        <td><span class="level-pill">${levelLabel}</span></td>
+        <td>${metricCell(idx,'recruits',a.recruits,TARGETS.recruits,a.rPct,fmtN(a.recruits))}</td>
+        <td>${metricCell(idx,'apps',a.apps,TARGETS.apps,a.aPct,fmtN(a.apps,1))}</td>
+        <td>${metricCell(idx,'subPts',a.subPts,TARGETS.subPts,a.sPct,fmtN(a.subPts,2))}</td>
+        <td>${metricCell(idx,'paidPts',a.paidPts,TARGETS.paidPts,a.pPct,fmtN(a.paidPts,2))}</td>
+        <td><span class="avg-cell" style="color:${a.avg>=1?'var(--green2)':a.avg>=0.5?'var(--gold2)':'var(--slate)'}">${(a.avg*100).toFixed(1)}%</span></td>
+        <td><span class="verdict-pill ${v.cls}">${v.label}</span></td>
+        <td><button class="btn btn-ghost" style="padding:5px 9px;font-size:11px;" onclick="openEditModal(${idx})">Edit</button></td>
+      </tr>`;
+    }).join('');
+  }
+
+  // Inline edit listeners
+  tbody.querySelectorAll('input[data-idx]').forEach(inp => {
+    inp.addEventListener('change', (e) => {
+      const i = parseInt(e.target.dataset.idx);
+      const field = e.target.dataset.field;
+      const val = parseFloat(e.target.value) || 0;
+      agents[i][field] = val;
+      save();
+      render(quickView);
+    });
+  });
+
+  renderSummary(agents.map(withMetrics));
+  renderDeadlines();
+  checkDataWarnings();
+}
+
+function metricCell(idx, field, val, target, p, displayVal) {
+  const done = val >= target;
+  return `<div class="metric-cell">
+    <input type="number" class="metric-val ${done?'done':''}" data-idx="${idx}" data-field="${field}" value="${val}" step="${field==='recruits'?1:0.01}">
+    <div class="mini-bar"><div class="mini-fill ${barClass(p)}" style="width:${Math.min(p*100,100)}%"></div></div>
+  </div>`;
+}
+
+function renderSummary(allWithMetrics) {
+  document.getElementById('sum-total').textContent = allWithMetrics.length;
+  document.getElementById('sum-met').textContent = allWithMetrics.filter(a=>a.allMet).length;
+  document.getElementById('sum-ontrack').textContent = allWithMetrics.filter(a=>a.avg>=0.5).length;
+  document.getElementById('sum-zero').textContent = allWithMetrics.filter(a=>a.isZero).length;
+  const avgProgress = allWithMetrics.length ? allWithMetrics.reduce((s,a)=>s+a.avg,0)/allWithMetrics.length : 0;
+  document.getElementById('sum-avgprogress').textContent = (avgProgress*100).toFixed(1)+'%';
+}
+
+// ── ADD / EDIT MODAL ─────────────────────────────────────────
+function openEditModal(idx) {
+  editingIndex = (idx === undefined) ? null : idx;
+  if (editingIndex !== null) {
+    const a = agents[editingIndex];
+    document.getElementById('modal-title').textContent = 'Edit Agent';
+    document.getElementById('f-name').value = a.name;
+    document.getElementById('f-phpcode').value = a.phpCode || '';
+    document.getElementById('f-level').value = a.level || 'director';
+    document.getElementById('f-recruits').value = a.recruits || 0;
+    document.getElementById('f-apps').value = a.apps || 0;
+    document.getElementById('f-subpts').value = a.subPts || 0;
+    document.getElementById('f-paidpts').value = a.paidPts || 0;
+  } else {
+    document.getElementById('modal-title').textContent = 'Add an Agent';
+    document.getElementById('f-name').value = '';
+    document.getElementById('f-phpcode').value = '';
+    document.getElementById('f-level').value = 'director';
+    document.getElementById('f-recruits').value = '';
+    document.getElementById('f-apps').value = '';
+    document.getElementById('f-subpts').value = '';
+    document.getElementById('f-paidpts').value = '';
+  }
+  document.getElementById('edit-modal').classList.add('show');
+}
+function closeEditModal() {
+  document.getElementById('edit-modal').classList.remove('show');
+}
+
+function saveAgent() {
+  const name = document.getElementById('f-name').value.trim();
+  if (!name) { showToast('Agent name is required'); return; }
+  const record = {
+    name,
+    phpCode: document.getElementById('f-phpcode').value.trim(),
+    level: document.getElementById('f-level').value,
+    recruits: parseFloat(document.getElementById('f-recruits').value) || 0,
+    apps: parseFloat(document.getElementById('f-apps').value) || 0,
+    subPts: parseFloat(document.getElementById('f-subpts').value) || 0,
+    paidPts: parseFloat(document.getElementById('f-paidpts').value) || 0,
+  };
+  if (editingIndex !== null) {
+    agents[editingIndex] = record;
+    showToast(`${name} updated`);
+  } else {
+    agents.push(record);
+    showToast(`${name} added to the tracker`);
+  }
+  save();
+  populateLevelFilter();
+  closeEditModal();
+  render();
+}
+
+document.getElementById('edit-modal').addEventListener('click', (e) => {
+  if (e.target.id === 'edit-modal') closeEditModal();
+});
+
+// ── SYNC PRODUCTION FROM POLICY APPLICATIONS BOARD ───────────
+// Same board the BMP Production Desk reads from (18397757902).
+// For each tracker agent, aggregates their policy items into:
+//   - Submitted Apps  = count of policy items
+//   - Submitted Points = sum of the "Submitted Points" column
+// Paid Points is left untouched — this board doesn't carry a paid-points
+// column (that figure comes from carrier payout data, tracked separately),
+// so it stays whatever was seeded or manually entered.
+function normalizeNameForMatchProd(s) {
+  return (s || '').toLowerCase().replace(/[^a-z\s]/g,'').replace(/\s+/g,' ').trim();
+}
+
+async function syncProductionFromPolicies() {
+  if (!AUTH.getMondayKey()) {
+    showToast('Connect your Monday.com API key first (Hub → Board Sync)');
+    return;
+  }
+  const btn = document.getElementById('sync-production-btn');
+  const statusEl = document.getElementById('sync-status');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Syncing…';
+  statusEl.style.display = 'block';
+  statusEl.textContent = 'Fetching Policy Applications board (same source as BMP Production Desk)…';
+
+  try {
+    const policyItems = await fetchAllItems(TEAM.monday.boardPolicies);
+    const policyTitles = await fetchColTitleMap(TEAM.monday.boardPolicies);
+    statusEl.textContent = `Fetched ${policyItems.length} policy items. Aggregating Submitted Apps / Submitted Points by agent…`;
+
+    const get = (item, ...kws) => {
+      const cv = item.column_values.find(c => kws.some(k => (policyTitles[c.id]||'').toLowerCase().includes(k)));
+      return cv ? (cv.text || '') : '';
+    };
+
+    // Build a lookup of agent first-name fragments + PHP codes for matching,
+    // same leniency as the my-clients.html downline matcher.
+    const agentLookup = agents.map(a => ({
+      name: a.name, phpCode: a.phpCode || '',
+      firstFrag: normalizeNameForMatchProd(a.name).split(' ')[0] || ''
+    }));
+    function matchAgent(agentNameRaw, agentIdRaw) {
+      const agentName = normalizeNameForMatchProd(agentNameRaw);
+      const agentIdVal = (agentIdRaw||'').toLowerCase().trim();
+      return agentLookup.find(a =>
+        (a.phpCode && agentIdVal && agentIdVal === a.phpCode.toLowerCase()) ||
+        (a.firstFrag && agentName.includes(a.firstFrag))
+      );
+    }
+
+    const totalsByAgent = {}; // key: name::phpCode
+    let matchedCount = 0;
+    policyItems.forEach(item => {
+      const agentName = get(item,'agent 1 name','agent1 name','agent name');
+      const agentId    = get(item,'agent id','agent_id','php code','phpcode');
+      const match = matchAgent(agentName, agentId);
+      if (!match) return;
+      matchedCount++;
+      const key = match.name + '::' + match.phpCode;
+      if (!totalsByAgent[key]) totalsByAgent[key] = { apps:0, subPts:0 };
+      totalsByAgent[key].apps++;
+      totalsByAgent[key].subPts += parseFloat((get(item,'submitted points')||'0').replace(/,/g,'')) || 0;
+    });
+
+    let updated = 0;
+    agents.forEach(a => {
+      const key = a.name + '::' + (a.phpCode||'');
+      const totals = totalsByAgent[key];
+      const newApps = totals ? totals.apps : 0;
+      const newSubPts = totals ? Math.round(totals.subPts*100)/100 : 0;
+      if (newApps !== a.apps || newSubPts !== a.subPts) updated++;
+      a.apps = newApps;
+      a.subPts = newSubPts;
+    });
+
+    save();
+    statusEl.textContent = `✅ Synced production from Policy Applications — matched ${matchedCount} of ${policyItems.length} policy items, ${updated} of ${agents.length} agents had different Apps/Submitted Points, now live as of ${new Date().toLocaleTimeString()}. Paid Points untouched (not on this board).`;
+    showToast(`Production synced — ${updated} agent${updated===1?'':'s'} updated`);
+    render();
+  } catch (e) {
+    statusEl.textContent = '⚠ Sync failed: ' + (e.message||e);
+    showToast('Sync failed — check console for details');
+    console.error('[Agency MD Tracker] Production sync error:', e);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '☁ Sync Production from Policies';
+  }
+}
+
+// Fetch column id→title map for a board (cached per boardId)
+const _colTitleCache = {};
+async function fetchColTitleMap(boardId) {
+  if (_colTitleCache[boardId]) return _colTitleCache[boardId];
+  const res = await mondayQuery(`{ boards(ids:${boardId}) { columns { id title } } }`);
+  const cols = res?.data?.boards?.[0]?.columns || [];
+  const map = {};
+  cols.forEach(c => { map[c.id] = c.title; });
+  _colTitleCache[boardId] = map;
+  return map;
+}
+
+async function fetchAllItems(boardId) {
+  if (!boardId) return [];
+  let items = [], cursor = null;
+  do {
+    const curArg = cursor ? `,cursor:"${cursor}"` : '';
+    const res = await mondayQuery(`{
+      boards(ids:${boardId}) {
+        items_page(limit:100${curArg}) {
+          cursor
+          items { id name column_values { id text } }
+        }
+      }
+    }`);
+    if (res?.errors) { console.warn('[Agency MD Tracker] Monday query error:', res.errors); break; }
+    const page = res?.data?.boards?.[0]?.items_page;
+    if (!page) break;
+    items = items.concat(page.items || []);
+    cursor = page.cursor || null;
+  } while (cursor);
+  return items;
+}
+
+function normalizeNameForMatch(s) {
+  return (s || '').toLowerCase().replace(/[^a-z\s]/g,'').replace(/\s+/g,' ').trim();
+}
+
+async function syncRecruitsFromRoster() {
+  if (!AUTH.getMondayKey()) {
+    showToast('Connect your Monday.com API key first (Hub → Board Sync)');
+    return;
+  }
+  const btn = document.getElementById('sync-recruits-btn');
+  const statusEl = document.getElementById('sync-status');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Syncing…';
+  statusEl.style.display = 'block';
+  statusEl.textContent = 'Fetching Agent Roster board…';
+
+  try {
+    const rosterItems = await fetchAllItems(TEAM.monday.boardAgents);
+    const rosterTitles = await fetchColTitleMap(TEAM.monday.boardAgents);
+    statusEl.textContent = `Fetched ${rosterItems.length} agents from the roster. Counting recruits by Upline…`;
+
+    const get = (item, ...kws) => {
+      const cv = item.column_values.find(c => kws.some(k => (rosterTitles[c.id]||'').toLowerCase().includes(k)));
+      return cv ? (cv.text || '') : '';
+    };
+
+    // Count roster items per upline name (fuzzy-matched, same keywords as agents.html's resolveColumns).
+    const countsByUplineName = {};
+    rosterItems.forEach(item => {
+      const upline = get(item, 'upline', 'sponsor');
+      if (!upline) return;
+      const key = normalizeNameForMatch(upline);
+      countsByUplineName[key] = (countsByUplineName[key] || 0) + 1;
+    });
+
+    let updated = 0;
+    agents.forEach(a => {
+      const key = normalizeNameForMatch(a.name);
+      const liveCount = countsByUplineName[key] || 0;
+      if (liveCount !== a.recruits) updated++;
+      a.recruits = liveCount;
+    });
+
+    save();
+    statusEl.textContent = `✅ Synced recruits from Agent Roster — ${updated} of ${agents.length} agents had a different count, now live as of ${new Date().toLocaleTimeString()}.`;
+    showToast(`Recruits synced — ${updated} agent${updated===1?'':'s'} updated`);
+    render();
+  } catch (e) {
+    statusEl.textContent = '⚠ Sync failed: ' + (e.message||e);
+    showToast('Sync failed — check console for details');
+    console.error('[Agency MD Tracker] Recruits sync error:', e);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '☁ Sync Recruits from Agent Roster';
+  }
+}
+
+// ── EXPORT ───────────────────────────────────────────────────
+function exportCsv() {
+  const rows = agents.map(withMetrics).sort((a,b)=>b.avg-a.avg);
+  const header = ['Rank','Agent Name','PHP Code','Level','Recruits','Submitted Apps','Submitted Points','Paid Points','Avg Progress'];
+  const lines = [header.join(',')];
+  rows.forEach((a,i) => {
+    lines.push([i+1, `"${a.name}"`, a.phpCode, a.level, a.recruits, a.apps, a.subPts.toFixed(2), a.paidPts.toFixed(2), (a.avg*100).toFixed(1)+'%'].join(','));
+  });
+  const blob = new Blob([lines.join('\n')], { type:'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `Agency_MD_Promotion_Tracker_${new Date().toISOString().slice(0,10)}.csv`;
+  link.click();
+  URL.revokeObjectURL(url);
+  showToast('CSV exported');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2400);
+}
+
+load();
+populateLevelFilter();
+render();
+</script>
+</body>
+</html>

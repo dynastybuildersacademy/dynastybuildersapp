@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dynasty Builders Academy — Agent Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0A1628;--navy-mid:#112040;--navy-light:#1A3158;
+  --gold:#C9A84C;--gold-light:#E8C97A;--gold-pale:#F5E8C0;
+  --cream:#FAF6EE;--success:#27AE60;--warn:#E67E22;--danger:#C0392B;
+  --slate:#6B7C93;--border:rgba(201,168,76,0.22);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);min-height:100vh;}
+
+/* ── HEADER ── */
+.header{background:rgba(10,22,40,0.97);border-bottom:1px solid var(--border);padding:16px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px);}
+.header-left{display:flex;align-items:center;gap:12px;}
+.shield{width:34px;height:40px;background:linear-gradient(160deg,var(--gold) 0%,#7a5c14 100%);clip-path:polygon(50% 0%,100% 18%,100% 65%,50% 100%,0% 65%,0% 18%);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.header h1{font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--gold);font-weight:700;}
+.header p{font-size:10px;color:var(--slate);text-transform:uppercase;letter-spacing:0.08em;}
+
+/* ── TABS ── */
+.tab-bar{display:flex;gap:0;border-bottom:1px solid var(--border);background:var(--navy-mid);padding:0 28px;overflow-x:auto;}
+.tab{padding:14px 20px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;border-bottom:2px solid transparent;color:var(--slate);transition:all 0.2s;white-space:nowrap;}
+.tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+.tab:hover:not(.active){color:var(--cream);}
+
+/* ── LAYOUT ── */
+.content{padding:24px 28px;max-width:1100px;margin:0 auto;}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+
+/* ── CARDS ── */
+.card{background:var(--navy-mid);border:1px solid var(--border);border-radius:4px;padding:22px;margin-bottom:18px;}
+.card-title{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.09em;color:var(--gold);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+@media(max-width:640px){.grid2,.grid3{grid-template-columns:1fr;}}
+
+/* ── KPI CARDS ── */
+.kpi{background:var(--navy-light);border:1px solid var(--border);border-radius:4px;padding:16px 18px;}
+.kpi-label{font-size:10px;color:var(--slate);text-transform:uppercase;letter-spacing:0.09em;}
+.kpi-val{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:800;color:var(--gold-light);margin:4px 0 2px;}
+.kpi-sub{font-size:11px;color:var(--slate);}
+
+/* ── REFERRAL SYSTEM ── */
+.ref-pipeline{display:grid;grid-template-columns:repeat(5,1fr);gap:0;margin-bottom:24px;}
+.pipe-stage{background:var(--navy-light);border:1px solid var(--border);padding:14px 12px;text-align:center;position:relative;}
+.pipe-stage:not(:last-child)::after{content:'›';position:absolute;right:-10px;top:50%;transform:translateY(-50%);color:var(--gold);font-size:18px;z-index:1;}
+.pipe-stage:first-child{border-radius:4px 0 0 4px;}
+.pipe-stage:last-child{border-radius:0 4px 4px 0;}
+.pipe-label{font-size:9px;text-transform:uppercase;letter-spacing:0.09em;color:var(--slate);margin-bottom:4px;}
+.pipe-count{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:800;color:var(--gold);}
+@media(max-width:640px){.ref-pipeline{grid-template-columns:1fr 1fr;}.pipe-stage:not(:last-child)::after{display:none;}}
+
+/* ── FORM ELEMENTS ── */
+.field{margin-bottom:14px;}
+label.field-label{display:block;font-size:11px;font-weight:600;color:var(--gold-pale);letter-spacing:0.07em;text-transform:uppercase;margin-bottom:6px;}
+input,select,textarea{width:100%;background:var(--navy);border:1px solid var(--border);color:var(--cream);font-family:'Barlow',sans-serif;font-size:13px;padding:10px 13px;border-radius:3px;transition:border-color 0.2s;}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--gold);}
+textarea{resize:vertical;min-height:70px;}
+select option{background:var(--navy);}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media(max-width:500px){.field-row{grid-template-columns:1fr;}}
+
+/* ── BUTTONS ── */
+.btn{padding:10px 22px;border-radius:3px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;cursor:pointer;transition:all 0.2s;border:none;}
+.btn-gold{background:linear-gradient(135deg,var(--gold) 0%,#a07020 100%);color:var(--navy);}
+.btn-gold:hover{opacity:0.88;}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--slate);}
+.btn-outline:hover{border-color:var(--gold);color:var(--gold);}
+.btn-sm{padding:6px 14px;font-size:11px;}
+.btn-danger{background:rgba(192,50,50,0.15);border:1px solid rgba(192,50,50,0.4);color:#e87070;}
+
+/* ── TABLE ── */
+.tbl-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;}
+thead tr{border-bottom:1px solid var(--gold);}
+th{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;color:var(--gold);letter-spacing:0.1em;text-transform:uppercase;padding:9px 12px;text-align:left;white-space:nowrap;}
+tbody tr{border-bottom:1px solid rgba(201,168,76,0.07);transition:background 0.15s;}
+tbody tr:hover{background:rgba(201,168,76,0.04);}
+td{padding:11px 12px;font-size:13px;vertical-align:middle;}
+.badge{display:inline-block;padding:3px 9px;border-radius:2px;font-size:10px;font-weight:700;font-family:'Barlow Condensed',sans-serif;letter-spacing:0.05em;}
+.badge-new{background:rgba(39,174,96,0.15);color:#2ecc71;border:1px solid rgba(39,174,96,0.3);}
+.badge-contacted{background:rgba(52,152,219,0.15);color:#5dade2;border:1px solid rgba(52,152,219,0.3);}
+.badge-appt{background:rgba(201,168,76,0.15);color:var(--gold);border:1px solid rgba(201,168,76,0.3);}
+.badge-closed{background:rgba(39,174,96,0.2);color:#27ae60;border:1px solid rgba(39,174,96,0.4);}
+.badge-dead{background:rgba(107,124,147,0.15);color:var(--slate);border:1px solid rgba(107,124,147,0.3);}
+.badge-warm{background:rgba(230,126,34,0.15);color:#e67e22;border:1px solid rgba(230,126,34,0.3);}
+
+/* ── PRIORITY SCORE ── */
+.priority{display:flex;align-items:center;gap:5px;}
+.priority-bar{width:50px;height:5px;background:rgba(201,168,76,0.1);border-radius:2px;}
+.priority-fill{height:5px;border-radius:2px;}
+
+/* ── MODAL ── */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center;padding:20px;}
+.modal-bg.open{display:flex;}
+.modal{background:var(--navy-mid);border:1px solid var(--border);border-radius:6px;width:100%;max-width:540px;max-height:90vh;overflow-y:auto;padding:28px;}
+.modal h3{font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--gold);margin-bottom:18px;}
+.modal-footer{display:flex;gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border);}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--navy-mid);border:1px solid var(--gold);border-radius:4px;padding:12px 20px;font-size:13px;transform:translateY(80px);opacity:0;transition:all 0.3s;z-index:2000;}
+.toast.show{transform:translateY(0);opacity:1;}
+</style>
+<script src="auth.js?v=20260713"></script>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="shield">👑</div>
+    <div>
+      <h1>Agent Portal</h1>
+      <p id="agent-greeting">Dynasty Builders Academy</p>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <div id="agent-badge" style="font-size:12px;color:var(--slate);">Loading…</div>
+    <a href="https://app.phpbamboo.com/agent/signin" target="_blank" style="font-size:11px;color:var(--gold);text-decoration:none;border:1px solid var(--border);padding:6px 12px;border-radius:3px;">PHP Bamboo ↗</a>
+    <a href="agents.html" id="roster-link" style="display:none;font-size:11px;color:var(--gold);text-decoration:none;border:1px solid var(--border);padding:6px 12px;border-radius:3px;">👥 Agent Roster</a>
+    <a href="hub.html" style="font-size:11px;color:var(--gold);text-decoration:none;border:1px solid var(--border);padding:6px 12px;border-radius:3px;transition:border-color 0.15s;" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'">← Hub</a>
+  </div>
+</div>
+
+<div class="tab-bar">
+  <div class="tab active" onclick="switchTab('dashboard',this)">📊 Dashboard</div>
+  <div class="tab" onclick="switchTab('referrals',this)">🔗 Referrals</div>
+  <div class="tab" onclick="switchTab('clients',this)">👥 My Clients</div>
+  <div class="tab" onclick="window.location.href='top25.html'" style="color:var(--gold);">⭐ Top 25</div>
+  <div class="tab" onclick="switchTab('scripts',this)">📝 Scripts</div>
+  <div class="tab" onclick="switchTab('resources',this)">🔗 Resources</div>
+</div>
+
+<div class="content">
+
+  <!-- ══ DASHBOARD ══ -->
+  <div class="tab-panel active" id="tab-dashboard">
+    <div class="grid3" style="margin-bottom:18px;">
+      <div class="kpi"><div class="kpi-label">My Referrals This Month</div><div class="kpi-val" id="kpi-refs">0</div><div class="kpi-sub">New referrals received</div></div>
+      <div class="kpi"><div class="kpi-label">Referrals → Appointments</div><div class="kpi-val" id="kpi-conv">0%</div><div class="kpi-sub">Conversion rate</div></div>
+      <div class="kpi"><div class="kpi-label">Referral Policies Closed</div><div class="kpi-val" id="kpi-closed">0</div><div class="kpi-sub">From referrals this month</div></div>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title">🔥 Hot Referrals to Follow Up</div>
+        <div id="hot-refs-list"><div style="color:var(--slate);font-size:13px;padding:10px 0;">No hot referrals yet — add referrals in the Referrals tab.</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">⚡ Today's Referral Actions</div>
+        <div id="action-list"><div style="color:var(--slate);font-size:13px;padding:10px 0;">Add referrals to generate action items.</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">📈 Referral Pipeline Overview</div>
+      <div class="ref-pipeline" id="pipe-overview">
+        <div class="pipe-stage"><div class="pipe-label">New</div><div class="pipe-count" id="pipe-new">0</div></div>
+        <div class="pipe-stage"><div class="pipe-label">Contacted</div><div class="pipe-count" id="pipe-contacted">0</div></div>
+        <div class="pipe-stage"><div class="pipe-label">Appt Set</div><div class="pipe-count" id="pipe-appt">0</div></div>
+        <div class="pipe-stage"><div class="pipe-label">Warm</div><div class="pipe-count" id="pipe-warm">0</div></div>
+        <div class="pipe-stage"><div class="pipe-label">Closed</div><div class="pipe-count" id="pipe-closed">0</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ REFERRALS ══ -->
+  <div class="tab-panel" id="tab-referrals">
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;">
+      <div>
+        <h2 style="font-family:'Cormorant Garamond',serif;font-size:24px;color:var(--gold);">Referral Tracking</h2>
+        <p style="font-size:13px;color:var(--slate);margin-top:2px;">Every referral is a warm lead — track, follow up, and close.</p>
+      </div>
+      <button class="btn btn-gold" onclick="openAddRef()">+ Add Referral</button>
+    </div>
+
+    <!-- Filters -->
+    <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px;align-items:center;">
+      <select id="ref-status-filter" onchange="renderRefs()" style="width:auto;font-size:12px;padding:7px 12px;">
+        <option value="all">All Statuses</option>
+        <option value="New">New</option>
+        <option value="Contacted">Contacted</option>
+        <option value="Appt Set">Appt Set</option>
+        <option value="Warm">Warm</option>
+        <option value="Closed ✅">Closed</option>
+        <option value="Dead ❌">Dead</option>
+      </select>
+      <select id="ref-source-filter" onchange="renderRefs()" style="width:auto;font-size:12px;padding:7px 12px;">
+        <option value="all">All Sources</option>
+        <option value="Survey">From Survey</option>
+        <option value="Client">From Client</option>
+        <option value="Social">Social Media</option>
+        <option value="BOM">BOM Guest</option>
+        <option value="Manual">Manual Entry</option>
+      </select>
+      <input type="text" id="ref-search" placeholder="Search name or phone…" oninput="renderRefs()" style="width:220px;font-size:12px;padding:7px 12px;">
+      <div style="flex:1;"></div>
+      <button class="btn btn-outline btn-sm" onclick="exportRefsCSV()">Export CSV</button>
+    </div>
+
+    <!-- Table -->
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Phone</th>
+            <th>Referred By</th>
+            <th>Source</th>
+            <th>Status</th>
+            <th>Priority</th>
+            <th>Profile Type</th>
+            <th>Last Contacted</th>
+            <th>Notes</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="refs-tbody"></tbody>
+      </table>
+      <div id="refs-empty" style="display:none;text-align:center;padding:40px;color:var(--slate);">
+        <div style="font-size:32px;margin-bottom:12px;">🔗</div>
+        <p>No referrals yet. Add your first referral or connect your survey to auto-populate.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ CLIENTS ══ -->
+  <div class="tab-panel" id="tab-clients">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;">
+      <div>
+        <h2 style="font-family:'Cormorant Garamond',serif;font-size:24px;color:var(--gold);">My Clients</h2>
+        <p style="font-size:13px;color:var(--slate);margin-top:2px;">Manage your book of business and request referrals.</p>
+      </div>
+      <button class="btn btn-gold" onclick="openAddClient()">+ Add Client</button>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>Client Name</th><th>Policy Type</th><th>Annual Premium</th>
+          <th>Referrals Given</th><th>Anniversary</th><th>Actions</th>
+        </tr></thead>
+        <tbody id="clients-tbody"></tbody>
+      </table>
+      <div id="clients-empty" style="display:none;text-align:center;padding:40px;color:var(--slate);">
+        <div style="font-size:32px;margin-bottom:12px;">👥</div>
+        <p>No clients recorded yet. Add a client after each policy close.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SCRIPTS ══ -->
+  <div class="tab-panel" id="tab-scripts">
+    <h2 style="font-family:'Cormorant Garamond',serif;font-size:24px;color:var(--gold);margin-bottom:18px;">Referral Scripts</h2>
+
+    <div class="card">
+      <div class="card-title">🗣️ Asking for Referrals After Close (The Gold Standard)</div>
+      <div style="background:var(--navy);border-left:3px solid var(--gold);border-radius:0 4px 4px 0;padding:16px 18px;font-size:14px;line-height:1.8;font-family:'Barlow',sans-serif;">
+        <p><em style="color:var(--slate);">[After policy is delivered or just after application]</em></p>
+        <p style="margin-top:10px;">"<strong style="color:var(--gold-light);">[Client Name]</strong>, I want to say thank you for trusting me with your family's protection. That means a lot. <br><br>
+        The way my business grows is through people like you referring me to the people they care about. <br><br>
+        I'm not asking you to sell anyone — I'm just asking you to connect me with one or two people who you think deserve to know what you now know. <br><br>
+        Who comes to mind — maybe a family member, coworker, or close friend who has kids or a mortgage they haven't fully protected yet?"</p>
+      </div>
+      <button class="btn btn-outline btn-sm" style="margin-top:12px;" onclick="copyScript(this)">Copy Script</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📱 Text Message to Referral (First Outreach)</div>
+      <div style="background:var(--navy);border-left:3px solid var(--gold);border-radius:0 4px 4px 0;padding:16px 18px;font-size:14px;line-height:1.8;">
+        <p>"Hi <strong style="color:var(--gold-light);">[Referral Name]</strong>, my name is <strong style="color:var(--gold-light);">[Your Name]</strong>. Your [friend/coworker/family member] <strong style="color:var(--gold-light);">[Referrer Name]</strong> mentioned you and suggested I reach out. <br><br>
+        I work with families on life insurance and financial protection — specifically the type that pays out for critical illness, not just death. <br><br>
+        [Referrer Name] thought it might be worth a 15-minute conversation to at least see where you stand. Would you be open to a quick call this week?"</p>
+      </div>
+      <button class="btn btn-outline btn-sm" style="margin-top:12px;" onclick="copyScript(this)">Copy Script</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📞 Cold Referral Call Opener</div>
+      <div style="background:var(--navy);border-left:3px solid var(--gold);border-radius:0 4px 4px 0;padding:16px 18px;font-size:14px;line-height:1.8;">
+        <p>"Hi, is this <strong style="color:var(--gold-light);">[Name]</strong>? <em style="color:var(--slate);">[Yes]</em> Great — my name is <strong style="color:var(--gold-light);">[Your Name]</strong>, I'm a financial professional. Your [friend] <strong style="color:var(--gold-light);">[Referrer]</strong> suggested I give you a call. <br><br>
+        Do you have about 60 seconds? <em style="color:var(--slate);">[Yes]</em> <br><br>
+        I work with people to make sure their family would be financially okay if anything happened to them — specifically looking at coverage gaps most people don't know they have. <strong style="color:var(--gold-light);">[Referrer]</strong> just went through this process and wanted me to give you the same information. <br><br>
+        I'm not here to sell you anything today — I'd just love to schedule 20 minutes to walk you through what we found for your friend and see if it applies to you. Fair enough?"</p>
+      </div>
+      <button class="btn btn-outline btn-sm" style="margin-top:12px;" onclick="copyScript(this)">Copy Script</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🔄 Referral Follow-Up (No Response)</div>
+      <div style="background:var(--navy);border-left:3px solid var(--gold);border-radius:0 4px 4px 0;padding:16px 18px;font-size:14px;line-height:1.8;">
+        <p>"Hi <strong style="color:var(--gold-light);">[Name]</strong>, just following up on my message from [X days] ago. I completely understand if now isn't the best time. <br><br>
+        I just want to make sure I did right by <strong style="color:var(--gold-light);">[Referrer]</strong> who spoke so highly of you. <br><br>
+        If you have 15 minutes this week or next, I'd love to share something that could be genuinely valuable for your family. No pressure — just a conversation. <br><br>
+        Text me back 'YES' if you're open to it, and I'll send you a time that works."</p>
+      </div>
+      <button class="btn btn-outline btn-sm" style="margin-top:12px;" onclick="copyScript(this)">Copy Script</button>
+    </div>
+
+    <div class="card" style="background:rgba(201,168,76,0.06);">
+      <div class="card-title">💡 AI Script Generator</div>
+      <div class="field"><label class="field-label">Scenario</label>
+        <select id="ai-scenario">
+          <option>Referral from a healthcare professional client</option>
+          <option>Referral from a business owner client</option>
+          <option>Following up after no response — 3rd attempt</option>
+          <option>Referral who said "I'm not interested"</option>
+          <option>Referral with young children (family focus)</option>
+          <option>Referral who is a senior / retiree</option>
+        </select>
+      </div>
+      <button class="btn btn-gold" onclick="generateScript()">Generate with AI ✨</button>
+      <div id="ai-script-output" style="display:none;margin-top:16px;background:var(--navy);border-left:3px solid var(--gold-light);padding:16px;border-radius:0 4px 4px 0;font-size:14px;line-height:1.8;white-space:pre-wrap;"></div>
+    </div>
+  </div>
+
+  <!-- ══ RESOURCES ══ -->
+  <div class="tab-panel" id="tab-resources">
+    <h2 style="font-family:'Cormorant Garamond',serif;font-size:24px;color:var(--gold);margin-bottom:6px;">Prospecting Toolkit</h2>
+    <p style="font-size:13px;color:var(--slate);margin-bottom:20px;line-height:1.6;">Your personal share links are pre-tagged with your agent ID — every lead routes back to you automatically.</p>
+
+    <!-- ── SHARE LINKS (agent-personalized) ── -->
+    <div style="background:linear-gradient(135deg,rgba(201,168,76,0.08) 0%,var(--navy-mid) 60%);border:1px solid rgba(201,168,76,0.35);border-radius:6px;padding:18px 20px;margin-bottom:20px;position:relative;overflow:hidden;">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,var(--gold),transparent);"></div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:14px;">🔗 Your Personalized Share Links</div>
+      <div style="display:flex;flex-direction:column;gap:8px;" id="portal-share-links">
+        <!-- populated by JS -->
+      </div>
+    </div>
+
+    <!-- ── FUNNEL CARDS ── -->
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px;">📣 Client & Recruiting Funnels</div>
+    <div class="grid2" style="margin-bottom:22px;" id="portal-funnel-cards">
+      <!-- populated by JS -->
+    </div>
+
+    <!-- ── QUICK LINKS + INCOME TABLE ── -->
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title">🔗 PHP Platform Links</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <a href="https://app.phpbamboo.com/agent/signin" target="_blank" class="resource-link">PHP Bamboo Portal →</a>
+          <a href="https://integrity.com/integrityconnect/" target="_blank" class="resource-link">Integrity Connect →</a>
+          <a href="https://forms.monday.com/forms/a891293776828ac931aa0382f6838197" target="_blank" class="resource-link">BOM Captains Form →</a>
+          <a href="https://app.phpbamboo.com/agent/home/events/view/16" target="_blank" class="resource-link">PHP Lights Out 2026 →</a>
+          <a href="survey.html" id="portal-survey-link" target="_blank" class="resource-link">Financial Survey (Client) →</a>
+          <a href="training.html" class="resource-link">Training Hub →</a>
+          <a href="top25.html" class="resource-link">Top 25 Prospects →</a>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">📊 PHP Income Reference</div>
+        <table style="width:100%;font-size:12px;">
+          <thead><tr>
+            <th style="font-size:10px;color:var(--gold);padding:6px 10px;text-align:left;border-bottom:1px solid var(--border);">Level</th>
+            <th style="font-size:10px;color:var(--gold);padding:6px 10px;text-align:right;border-bottom:1px solid var(--border);">Comm.</th>
+            <th style="font-size:10px;color:var(--gold);padding:6px 10px;text-align:right;border-bottom:1px solid var(--border);">4 Apps/wk</th>
+          </tr></thead>
+          <tbody>
+            <tr><td style="padding:6px 10px;border-bottom:1px solid rgba(201,168,76,0.07);">Trainee</td><td style="padding:6px 10px;text-align:right;border-bottom:1px solid rgba(201,168,76,0.07);">30%</td><td style="padding:6px 10px;text-align:right;border-bottom:1px solid rgba(201,168,76,0.07);color:var(--gold);">$1,440/mo</td></tr>
+            <tr><td style="padding:6px 10px;border-bottom:1px solid rgba(201,168,76,0.07);">Associate</td><td style="padding:6px 10px;text-align:right;border-bottom:1px solid rgba(201,168,76,0.07);">40%</td><td style="padding:6px 10px;text-align:right;border-bottom:1px solid rgba(201,168,76,0.07);color:var(--gold);">$1,920/mo</td></tr>
+            <tr><td style="padding:6px 10px;border-bottom:1px solid rgba(201,168,76,0.07);">Field Associate</td><td style="padding:6px 10px;text-align:right;border-bottom:1px solid rgba(201,168,76,0.07);">50%</td><td style="padding:6px 10px;text-align:right;border-bottom:1px solid rgba(201,168,76,0.07);color:var(--gold);">$2,400/mo</td></tr>
+            <tr><td style="padding:6px 10px;border-bottom:1px solid rgba(201,168,76,0.07);">Director</td><td style="padding:6px 10px;text-align:right;border-bottom:1px solid rgba(201,168,76,0.07);">60%</td><td style="padding:6px 10px;text-align:right;border-bottom:1px solid rgba(201,168,76,0.07);color:var(--gold);">$2,880/mo</td></tr>
+            <tr><td style="padding:6px 10px;border-bottom:1px solid rgba(201,168,76,0.07);">Prod. MD</td><td style="padding:6px 10px;text-align:right;border-bottom:1px solid rgba(201,168,76,0.07);">70%</td><td style="padding:6px 10px;text-align:right;border-bottom:1px solid rgba(201,168,76,0.07);color:var(--gold);">$3,360/mo</td></tr>
+            <tr><td style="padding:6px 10px;">Mktg Director+</td><td style="padding:6px 10px;text-align:right;">75–84%</td><td style="padding:6px 10px;text-align:right;color:var(--gold-light);font-weight:700;">$3,600+/mo</td></tr>
+          </tbody>
+        </table>
+        <div style="font-size:10px;color:var(--slate);margin-top:8px;">*Based on $600 avg annual premium per app</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /content -->
+
+<!-- ══ MODALS ══ -->
+
+<!-- Add Referral Modal -->
+<div class="modal-bg" id="add-ref-modal">
+  <div class="modal">
+    <h3>Add Referral</h3>
+    <div class="field-row">
+      <div class="field"><label class="field-label">First Name *</label><input type="text" id="rf-first" placeholder="First name"></div>
+      <div class="field"><label class="field-label">Last Name</label><input type="text" id="rf-last" placeholder="Last name"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label class="field-label">Phone *</label><input type="tel" id="rf-phone" placeholder="(555) 555-5555"></div>
+      <div class="field"><label class="field-label">Email</label><input type="email" id="rf-email" placeholder="email@example.com"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label class="field-label">Referred By *</label><input type="text" id="rf-by" placeholder="Client or source name"></div>
+      <div class="field"><label class="field-label">Source</label>
+        <select id="rf-source">
+          <option value="Client">From Client</option>
+          <option value="Survey">From Survey</option>
+          <option value="Social">Social Media</option>
+          <option value="BOM">BOM Guest</option>
+          <option value="Manual">Manual Entry</option>
+        </select>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label class="field-label">Profile Type</label>
+        <select id="rf-profile">
+          <option>General</option><option>Healthcare</option><option>Business Owner</option>
+          <option>Tech/Engineering</option><option>Family with Children</option>
+          <option>Senior/Retiree</option>
+        </select>
+      </div>
+      <div class="field"><label class="field-label">Priority (1–10)</label>
+        <input type="number" id="rf-priority" min="1" max="10" value="5">
+      </div>
+    </div>
+    <div class="field"><label class="field-label">Notes</label>
+      <textarea id="rf-notes" placeholder="Any context from the referrer — family situation, concerns, best time to call…"></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('add-ref-modal')">Cancel</button>
+      <button class="btn btn-gold" onclick="saveRef()">Save Referral</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Client Modal -->
+<div class="modal-bg" id="add-client-modal">
+  <div class="modal">
+    <h3>Add Client</h3>
+    <div class="field-row">
+      <div class="field"><label class="field-label">Full Name *</label><input type="text" id="cl-name" placeholder="Full name"></div>
+      <div class="field"><label class="field-label">Phone</label><input type="tel" id="cl-phone" placeholder="Phone"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label class="field-label">Policy Type</label>
+        <select id="cl-ptype">
+          <option>Term Life</option><option>Permanent Life + Living Benefits</option>
+          <option>Indexed Universal Life</option><option>Fixed Indexed Annuity</option><option>Multiple Policies</option>
+        </select>
+      </div>
+      <div class="field"><label class="field-label">Annual Premium</label>
+        <input type="number" id="cl-premium" placeholder="e.g. 600">
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label class="field-label">Policy Date</label><input type="date" id="cl-date"></div>
+      <div class="field"><label class="field-label">Referrals Requested?</label>
+        <select id="cl-asked"><option value="no">Not yet</option><option value="yes">Yes — asked</option></select>
+      </div>
+    </div>
+    <div class="field"><label class="field-label">Notes</label>
+      <textarea id="cl-notes" placeholder="Any follow-up notes, renewal reminders, family situation…"></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('add-client-modal')">Cancel</button>
+      <button class="btn btn-gold" onclick="saveClient()">Save Client</button>
+    </div>
+  </div>
+</div>
+
+<!-- Update Status Modal -->
+<div class="modal-bg" id="update-ref-modal">
+  <div class="modal">
+    <h3>Update Referral Status</h3>
+    <input type="hidden" id="edit-ref-id">
+    <div class="field"><label class="field-label">New Status</label>
+      <select id="edit-status">
+        <option>New</option><option>Contacted</option><option>Appt Set</option>
+        <option>Warm</option><option>Closed ✅</option><option>Dead ❌</option>
+      </select>
+    </div>
+    <div class="field"><label class="field-label">Add Note</label>
+      <textarea id="edit-note" placeholder="What happened? What was said?"></textarea>
+    </div>
+    <div class="field"><label class="field-label">Follow-Up Date</label>
+      <input type="date" id="edit-followup">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('update-ref-modal')">Cancel</button>
+      <button class="btn btn-gold" onclick="updateRefStatus()">Update Status</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" style="color:var(--gold-light);"></div>
+
+<style>
+.resource-link{color:var(--gold-light);text-decoration:none;font-size:14px;padding:10px 14px;background:var(--navy-light);border-radius:3px;display:block;transition:background 0.2s;border:1px solid var(--border);}
+.resource-link:hover{background:rgba(201,168,76,0.1);border-color:var(--gold);}
+</style>
+
+<script>
+// ─── DATA LAYER ───────────────────────────────────────────────
+const STORE = {
+  get(k)     { try{return JSON.parse(localStorage.getItem('dba_'+k)||'[]');}catch{return[];} },
+  set(k,v)   { try{localStorage.setItem('dba_'+k,JSON.stringify(v));}catch{} },
+  push(k,v)  { const a=STORE.get(k); a.push(v); STORE.set(k,a); },
+  update(k,id,patch) {
+    const a=STORE.get(k).map(x=>x.id===id?{...x,...patch}:x);
+    STORE.set(k,a);
+  }
+};
+
+function uid() { return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+
+const STATUS_BADGE = {
+  'New':'badge-new','Contacted':'badge-contacted','Appt Set':'badge-appt',
+  'Warm':'badge-warm','Closed ✅':'badge-closed','Dead ❌':'badge-dead'
+};
+
+// ─── TABS ─────────────────────────────────────────────────────
+function switchTab(id, el) {
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  el.classList.add('active');
+  if(id==='referrals') renderRefs();
+  if(id==='clients') renderClients();
+  if(id==='dashboard') renderDashboard();
+}
+
+// ─── REFERRALS ────────────────────────────────────────────────
+function openAddRef() { clearRefForm(); openModal('add-ref-modal'); }
+function clearRefForm() {
+  ['rf-first','rf-last','rf-phone','rf-email','rf-by','rf-notes'].forEach(id=>{
+    document.getElementById(id).value='';
+  });
+  document.getElementById('rf-priority').value=5;
+}
+
+function saveRef() {
+  const first = document.getElementById('rf-first').value.trim();
+  const phone = document.getElementById('rf-phone').value.trim();
+  const by    = document.getElementById('rf-by').value.trim();
+  if(!first||!phone||!by){toast('First name, phone, and referred-by are required.','⚠️');return;}
+  STORE.push('refs',{
+    id: uid(),
+    name: first+' '+(document.getElementById('rf-last').value.trim()),
+    phone, email: document.getElementById('rf-email').value.trim(),
+    referredBy: by,
+    source: document.getElementById('rf-source').value,
+    profile: document.getElementById('rf-profile').value,
+    priority: parseInt(document.getElementById('rf-priority').value)||5,
+    status:'New',
+    notes: document.getElementById('rf-notes').value.trim(),
+    timeline:[{date:new Date().toISOString(),note:'Added to pipeline'}],
+    createdAt: new Date().toISOString(),
+    lastContacted: null, followUp: null
+  });
+  closeModal('add-ref-modal');
+  renderRefs();
+  renderDashboard();
+  toast('Referral added: '+first,'✅');
+}
+
+function renderRefs() {
+  const refs = STORE.get('refs');
+  const statusF = document.getElementById('ref-status-filter').value;
+  const sourceF = document.getElementById('ref-source-filter').value;
+  const search  = (document.getElementById('ref-search').value||'').toLowerCase();
+  const filtered = refs.filter(r=>{
+    if(statusF!=='all' && r.status!==statusF) return false;
+    if(sourceF!=='all' && r.source!==sourceF) return false;
+    if(search && !r.name.toLowerCase().includes(search) && !r.phone.includes(search)) return false;
+    return true;
+  }).sort((a,b)=>b.priority-a.priority);
+
+  const tbody = document.getElementById('refs-tbody');
+  tbody.innerHTML = '';
+  if(!filtered.length){
+    document.getElementById('refs-empty').style.display='block';
+    return;
+  }
+  document.getElementById('refs-empty').style.display='none';
+  filtered.forEach(r=>{
+    const p = Math.round((r.priority/10)*100);
+    const color = r.priority>=8?'var(--danger)':r.priority>=5?'var(--gold)':'var(--success)';
+    const lastC = r.lastContacted?new Date(r.lastContacted).toLocaleDateString():'—';
+    tbody.innerHTML+=`
+    <tr>
+      <td><div style="font-weight:600;">${r.name}</div><div style="font-size:10px;color:var(--slate);">${r.profile}</div></td>
+      <td><a href="tel:${r.phone}" style="color:var(--gold-light);text-decoration:none;">${r.phone}</a></td>
+      <td style="font-size:13px;">${r.referredBy}</td>
+      <td><span style="font-size:11px;color:var(--slate);">${r.source}</span></td>
+      <td><span class="badge ${STATUS_BADGE[r.status]||'badge-new'}">${r.status}</span></td>
+      <td>
+        <div class="priority">
+          <div class="priority-bar"><div class="priority-fill" style="width:${p}%;background:${color};"></div></div>
+          <span style="font-size:11px;color:${color};font-weight:600;">${r.priority}</span>
+        </div>
+      </td>
+      <td style="font-size:11px;color:var(--slate);">${r.profile}</td>
+      <td style="font-size:12px;color:var(--slate);">${lastC}</td>
+      <td style="font-size:12px;color:var(--slate);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.notes||'—'}</td>
+      <td>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;">
+          <button class="btn btn-outline btn-sm" onclick="openUpdateRef('${r.id}')">Update</button>
+          <button class="btn btn-sm" style="background:rgba(39,174,96,0.15);border:1px solid rgba(39,174,96,0.3);color:#2ecc71;padding:6px 10px;" onclick="quickContact('${r.id}')">📞</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteRef('${r.id}')">✕</button>
+        </div>
+      </td>
+    </tr>`;
+  });
+}
+
+function openUpdateRef(id) {
+  document.getElementById('edit-ref-id').value = id;
+  const r = STORE.get('refs').find(x=>x.id===id);
+  if(r) document.getElementById('edit-status').value = r.status;
+  document.getElementById('edit-note').value = '';
+  document.getElementById('edit-followup').value = '';
+  openModal('update-ref-modal');
+}
+
+function updateRefStatus() {
+  const id = document.getElementById('edit-ref-id').value;
+  const status = document.getElementById('edit-status').value;
+  const note = document.getElementById('edit-note').value.trim();
+  const followUp = document.getElementById('edit-followup').value;
+  const refs = STORE.get('refs');
+  const idx = refs.findIndex(x=>x.id===id);
+  if(idx<0) return;
+  refs[idx].status = status;
+  refs[idx].lastContacted = new Date().toISOString();
+  if(followUp) refs[idx].followUp = followUp;
+  if(note) refs[idx].timeline.push({date:new Date().toISOString(),note});
+  STORE.set('refs',refs);
+  closeModal('update-ref-modal');
+  renderRefs();
+  renderDashboard();
+  toast('Status updated → '+status,'✅');
+}
+
+function quickContact(id) {
+  STORE.update('refs',id,{lastContacted:new Date().toISOString()});
+  renderRefs();
+  toast('Last contacted time updated','📞');
+}
+
+function deleteRef(id) {
+  if(!confirm('Remove this referral?')) return;
+  STORE.set('refs', STORE.get('refs').filter(r=>r.id!==id));
+  renderRefs();
+  renderDashboard();
+  toast('Referral removed','🗑️');
+}
+
+function exportRefsCSV() {
+  const refs = STORE.get('refs');
+  const rows=[['Name','Phone','Email','Referred By','Source','Profile','Status','Priority','Notes']];
+  refs.forEach(r=>rows.push([r.name,r.phone,r.email,r.referredBy,r.source,r.profile,r.status,r.priority,r.notes||'']));
+  const csv = rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download = `DBA_Referrals_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+// ─── DASHBOARD ────────────────────────────────────────────────
+function renderDashboard() {
+  const refs = STORE.get('refs');
+  const thisMonth = refs.filter(r=>{
+    const d = new Date(r.createdAt);
+    const n = new Date();
+    return d.getMonth()===n.getMonth() && d.getFullYear()===n.getFullYear();
+  });
+  const closed = refs.filter(r=>r.status==='Closed ✅').length;
+  const apptSet = refs.filter(r=>r.status==='Appt Set'||r.status==='Closed ✅').length;
+  const conv = refs.length ? Math.round((apptSet/refs.length)*100) : 0;
+
+  document.getElementById('kpi-refs').textContent = thisMonth.length;
+  document.getElementById('kpi-conv').textContent = conv+'%';
+  document.getElementById('kpi-closed').textContent = closed;
+
+  // Pipeline counts
+  ['New','Contacted','Appt Set','Warm','Closed ✅'].forEach((s,i)=>{
+    const ids=['pipe-new','pipe-contacted','pipe-appt','pipe-warm','pipe-closed'];
+    document.getElementById(ids[i]).textContent = refs.filter(r=>r.status===s).length;
+  });
+
+  // Hot refs (priority ≥ 7, not closed/dead)
+  const hot = refs.filter(r=>r.priority>=7&&!['Closed ✅','Dead ❌'].includes(r.status))
+    .sort((a,b)=>b.priority-a.priority).slice(0,5);
+  const hotEl = document.getElementById('hot-refs-list');
+  if(hot.length) {
+    hotEl.innerHTML = hot.map(r=>`
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid rgba(201,168,76,0.07);">
+        <div>
+          <div style="font-weight:600;font-size:13px;">${r.name}</div>
+          <div style="font-size:11px;color:var(--slate);">via ${r.referredBy} · ${r.status}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:12px;color:var(--gold);font-weight:700;">P${r.priority}</span>
+          <a href="tel:${r.phone}" style="background:rgba(39,174,96,0.15);border:1px solid rgba(39,174,96,0.3);color:#2ecc71;padding:5px 10px;border-radius:2px;font-size:11px;text-decoration:none;">Call</a>
+        </div>
+      </div>`).join('');
+  } else {
+    hotEl.innerHTML = '<div style="color:var(--slate);font-size:13px;padding:10px 0;">No high-priority referrals yet.</div>';
+  }
+
+  // Action list
+  const today = new Date().toDateString();
+  const dueToday = refs.filter(r=>r.followUp && new Date(r.followUp).toDateString()===today);
+  const actionEl = document.getElementById('action-list');
+  if(dueToday.length) {
+    actionEl.innerHTML = dueToday.map(r=>`
+      <div style="padding:9px 0;border-bottom:1px solid rgba(201,168,76,0.07);">
+        <div style="font-weight:600;font-size:13px;">Follow up: ${r.name}</div>
+        <div style="font-size:11px;color:var(--slate);">${r.phone} · ${r.status}</div>
+      </div>`).join('');
+  } else {
+    actionEl.innerHTML = '<div style="color:var(--slate);font-size:13px;padding:10px 0;">No follow-ups scheduled for today.</div>';
+  }
+}
+
+// ─── CLIENTS ─────────────────────────────────────────────────
+function openAddClient() { openModal('add-client-modal'); }
+function saveClient() {
+  const name = document.getElementById('cl-name').value.trim();
+  if(!name){toast('Client name is required','⚠️');return;}
+  const client = {
+    id:uid(), name,
+    phone: document.getElementById('cl-phone').value.trim(),
+    ptype: document.getElementById('cl-ptype').value,
+    premium: parseFloat(document.getElementById('cl-premium').value)||0,
+    policyDate: document.getElementById('cl-date').value,
+    asked: document.getElementById('cl-asked').value==='yes',
+    notes: document.getElementById('cl-notes').value.trim(),
+    referralsGiven:0, createdAt:new Date().toISOString()
+  };
+  STORE.push('clients', client);
+
+  // Write to Monday.com Client Pipeline
+  if (AUTH.getMondayKey()) {
+    const s = AUTH.getSession();
+    const colVals = {
+      agent_id:    { text: s?.agentId||'' },
+      agent_name:  { text: s?.name||'' },
+      first_name:  { text: name.split(' ')[0]||name },
+      last_name:   { text: name.split(' ').slice(1).join(' ')||'' },
+      phone:       { phone: client.phone, countryShortName:'US' },
+      profile:     { text: client.ptype },
+      budget:      { number: client.premium },
+      source:      { text: 'Direct Client' },
+      survey_date: { date: client.policyDate || new Date().toISOString().slice(0,10) },
+      notes:       { text: client.notes||'' }
+    };
+    mondayQuery(`mutation { create_item(board_id: 18397757902, item_name: "${name.replace(/"/g,"'")} — Client", column_values: ${JSON.stringify(JSON.stringify(colVals))}) { id } }`).catch(()=>{});
+  }
+
+  ['cl-name','cl-phone','cl-premium','cl-date','cl-notes'].forEach(id=>document.getElementById(id).value='');
+  closeModal('add-client-modal');
+  renderClients();
+  toast('Client added: '+name,'✅');
+}
+
+function renderClients() {
+  const clients = STORE.get('clients');
+  const tbody = document.getElementById('clients-tbody');
+  const empty = document.getElementById('clients-empty');
+  tbody.innerHTML='';
+  if(!clients.length){empty.style.display='block';return;}
+  empty.style.display='none';
+  clients.forEach(c=>{
+    const ann = c.policyDate ? new Date(c.policyDate).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '—';
+    tbody.innerHTML+=`
+    <tr>
+      <td><div style="font-weight:600;">${c.name}</div><div style="font-size:11px;color:var(--slate);">${c.phone||''}</div></td>
+      <td style="font-size:12px;">${c.ptype}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:13px;color:var(--gold);">${c.premium?'$'+c.premium.toLocaleString():'—'}</td>
+      <td><span class="badge ${c.referralsGiven>0?'badge-closed':'badge-new'}">${c.referralsGiven} referrals</span></td>
+      <td style="font-size:12px;">${ann}</td>
+      <td>
+        <button class="btn btn-outline btn-sm" onclick="requestReferral('${c.id}')">Ask for Referral</button>
+      </td>
+    </tr>`;
+  });
+}
+
+function requestReferral(clientId) {
+  const clients = STORE.get('clients');
+  const c = clients.find(x=>x.id===clientId);
+  if(!c) return;
+  const refName = prompt(`Referral from ${c.name}:\n\nEnter the referral's name and phone (e.g. "John Smith, 310-555-1234")`);
+  if(!refName) return;
+  const [namePart,...rest] = refName.split(',');
+  const phone = rest.join(',').trim();
+  STORE.push('refs',{
+    id:uid(), name:namePart.trim(), phone:phone||'', email:'',
+    referredBy:c.name, source:'Client', profile:'General',
+    priority:8, status:'New', notes:`Referred by client ${c.name}`,
+    timeline:[{date:new Date().toISOString(),note:`Referred by client ${c.name}`}],
+    createdAt:new Date().toISOString(), lastContacted:null, followUp:null
+  });
+  // Increment client referral count
+  const idx = clients.findIndex(x=>x.id===clientId);
+  clients[idx].referralsGiven = (clients[idx].referralsGiven||0)+1;
+  STORE.set('clients',clients);
+  renderClients();
+  renderDashboard();
+  toast('Referral added from '+c.name+'!','✅');
+}
+
+// ─── AI SCRIPT ────────────────────────────────────────────────
+async function generateScript() {
+  const scenario = document.getElementById('ai-scenario').value;
+  const out = document.getElementById('ai-script-output');
+  out.style.display='block';
+  out.textContent = 'Generating script…';
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        system:'You are a PHP Agency sales coach for Dynasty Builders Academy. Write a concise, natural, conversational referral script for the given scenario. Use [Name], [Your Name], [Referrer] placeholders. Keep it warm, human, and results-driven. Max 150 words.',
+        messages:[{role:'user',content:'Write a referral script for: '+scenario}]
+      })
+    });
+    const d = await res.json();
+    out.textContent = d?.content?.[0]?.text || 'Script generated. Check API key if blank.';
+  } catch(e) {
+    out.textContent = 'AI generation requires Anthropic API key to be configured on the server.';
+  }
+}
+
+// ─── UTILS ───────────────────────────────────────────────────
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-bg').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
+
+function copyScript(btn) {
+  const txt = btn.previousElementSibling.textContent;
+  navigator.clipboard.writeText(txt).then(()=>toast('Script copied to clipboard','📋')).catch(()=>{});
+}
+
+function toast(msg, icon='✅') {
+  const t=document.getElementById('toast');
+  t.textContent=(icon?icon+' ':'')+msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+// ─── INIT ────────────────────────────────────────────────────
+(function initPortal() {
+  const session = AUTH.getSession();
+  const agentId = session?.agentId || session?.id || '';
+  // Show Agent Roster link for MD+ (level 60+)
+  if (session && session.level >= 60) {
+    const rosterLink = document.getElementById('roster-link');
+    if (rosterLink) rosterLink.style.display = 'inline-block';
+  }
+  if (session) {
+    const badge = document.getElementById('agent-badge');
+    const greet = document.getElementById('agent-greeting');
+    if (badge) badge.textContent = session.name + ' · ' + (session.role || '').replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+    if (greet) greet.textContent = 'Dynasty Builders Academy';
+  }
+  buildPortalShareLinks();
+  // Set agent param on static survey link
+  const surveyLink = document.getElementById('portal-survey-link');
+  if (surveyLink && agentId) surveyLink.href = `survey.html?agent=${encodeURIComponent(agentId)}`;
+})();
+
+function buildPortalShareLinks() {
+  const session = AUTH.getSession();
+  const agentId = session?.agentId || session?.id || '';
+  const base    = 'https://agent.yourdynastybuilder.com';
+  const param   = agentId ? `?agent=${encodeURIComponent(agentId)}` : '';
+
+  const LINKS = [
+    { icon:'🎯', label:'Opportunity Page',     desc:'Recruiting video — share with anyone interested in a career',   url:`${base}/opportunity.html${param}`,      color:'#C9A84C' },
+    { icon:'💼', label:'Client Funnel',         desc:'Life insurance & retirement — share with families & prospects', url:`${base}/client.html${param}`,           color:'#2DCA73' },
+    { icon:'📋', label:'Financial Survey',      desc:'Send to a prospect before their appointment — tagged with your agent ID.',  url:`${base}/survey.html${param}`,           color:'#5DADE2' },
+    { icon:'📄', label:'Free Guide',            desc:'"5 Things Nobody Tells You" — great first touch lead magnet',  url:`${base}/free-guide.html${param}`,        color:'#BB8FCE' },
+    { icon:'💻', label:'Zoom Webinar',          desc:'Register prospects for upcoming virtual BOM events',           url:`${base}/register-zoom.html${param}`,     color:'#4C8EC9' },
+    { icon:'🏢', label:'In-Person Event',       desc:'Register prospects for in-person BOM meetings',               url:`${base}/register-inperson.html${param}`, color:'#E67E22' },
+    { icon:'🗓️', label:'Book a 1-on-1',        desc:'Calendar booking for recruiting or client appointments',       url:`${base}/schedule-1on1.html${param}`,     color:'#27AE60' },
+  ];
+
+  // Share links strip
+  const linksEl = document.getElementById('portal-share-links');
+  if (linksEl) {
+    linksEl.innerHTML = LINKS.map(l => `
+      <div style="display:flex;align-items:center;gap:10px;background:var(--navy);border:1px solid var(--border);border-radius:3px;padding:10px 14px;">
+        <span style="font-size:1.1rem;flex-shrink:0;">${l.icon}</span>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:12px;font-weight:700;color:var(--cream);margin-bottom:1px;">${l.label}</div>
+          <div style="font-size:11px;color:var(--slate);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${l.url}</div>
+        </div>
+        <button onclick="portalCopyLink('${l.url}',this)"
+          style="flex-shrink:0;background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.3);color:var(--gold);padding:6px 14px;border-radius:3px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;white-space:nowrap;transition:all 0.15s;">Copy</button>
+        <a href="${l.url}" target="_blank"
+          style="flex-shrink:0;color:var(--slate);text-decoration:none;border:1px solid var(--border);padding:6px 11px;border-radius:3px;font-size:11px;transition:all 0.15s;"
+          onmouseover="this.style.color='var(--gold)';this.style.borderColor='var(--border)'"
+          onmouseout="this.style.color='var(--slate)'">Open ↗</a>
+      </div>`).join('');
+  }
+
+  // Funnel cards
+  const CARDS = [
+    { icon:'🎯', title:'Opportunity Page',  desc:'Video funnel for recruits. Intake form collects name, email & phone before the video unlocks. Every lead is tagged to you.', url:`${base}/opportunity.html${param}`, badge:'Recruiting', color:'#C9A84C' },
+    { icon:'💼', title:'Client Funnel',     desc:'Life insurance & retirement page for prospects. Free review form drops straight into your Monday.com Client Pipeline.',       url:`${base}/client.html${param}`,      badge:'Clients',    color:'#2DCA73' },
+    { icon:'🚀', title:'Recruit Funnel',    desc:'Full multi-step recruiting funnel — email gate, video, phone collect, then next-step options (BOM, Zoom, 1-on-1).',          url:`${base}/recruit.html${param}`,     badge:'Recruiting', color:'#5DADE2' },
+    { icon:'📊', title:'Employer vs IUL Guide', desc:'Compare employer/union plan vs permanent IUL — qualified client education with intake gate.', url:`${base}/employer-vs-iul-brochure.html${param}`, badge:'Clients', color:'#C9A84C' },
+    { icon:'⚽', title:'World Cup Financial Hub', desc:'Financial literacy page tied to the 2026 World Cup — includes the quiz and a downloadable flyer with your contact info.', url:`${base}/world-cup.html${param}`, badge:'Hot Topic', color:'#2DCA73' },
+    { icon:'📖', title:'Client Brochure',   desc:'Print-ready & shareable guide covering life insurance, IUL, living benefits, annuities. Intake gate captures leads first.',  url:`${base}/brochure.html${param}`,    badge:'Clients',    color:'#E8C97A' },
+  ];
+
+  const cardsEl = document.getElementById('portal-funnel-cards');
+  if (cardsEl) {
+    cardsEl.innerHTML = CARDS.map(c => `
+      <div style="background:var(--navy-mid);border:1px solid var(--border);border-radius:6px;overflow:hidden;transition:border-color 0.2s;"
+        onmouseover="this.style.borderColor='rgba(201,168,76,0.4)'" onmouseout="this.style.borderColor='var(--border)'">
+        <div style="height:3px;background:${c.color};opacity:0.75;"></div>
+        <div style="padding:16px 18px;">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;">
+            <div style="display:flex;align-items:center;gap:9px;">
+              <span style="font-size:1.4rem;">${c.icon}</span>
+              <div style="font-size:13px;font-weight:700;color:var(--cream);">${c.title}</div>
+            </div>
+            <span style="font-size:9px;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.25);color:var(--gold);padding:2px 7px;border-radius:2px;font-family:'Barlow Condensed',sans-serif;font-weight:700;white-space:nowrap;">${c.badge}</span>
+          </div>
+          <p style="font-size:12px;color:var(--slate);line-height:1.6;margin-bottom:14px;">${c.desc}</p>
+          <div style="display:flex;gap:8px;">
+            <a href="${c.url}" target="_blank"
+              style="flex:1;background:var(--gold);color:var(--navy);text-align:center;padding:9px;border-radius:3px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;text-decoration:none;letter-spacing:0.04em;transition:opacity 0.15s;"
+              onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">Open Page ↗</a>
+            <button onclick="portalCopyLink('${c.url}',this)"
+              style="background:transparent;border:1px solid var(--border);color:var(--slate);padding:9px 16px;border-radius:3px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;transition:all 0.15s;"
+              onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--slate)'">Copy Link</button>
+          </div>
+        </div>
+      </div>`).join('');
+  }
+}
+
+function portalCopyLink(url, btn) {
+  navigator.clipboard.writeText(url).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = 'Copied ✓';
+    btn.style.color = '#2ecc71';
+    btn.style.borderColor = 'rgba(39,174,96,0.4)';
+    setTimeout(() => { btn.textContent = orig; btn.style.color = ''; btn.style.borderColor = ''; }, 2000);
+  }).catch(() => {
+    // Fallback for older mobile browsers
+    const ta = document.createElement('textarea');
+    ta.value = url; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+    btn.textContent = 'Copied ✓';
+    setTimeout(() => { btn.textContent = 'Copy Link'; }, 2000);
+  });
+}
+
+renderDashboard();
+</script>
+</body>
+</html>

@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Living Promise Pre-Qualification – DBA</title>
+<script src="auth.js?v=20260713"></script>
+<style>
+  :root {
+    --navy: #0a1f44;
+    --gold: #c9a84c;
+    --light-gold: #f5e9c8;
+    --green: #1a7a4a;
+    --red: #c0392b;
+    --orange: #d4840a;
+    --border: #dce3ee;
+    --gray: #f4f6f9;
+    --text: #1a2740;
+    --muted: #5a6a82;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: var(--gray);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px 48px;
+  }
+
+  /* Header */
+  .page-header {
+    width: 100%; max-width: 640px; margin-bottom: 24px;
+  }
+  .header-bar {
+    background: var(--navy);
+    border-radius: 12px;
+    padding: 20px 28px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .header-bar .eyebrow { color: var(--gold); font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 3px; }
+  .header-bar h1 { color: #fff; font-size: 18px; font-weight: 700; }
+  .header-bar .sub { color: #aab8d0; font-size: 13px; margin-top: 2px; }
+  .hub-link { color: var(--gold); font-size: 12px; text-decoration: none; border: 1px solid rgba(201,168,76,.4); padding: 6px 12px; border-radius: 8px; white-space: nowrap; }
+  .hub-link:hover { background: rgba(201,168,76,.1); }
+
+  /* Card */
+  .card {
+    background: #fff; border-radius: 12px; padding: 32px;
+    box-shadow: 0 2px 12px rgba(10,31,68,.08);
+    width: 100%; max-width: 640px;
+  }
+
+  /* Progress */
+  .progress-wrap { margin-bottom: 24px; }
+  .progress-meta { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+  .progress-meta .phase-label { font-weight: 700; color: var(--navy); }
+  .progress-bar { height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--gold); border-radius: 99px; transition: width .3s; }
+
+  /* Form elements */
+  label { font-size: 13px; font-weight: 600; color: var(--navy); display: block; margin-bottom: 6px; }
+  input[type=text], input[type=date], input[type=tel], input[type=email] {
+    width: 100%; padding: 10px 14px; border-radius: 8px;
+    border: 1.5px solid var(--border); font-size: 14px; outline: none;
+    transition: border-color .15s;
+  }
+  input:focus { border-color: var(--navy); }
+  .field { margin-bottom: 18px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+  /* Question */
+  .question-text {
+    font-size: 17px; font-weight: 600; color: var(--navy); line-height: 1.55;
+    margin-bottom: 32px; min-height: 80px;
+  }
+  .yn-row { display: flex; gap: 12px; margin-bottom: 24px; }
+  .yn-btn {
+    flex: 1; padding: 16px 0; border-radius: 10px; border: 2px solid;
+    font-size: 16px; font-weight: 700; cursor: pointer; transition: all .15s;
+  }
+  .yn-btn.yes { border-color: #e8b4b8; background: #fff5f5; color: var(--red); }
+  .yn-btn.yes:hover { background: #fce8ea; }
+  .yn-btn.no  { border-color: #b4d6c1; background: #f2fbf6; color: var(--green); }
+  .yn-btn.no:hover  { background: #e0f5e9; }
+  .back-link { background: none; border: none; color: var(--muted); font-size: 13px; cursor: pointer; padding: 4px 0; }
+  .back-link:disabled { opacity: .3; cursor: default; }
+
+  /* Tobacco toggle */
+  .toggle-row { display: flex; gap: 12px; }
+  .toggle-btn {
+    flex: 1; padding: 10px 0; border-radius: 8px;
+    border: 2px solid var(--border); background: #fff;
+    color: var(--muted); font-weight: 600; font-size: 14px; cursor: pointer;
+    transition: all .15s;
+  }
+  .toggle-btn.active {
+    border-color: var(--gold); background: var(--light-gold); color: var(--navy);
+  }
+
+  /* Primary btn */
+  .btn-primary {
+    width: 100%; padding: 14px 0; border-radius: 10px; border: none;
+    background: var(--navy); color: #fff; font-size: 15px;
+    font-weight: 700; cursor: pointer; letter-spacing: .03em;
+    transition: background .15s;
+  }
+  .btn-primary:hover { background: #122a5c; }
+  .btn-primary:disabled { background: #c5cdd8; cursor: default; }
+
+  /* Notice box */
+  .notice {
+    margin-top: 16px; padding: 14px; border-radius: 8px;
+    font-size: 12px; background: var(--light-gold); color: #6b5210;
+  }
+
+  /* Results */
+  .result-icon { font-size: 48px; text-align: center; margin-bottom: 12px; }
+  .result-title { font-size: 22px; font-weight: 700; text-align: center; margin-bottom: 10px; }
+  .result-sub { font-size: 14px; color: var(--muted); text-align: center; line-height: 1.7; margin-bottom: 24px; }
+  .result-box {
+    border-radius: 10px; padding: 18px; margin-bottom: 18px;
+    font-size: 13px; line-height: 1.8;
+  }
+  .result-box .box-title { font-weight: 700; margin-bottom: 8px; font-size: 13px; }
+  .box-green  { background: #f2fbf6; border: 1px solid #b4d6c1; color: #1a4a30; }
+  .box-green  .box-title { color: var(--green); }
+  .box-orange { background: #fffbf0; border: 1px solid #f5d78c; color: #5a4008; }
+  .box-orange .box-title { color: var(--orange); }
+  .box-red    { background: #fff5f5; border: 1px solid #f5c2c7; color: #7a3a3a; }
+  .box-red    .box-title { color: var(--red); }
+  .box-navy   { background: var(--navy); border-radius: 10px; padding: 18px; margin-bottom: 18px; }
+  .box-navy   .box-title { color: var(--gold); font-weight: 700; font-size: 13px; margin-bottom: 8px; }
+  .box-navy   .box-body { font-size: 13px; line-height: 1.8; color: #c5d4eb; }
+
+  /* Save section */
+  .save-section { border-top: 1px solid var(--border); margin-top: 24px; padding-top: 24px; }
+  .save-title { font-size: 14px; font-weight: 700; color: var(--navy); margin-bottom: 16px; }
+  .save-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  .save-status {
+    padding: 10px 14px; border-radius: 8px; font-size: 13px;
+    font-weight: 600; text-align: center; margin-bottom: 12px; display: none;
+  }
+  .save-status.saving { background: #e8f0fb; color: #1a4a82; display: block; }
+  .save-status.success { background: #f2fbf6; color: var(--green); display: block; }
+  .save-status.error   { background: #fff5f5; color: var(--red); display: block; }
+  .save-btn {
+    width: 100%; padding: 12px 0; border-radius: 10px; border: none;
+    background: var(--gold); color: var(--navy); font-size: 14px;
+    font-weight: 700; cursor: pointer; letter-spacing: .03em;
+    transition: background .15s;
+  }
+  .save-btn:hover { background: #b8943e; }
+  .save-btn:disabled { opacity: .5; cursor: default; }
+
+  .action-row { display: flex; gap: 12px; margin-top: 16px; }
+  .btn-outline {
+    flex: 1; padding: 13px 0; border-radius: 10px;
+    border: 2px solid var(--navy); background: #fff;
+    color: var(--navy); font-size: 14px; font-weight: 700; cursor: pointer;
+  }
+  .btn-dark {
+    flex: 1; padding: 13px 0; border-radius: 10px;
+    border: none; background: var(--navy);
+    color: #fff; font-size: 14px; font-weight: 700; cursor: pointer;
+  }
+
+  /* Sections */
+  .section { display: none; }
+  .section.active { display: block; }
+
+  @media(max-width:500px) {
+    .row2, .save-fields, .action-row { grid-template-columns: 1fr; }
+    .card { padding: 22px 18px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="page-header">
+  <div class="header-bar">
+    <div>
+      <div class="eyebrow">Dynasty Builders Academy</div>
+      <h1>Living Promise Pre-Qualification</h1>
+      <div class="sub">Mutual of Omaha · Whole Life Insurance</div>
+    </div>
+    <a href="index.html" class="hub-link">← Hub</a>
+  </div>
+</div>
+
+<div class="card">
+
+  <!-- ====== INTRO ====== -->
+  <div id="section-intro" class="section active">
+    <div style="font-size:22px;font-weight:700;color:var(--navy);margin-bottom:8px;">Find the right plan</div>
+    <div style="font-size:14px;color:var(--muted);margin-bottom:28px;line-height:1.6;">
+      This 2-minute questionnaire determines whether a client qualifies for a <strong>Level</strong> or <strong>Graded</strong> Living Promise policy — or needs an alternative product.
+    </div>
+
+    <div class="row2">
+      <div class="field">
+        <label for="client-name">Client Name</label>
+        <input type="text" id="client-name" placeholder="Full name"/>
+      </div>
+      <div class="field">
+        <label for="client-dob">Date of Birth</label>
+        <input type="date" id="client-dob"/>
+      </div>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label for="client-phone">Phone</label>
+        <input type="tel" id="client-phone" placeholder="(555) 555-5555"/>
+      </div>
+      <div class="field">
+        <label for="client-email">Email</label>
+        <input type="email" id="client-email" placeholder="client@email.com"/>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Tobacco / nicotine use in the past 12 months?</label>
+      <div class="toggle-row">
+        <button class="toggle-btn" id="tob-yes" onclick="setTobacco('yes')">Yes</button>
+        <button class="toggle-btn" id="tob-no"  onclick="setTobacco('no')">No</button>
+      </div>
+    </div>
+
+    <button class="btn-primary" id="start-btn" onclick="startQuestions()" disabled>Start Questionnaire →</button>
+
+    <div class="notice">
+      <strong>Note:</strong> This is a pre-qualification screening only. Final approval is subject to Mutual of Omaha underwriting.
+    </div>
+  </div>
+
+  <!-- ====== QUESTIONS ====== -->
+  <div id="section-questions" class="section">
+    <div class="progress-wrap">
+      <div class="progress-meta">
+        <span class="phase-label" id="phase-label">Health Eligibility</span>
+        <span id="q-counter">Question 1 of 24</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    </div>
+    <div class="question-text" id="question-text"></div>
+    <div class="yn-row">
+      <button class="yn-btn yes" onclick="answer('yes')">Yes</button>
+      <button class="yn-btn no"  onclick="answer('no')">No</button>
+    </div>
+    <button class="back-link" id="back-btn" onclick="goBack()">← Back</button>
+  </div>
+
+  <!-- ====== RESULT ====== -->
+  <div id="section-result" class="section">
+    <div class="result-icon" id="result-icon"></div>
+    <div class="result-title" id="result-title"></div>
+    <div class="result-sub" id="result-sub"></div>
+    <div id="result-detail"></div>
+
+    <!-- Monday.com Save -->
+    <div class="save-section">
+      <div class="save-title">💾 Save to Monday.com</div>
+      <div class="save-fields">
+        <div class="field">
+          <label for="save-agent">Agent Name</label>
+          <input type="text" id="save-agent" placeholder="Your name"/>
+        </div>
+        <div class="field">
+          <label for="save-notes">Notes (optional)</label>
+          <input type="text" id="save-notes" placeholder="e.g. follow up Friday"/>
+        </div>
+      </div>
+      <div class="save-status" id="save-status"></div>
+      <button class="save-btn" id="save-btn" onclick="saveToMonday()">Save Lead to Monday.com</button>
+    </div>
+
+    <div class="action-row">
+      <button class="btn-outline" onclick="restart()">New Client</button>
+      <button class="btn-dark" onclick="window.print()">Print / Save</button>
+    </div>
+  </div>
+
+</div><!-- /card -->
+
+<script>
+// ─── Monday.com config ──────────────────────────────────────────────────────
+const MONDAY_BOARD_ID = "18419390721";
+const MONDAY_COLS = {
+  result:   "color_mm4nfvfn",
+  dob:      "date_mm4n6zqb",
+  tobacco:  "color_mm4na97b",
+  agent:    "text_mm4nsp0w",
+  notes:    "long_text_mm4nr192",
+  phone:    "phone_mm4ndeja",
+  email:    "email_mm4nwe90"
+};
+
+// ─── Questions ───────────────────────────────────────────────────────────────
+const KNOCKOUT = [
+  "Is this person currently bedridden or confined to a hospital, nursing home, or long-term care facility, or receiving hospice or home health care?",
+  "Does this person currently require assistance with daily activities such as bathing, dressing, eating, taking medications, or bladder/bowel control?",
+  "Does this person currently require a wheelchair, electric scooter, or oxygen equipment to assist breathing (excluding use for sleep apnea only)?",
+  "Has this person ever been diagnosed with or treated for Alzheimer's Disease, Dementia, Lou Gehrig's Disease (ALS), Congestive Heart Failure, Cirrhosis, Metastatic or Recurrent Cancer, Muscular Dystrophy, Quadriplegia, or Paraplegia?",
+  "Has this person ever experienced insulin shock, diabetic coma, amputation due to diabetes, End Stage Renal Disease, or required dialysis?",
+  "Has this person ever received an organ or bone marrow transplant?",
+  "Has a doctor told this person they have a terminal illness expected to result in death within 12 months?",
+  "In the past 12 months, has a doctor advised this person to have surgery, a diagnostic test (non-routine), hospitalization, or another procedure that has NOT yet been completed or whose results are unknown?",
+  "In the past 2 years, has this person been diagnosed with or treated for any form of cancer (other than basal or squamous cell skin cancer)?",
+  "Has this person ever been diagnosed with AIDS or AIDS-Related Complex (ARC)?"
+];
+
+const GRADED = [
+  "Has this person ever been diagnosed with or treated for Diabetes before age 45?",
+  "Has this person ever been diagnosed with Diabetes at any age WITH complications such as eye, kidney, or nerve damage, peripheral vascular disease, coronary artery disease, or stroke?",
+  "Has this person ever been diagnosed with or treated for Hepatitis C?",
+  "Has this person ever been diagnosed with or treated for Chronic Lung Disease, COPD, Chronic Bronchitis, Emphysema, or Sarcoidosis?",
+  "In the past 4 years, has this person been diagnosed with or treated for Cancer, Leukemia, or Melanoma (other than basal or squamous cell skin cancer)?",
+  "In the past 4 years, has this person been diagnosed with Chronic Kidney Disease, Systemic Lupus, or Scleroderma?",
+  "In the past 4 years, has this person been diagnosed with Bipolar Depression, Schizophrenia, Parkinson's Disease, or Multiple Sclerosis?",
+  "In the past 2 years, has this person been diagnosed with or treated for a Heart Attack, Coronary Artery Disease, Bypass Surgery, Angioplasty, Cardiomyopathy, irregular heart rhythm, pacemaker, or valve repair/replacement?",
+  "In the past 2 years, has this person had a Stroke or Transient Ischemic Attack (TIA)?",
+  "In the past 2 years, has this person been convicted of a felony or is currently awaiting trial for one?",
+  "In the past 2 years, has this person been treated for alcohol or drug abuse, or convicted of a DUI or reckless driving more than once?",
+  "In the past 2 years, has this person used unlawful drugs (other than marijuana) or misused prescription drugs?",
+  "In the past 2 years, has this person been hospitalized for any mental or nervous disorder?",
+  "In the past 12 months, has this person seen a doctor for chronic cough, unexplained weight loss greater than 10 lbs, fatigue, or unexplained gastrointestinal bleeding?"
+];
+
+// ─── State ───────────────────────────────────────────────────────────────────
+let tobacco = null;
+let phase = "knockout"; // "knockout" | "graded"
+let currentQ = 0;
+let finalResult = null;
+
+function setTobacco(val) {
+  tobacco = val;
+  document.getElementById('tob-yes').classList.toggle('active', val === 'yes');
+  document.getElementById('tob-no').classList.toggle('active', val === 'no');
+  checkIntroReady();
+}
+
+function checkIntroReady() {
+  const name = document.getElementById('client-name').value.trim();
+  document.getElementById('start-btn').disabled = !(tobacco && name);
+}
+document.getElementById('client-name').addEventListener('input', checkIntroReady);
+
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('section-' + id).classList.add('active');
+}
+
+function startQuestions() {
+  phase = "knockout";
+  currentQ = 0;
+  showSection('questions');
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const questions = phase === "knockout" ? KNOCKOUT : GRADED;
+  const total = KNOCKOUT.length + GRADED.length;
+  const done = phase === "knockout" ? currentQ : KNOCKOUT.length + currentQ;
+
+  document.getElementById('phase-label').textContent =
+    phase === "knockout" ? "Health Eligibility" : "Benefit Level Check";
+  document.getElementById('q-counter').textContent =
+    `Question ${done + 1} of ${total}`;
+  document.getElementById('progress-fill').style.width =
+    Math.round((done / total) * 100) + "%";
+  document.getElementById('question-text').textContent = questions[currentQ];
+  document.getElementById('back-btn').disabled = phase === "knockout" && currentQ === 0;
+}
+
+function answer(val) {
+  const questions = phase === "knockout" ? KNOCKOUT : GRADED;
+
+  if (phase === "knockout") {
+    if (val === "yes") {
+      finalResult = "ineligible";
+      showResult();
+      return;
+    }
+    if (currentQ + 1 < KNOCKOUT.length) {
+      currentQ++;
+      renderQuestion();
+    } else {
+      phase = "graded";
+      currentQ = 0;
+      renderQuestion();
+    }
+  } else {
+    // track any graded "yes"
+    if (val === "yes") { finalResult = "graded"; }
+    if (currentQ + 1 < GRADED.length) {
+      currentQ++;
+      renderQuestion();
+    } else {
+      if (!finalResult) finalResult = "level";
+      showResult();
+    }
+  }
+}
+
+function goBack() {
+  if (phase === "graded" && currentQ === 0) {
+    phase = "knockout";
+    currentQ = KNOCKOUT.length - 1;
+    finalResult = null;
+  } else if (currentQ > 0) {
+    currentQ--;
+    if (phase === "graded" && finalResult === "graded") finalResult = null;
+  }
+  renderQuestion();
+}
+
+function showResult() {
+  showSection('result');
+  const name = document.getElementById('client-name').value.trim() || "This client";
+  const tobLabel = tobacco === "yes" ? "Tobacco User (higher premium)" : "Non-Tobacco (standard rate)";
+
+  // Pre-fill agent from auth if available
+  try {
+    const agent = getCurrentAgent ? getCurrentAgent() : null;
+    if (agent) document.getElementById('save-agent').value = agent.name || '';
+  } catch(e) {}
+
+  const icons    = { ineligible: "⚠️", graded: "📋", level: "✅" };
+  const titles   = { ineligible: "Not Eligible at This Time", graded: "Qualifies for Graded Benefit", level: "Qualifies for Level Benefit" };
+  const colors   = { ineligible: "var(--red)", graded: "var(--orange)", level: "var(--green)" };
+  const subs     = {
+    ineligible: `Based on responses, <strong>${name}</strong> does not currently qualify for a Living Promise policy.`,
+    graded: `<strong>${name}</strong> qualifies for the <strong>Graded Benefit Product</strong> — coverage with a 2-year waiting period for natural causes.`,
+    level: `<strong>${name}</strong> qualifies for the <strong>Level Benefit Product</strong> — full death benefit from day one!`
+  };
+
+  document.getElementById('result-icon').textContent = icons[finalResult];
+  document.getElementById('result-title').style.color = colors[finalResult];
+  document.getElementById('result-title').textContent = titles[finalResult];
+  document.getElementById('result-sub').innerHTML = subs[finalResult];
+
+  let detail = "";
+
+  if (finalResult === "level") {
+    detail = `
+      <div class="result-box box-green">
+        <div class="box-title">Level Benefit Highlights</div>
+        ✔ Full face amount payable from day one<br>
+        ✔ Coverage ages 45–85<br>
+        ✔ Accelerated Death Benefit rider included (terminal illness)<br>
+        ✔ No medical exam required<br>
+        ✔ Tobacco status: <strong>${tobLabel}</strong>
+      </div>`;
+  } else if (finalResult === "graded") {
+    detail = `
+      <div class="result-box box-orange">
+        <div class="box-title">Graded Benefit Key Facts</div>
+        • <strong>Years 1–2 (illness):</strong> Return of premiums paid + interest<br>
+        • <strong>Years 1–2 (accident):</strong> Full face amount<br>
+        • <strong>Year 3+:</strong> Full face amount for any cause<br>
+        • No medical exam required<br>
+        • Tobacco status: <strong>${tobLabel}</strong>
+      </div>`;
+  } else {
+    detail = `
+      <div class="result-box box-red">
+        <div class="box-title">Why this result?</div>
+        A "Yes" answer to a knockout question makes the applicant ineligible for all benefit levels under this product. Consider a guaranteed issue product or revisit in 6–12 months if conditions change.
+      </div>`;
+  }
+
+  detail += `
+    <div class="box-navy">
+      <div class="box-title">Next Steps</div>
+      <div class="box-body">
+        • Run a quote in PHP Bamboo (account 10146)<br>
+        • Complete application T209LCA23A (CA) or applicable state form<br>
+        • Submit to <strong>phpdynastynewbusiness@gmail.com</strong><br>
+        • Client must sign: Application, HIPAA Authorization, ADB Disclosure
+      </div>
+    </div>`;
+
+  document.getElementById('result-detail').innerHTML = detail;
+}
+
+async function saveToMonday() {
+  const btn = document.getElementById('save-btn');
+  const status = document.getElementById('save-status');
+  const name = document.getElementById('client-name').value.trim();
+  const dob  = document.getElementById('client-dob').value;
+  const phone = document.getElementById('client-phone').value.trim();
+  const email = document.getElementById('client-email').value.trim();
+  const agent = document.getElementById('save-agent').value.trim();
+  const notes = document.getElementById('save-notes').value.trim();
+
+  if (!name) { alert("Please enter a client name before saving."); return; }
+
+  // Same pattern as the rest of the AOS: each agent connects their own
+  // Monday.com key once (Hub -> Monday Sync), stored in localStorage.
+  // Never hardcode a token in auth.js -- that's what tripped the secrets scan.
+  if (!AUTH.getMondayKey()) {
+    status.className = "save-status error";
+    status.textContent = "⚠️ Connect your Monday.com API key first (Hub → Monday Sync).";
+    return;
+  }
+
+  btn.disabled = true;
+  status.className = "save-status saving";
+  status.textContent = "Saving to Monday.com…";
+
+  const resultLabels = { level: "Level Benefit", graded: "Graded Benefit", ineligible: "Ineligible" };
+  const tobaccoLabels = { yes: "Yes", no: "No" };
+
+  const columnValues = {
+    [MONDAY_COLS.result]:  { label: resultLabels[finalResult] },
+    [MONDAY_COLS.tobacco]: { label: tobaccoLabels[tobacco] || "No" },
+    [MONDAY_COLS.agent]:   agent,
+    [MONDAY_COLS.notes]:   { text: notes }
+  };
+  if (dob)   columnValues[MONDAY_COLS.dob]   = { date: dob };
+  if (phone) columnValues[MONDAY_COLS.phone]  = { phone: phone, countryShortName: "US" };
+  if (email) columnValues[MONDAY_COLS.email]  = { email: email, text: email };
+
+  const query = `mutation($boardId: ID!, $itemName: String!, $columnValues: JSON!) {
+    create_item(board_id: $boardId, item_name: $itemName, column_values: $columnValues) {
+      id
+      name
+    }
+  }`;
+
+  const variables = {
+    boardId: MONDAY_BOARD_ID,
+    itemName: name,
+    columnValues: JSON.stringify(columnValues)
+  };
+
+  try {
+    const data = await mondayQuery(query, variables);
+    const item = data.data?.create_item;
+    status.className = "save-status success";
+    status.textContent = `✅ Saved! "${item?.name}" added to Living Promise Pre-Qualifications board.`;
+    btn.textContent = "✓ Saved";
+  } catch (err) {
+    status.className = "save-status error";
+    status.textContent = "❌ Error: " + (err.message || err);
+    btn.disabled = false;
+  }
+}
+
+function restart() {
+  tobacco = null;
+  phase = "knockout";
+  currentQ = 0;
+  finalResult = null;
+  document.getElementById('client-name').value = '';
+  document.getElementById('client-dob').value = '';
+  document.getElementById('client-phone').value = '';
+  document.getElementById('client-email').value = '';
+  document.getElementById('tob-yes').classList.remove('active');
+  document.getElementById('tob-no').classList.remove('active');
+  document.getElementById('save-agent').value = '';
+  document.getElementById('save-notes').value = '';
+  document.getElementById('save-status').className = 'save-status';
+  document.getElementById('save-btn').textContent = 'Save Lead to Monday.com';
+  document.getElementById('save-btn').disabled = false;
+  document.getElementById('start-btn').disabled = true;
+  showSection('intro');
+}
+</script>
+</body>
+</html>

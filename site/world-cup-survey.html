@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script src="auth.js?v=20260713"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>World Cup Financial Game Plan -- Dynasty Builders Academy</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=Barlow:wght@300;400;500;600&family=Barlow+Condensed:wght@600;700;800&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#080E1C;--navy2:#0D1627;--navy3:#111E35;--navy4:#162440;
+  --gold:#C9A84C;--gold2:#E8C97A;--gold-dim:rgba(201,168,76,.12);--gold-border:rgba(201,168,76,.3);
+  --green:#27AE60;--green2:#2DCA73;--red:#E05252;--blue:#5DADE2;
+  --cream:#FAF6EE;--slate:#6B7C93;--border:rgba(201,168,76,.2);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);min-height:100vh;}
+
+.bg{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 80% 60% at 30% 15%,rgba(45,202,115,.07),transparent 55%),
+  radial-gradient(ellipse 60% 80% at 80% 85%,rgba(201,168,76,.06),transparent 60%),
+  linear-gradient(160deg,#080E1C,#0D1627 60%,#080E1C);}
+
+.wrap{position:relative;z-index:1;max-width:620px;margin:0 auto;padding:40px 20px 80px;}
+
+/* HEADER */
+.hdr{text-align:center;margin-bottom:36px;}
+.hdr-tag{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--green2);border:1px solid rgba(45,202,115,.3);display:inline-block;padding:4px 12px;border-radius:2px;margin-bottom:16px;background:rgba(45,202,115,.06);}
+.hdr-title{font-family:'Playfair Display',serif;font-size:2.1rem;font-weight:900;line-height:1.15;margin-bottom:8px;}
+.hdr-title em{color:var(--gold2);font-style:italic;}
+.hdr-sub{font-size:13px;color:var(--slate);max-width:440px;margin:0 auto;line-height:1.7;}
+.flag-row{font-size:1.6rem;margin-top:14px;letter-spacing:6px;}
+
+/* PROGRESS */
+.progress-wrap{margin-bottom:32px;}
+.progress-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.progress-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;color:var(--slate);}
+.progress-pct{font-family:'DM Mono',monospace;font-size:10px;color:var(--gold);}
+.progress-bar{height:3px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--green2),var(--gold));border-radius:2px;transition:width .4s ease;}
+
+/* STEP */
+.step{display:none;}
+.step.active{display:block;}
+
+/* QUESTION */
+.q-num{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.15em;color:var(--green2);margin-bottom:8px;}
+.q-badge{display:inline-block;font-family:'Barlow Condensed',sans-serif;font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:3px 10px;border-radius:20px;margin-left:8px;vertical-align:middle;}
+.q-badge.trivia{background:rgba(45,202,115,.12);color:var(--green2);border:1px solid rgba(45,202,115,.25);}
+.q-badge.money{background:rgba(201,168,76,.12);color:var(--gold2);border:1px solid var(--gold-border);}
+.q-text{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;line-height:1.3;margin-bottom:6px;}
+.q-sub{font-size:13px;color:var(--slate);margin-bottom:22px;line-height:1.6;}
+
+/* OPTIONS */
+.options{display:flex;flex-direction:column;gap:8px;margin-bottom:24px;}
+.opt{display:flex;align-items:flex-start;gap:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:4px;padding:14px 18px;cursor:pointer;transition:all .15s;user-select:none;}
+.opt:hover{border-color:var(--border);background:rgba(201,168,76,.05);}
+.opt.selected{border-color:var(--gold);background:var(--gold-dim);}
+.opt-radio{width:18px;height:18px;border:2px solid rgba(255,255,255,.2);border-radius:50%;flex-shrink:0;margin-top:2px;transition:all .15s;position:relative;}
+.opt.selected .opt-radio{border-color:var(--gold);background:var(--gold);}
+.opt.selected .opt-radio::after{content:'';position:absolute;inset:3px;border-radius:50%;background:var(--navy);}
+.opt-label{font-size:13px;font-weight:600;color:var(--cream);margin-bottom:2px;}
+.opt-desc{font-size:11px;color:var(--slate);line-height:1.5;}
+
+/* CORRECT/INCORRECT FEEDBACK (trivia) */
+.opt.correct{border-color:var(--green2);background:rgba(45,202,115,.1);}
+.opt.incorrect{border-color:var(--red);background:rgba(224,82,82,.08);}
+.feedback{display:none;margin-top:-10px;margin-bottom:18px;font-size:12px;padding:10px 14px;border-radius:4px;line-height:1.6;}
+.feedback.show{display:block;}
+.feedback.correct-fb{background:rgba(45,202,115,.08);border:1px solid rgba(45,202,115,.25);color:var(--green2);}
+.feedback.incorrect-fb{background:rgba(224,82,82,.06);border:1px solid rgba(224,82,82,.2);color:#ff8a8a;}
+
+/* TEXT INPUT */
+.text-group{margin-bottom:20px;}
+.text-group label{display:block;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(201,168,76,.7);margin-bottom:6px;}
+.text-group input,.text-group select{width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);color:var(--cream);font-family:'Barlow',sans-serif;font-size:14px;padding:12px 14px;border-radius:4px;outline:none;transition:border-color .2s;}
+.text-group input:focus,.text-group select:focus{border-color:var(--gold);}
+.input-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+/* NAV BUTTONS */
+.nav-row{display:flex;gap:10px;align-items:center;}
+.btn-next{flex:1;background:var(--gold);color:var(--navy);border:none;border-radius:4px;padding:14px;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:opacity .15s;}
+.btn-next:hover{opacity:.87;}
+.btn-next:disabled{opacity:.35;cursor:not-allowed;}
+.btn-back{background:transparent;border:1px solid rgba(255,255,255,.1);color:var(--slate);border-radius:4px;padding:14px 18px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;}
+.btn-back:hover{border-color:var(--border);color:var(--gold);}
+
+/* SCORE BUG (sticky, shows running trivia score) */
+.score-bug{position:fixed;top:16px;right:16px;background:rgba(13,22,39,.85);border:1px solid var(--border);border-radius:30px;padding:8px 16px;font-family:'DM Mono',monospace;font-size:12px;color:var(--gold2);z-index:50;backdrop-filter:blur(6px);display:flex;align-items:center;gap:6px;}
+.score-bug .ball{font-size:14px;}
+
+/* RESULT */
+.result-wrap{text-align:center;}
+.result-icon{font-size:3rem;margin-bottom:16px;}
+.result-trophy{font-size:3.5rem;margin-bottom:10px;}
+.result-score{font-family:'DM Mono',monospace;font-size:13px;color:var(--green2);margin-bottom:8px;letter-spacing:.05em;}
+.result-title{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:700;color:var(--gold2);margin-bottom:8px;line-height:1.2;}
+.result-sub{font-size:14px;color:var(--slate);margin-bottom:28px;line-height:1.7;}
+
+.result-card{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:6px;padding:24px;margin-bottom:16px;text-align:left;}
+.result-card.highlight{background:linear-gradient(135deg,rgba(201,168,76,.08),rgba(201,168,76,.03));border-color:var(--gold);}
+.rc-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);margin-bottom:6px;}
+.rc-title{font-size:1rem;font-weight:700;color:var(--cream);margin-bottom:6px;}
+.rc-body{font-size:13px;color:var(--slate);line-height:1.7;}
+
+.result-cta{margin-top:28px;display:flex;flex-direction:column;gap:10px;}
+.btn-primary{background:var(--gold);color:var(--navy);border:none;border-radius:4px;padding:16px;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;text-decoration:none;display:block;text-align:center;transition:opacity .15s;}
+.btn-primary:hover{opacity:.87;}
+.btn-secondary{background:transparent;border:1px solid var(--border);color:var(--gold);border-radius:4px;padding:14px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;cursor:pointer;text-decoration:none;display:block;text-align:center;transition:all .15s;}
+.btn-secondary:hover{background:var(--gold-dim);}
+
+/* BACK LINK */
+.back-link{display:block;text-align:center;margin-bottom:24px;font-size:12px;color:var(--slate);text-decoration:none;transition:color .15s;}
+.back-link:hover{color:var(--gold);}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="score-bug" id="score-bug" style="display:none;"><span class="ball">&#9917;</span><span id="score-bug-text">0/0</span></div>
+<div class="wrap">
+
+  <a href="hub.html" class="back-link">&#8592; Back to Hub</a>
+
+  <div class="hdr">
+    <div class="hdr-tag">&#9917; 2026 World Cup . Quarterfinals Edition</div>
+    <h1 class="hdr-title">The <em>Financial World Cup</em> Challenge</h1>
+    <p class="hdr-sub">The 2026 FIFA World Cup is in the quarterfinals -- 8 teams remain after 56 matches of drama, upsets, and comeback victories. Test your soccer IQ on the tournament so far, then find out how your financial game plan stacks up -- because winning takes a strategy, on the pitch and off it.</p>
+    <div class="flag-row">&#9917; &#127482;&#127480; &#127474;&#127485; &#127464;&#127462; &#127942;</div>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-top">
+      <div class="progress-label">QUESTION <span id="step-num">1</span> OF 10</div>
+      <div class="progress-pct" id="step-pct">10%</div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:10%;"></div></div>
+  </div>
+
+  <!-- Q1: TEAM SELECTION (sets up personalization) -->
+  <div class="step active" id="step-1">
+    <div class="q-num">Question 1 <span class="q-badge trivia">Kickoff</span></div>
+    <div class="q-text">When the 2026 World Cup kicks off, which team are you rooting for?</div>
+    <div class="q-sub">This is your home team for the rest of the game -- we'll bring it back at the end.</div>
+    <div class="options">
+      <div class="opt" onclick="select(this,'team','usa')">
+        <div class="opt-radio"></div>
+        <div><div class="opt-label">&#127482;&#127480; Team USA</div><div class="opt-desc">Co-host nation -- eliminated in Round of 16 by Belgium (4-1)</div></div>
+      </div>
+      <div class="opt" onclick="select(this,'team','mexico')">
+        <div class="opt-radio"></div>
+        <div><div class="opt-label">&#127474;&#127485; Mexico</div><div class="opt-desc">Co-host nation -- eliminated in Round of 16 by England (3-2)</div></div>
+      </div>
+      <div class="opt" onclick="select(this,'team','canada')">
+        <div class="opt-radio"></div>
+        <div><div class="opt-label">&#127464;&#127462; Canada</div><div class="opt-desc">Co-host nation -- eliminated in Round of 16 by Morocco (3-0)</div></div>
+      </div>
+      <div class="opt" onclick="select(this,'team','other')">
+        <div class="opt-radio"></div>
+        <div><div class="opt-label">&#127758; Another country</div><div class="opt-desc">Still alive: France, Spain, Belgium, Norway, England, Argentina, Morocco, Switzerland</div></div>
+      </div>
+    </div>
+    <div class="nav-row">
+      <button class="btn-next" id="next-1" onclick="next(1)" disabled>Continue &#8594;</button>
+    </div>
+  </div>
+
+  <!-- Q2: TRIVIA - Host cities -->
+  <div class="step" id="step-2">
+    <div class="q-num">Question 2 <span class="q-badge trivia">Trivia</span></div>
+    <div class="q-text">True or False: Germany -- four-time World Cup champions -- was eliminated from the 2026 World Cup by Paraguay in the Round of 32.</div>
+    <div class="q-sub">Hint: One of the biggest upsets in World Cup history.</div>
+    <div class="options" id="opts-2">
+      <div class="opt" onclick="selectTrivia(this,2,'true',true)">
+        <div class="opt-radio"></div>
+        <div><div class="opt-label">True -- Paraguay won on penalties (4-3)</div></div>
+      </div>
+      <div class="opt" onclick="selectTrivia(this,2,'false',false)">
+        <div class="opt-radio"></div>
+        <div><div class="opt-label">False -- Germany advanced</div></div>
+      </div>
+    </div>
+    <div class="feedback" id="fb-2"></div>
+    <div class="nav-row">
+      <button class="btn-back" onclick="back(2)">&#8592; Back</button>
+      <button class="btn-next" id="next-2" onclick="next(2)" disabled>Continue &#8594;</button>
+    </div>
+  </div>
+
+  <!-- Q3: TRIVIA - 3 host countries -->
+  <div class="step" id="step-3">
+    <div class="q-num">Question 3 <span class="q-badge trivia">Trivia</span></div>
+    <div class="q-text">How many countries are co-hosting the 2026 World Cup?</div>
+    <div class="q-sub">It's the first World Cup ever hosted by this many nations -- USA, Canada, and Mexico. All three co-hosts have since been eliminated in the knockout rounds.</div>
+    <div class="options" id="opts-3">
+      <div class="opt" onclick="selectTrivia(this,3,'2',false)">
+        <div class="opt-radio"></div><div><div class="opt-label">2 countries</div></div>
+      </div>
+      <div class="opt" onclick="selectTrivia(this,3,'3',true)">
+        <div class="opt-radio"></div><div><div class="opt-label">3 countries</div></div>
+      </div>
+      <div class="opt" onclick="selectTrivia(this,3,'4',false)">
+        <div class="opt-radio"></div><div><div class="opt-label">4 countries</div></div>
+      </div>
+    </div>
+    <div class="feedback" id="fb-3"></div>
+    <div class="nav-row">
+      <button class="btn-back" onclick="back(3)">&#8592; Back</button>
+      <button class="btn-next" id="next-3" onclick="next(3)" disabled>Continue &#8594;</button>
+    </div>
+  </div>
+
+  <!-- Q4: TRIVIA -> FINANCIAL BRIDGE: team size / squad budget -->
+  <div class="step" id="step-4">
+    <div class="q-num">Question 4 <span class="q-badge trivia">Trivia</span></div>
+    <div class="q-text">A World Cup roster has 26 players, but only 11 take the field at once. What's the financial lesson here?</div>
+    <div class="q-sub">Think about how championship teams are built.</div>
+    <div class="options">
+      <div class="opt" onclick="select(this,'q4','bench')">
+        <div class="opt-radio"></div>
+        <div><div class="opt-label">A strong "bench" matters</div><div class="opt-desc">Just like a team needs depth beyond the starting 11, your finances need backup plans -- savings, insurance, and reserves ready when called on</div></div>
+      </div>
+      <div class="opt" onclick="select(this,'q4','starters')">
+        <div class="opt-radio"></div>
+        <div><div class="opt-label">Only the starters matter</div><div class="opt-desc">Focus all your resources on one plan and hope nothing goes wrong</div></div>
+      </div>
+      <div class="opt" onclick="select(this,'q4','luck')">
+        <div class="opt-radio"></div>
+        <div><div class="opt-label">It's mostly about luck</div><div class="opt-desc">Championship teams just get lucky with injuries and form</div></div>
+      </div>
+    </div>
+    <div class="nav-row">
+      <button class="btn-back" onclick="back(4)">&#8592; Back</button>
+      <button class="btn-next" id="next-4" onclick="next(4)" disabled>Continue &#8594;</button>
+    </div>
+  </div>
+
+  <!-- Q5: FINANCIAL - current life insurance -->
+  <div class="step" id="step-5">
+    <div class="q-num">Question 5 <span class="q-badge money">Game Plan</span></div>
+    <div class="q-text">Right now, what's your "starting lineup" for financial protection?</div>
+    <div class="q-sub">Your current life insurance situation.</div>
+    <div class="options">
+      <div class="opt" onclick="select(this,'q5','employer')">
+        <div class="opt-radio"></div>
+        <div><div class="opt-label">Group Term through my employer</div><div class="opt-desc">Like borrowing a player -- coverage ends when you leave the team (job)</div></div>
+      </div>
+      <div class="opt" onclick="select(this,'q5','personal')">
+        <div class="opt-radio"></div>
+        <div><div class="opt-label">I have my own personal policy</div><div class="opt-desc">A player under contract with you, not your employer</div></div>
+      </div>
+      <div class="opt" onclick="select(this,'q5','both')">
+        <div class="opt-radio"></div>
+        <div><div class="opt-label">Both employer and personal coverage</div><div class="opt-desc">A deep roster -- primary and backup protection</div></div>
+      </div>
+      <div class="opt" onclick="select(this,'q5','none')">
+        <div class="opt-radio"></div>
+        <div><div class="opt-label">No coverage right now</div><div class="opt-desc">Playing without a goalkeeper</div></div>
+      </div>
+    </div>
+    <div class="nav-row">
+      <button class="btn-back" onclick="back(5)">&#8592; Back</button>
+      <button class="btn-next" id="next-5" onclick="next(5)" disabled>Continue &#8594;</button>
+    </div>
+  </div>
+
+  <!-- Q6: TRIVIA - World Cup prize money -->
+  <div class="step" id="step-6">
+    <div class="q-num">Question 6 <span class="q-badge trivia">Trivia</span></div>
+    <div class="q-text">True or False: The winning team of the World Cup takes home over $40 million in prize money.</div>
+    <div class="q-sub">The 2026 World Cup has a record $625M prize pool -- the champion takes home $40M+. Financial wins compound the same way.</div>
+    <div class="options" id="opts-6">
+      <div class="opt" onclick="selectTrivia(this,6,'true',true)">
+        <div class="opt-radio"></div><div><div class="opt-label">True</div></div>
+      </div>
+      <div class="opt" onclick="selectTrivia(this,6,'false',false)">
+        <div class="opt-radio"></div><div><div class="opt-label">False</div></div>
+      </div>
+    </div>
+    <div class="feedback" id="fb-6"></div>
+    <div class="nav-row">
+      <button class="btn-back" onclick="back(6)">&#8592; Back</button>
+      <button class="btn-next" id="next-6" onclick="next(6)" disabled>Continue &#8594;</button>
+    </div>
+  </div>
+
+  <!-- Q7: FINANCIAL - retirement savings goal (the "trophy") -->
+  <div class="step" id="step-7">
+    <div class="q-num">Question 7 <span class="q-badge money">Game Plan</span></div>
+    <div class="q-text">Every World Cup team plays for one trophy. What's the "trophy" you're playing for financially?</div>
+    <div class="q-sub">Your top financial goal right now.</div>
+    <div class="options">
+      <div class="opt" onclick="select(this,'q7','protection')">
+        <div class="opt-radio"></div>
+        <div><div class="opt-label">Protecting my family no matter what</div><div class="opt-desc">Making sure they're taken care of if something happens to me</div></div>
+      </div>
+      <div class="opt" onclick="select(this,'q7','retirement')">
+        <div class="opt-radio"></div>
+        <div><div class="opt-label">Building tax-free retirement income</div><div class="opt-desc">A second income stream when I stop working</div></div>
+      </div>
+      <div class="opt" onclick="select(this,'q7','college')">
+        <div class="opt-radio"></div>
+        <div><div class="opt-label">Saving for my kids' future</div><div class="opt-desc">College, first home, or a head start in life</div></div>
+      </div>
+      <div class="opt" onclick="select(this,'q7','legacy')">
+        <div class="opt-radio"></div>
+        <div><div class="opt-label">Leaving a legacy</div><div class="opt-desc">A tax-free inheritance for the next generation</div></div>
+      </div>
+    </div>
+    <div class="nav-row">
+      <button class="btn-back" onclick="back(7)">&#8592; Back</button>
+      <button class="btn-next" id="next-7" onclick="next(7)" disabled>Continue &#8594;</button>
+    </div>
+  </div>
+
+  <!-- Q8: TRIVIA - 2026 format (48 teams) -->
+  <div class="step" id="step-8">
+    <div class="q-num">Question 8 <span class="q-badge trivia">Trivia</span></div>
+    <div class="q-text">The 2026 World Cup's expanded format featured 48 teams across 12 groups -- the largest field ever. How many teams advanced from the group stage to the knockout rounds?</div>
+    <div class="q-sub">The group stage is complete -- 32 teams advanced, and now just 8 remain in the quarterfinals. Bigger tournament, bigger opportunity -- same as building wealth over time.</div>
+    <div class="options" id="opts-8">
+      <div class="opt" onclick="selectTrivia(this,8,'16',false)">
+        <div class="opt-radio"></div><div><div class="opt-label">16 teams</div></div>
+      </div>
+      <div class="opt" onclick="selectTrivia(this,8,'32',true)">
+        <div class="opt-radio"></div><div><div class="opt-label">32 teams</div></div>
+      </div>
+      <div class="opt" onclick="selectTrivia(this,8,'48',false)">
+        <div class="opt-radio"></div><div><div class="opt-label">All 48 teams</div></div>
+      </div>
+    </div>
+    <div class="feedback" id="fb-8"></div>
+    <div class="nav-row">
+      <button class="btn-back" onclick="back(8)">&#8592; Back</button>
+      <button class="btn-next" id="next-8" onclick="next(8)" disabled>Continue &#8594;</button>
+    </div>
+  </div>
+
+  <!-- Q9: FINANCIAL - monthly budget for "training" (premium) -->
+  <div class="step" id="step-9">
+    <div class="q-num">Question 9 <span class="q-badge money">Game Plan</span></div>
+    <div class="q-text">Champions train consistently. What monthly "training budget" could you commit to building your financial game plan?</div>
+    <div class="q-sub">A rough monthly amount -- this just helps personalize your results.</div>
+    <div class="options">
+      <div class="opt" onclick="select(this,'q9','under100')">
+        <div class="opt-radio"></div>
+        <div><div class="opt-label">Under $100/month</div><div class="opt-desc">Starting small, building the habit</div></div>
+      </div>
+      <div class="opt" onclick="select(this,'q9','100-250')">
+        <div class="opt-radio"></div>
+        <div><div class="opt-label">$100 - $250/month</div><div class="opt-desc">Solid starting lineup budget</div></div>
+      </div>
+      <div class="opt" onclick="select(this,'q9','250-500')">
+        <div class="opt-radio"></div>
+        <div><div class="opt-label">$250 - $500/month</div><div class="opt-desc">Playing for serious results</div></div>
+      </div>
+      <div class="opt" onclick="select(this,'q9','500plus')">
+        <div class="opt-radio"></div>
+        <div><div class="opt-label">$500+/month</div><div class="opt-desc">Championship-level commitment</div></div>
+      </div>
+    </div>
+    <div class="nav-row">
+      <button class="btn-back" onclick="back(9)">&#8592; Back</button>
+      <button class="btn-next" id="next-9" onclick="next(9)" disabled>Continue &#8594;</button>
+    </div>
+  </div>
+
+  <!-- Q10: LEAD CAPTURE -->
+  <div class="step" id="step-10">
+    <div class="q-num">Question 10 <span class="q-badge money">Final Whistle</span></div>
+    <div class="q-text">Last step! Where should we send your personalized Financial Game Plan results?</div>
+    <div class="q-sub">Your score and a custom strategy breakdown will be ready instantly.</div>
+    <div class="input-row">
+      <div class="text-group"><label>First Name *</label><input type="text" id="s-fname" placeholder="Jane"></div>
+      <div class="text-group"><label>Last Name</label><input type="text" id="s-lname" placeholder="Doe"></div>
+    </div>
+    <div class="text-group"><label>Phone *</label><input type="tel" id="s-phone" placeholder="(555) 123-4567"></div>
+    <div class="text-group"><label>Email *</label><input type="email" id="s-email" placeholder="jane@email.com"></div>
+    <div class="input-row">
+      <div class="text-group"><label>Age Range</label>
+        <select id="s-age">
+          <option value="">Select...</option>
+          <option value="18-25">18-25</option>
+          <option value="26-35">26-35</option>
+          <option value="36-45">36-45</option>
+          <option value="46-55">46-55</option>
+          <option value="56+">56+</option>
+        </select>
+      </div>
+      <div class="text-group"><label>Zip Code</label><input type="text" id="s-zip" placeholder="90001" maxlength="5"></div>
+    </div>
+    <div class="nav-row">
+      <button class="btn-back" onclick="back(10)">&#8592; Back</button>
+      <button class="btn-next" onclick="submit()">See My Results &#8594;</button>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div class="step" id="step-result">
+    <div class="result-wrap">
+      <div class="result-trophy" id="result-trophy">&#127942;</div>
+      <div class="result-score" id="result-score">Trivia Score: 0/4</div>
+      <div class="result-title" id="result-title">Your Financial Game Plan</div>
+      <div class="result-sub" id="result-sub"></div>
+      <div id="result-cards"></div>
+      <div class="result-cta">
+        <a href="schedule-1on1.html" class="btn-primary" id="cta-schedule">&#128467;&#65039; Book My Free Game Plan Session</a>
+        <a href="employer-vs-iul-brochure.html" class="btn-secondary">&#128202; See the Employer vs. IUL Comparison</a>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /wrap -->
+
+<script>
+const answers = {};
+const TOTAL   = 10;
+let currentStep = 1;
+let triviaScore = 0;
+let triviaTotal = 0;
+
+function select(el, key, val) {
+  document.querySelectorAll(`#step-${currentStep} .opt`).forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  answers[key] = val;
+  document.getElementById('next-' + currentStep).disabled = false;
+}
+
+function selectTrivia(el, step, val, isCorrect) {
+  // Lock options after selection
+  const opts = document.querySelectorAll(`#opts-${step} .opt`);
+  if (opts[0].dataset.locked) return;
+  opts.forEach(o => { o.dataset.locked = '1'; o.style.cursor='default'; });
+
+  el.classList.add('selected');
+  answers['q'+step] = val;
+
+  triviaTotal++;
+  const fb = document.getElementById('fb-' + step);
+  if (isCorrect) {
+    triviaScore++;
+    el.classList.add('correct');
+    fb.className = 'feedback show correct-fb';
+    fb.textContent = "&#9917; Goal! That's correct.";
+  } else {
+    el.classList.add('incorrect');
+    // Highlight the correct one
+    opts.forEach((o,i) => { if (o.onclick.toString().includes(',true)')) o.classList.add('correct'); });
+    fb.className = 'feedback show incorrect-fb';
+    fb.innerHTML = '&#129000; Not quite -- but every champion learns from a missed shot.';
+  }
+
+  // Update score bug
+  const bug = document.getElementById('score-bug');
+  bug.style.display = 'flex';
+  document.getElementById('score-bug-text').textContent = triviaScore + '/' + triviaTotal;
+
+  document.getElementById('next-' + step).disabled = false;
+}
+
+function next(step) {
+  document.getElementById('step-' + step).classList.remove('active');
+  currentStep = step + 1;
+  document.getElementById('step-' + currentStep).classList.add('active');
+  updateProgress(currentStep);
+}
+
+function back(step) {
+  document.getElementById('step-' + step).classList.remove('active');
+  currentStep = step - 1;
+  document.getElementById('step-' + currentStep).classList.add('active');
+  updateProgress(currentStep);
+}
+
+function updateProgress(step) {
+  const pct = Math.round((Math.min(step,TOTAL) / TOTAL) * 100);
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('step-num').textContent = Math.min(step,TOTAL);
+  document.getElementById('step-pct').textContent = pct + '%';
+}
+
+
+// &#9472;&#9472; WRITE TO FINANCIAL SURVEYS BOARD ON MONDAY.COM &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;
+// Shared by all survey funnels (IUL survey, World Cup survey, etc.)
+// "source" column differentiates which survey/funnel the lead came from.
+async function writeSurveyToMonday(opts) {
+  try {
+    if (!AUTH.getMondayKey()) { console.warn('[Survey&#8594;Monday] No Monday API key set -- skipping write'); return; }
+    const boardId = localStorage.getItem('dba_survey_board_id') || TEAM.monday.boardSurveys;
+    const today = new Date().toISOString().slice(0,10);
+
+    const itemName = `${opts.firstName} ${opts.lastName||''} \u2014 ${opts.sourceLabel} \u00b7 ${opts.phone} \u00b7 Ref: ${opts.agentRef||'direct'}`.trim();
+
+    // &#9472;&#9472; Discover columns (id + type) &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;
+    // Cache key includes board ID so switching boards invalidates the cache.
+    let cols = null;
+    const cacheKey = 'dba_survey_cols_' + boardId;
+    const saved = localStorage.getItem(cacheKey);
+    if (saved) {
+      try { cols = JSON.parse(saved); } catch(e) { cols = null; }
+    }
+    if (!cols) {
+      const boardRes = await mondayQuery(`{ boards(ids: ${boardId}) { columns { id title type } } }`);
+      if (boardRes?.errors) {
+        console.error('[Survey&#8594;Monday] Failed to fetch board columns:', boardRes.errors);
+        return;
+      }
+      cols = boardRes?.data?.boards?.[0]?.columns || [];
+      if (!cols.length) {
+        console.error('[Survey&#8594;Monday] No columns found on board', boardId, '-- check board ID / API key permissions');
+        return;
+      }
+      localStorage.setItem(cacheKey, JSON.stringify(cols));
+    }
+
+    const find = (...kws) => cols.find(c => kws.some(k => c.title.toLowerCase().includes(k.toLowerCase()))) || null;
+
+    const colMap = {
+      first_name:      find('first name','first_name','firstname'),
+      last_name:       find('last name','last_name','lastname'),
+      phone:           find('phone'),
+      email:           find('email'),
+      profile:         find('profile','type','category'),
+      budget:          find('budget','premium'),
+      goals:           find('goals','interest'),
+      referring_agent: find('referring agent','agent','referred'),
+      source:          find('source'),
+      survey_date:     find('survey date','date'),
+      best_time:       find('best time','timing','follow'),
+      health:          find('health'),
+      tobacco:         find('tobacco'),
+      notes:           find('notes'),
+    };
+
+    // &#9472;&#9472; Format a value based on the target column's TYPE &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;
+    // This is the critical fix: Monday rejects column_values where the
+    // shape doesn't match the column type (e.g. sending a plain string
+    // to a "status" column, or a number to a "text" column). When ANY
+    // column value is malformed, create_item still creates the item
+    // (so the name/summary appears) but ALL column_values are dropped
+    // and an `errors` array is returned alongside the item id.
+    function formatValue(col, rawValue) {
+      if (rawValue === undefined || rawValue === null || rawValue === '') return undefined;
+      switch (col.type) {
+        case 'text':
+        case 'long_text':
+          return String(rawValue);
+        case 'numbers':
+          { const n = parseFloat(String(rawValue).replace(/[^0-9.\-]/g,'')); return isNaN(n) ? undefined : n; }
+        case 'status':
+        case 'dropdown':
+          // status/dropdown columns require { label: "..." } and the label
+          // must already exist as an option on the column, or Monday errors.
+          return { label: String(rawValue) };
+        case 'date':
+          return { date: rawValue };
+        case 'phone':
+          return { phone: String(rawValue).replace(/\D/g,''), countryShortName: 'US' };
+        case 'email':
+          return { email: String(rawValue), text: String(rawValue) };
+        case 'checkbox':
+          return { checked: !!rawValue };
+        default:
+          // Unknown/unsupported type -- try plain text fallback
+          return String(rawValue);
+      }
+    }
+
+    const rawValues = {
+      first_name:      opts.firstName,
+      last_name:       opts.lastName || '',
+      phone:           opts.phone,
+      email:           opts.email,
+      profile:         opts.profileLabel,
+      budget:          opts.budget,
+      goals:           opts.goals,
+      referring_agent: opts.agentRef || 'direct',
+      source:          opts.sourceLabel,
+      survey_date:     today,
+      best_time:       opts.timing,
+      health:          opts.health,
+      tobacco:         opts.tobacco,
+      notes:           opts.notes,
+    };
+
+    const cv = {};
+    const skipped = [];
+    for (const [key, col] of Object.entries(colMap)) {
+      if (!col) { skipped.push(key + ' (no matching column found)'); continue; }
+      const formatted = formatValue(col, rawValues[key]);
+      if (formatted === undefined) continue; // empty value, skip silently
+      cv[col.id] = formatted;
+    }
+    if (skipped.length) {
+      console.warn('[Survey&#8594;Monday] Some fields have no matching column on the board:', skipped.join(', '));
+    }
+
+    const q = `mutation($cv: JSON!) {
+      create_item(
+        board_id: ${boardId},
+        item_name: ${JSON.stringify(itemName)},
+        column_values: $cv
+      ) { id }
+    }`;
+
+    const result = await mondayQuery(q, { cv: JSON.stringify(cv) });
+
+    if (result?.errors) {
+      console.error('[Survey&#8594;Monday] create_item returned errors (item may have been created WITHOUT column data):', result.errors);
+      // If the error mentions an invalid status/dropdown label, the cached column
+      // metadata may be stale (e.g. label doesn't exist as an option yet).
+      // Clear the cache so the next submission re-fetches fresh column definitions.
+      localStorage.removeItem(cacheKey);
+    } else if (result?.data?.create_item?.id) {
+      console.log('[Survey&#8594;Monday] Item created:', result.data.create_item.id, 'with', Object.keys(cv).length, 'column values');
+    } else {
+      console.warn('[Survey&#8594;Monday] Unexpected response (no errors, no item id):', result);
+    }
+  } catch(e) {
+    console.error('[Survey&#8594;Monday] writeSurveyToMonday threw:', e);
+  }
+}
+
+function submit() {
+  const fname = document.getElementById('s-fname').value.trim();
+  const phone = document.getElementById('s-phone').value.trim();
+  const email = document.getElementById('s-email').value.trim();
+  if (!fname || !phone || !email) { alert('Please fill in your name, phone, and email to see your results.'); return; }
+
+  const lead = {
+    type:'world_cup_survey', source:'World Cup Financial Game Plan',
+    firstName: fname, lastName: document.getElementById('s-lname').value,
+    phone, email,
+    ageRange: document.getElementById('s-age').value,
+    zip: document.getElementById('s-zip').value,
+    triviaScore, triviaTotal,
+    answers: { ...answers },
+    timestamp: new Date().toISOString(),
+  };
+  try {
+    const existing = JSON.parse(localStorage.getItem('ea_leads')||'[]');
+    existing.push(lead);
+    localStorage.setItem('ea_leads', JSON.stringify(existing));
+  } catch(e){}
+
+  const params = new URLSearchParams(location.search);
+  const agentId = params.get('agent') || '';
+  const payload = { ...lead, referringAgent: agentId };
+  fetch('https://hook.us2.make.com/jky3rg3jsql0r8pp9d7v6d1aclvblvu4', {
+    method:'POST', mode:'no-cors', body:JSON.stringify(payload)
+  }).catch(()=>{});
+
+  // Write to shared Financial Surveys board on Monday.com
+  writeSurveyToMonday({
+    firstName: fname, lastName: lead.lastName, phone, email,
+    profileLabel: 'World Cup Game Plan',
+    sourceLabel: 'World Cup Survey',
+    agentRef: agentId,
+    goals: 'Team: ' + (answers.team||'') + ' | Goal: ' + (answers.q7||'') + ' | Budget: ' + (answers.q9||''),
+    notes: 'Age range: ' + (lead.ageRange||'') + ' | Zip: ' + (lead.zip||'') + ' | Trivia: ' + triviaScore + '/' + triviaTotal + ' | Coverage: ' + (answers.q5||''),
+  });
+
+  showResult(fname, answers);
+}
+
+const TEAM_LABELS = {
+  usa:'Team USA &#127482;&#127480;', mexico:'Mexico &#127474;&#127485;', canada:'Canada &#127464;&#127462;', other:'your team &#127757;'
+};
+
+function showResult(fname, a) {
+  document.getElementById('step-10').classList.remove('active');
+  document.getElementById('step-result').classList.add('active');
+  document.getElementById('progress-fill').style.width = '100%';
+  document.getElementById('step-num').textContent = '10';
+  document.getElementById('step-pct').textContent = '100%';
+  document.getElementById('score-bug').style.display = 'none';
+
+  document.getElementById('result-score').innerHTML = `&#9917; Trivia Score: ${triviaScore}/${triviaTotal}`;
+
+  const team = TEAM_LABELS[a.team] || 'your team';
+  const coverage = a.q5;
+  const goal = a.q7;
+  const budget = a.q9;
+
+  // Financial readiness score (separate from trivia) -- higher = more urgent need
+  let finScore = 0;
+  if (coverage === 'none') finScore = 5; // always top urgency
+  else if (coverage === 'employer') finScore = 3;
+  else if (coverage === 'personal') finScore = 1;
+  else if (coverage === 'both') finScore = 0;
+
+  if (budget === '500plus' || budget === '250-500') finScore += 1;
+
+  let trophy, title, sub, cards;
+
+  if (finScore >= 4) {
+    trophy = '&#128997;'; // red card energy -> opportunity
+    title = `${fname}, ${team} just scored -- but your finances are still warming up.`;
+    sub = `Like a team without a keeper, your current setup (${coverageLabel(coverage)}) leaves your family exposed. The good news: there's time to build a championship-level game plan before kickoff.`;
+    cards = [
+      { label:'Your Lineup', title:'Coverage Gap Detected', body:`${coverageLabel(coverage)} won't go the distance. If something happens to you, your family is left playing shorthanded -- without the protection a personal policy provides.`, highlight:true },
+      { label:'Your Trophy', title:goalTitle(goal), body:goalBody(goal), highlight:true },
+      { label:'Training Budget', title:budgetLabel(budget) + ' Plan', body:'Based on your training budget, we can design a strategy that fits your life -- building protection and cash value over time, just like a team builds momentum through a tournament.', highlight:false },
+    ];
+  } else if (finScore >= 2) {
+    trophy = '&#129000;'; // yellow card -> room to improve
+    title = `${fname}, ${team} is through to the next round -- and so are you, with room to grow.`;
+    sub = `You've got ${coverageLabel(coverage).toLowerCase()} in place. That's a solid start, but every championship team looks for ways to strengthen their bench before the knockout rounds.`;
+    cards = [
+      { label:'Your Lineup', title:'Solid Starting XI', body:`${coverageLabel(coverage)} gives you a base -- but is it enough to go all the way to the final? A personal policy adds depth your employer plan can't.`, highlight:false },
+      { label:'Your Trophy', title:goalTitle(goal), body:goalBody(goal), highlight:true },
+      { label:'Next Move', title:'Strengthen the Squad', body:`With a ${budgetLabel(budget).toLowerCase()} training budget, we can layer in additional coverage and start building tax-advantaged value -- without overspending your budget.`, highlight:false },
+    ];
+  } else {
+    trophy = '&#127942;';
+    title = `${fname}, ${team} is looking like a championship contender -- and so is your game plan.`;
+    sub = `You've already got ${coverageLabel(coverage).toLowerCase()} in place. That's a strong defense. The question now is whether your strategy is optimized to go all the way -- protection AND growth.`;
+    cards = [
+      { label:'Your Lineup', title:'Well-Protected -- For Now', body:`${coverageLabel(coverage)} gives you solid coverage. The next step is making sure it's optimized for your goal: ${goalLabel(goal)}.`, highlight:false },
+      { label:'Your Trophy', title:goalTitle(goal), body:goalBody(goal), highlight:true },
+      { label:'Championship Move', title:'Optimize for the Final', body:'A quick review can confirm your current coverage lines up with your goals -- and uncover opportunities to add tax-free growth on top of what you already have.', highlight:false },
+    ];
+  }
+
+  document.getElementById('result-trophy').textContent = trophy;
+  document.getElementById('result-title').textContent = title;
+  document.getElementById('result-sub').textContent = sub;
+  document.getElementById('result-cards').innerHTML = cards.map(c => `
+    <div class="result-card ${c.highlight?'highlight':''}">
+      <div class="rc-label">${c.label}</div>
+      <div class="rc-title">${c.title}</div>
+      <div class="rc-body">${c.body}</div>
+    </div>`).join('');
+
+  // Wire agent param into CTA
+  const agentId = new URLSearchParams(location.search).get('agent') || '';
+  const cta = document.getElementById('cta-schedule');
+  cta.href = 'schedule-1on1.html' + (agentId ? '?agent=' + encodeURIComponent(agentId) + '&type=review' : '?type=review');
+}
+
+function coverageLabel(c) {
+  return { employer:'Group term through your employer only', personal:'A personal policy you own',
+    both:'Both employer and personal coverage', none:'No coverage right now' }[c] || 'Your current coverage';
+}
+function goalLabel(g) {
+  return { protection:'protecting your family', retirement:'tax-free retirement income',
+    college:"your kids' future", legacy:'leaving a legacy' }[g] || 'your goals';
+}
+function goalTitle(g) {
+  return { protection:'Protection Game Plan', retirement:'Retirement Income Strategy',
+    college:"Future Fund for Your Kids", legacy:'Legacy & Wealth Transfer Plan' }[g] || 'Your Financial Game Plan';
+}
+function goalBody(g) {
+  const map = {
+    protection: "Every championship team has a rock-solid defense. A properly structured life insurance policy is your family's defense line -- making sure they're covered no matter what happens on or off the field.",
+    retirement: 'Just like a team builds momentum match by match, a properly funded policy builds tax-advantaged cash value over time \\u2014 giving you a second income stream you can draw on tax-free in retirement.',
+    college: 'Think of this like developing young talent in an academy \\u2014 small, consistent contributions now can grow into a meaningful fund for college, a first home, or a head start for your kids.',
+    legacy: 'A World Cup trophy gets passed down for generations. With the right policy, you can pass down a tax-free inheritance \\u2014 a legacy that outlasts the final whistle.',
+  };
+  return map[g] || '';
+}
+function budgetLabel(b) {
+  return { under100:'Starter', '100-250':'Solid', '250-500':'Strong', '500plus':'Championship' }[b] || 'Custom';
+}
+</script>
+</body>
+</html>

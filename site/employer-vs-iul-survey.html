@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script src="auth.js?v=20260713"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Insurance Review Quiz — Dynasty Builders Academy</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=Barlow:wght@300;400;500;600&family=Barlow+Condensed:wght@600;700;800&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#080E1C;--navy2:#0D1627;--navy3:#111E35;--navy4:#162440;
+  --gold:#C9A84C;--gold2:#E8C97A;--gold-dim:rgba(201,168,76,.12);--gold-border:rgba(201,168,76,.3);
+  --green:#27AE60;--green2:#2DCA73;
+  --cream:#FAF6EE;--slate:#6B7C93;--border:rgba(201,168,76,.2);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);min-height:100vh;}
+
+/* BG */
+.bg{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 80% 60% at 30% 20%,rgba(201,168,76,.06),transparent 55%),
+  radial-gradient(ellipse 60% 80% at 80% 85%,rgba(39,174,96,.04),transparent 60%),
+  linear-gradient(160deg,#080E1C,#0D1627 60%,#080E1C);}
+
+.wrap{position:relative;z-index:1;max-width:620px;margin:0 auto;padding:40px 20px 80px;}
+
+/* HEADER */
+.hdr{text-align:center;margin-bottom:40px;}
+.hdr-tag{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);border:1px solid var(--border);display:inline-block;padding:4px 12px;border-radius:2px;margin-bottom:16px;}
+.hdr-title{font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;line-height:1.1;margin-bottom:8px;}
+.hdr-title em{color:var(--gold2);font-style:italic;}
+.hdr-sub{font-size:13px;color:var(--slate);max-width:420px;margin:0 auto;line-height:1.7;}
+
+/* PROGRESS */
+.progress-wrap{margin-bottom:32px;}
+.progress-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.progress-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;color:var(--slate);}
+.progress-pct{font-family:'DM Mono',monospace;font-size:10px;color:var(--gold);}
+.progress-bar{height:3px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:2px;transition:width .4s ease;}
+
+/* STEP */
+.step{display:none;}
+.step.active{display:block;}
+
+/* QUESTION */
+.q-num{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.15em;color:var(--gold);margin-bottom:8px;}
+.q-text{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;line-height:1.3;margin-bottom:6px;}
+.q-sub{font-size:13px;color:var(--slate);margin-bottom:22px;line-height:1.6;}
+
+/* OPTIONS */
+.options{display:flex;flex-direction:column;gap:8px;margin-bottom:24px;}
+.opt{display:flex;align-items:flex-start;gap:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:4px;padding:14px 18px;cursor:pointer;transition:all .15s;user-select:none;}
+.opt:hover{border-color:var(--border);background:rgba(201,168,76,.05);}
+.opt.selected{border-color:var(--gold);background:var(--gold-dim);}
+.opt-radio{width:18px;height:18px;border:2px solid rgba(255,255,255,.2);border-radius:50%;flex-shrink:0;margin-top:2px;transition:all .15s;position:relative;}
+.opt.selected .opt-radio{border-color:var(--gold);background:var(--gold);}
+.opt.selected .opt-radio::after{content:'';position:absolute;inset:3px;border-radius:50%;background:var(--navy);}
+.opt-label{font-size:13px;font-weight:600;color:var(--cream);margin-bottom:2px;}
+.opt-desc{font-size:11px;color:var(--slate);line-height:1.5;}
+
+/* TEXT INPUT */
+.text-group{margin-bottom:20px;}
+.text-group label{display:block;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(201,168,76,.7);margin-bottom:6px;}
+.text-group input,.text-group select{width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);color:var(--cream);font-family:'Barlow',sans-serif;font-size:14px;padding:12px 14px;border-radius:4px;outline:none;transition:border-color .2s;}
+.text-group input:focus,.text-group select:focus{border-color:var(--gold);}
+.text-group select option{background:var(--navy3);}
+.input-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+/* NAV BUTTONS */
+.nav-row{display:flex;gap:10px;align-items:center;}
+.btn-next{flex:1;background:var(--gold);color:var(--navy);border:none;border-radius:4px;padding:14px;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:opacity .15s;}
+.btn-next:hover{opacity:.87;}
+.btn-next:disabled{opacity:.35;cursor:not-allowed;}
+.btn-back{background:transparent;border:1px solid rgba(255,255,255,.1);color:var(--slate);border-radius:4px;padding:14px 18px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;}
+.btn-back:hover{border-color:var(--border);color:var(--gold);}
+
+/* RESULT */
+.result-wrap{text-align:center;}
+.result-icon{font-size:3rem;margin-bottom:16px;}
+.result-title{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:700;color:var(--gold2);margin-bottom:8px;line-height:1.2;}
+.result-sub{font-size:14px;color:var(--slate);margin-bottom:28px;line-height:1.7;}
+
+.result-card{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:6px;padding:24px;margin-bottom:16px;text-align:left;}
+.result-card.highlight{background:linear-gradient(135deg,rgba(201,168,76,.08),rgba(201,168,76,.03));border-color:var(--gold);}
+.rc-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);margin-bottom:6px;}
+.rc-title{font-size:1rem;font-weight:700;color:var(--cream);margin-bottom:6px;}
+.rc-body{font-size:13px;color:var(--slate);line-height:1.7;}
+
+.result-cta{margin-top:28px;display:flex;flex-direction:column;gap:10px;}
+.btn-primary{background:var(--gold);color:var(--navy);border:none;border-radius:4px;padding:16px;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;text-decoration:none;display:block;text-align:center;transition:opacity .15s;}
+.btn-primary:hover{opacity:.87;}
+.btn-secondary{background:transparent;border:1px solid var(--border);color:var(--gold);border-radius:4px;padding:14px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;cursor:pointer;text-decoration:none;display:block;text-align:center;transition:all .15s;}
+.btn-secondary:hover{background:var(--gold-dim);}
+
+/* BACK LINK */
+.back-link{display:block;text-align:center;margin-bottom:24px;font-size:12px;color:var(--slate);text-decoration:none;transition:color .15s;}
+.back-link:hover{color:var(--gold);}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="wrap">
+
+  <a href="employer-vs-iul-brochure.html" class="back-link">← Back to Comparison Guide</a>
+
+  <div class="hdr">
+    <div class="hdr-tag">2-Minute Financial Review</div>
+    <h1 class="hdr-title">Find Your <em>Coverage Gap</em></h1>
+    <p class="hdr-sub">Answer 7 quick questions and we'll show you exactly what your employer plan is — and isn't — covering.</p>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-top">
+      <div class="progress-label">QUESTION <span id="step-num">1</span> OF 7</div>
+      <div class="progress-pct" id="step-pct">14%</div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:14%;"></div></div>
+  </div>
+
+  <!-- Q1 -->
+  <div class="step active" id="step-1">
+    <div class="q-num">Question 1</div>
+    <div class="q-text">What type of life insurance do you currently have through work?</div>
+    <div class="q-sub">Check your benefits portal or your last open enrollment email.</div>
+    <div class="options">
+      <div class="opt" onclick="select(this,'q1','term')">
+        <div class="opt-radio"></div>
+        <div><div class="opt-label">Group Term Life through my employer</div><div class="opt-desc">Provided as an employee benefit, often 1–2x salary</div></div>
+      </div>
+      <div class="opt" onclick="select(this,'q1','union')">
+        <div class="opt-radio"></div>
+        <div><div class="opt-label">Union-provided policy (Prudential, MetLife, etc.)</div><div class="opt-desc">Coverage negotiated through a union (SEIU, Teamsters, AFSCME, etc.)</div></div>
+      </div>
+      <div class="opt" onclick="select(this,'q1','both')">
+        <div class="opt-radio"></div>
+        <div><div class="opt-label">Both employer and union coverage</div><div class="opt-desc">Dual coverage — may have gaps or overlaps</div></div>
+      </div>
+      <div class="opt" onclick="select(this,'q1','none')">
+        <div class="opt-radio"></div>
+        <div><div class="opt-label">No employer coverage / self-employed</div><div class="opt-desc">You rely entirely on personally owned policies</div></div>
+      </div>
+    </div>
+    <div class="nav-row">
+      <button class="btn-next" id="next-1" onclick="next(1)" disabled>Continue →</button>
+    </div>
+  </div>
+
+  <!-- Q2 -->
+  <div class="step" id="step-2">
+    <div class="q-num">Question 2</div>
+    <div class="q-text">What is your primary financial goal right now?</div>
+    <div class="q-sub">Choose the one that resonates most.</div>
+    <div class="options">
+      <div class="opt" onclick="select(this,'q2','protection')">
+        <div class="opt-radio"></div>
+        <div><div class="opt-label">Protect my family if I pass away</div><div class="opt-desc">Income replacement — making sure the bills are paid</div></div>
+      </div>
+      <div class="opt" onclick="select(this,'q2','accumulate')">
+        <div class="opt-radio"></div>
+        <div><div class="opt-label">Build wealth and retirement income</div><div class="opt-desc">Tax-advantaged savings alongside protection</div></div>
+      </div>
+      <div class="opt" onclick="select(this,'q2','ltc')">
+        <div class="opt-radio"></div>
+        <div><div class="opt-label">Protect against chronic illness or long-term care costs</div><div class="opt-desc">Living benefits — using the policy while I'm alive</div></div>
+      </div>
+      <div class="opt" onclick="select(this,'q2','legacy')">
+        <div class="opt-radio"></div>
+        <div><div class="opt-label">Leave a tax-free inheritance for my family</div><div class="opt-desc">Legacy planning — wealth transfer to next generation</div></div>
+      </div>
+    </div>
+    <div class="nav-row">
+      <button class="btn-back" onclick="back(2)">← Back</button>
+      <button class="btn-next" id="next-2" onclick="next(2)" disabled>Continue →</button>
+    </div>
+  </div>
+
+  <!-- Q3 -->
+  <div class="step" id="step-3">
+    <div class="q-num">Question 3</div>
+    <div class="q-text">How long do you plan to stay with your current employer?</div>
+    <div class="options">
+      <div class="opt" onclick="select(this,'q3','long')">
+        <div class="opt-radio"></div>
+        <div><div class="opt-label">Long-term — 10+ years or until retirement</div><div class="opt-desc">I plan to stay and retire with this company</div></div>
+      </div>
+      <div class="opt" onclick="select(this,'q3','medium')">
+        <div class="opt-radio"></div>
+        <div><div class="opt-label">Medium-term — 3–10 years</div><div class="opt-desc">I may stay but could change positions or employers</div></div>
+      </div>
+      <div class="opt" onclick="select(this,'q3','short')">
+        <div class="opt-radio"></div>
+        <div><div class="opt-label">Short-term — less than 3 years</div><div class="opt-desc">I'm likely to move on within a few years</div></div>
+      </div>
+      <div class="opt" onclick="select(this,'q3','unsure')">
+        <div class="opt-radio"></div>
+        <div><div class="opt-label">Unsure / considering entrepreneurship</div><div class="opt-desc">My employment situation may change significantly</div></div>
+      </div>
+    </div>
+    <div class="nav-row">
+      <button class="btn-back" onclick="back(3)">← Back</button>
+      <button class="btn-next" id="next-3" onclick="next(3)" disabled>Continue →</button>
+    </div>
+  </div>
+
+  <!-- Q4 -->
+  <div class="step" id="step-4">
+    <div class="q-num">Question 4</div>
+    <div class="q-text">Do you have any personal (non-employer) life insurance?</div>
+    <div class="options">
+      <div class="opt" onclick="select(this,'q4','yes_iul')">
+        <div class="opt-radio"></div>
+        <div><div class="opt-label">Yes — I have a permanent or IUL policy</div><div class="opt-desc">I already own a cash-value or whole life policy</div></div>
+      </div>
+      <div class="opt" onclick="select(this,'q4','yes_term')">
+        <div class="opt-radio"></div>
+        <div><div class="opt-label">Yes — I have a personal term policy</div><div class="opt-desc">Additional coverage that I purchased myself</div></div>
+      </div>
+      <div class="opt" onclick="select(this,'q4','no')">
+        <div class="opt-radio"></div>
+        <div><div class="opt-label">No — only my employer/union plan</div><div class="opt-desc">I rely entirely on my benefits package</div></div>
+      </div>
+    </div>
+    <div class="nav-row">
+      <button class="btn-back" onclick="back(4)">← Back</button>
+      <button class="btn-next" id="next-4" onclick="next(4)" disabled>Continue →</button>
+    </div>
+  </div>
+
+  <!-- Q5 -->
+  <div class="step" id="step-5">
+    <div class="q-num">Question 5</div>
+    <div class="q-text">Are you aware that your employer coverage likely ends or becomes very expensive at retirement?</div>
+    <div class="q-sub">Most group plans end at age 65–70, or convert at a much higher premium.</div>
+    <div class="options">
+      <div class="opt" onclick="select(this,'q5','yes')">
+        <div class="opt-radio"></div>
+        <div><div class="opt-label">Yes — I knew that and have planned for it</div></div>
+      </div>
+      <div class="opt" onclick="select(this,'q5','no')">
+        <div class="opt-radio"></div>
+        <div><div class="opt-label">No — I didn't know that</div><div class="opt-desc">This is new information for me</div></div>
+      </div>
+      <div class="opt" onclick="select(this,'q5','partial')">
+        <div class="opt-radio"></div>
+        <div><div class="opt-label">I had a general idea but haven't addressed it</div></div>
+      </div>
+    </div>
+    <div class="nav-row">
+      <button class="btn-back" onclick="back(5)">← Back</button>
+      <button class="btn-next" id="next-5" onclick="next(5)" disabled>Continue →</button>
+    </div>
+  </div>
+
+  <!-- Q6 -->
+  <div class="step" id="step-6">
+    <div class="q-num">Question 6</div>
+    <div class="q-text">What is your approximate monthly budget for personal life insurance coverage?</div>
+    <div class="options">
+      <div class="opt" onclick="select(this,'q6','under100')">
+        <div class="opt-radio"></div>
+        <div><div class="opt-label">Under $100/month</div><div class="opt-desc">Entry-level — may qualify for basic IUL depending on age/health</div></div>
+      </div>
+      <div class="opt" onclick="select(this,'q6','100-200')">
+        <div class="opt-radio"></div>
+        <div><div class="opt-label">$100–$200/month</div><div class="opt-desc">Sweet spot for most IUL policies with good cash accumulation</div></div>
+      </div>
+      <div class="opt" onclick="select(this,'q6','200-400')">
+        <div class="opt-radio"></div>
+        <div><div class="opt-label">$200–$400/month</div><div class="opt-desc">Strong IUL policy with solid long-term accumulation</div></div>
+      </div>
+      <div class="opt" onclick="select(this,'q6','400plus')">
+        <div class="opt-radio"></div>
+        <div><div class="opt-label">$400+/month</div><div class="opt-desc">Maximum accumulation strategy</div></div>
+      </div>
+    </div>
+    <div class="nav-row">
+      <button class="btn-back" onclick="back(6)">← Back</button>
+      <button class="btn-next" id="next-6" onclick="next(6)" disabled>Continue →</button>
+    </div>
+  </div>
+
+  <!-- Q7: Contact -->
+  <div class="step" id="step-7">
+    <div class="q-num">Question 7 of 7</div>
+    <div class="q-text">Where should we send your personalized coverage review?</div>
+    <div class="q-sub">Your answers will help your agent prepare a real illustration for your age and budget — no obligation.</div>
+    <div class="input-row" style="margin-bottom:12px;">
+      <div class="text-group">
+        <label>First Name *</label>
+        <input type="text" id="s-fname" placeholder="First name">
+      </div>
+      <div class="text-group">
+        <label>Last Name</label>
+        <input type="text" id="s-lname" placeholder="Last name">
+      </div>
+    </div>
+    <div class="text-group">
+      <label>Phone Number *</label>
+      <input type="tel" id="s-phone" placeholder="(555) 000-0000">
+    </div>
+    <div class="text-group">
+      <label>Email Address *</label>
+      <input type="email" id="s-email" placeholder="your@email.com">
+    </div>
+    <div class="input-row">
+      <div class="text-group">
+        <label>Your Age</label>
+        <input type="number" id="s-age" placeholder="e.g. 38" min="18" max="80">
+      </div>
+      <div class="text-group">
+        <label>Tobacco Use</label>
+        <select id="s-tobacco">
+          <option value="">Select…</option>
+          <option value="no">Non-tobacco</option>
+          <option value="yes">Tobacco user</option>
+        </select>
+      </div>
+    </div>
+    <div class="nav-row">
+      <button class="btn-back" onclick="back(7)">← Back</button>
+      <button class="btn-next" id="next-7" onclick="submit()">Get My Free Review →</button>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div class="step" id="step-result">
+    <div class="result-wrap">
+      <div class="result-icon" id="result-icon">📋</div>
+      <div class="result-title" id="result-title">Your Coverage Review Is Ready</div>
+      <div class="result-sub" id="result-sub">Based on your answers, here's what we found:</div>
+
+      <div id="result-cards"></div>
+
+      <div class="result-cta">
+        <a href="schedule-1on1.html" class="btn-primary">📅 Schedule My Free Policy Review →</a>
+        <a href="employer-vs-iul-brochure.html" class="btn-secondary">Read the Full Comparison Guide</a>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /wrap -->
+
+<script>
+const answers = {};
+const TOTAL   = 7;
+
+function select(el, key, val) {
+  document.querySelectorAll(`#step-${currentStep} .opt`).forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  answers[key] = val;
+  document.getElementById('next-' + currentStep).disabled = false;
+}
+
+let currentStep = 1;
+
+function next(step) {
+  document.getElementById('step-' + step).classList.remove('active');
+  currentStep = step + 1;
+  document.getElementById('step-' + currentStep).classList.add('active');
+  updateProgress(currentStep);
+}
+
+function back(step) {
+  document.getElementById('step-' + step).classList.remove('active');
+  currentStep = step - 1;
+  document.getElementById('step-' + currentStep).classList.add('active');
+  updateProgress(currentStep);
+}
+
+function updateProgress(step) {
+  const pct = Math.round((step / TOTAL) * 100);
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('step-num').textContent = step;
+  document.getElementById('step-pct').textContent = pct + '%';
+}
+
+
+// ── WRITE TO FINANCIAL SURVEYS BOARD ON MONDAY.COM ────────────
+// Shared by all survey funnels (IUL survey, World Cup survey, etc.)
+// "source" column differentiates which survey/funnel the lead came from.
+async function writeSurveyToMonday(opts) {
+  try {
+    if (!AUTH.getMondayKey()) { console.warn('[Survey→Monday] No Monday API key set — skipping write'); return; }
+    const boardId = localStorage.getItem('dba_survey_board_id') || TEAM.monday.boardSurveys;
+    const today = new Date().toISOString().slice(0,10);
+
+    const itemName = `${opts.firstName} ${opts.lastName||''} \u2014 ${opts.sourceLabel} \u00b7 ${opts.phone} \u00b7 Ref: ${opts.agentRef||'direct'}`.trim();
+
+    // ── Discover columns (id + type) ──────────────────────────
+    // Cache key includes board ID so switching boards invalidates the cache.
+    let cols = null;
+    const cacheKey = 'dba_survey_cols_' + boardId;
+    const saved = localStorage.getItem(cacheKey);
+    if (saved) {
+      try { cols = JSON.parse(saved); } catch(e) { cols = null; }
+    }
+    if (!cols) {
+      const boardRes = await mondayQuery(`{ boards(ids: ${boardId}) { columns { id title type } } }`);
+      if (boardRes?.errors) {
+        console.error('[Survey→Monday] Failed to fetch board columns:', boardRes.errors);
+        return;
+      }
+      cols = boardRes?.data?.boards?.[0]?.columns || [];
+      if (!cols.length) {
+        console.error('[Survey→Monday] No columns found on board', boardId, '— check board ID / API key permissions');
+        return;
+      }
+      localStorage.setItem(cacheKey, JSON.stringify(cols));
+    }
+
+    const find = (...kws) => cols.find(c => kws.some(k => c.title.toLowerCase().includes(k.toLowerCase()))) || null;
+
+    const colMap = {
+      first_name:      find('first name','first_name','firstname'),
+      last_name:       find('last name','last_name','lastname'),
+      phone:           find('phone'),
+      email:           find('email'),
+      profile:         find('profile','type','category'),
+      budget:          find('budget','premium'),
+      goals:           find('goals','interest'),
+      referring_agent: find('referring agent','agent','referred'),
+      source:          find('source'),
+      survey_date:     find('survey date','date'),
+      best_time:       find('best time','timing','follow'),
+      health:          find('health'),
+      tobacco:         find('tobacco'),
+      notes:           find('notes'),
+    };
+
+    // ── Format a value based on the target column's TYPE ──────
+    // This is the critical fix: Monday rejects column_values where the
+    // shape doesn't match the column type (e.g. sending a plain string
+    // to a "status" column, or a number to a "text" column). When ANY
+    // column value is malformed, create_item still creates the item
+    // (so the name/summary appears) but ALL column_values are dropped
+    // and an `errors` array is returned alongside the item id.
+    function formatValue(col, rawValue) {
+      if (rawValue === undefined || rawValue === null || rawValue === '') return undefined;
+      switch (col.type) {
+        case 'text':
+        case 'long_text':
+          return String(rawValue);
+        case 'numbers':
+          { const n = parseFloat(String(rawValue).replace(/[^0-9.\-]/g,'')); return isNaN(n) ? undefined : n; }
+        case 'status':
+        case 'dropdown':
+          // status/dropdown columns require { label: "..." } and the label
+          // must already exist as an option on the column, or Monday errors.
+          return { label: String(rawValue) };
+        case 'date':
+          return { date: rawValue };
+        case 'phone':
+          return { phone: String(rawValue).replace(/\D/g,''), countryShortName: 'US' };
+        case 'email':
+          return { email: String(rawValue), text: String(rawValue) };
+        case 'checkbox':
+          return { checked: !!rawValue };
+        default:
+          // Unknown/unsupported type — try plain text fallback
+          return String(rawValue);
+      }
+    }
+
+    const rawValues = {
+      first_name:      opts.firstName,
+      last_name:       opts.lastName || '',
+      phone:           opts.phone,
+      email:           opts.email,
+      profile:         opts.profileLabel,
+      budget:          opts.budget,
+      goals:           opts.goals,
+      referring_agent: opts.agentRef || 'direct',
+      source:          opts.sourceLabel,
+      survey_date:     today,
+      best_time:       opts.timing,
+      health:          opts.health,
+      tobacco:         opts.tobacco,
+      notes:           opts.notes,
+    };
+
+    const cv = {};
+    const skipped = [];
+    for (const [key, col] of Object.entries(colMap)) {
+      if (!col) { skipped.push(key + ' (no matching column found)'); continue; }
+      const formatted = formatValue(col, rawValues[key]);
+      if (formatted === undefined) continue; // empty value, skip silently
+      cv[col.id] = formatted;
+    }
+    if (skipped.length) {
+      console.warn('[Survey→Monday] Some fields have no matching column on the board:', skipped.join(', '));
+    }
+
+    const q = `mutation($cv: JSON!) {
+      create_item(
+        board_id: ${boardId},
+        item_name: ${JSON.stringify(itemName)},
+        column_values: $cv
+      ) { id }
+    }`;
+
+    const result = await mondayQuery(q, { cv: JSON.stringify(cv) });
+
+    if (result?.errors) {
+      console.error('[Survey→Monday] create_item returned errors (item may have been created WITHOUT column data):', result.errors);
+      // If the error mentions an invalid status/dropdown label, the cached column
+      // metadata may be stale (e.g. label doesn't exist as an option yet).
+      // Clear the cache so the next submission re-fetches fresh column definitions.
+      localStorage.removeItem(cacheKey);
+    } else if (result?.data?.create_item?.id) {
+      console.log('[Survey→Monday] Item created:', result.data.create_item.id, 'with', Object.keys(cv).length, 'column values');
+    } else {
+      console.warn('[Survey→Monday] Unexpected response (no errors, no item id):', result);
+    }
+  } catch(e) {
+    console.error('[Survey→Monday] writeSurveyToMonday threw:', e);
+  }
+}
+
+function submit() {
+  const fname = document.getElementById('s-fname').value.trim();
+  const phone = document.getElementById('s-phone').value.trim();
+  const email = document.getElementById('s-email').value.trim();
+  if (!fname || !phone || !email) { alert('Please fill in name, phone, and email to continue.'); return; }
+
+  // Save to localStorage for analytics
+  const lead = {
+    type:'employer_iul_survey', source:'Employer vs IUL Survey',
+    firstName: fname, lastName: document.getElementById('s-lname').value,
+    phone, email,
+    age: document.getElementById('s-age').value,
+    tobacco: document.getElementById('s-tobacco').value,
+    answers: { ...answers },
+    timestamp: new Date().toISOString(),
+  };
+  try {
+    const existing = JSON.parse(localStorage.getItem('ea_leads')||'[]');
+    existing.push(lead);
+    localStorage.setItem('ea_leads', JSON.stringify(existing));
+  } catch(e){}
+
+  // Send to Make.com
+  const params = new URLSearchParams(location.search);
+  const agentId = params.get('agent') || '';
+  const payload = { ...lead, referringAgent: agentId };
+  fetch('https://hook.us2.make.com/jky3rg3jsql0r8pp9d7v6d1aclvblvu4', {
+    method:'POST', mode:'no-cors', body:JSON.stringify(payload)
+  }).catch(()=>{});
+
+  // Write to shared Financial Surveys board on Monday.com
+  writeSurveyToMonday({
+    firstName: fname, lastName: lead.lastName, phone, email,
+    profileLabel: 'Employer vs IUL Survey',
+    sourceLabel: 'Employer vs IUL Survey',
+    agentRef: agentId,
+    goals: 'Goal: ' + (answers.q2||'') + ' | Tenure: ' + (answers.q3||''),
+    health: lead.tobacco === 'yes' ? 'Tobacco user' : '',
+    notes: 'Age: ' + (lead.age||'') + ' | Coverage aware: ' + (answers.q5||''),
+  });
+
+  showResult(fname, answers);
+}
+
+function showResult(fname, a) {
+  document.getElementById('step-7').classList.remove('active');
+  document.getElementById('step-result').classList.add('active');
+  document.getElementById('progress-fill').style.width = '100%';
+  document.getElementById('step-num').textContent = '7';
+  document.getElementById('step-pct').textContent = '100%';
+
+  // Build personalized result
+  const goal = a.q2;
+  const tenure = a.q3;
+  const aware = a.q5;
+  const personal = a.q4;
+  const budget = a.q6;
+
+  // Score toward IUL recommendation
+  let iulScore = 0;
+  if (goal === 'accumulate' || goal === 'ltc' || goal === 'legacy') iulScore += 3;
+  if (tenure === 'short' || tenure === 'unsure') iulScore += 2;
+  if (aware === 'no' || aware === 'partial') iulScore += 2;
+  if (personal === 'no') iulScore += 1;
+  if (budget === '100-200' || budget === '200-400' || budget === '400plus') iulScore += 1;
+
+  let icon, title, sub, cards;
+
+  if (iulScore >= 6) {
+    icon = '💡';
+    title = fname + ", there's a significant gap in your coverage.";
+    sub   = 'Your answers suggest your current employer plan may leave you exposed at retirement — and offers no wealth-building component. An IUL could close that gap significantly.';
+    cards = [
+      { label:'Your Situation', title:'Coverage Gap Detected', body:'Your employer plan ends or becomes expensive at retirement — right when your family needs it most. You have no personal policy to bridge that gap.', highlight:true },
+      { label:'Recommended Path', title:'Corebridge Value+ Protector or NLG FlexLife', body:'Based on your goal of ' + goalLabel(goal) + ' and your budget, a permanent IUL could provide both lifelong protection and ' + (goal==='accumulate'?'tax-free retirement income':goal==='ltc'?'chronic illness living benefits':'a tax-free legacy') + '.', highlight:true },
+      { label:'Next Step', title:'Free Personalized Illustration', body:'Your agent will run a real illustration using your age, budget, and health profile — showing projected cash values and death benefits over 20–30 years. No obligation.', highlight:false },
+    ];
+  } else if (iulScore >= 3) {
+    icon = '⚖️';
+    title = fname + ', your coverage has room to grow.';
+    sub   = 'You have some protection in place, but there are opportunities to build more permanent, portable coverage that works for you beyond your working years.';
+    cards = [
+      { label:'Your Situation', title:'Partial Coverage', body:'Your employer plan provides temporary protection, but it may not be enough to carry you through retirement. Adding a personal IUL creates a permanent backstop.', highlight:false },
+      { label:'Strategy', title:'Layer Your Coverage', body:"Keep your employer plan for its low cost and guaranteed issue. Add an IUL to build cash value and ensure you have coverage that doesn't depend on your job status.", highlight:true },
+      { label:'Next Step', title:"Let's Run the Numbers", body:'A 15-minute review with your Dynasty Builders agent will show you exactly how much permanent coverage your budget can support.', highlight:false },
+    ];
+  } else {
+    icon = '✅';
+    title = fname + ", you're on a solid foundation.";
+    sub   = 'Your current situation is reasonably well-protected. But there are still optimizations worth exploring — especially as your income and family needs grow.';
+    cards = [
+      { label:'Your Situation', title:'Well Covered — For Now', body:'Your employer plan and personal coverage together provide solid short-term protection. The question is whether it will still be adequate at retirement.', highlight:false },
+      { label:'Opportunity', title:'Cash Value Optimization', body:'Even with solid protection, an IUL can add a tax-advantaged savings layer that compounds over time — giving you supplemental retirement income on top of your 401(k).', highlight:false },
+      { label:'Next Step', title:'Optional Review', body:'A 15-minute check-in can confirm whether your coverage levels match your income, family size, and retirement timeline.', highlight:false },
+    ];
+  }
+
+  document.getElementById('result-icon').textContent = icon;
+  document.getElementById('result-title').textContent = title;
+  document.getElementById('result-sub').textContent = sub;
+  document.getElementById('result-cards').innerHTML = cards.map(c => `
+    <div class="result-card ${c.highlight?'highlight':''}">
+      <div class="rc-label">${c.label}</div>
+      <div class="rc-title">${c.title}</div>
+      <div class="rc-body">${c.body}</div>
+    </div>`).join('');
+
+  // Update CTA link with agent param
+  const params2 = new URLSearchParams(location.search);
+  const agentId = params2.get('agent') || '';
+  const scheduleLinks = document.querySelectorAll('a[href*="schedule-1on1"]');
+  scheduleLinks.forEach(a => {
+    if (agentId) a.href = 'schedule-1on1.html?agent=' + encodeURIComponent(agentId) + '&type=review';
+  });
+}
+
+function goalLabel(g) {
+  return { protection:'family protection', accumulate:'wealth accumulation', ltc:'long-term care protection', legacy:'legacy planning' }[g] || 'your goals';
+}
+</script>
+</body>
+</html>

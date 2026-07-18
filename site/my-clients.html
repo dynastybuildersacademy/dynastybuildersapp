@@ -1,0 +1,1839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Clients & Points — Dynasty Builders Academy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0A1628;--navy2:#0F1E38;--navy3:#132240;--navy4:#1A2E50;
+  --gold:#C9A84C;--gold2:#E8C97A;--gold-dim:rgba(201,168,76,.12);
+  --green:#27AE60;--green2:#2DCA73;--green-dim:rgba(39,174,96,.1);
+  --blue:#3498DB;--blue2:#5DADE2;--blue-dim:rgba(52,152,219,.1);
+  --purple:#9B59B6;--orange:#E67E22;--red:#E05252;
+  --slate:#6B7C93;--cream:#FAF6EE;--border:rgba(201,168,76,.2);--bs:rgba(255,255,255,.06);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);min-height:100vh;}
+.bg{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 70% 50% at 15% 20%,rgba(52,152,219,.05),transparent 55%),
+  radial-gradient(ellipse 50% 70% at 85% 80%,rgba(201,168,76,.05),transparent 60%),
+  linear-gradient(160deg,#0A1628,#0E1C35 50%,#0A1628);}
+.bgrid{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:linear-gradient(rgba(201,168,76,.03) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(201,168,76,.03) 1px,transparent 1px);
+  background-size:60px 60px;}
+.page{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:24px 18px 72px;}
+
+/* HEADER */
+.hdr{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:22px;}
+.hl{display:flex;align-items:center;gap:14px;}
+.shield{width:46px;height:46px;border-radius:10px;background:linear-gradient(135deg,var(--gold),var(--gold2));
+  display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 4px 16px rgba(201,168,76,.25);}
+.hdr-title{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:800;color:var(--cream);letter-spacing:.2px;}
+.hdr-sub{font-size:12px;color:var(--slate);letter-spacing:.3px;margin-top:2px;}
+.hr{display:flex;gap:8px;flex-wrap:wrap;}
+.btn{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:.3px;
+  padding:9px 16px;border-radius:5px;border:1px solid var(--border);background:var(--navy3);color:var(--cream);
+  cursor:pointer;transition:.15s;text-decoration:none;display:inline-flex;align-items:center;gap:6px;}
+.btn:hover{border-color:var(--gold);transform:translateY(-1px);}
+.btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--navy);border:none;}
+.btn-gold:hover{box-shadow:0 4px 16px rgba(201,168,76,.35);}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--slate);}
+.btn-outline{background:transparent;border:1px solid var(--blue2);color:var(--blue2);}
+
+/* SUMMARY STRIP */
+.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
+@media(max-width:760px){.summary{grid-template-columns:repeat(2,1fr);}}
+.sum-card{background:var(--navy3);border:1px solid var(--border);border-radius:8px;padding:14px 16px;}
+.sum-label{font-size:10px;color:var(--slate);text-transform:uppercase;letter-spacing:.1em;font-weight:700;margin-bottom:6px;}
+.sum-val{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:800;color:var(--gold);}
+.sum-val.green{color:var(--green2);}
+.sum-val.blue{color:var(--blue2);}
+
+/* TOOLBAR */
+.toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:14px;}
+.search-box{background:var(--navy);border:1px solid var(--border);color:var(--cream);font-size:13px;
+  padding:9px 14px;border-radius:5px;outline:none;width:240px;font-family:'Barlow',sans-serif;}
+.search-box::placeholder{color:var(--slate);}
+.sort-select{background:var(--navy);border:1px solid var(--border);color:var(--cream);font-size:12px;
+  padding:9px 12px;border-radius:5px;outline:none;font-family:'Barlow',sans-serif;cursor:pointer;}
+.filter-row{display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap;margin-bottom:16px;
+  background:var(--navy3);border:1px solid var(--border);border-radius:8px;padding:14px 16px;}
+.filter-group{display:flex;flex-direction:column;gap:5px;}
+.filter-label{font-size:10px;color:var(--slate);text-transform:uppercase;letter-spacing:.08em;font-weight:700;}
+.filter-row select#filter-agent{min-width:220px;}
+
+/* TABLE */
+.tbl-card{background:var(--navy3);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+table{width:100%;border-collapse:collapse;}
+thead th{background:var(--navy4);font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.08em;color:var(--gold2);text-align:left;padding:12px 14px;
+  border-bottom:1px solid var(--border);white-space:nowrap;}
+tbody td{padding:11px 14px;font-size:13px;border-bottom:1px solid rgba(201,168,76,.08);vertical-align:middle;}
+tbody tr:hover{background:rgba(201,168,76,.04);}
+tbody tr:last-child td{border-bottom:none;}
+.client-name{font-weight:600;color:var(--cream);}
+.client-sub{font-size:11px;color:var(--slate);margin-top:1px;}
+.pts-val{font-family:'DM Mono',monospace;font-weight:600;color:var(--gold2);}
+.pts-val.zero{color:var(--slate);}
+.status-pill{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+  padding:3px 9px;border-radius:3px;margin:1px 2px 1px 0;}
+.st-inforce,.st-issued{background:var(--green-dim);color:var(--green2);border:1px solid rgba(39,174,96,.3);}
+.st-submitted,.st-pending,.st-approved{background:rgba(201,168,76,.1);color:var(--gold2);border:1px solid rgba(201,168,76,.3);}
+.st-incomplete{background:rgba(230,126,34,.1);color:var(--orange);border:1px solid rgba(230,126,34,.3);}
+.st-closed,.st-withdrawn,.st-rejected{background:rgba(224,82,82,.1);color:var(--red);border:1px solid rgba(224,82,82,.3);}
+.contact-cell{font-size:12px;color:var(--slate);}
+.contact-cell a{color:var(--blue2);text-decoration:none;}
+.empty-row td{text-align:center;padding:36px 14px;color:var(--slate);font-size:13px;}
+.del-btn{background:transparent;border:none;color:var(--slate);cursor:pointer;font-size:15px;padding:4px 6px;
+  border-radius:4px;transition:.15s;}
+.del-btn:hover{color:var(--red);background:rgba(224,82,82,.1);}
+.manual-tag{font-size:9px;color:var(--blue2);background:var(--blue-dim);border:1px solid rgba(52,152,219,.3);
+  padding:2px 6px;border-radius:3px;margin-left:6px;font-weight:700;letter-spacing:.04em;}
+.vt-btn{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;padding:9px 18px;
+  border-radius:5px;border:1px solid var(--border);background:var(--navy3);color:var(--slate);cursor:pointer;transition:.15s;}
+.vt-btn.active{background:var(--gold-dim);border-color:var(--gold);color:var(--gold2);}
+.vt-btn:hover{border-color:var(--gold);}
+.src-tag{font-size:9px;font-weight:700;letter-spacing:.04em;padding:2px 6px;border-radius:3px;margin-left:6px;}
+.src-monday{color:var(--green2);background:var(--green-dim);border:1px solid rgba(39,174,96,.3);}
+.spinner{display:inline-block;width:13px;height:13px;border:2px solid rgba(201,168,76,.25);
+  border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(5,12,24,.75);z-index:50;display:none;
+  align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.show{display:flex;}
+.modal{background:var(--navy3);border:1px solid var(--border);border-radius:12px;max-width:480px;width:100%;
+  padding:26px;box-shadow:0 20px 60px rgba(0,0,0,.5);}
+.modal-title{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;color:var(--gold2);margin-bottom:4px;}
+.modal-sub{font-size:12px;color:var(--slate);margin-bottom:18px;}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;
+  letter-spacing:.06em;margin-bottom:6px;}
+.field input,.field select{width:100%;background:var(--navy);border:1px solid var(--border);color:var(--cream);
+  font-size:14px;padding:10px 12px;border-radius:6px;outline:none;font-family:'Barlow',sans-serif;}
+.field input:focus,.field select:focus{border-color:var(--gold);}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;}
+.btn-cancel{background:transparent;border:1px solid var(--border);color:var(--slate);}
+.field-hint{font-size:10px;color:var(--slate);margin-top:4px;}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--navy4);border:1px solid var(--gold);
+  color:var(--cream);padding:12px 20px;border-radius:8px;font-size:13px;font-weight:600;z-index:100;
+  box-shadow:0 8px 24px rgba(0,0,0,.4);transform:translateY(20px);opacity:0;transition:.25s;}
+.toast.show{transform:translateY(0);opacity:1;}
+
+@media(max-width:700px){
+  .tbl-card{overflow-x:auto;}
+  table{min-width:680px;}
+}
+</style>
+</head>
+<body>
+<div class="bg"></div><div class="bgrid"></div>
+<div class="page">
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hl">
+    <div class="shield">📊</div>
+    <div>
+      <div class="hdr-title">My Clients &amp; Points</div>
+      <div class="hdr-sub">// Personal Production Tracker · Submitted &amp; Total Points by Client</div>
+    </div>
+  </div>
+  <div class="hr">
+    <button class="btn btn-gold" onclick="openAddModal()">+ Add Manually</button>
+    <button class="btn btn-outline" onclick="syncFromMonday()" id="sync-btn">☁ Sync from Monday.com</button>
+    <a href="promotions.html" class="btn btn-ghost">🏆 Promotion Path</a>
+    <a href="hub.html" class="btn btn-ghost">← Hub</a>
+  </div>
+</div>
+
+<div id="sync-status" style="display:none;margin-bottom:16px;font-size:12px;color:var(--slate);background:var(--navy3);border:1px solid var(--border);border-radius:6px;padding:10px 14px;"></div>
+
+<!-- TYPE TOGGLE -->
+<div class="view-toggle" style="display:flex;gap:8px;margin-bottom:16px;">
+  <button class="vt-btn active" id="vt-clients" onclick="setView('clients',this)">👤 Clients</button>
+  <button class="vt-btn" id="vt-recruits" onclick="setView('recruits',this)">🤝 Recruits</button>
+</div>
+
+<!-- SUMMARY -->
+<div class="summary" id="summary-clients">
+  <div class="sum-card">
+    <div class="sum-label">Total Clients</div>
+    <div class="sum-val" id="sum-clients">0</div>
+  </div>
+  <div class="sum-card">
+    <div class="sum-label">Total Policies</div>
+    <div class="sum-val blue" id="sum-policies">0</div>
+  </div>
+  <div class="sum-card">
+    <div class="sum-label">Submitted Points</div>
+    <div class="sum-val" id="sum-submitted">0</div>
+  </div>
+  <div class="sum-card">
+    <div class="sum-label">Total Points</div>
+    <div class="sum-val green" id="sum-total">0</div>
+  </div>
+</div>
+<div class="summary" id="summary-recruits" style="display:none;">
+  <div class="sum-card">
+    <div class="sum-label">Total Recruits</div>
+    <div class="sum-val" id="sum-recruits">0</div>
+  </div>
+  <div class="sum-card">
+    <div class="sum-label">Licensed</div>
+    <div class="sum-val green" id="sum-licensed">0</div>
+  </div>
+  <div class="sum-card">
+    <div class="sum-label">In Progress</div>
+    <div class="sum-val blue" id="sum-inprogress">0</div>
+  </div>
+  <div class="sum-card">
+    <div class="sum-label">This Month</div>
+    <div class="sum-val" id="sum-thismonth">0</div>
+  </div>
+</div>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <input type="text" class="search-box" id="search-box" placeholder="Search name…" oninput="render()">
+  <select class="sort-select" id="sort-select" onchange="render()">
+    <option value="submitted-desc">Sort: Submitted Points (high → low)</option>
+    <option value="submitted-asc">Sort: Submitted Points (low → high)</option>
+    <option value="total-desc">Sort: Total Points (high → low)</option>
+    <option value="name-asc">Sort: Name (A → Z)</option>
+    <option value="date-desc">Sort: Most Recent Submission</option>
+  </select>
+</div>
+
+<!-- DOWNLINE + DATE FILTERS -->
+<div class="filter-row">
+  <div class="filter-group">
+    <label class="filter-label">Agent</label>
+    <select class="sort-select" id="filter-agent" onchange="render()">
+      <option value="__all__">All in my downline</option>
+    </select>
+  </div>
+  <div class="filter-group">
+    <label class="filter-label">From</label>
+    <input type="date" class="search-box" id="filter-date-from" onchange="render()" style="width:150px;">
+  </div>
+  <div class="filter-group">
+    <label class="filter-label">To</label>
+    <input type="date" class="search-box" id="filter-date-to" onchange="render()" style="width:150px;">
+  </div>
+  <button class="btn btn-ghost" id="filter-clear-btn" onclick="clearFilters()" style="align-self:flex-end;">✕ Clear filters</button>
+</div>
+
+<!-- CLIENTS TABLE -->
+<div class="tbl-card" id="table-clients">
+  <table>
+    <thead>
+      <tr>
+        <th>Client</th>
+        <th>Status</th>
+        <th>Submitted Pts</th>
+        <th>Total Pts</th>
+        <th>Submission Date</th>
+        <th>Contact</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody id="tbl-body"></tbody>
+  </table>
+</div>
+
+<!-- RECRUITS TABLE -->
+<div class="tbl-card" id="table-recruits" style="display:none;">
+  <table>
+    <thead>
+      <tr>
+        <th>Recruit</th>
+        <th>Stage</th>
+        <th>Enrollment Date</th>
+        <th>Contact</th>
+        <th>Source</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody id="tbl-body-recruits"></tbody>
+  </table>
+</div>
+
+</div>
+
+<!-- ADD MODAL -->
+<div class="modal-overlay" id="add-modal">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">Add a Client</div>
+    <div class="modal-sub" id="modal-sub">Manually log a new entry. This is stored locally and won't appear on the official PHP leaderboard unless it's also submitted through normal channels.</div>
+
+    <div class="field">
+      <label>Entry Type</label>
+      <select id="f-type" onchange="toggleEntryType()">
+        <option value="client">Client (policy/points)</option>
+        <option value="recruit">Recruit (new agent)</option>
+      </select>
+    </div>
+
+    <div class="field" id="f-owner-field">
+      <label>Credit To</label>
+      <select id="f-owner"></select>
+    </div>
+
+    <div class="field">
+      <label id="f-name-label">Client Name *</label>
+      <input type="text" id="f-name" placeholder="e.g. Jane Doe">
+    </div>
+
+    <div id="client-fields">
+      <div class="field-row">
+        <div class="field">
+          <label>Submitted Points</label>
+          <input type="number" id="f-submitted" placeholder="0.00" step="0.01">
+        </div>
+        <div class="field">
+          <label>Total Points</label>
+          <input type="number" id="f-total" placeholder="0.00" step="0.01">
+        </div>
+      </div>
+      <div class="field">
+        <label>Status</label>
+        <select id="f-status">
+          <option value="SUBMITTED">Submitted</option>
+          <option value="PENDING">Pending</option>
+          <option value="APPROVED">Approved</option>
+          <option value="ISSUED">Issued</option>
+          <option value="INFORCE">Inforce</option>
+          <option value="INCOMPLETE">Incomplete</option>
+          <option value="CLOSED">Closed</option>
+          <option value="WITHDRAWN">Withdrawn</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="recruit-fields" style="display:none;">
+      <div class="field">
+        <label>Stage</label>
+        <select id="f-stage">
+          <option value="NEW LEAD">New Lead</option>
+          <option value="CONTACTED">Contacted</option>
+          <option value="INTERVIEW SET">Interview Set</option>
+          <option value="LICENSING">Licensing</option>
+          <option value="LICENSED">Licensed</option>
+          <option value="ACTIVE">Active Agent</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field">
+      <label id="f-date-label">Submission Date</label>
+      <input type="date" id="f-date">
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>Phone</label>
+        <input type="text" id="f-phone" placeholder="(optional)">
+      </div>
+      <div class="field">
+        <label>Email</label>
+        <input type="text" id="f-email" placeholder="(optional)">
+      </div>
+    </div>
+
+    <div class="field-hint" id="modal-hint">Policy count and carrier will show as "Manually Added" until synced with Monday.com.</div>
+    <div class="modal-actions">
+      <button class="btn btn-cancel" onclick="closeAddModal()">Cancel</button>
+      <button class="btn btn-gold" onclick="saveNewEntry()">Add</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="auth.js?v=20260713"></script>
+<script>
+AUTH.require('my-clients.html');
+const session = AUTH.getSession();
+
+const STORE_KEY = 'dba_my_clients_' + session.agentId;
+const RECRUIT_STORE_KEY = 'dba_my_recruits_' + session.agentId;
+
+// ── SEED DATA (from PolicyDetails-personal export, 01/01–06/17/2026) ──
+const SEED_CLIENTS = [
+  {
+    "client": "Michael Everest",
+    "policies": 1,
+    "submittedPoints": 10000.0,
+    "totalPoints": 10000.0,
+    "statuses": [
+      "SUBMITTED"
+    ],
+    "latestStatusDate": "05/18/2026",
+    "carriers": [
+      "Nationwide",
+      "Pacific Life"
+    ],
+    "phone": "2134070383",
+    "email": "dr.meverest@residentsmedical.com"
+  },
+  {
+    "client": "Jacinta Abanobi",
+    "policies": 2,
+    "submittedPoints": 6893.36,
+    "totalPoints": 6893.36,
+    "statuses": [
+      "ISSUED",
+      "SUBMITTED"
+    ],
+    "latestStatusDate": "06/17/2026",
+    "carriers": [
+      "Foresters Financial ",
+      "National Life Group"
+    ],
+    "phone": "15625896701",
+    "email": "ngozichim048@gmail.com"
+  },
+  {
+    "client": "Concilia Madu",
+    "policies": 1,
+    "submittedPoints": 5000.0,
+    "totalPoints": 5000.0,
+    "statuses": [
+      "INFORCE"
+    ],
+    "latestStatusDate": "06/13/2026",
+    "carriers": [
+      "National Life Group"
+    ],
+    "phone": "14243231561",
+    "email": "conciliamadu@yahoo.com"
+  },
+  {
+    "client": "Fidelis Orji",
+    "policies": 2,
+    "submittedPoints": 4974.24,
+    "totalPoints": 4974.24,
+    "statuses": [
+      "INFORCE",
+      "ISSUED"
+    ],
+    "latestStatusDate": "06/17/2026",
+    "carriers": [
+      "National Life Group"
+    ],
+    "phone": "4243812069",
+    "email": "orjifidelischinweike@gmail.com"
+  },
+  {
+    "client": "Charles Sah",
+    "policies": 2,
+    "submittedPoints": 4930.0,
+    "totalPoints": 4930.0,
+    "statuses": [
+      "INCOMPLETE",
+      "INFORCE"
+    ],
+    "latestStatusDate": "02/22/2026",
+    "carriers": [
+      "National Life Group"
+    ],
+    "phone": "2402804516",
+    "email": "sahcharles@yahoo.com"
+  },
+  {
+    "client": "Ini-Obong Uko",
+    "policies": 3,
+    "submittedPoints": 4827.6,
+    "totalPoints": 4827.6,
+    "statuses": [
+      "INCOMPLETE",
+      "INFORCE",
+      "PENDING"
+    ],
+    "latestStatusDate": "06/16/2026",
+    "carriers": [
+      "Foresters Financial ",
+      "National Life Group"
+    ],
+    "phone": "2404869453",
+    "email": "inidmstrel@yahoo.com"
+  },
+  {
+    "client": "George Nwaeke",
+    "policies": 2,
+    "submittedPoints": 4158.72,
+    "totalPoints": 4158.72,
+    "statuses": [
+      "INCOMPLETE",
+      "INFORCE"
+    ],
+    "latestStatusDate": "03/15/2026",
+    "carriers": [
+      "National Life Group"
+    ],
+    "phone": "13239966935",
+    "email": "georgrnwaeke110@gmail.com"
+  },
+  {
+    "client": "Godis Chukwukere",
+    "policies": 2,
+    "submittedPoints": 4126.56,
+    "totalPoints": 4126.56,
+    "statuses": [
+      "INCOMPLETE",
+      "INFORCE"
+    ],
+    "latestStatusDate": "05/08/2026",
+    "carriers": [
+      "National Life Group"
+    ],
+    "phone": "3018757073",
+    "email": "godischukwukere@engineer.com"
+  },
+  {
+    "client": "Agata Everest",
+    "policies": 1,
+    "submittedPoints": 3725.0,
+    "totalPoints": 3725.0,
+    "statuses": [
+      "INFORCE"
+    ],
+    "latestStatusDate": "02/18/2026",
+    "carriers": [
+      "Nationwide"
+    ],
+    "phone": "2134070383",
+    "email": "dr.meverest@residentsmedical.com"
+  },
+  {
+    "client": "Eke Agidi",
+    "policies": 1,
+    "submittedPoints": 3520.32,
+    "totalPoints": 3520.32,
+    "statuses": [
+      "INCOMPLETE"
+    ],
+    "latestStatusDate": "06/08/2026",
+    "carriers": [
+      "National Life Group"
+    ],
+    "phone": "8483656454",
+    "email": "ekeagid@gmail.com"
+  },
+  {
+    "client": "Jude Anyanwu",
+    "policies": 1,
+    "submittedPoints": 3507.6,
+    "totalPoints": 3507.6,
+    "statuses": [
+      "INFORCE"
+    ],
+    "latestStatusDate": "02/08/2026",
+    "carriers": [
+      "National Life Group"
+    ],
+    "phone": "2405711138",
+    "email": "jcanyanwu01@yahoo.com"
+  },
+  {
+    "client": "Francis Nwadiba",
+    "policies": 2,
+    "submittedPoints": 3490.14,
+    "totalPoints": 3490.14,
+    "statuses": [
+      "CLOSED",
+      "PENDING"
+    ],
+    "latestStatusDate": "06/15/2026",
+    "carriers": [
+      "National Life Group"
+    ],
+    "phone": "4244452758",
+    "email": "meetfarco2020@gmail.com"
+  },
+  {
+    "client": "Regina Urigwe",
+    "policies": 1,
+    "submittedPoints": 3327.0,
+    "totalPoints": 3327.0,
+    "statuses": [
+      "PENDING"
+    ],
+    "latestStatusDate": "05/06/2026",
+    "carriers": [
+      "National Life Group"
+    ],
+    "phone": "4042711895",
+    "email": "reginaurigwe@gmail.com"
+  },
+  {
+    "client": "Oredola Akingbemi",
+    "policies": 1,
+    "submittedPoints": 3195.6,
+    "totalPoints": 3195.6,
+    "statuses": [
+      "INFORCE"
+    ],
+    "latestStatusDate": "05/15/2026",
+    "carriers": [
+      "National Life Group"
+    ],
+    "phone": "13234766069",
+    "email": "akingbemioredola@gmail.com"
+  },
+  {
+    "client": "Joy Mokogwu",
+    "policies": 1,
+    "submittedPoints": 2884.8,
+    "totalPoints": 2884.8,
+    "statuses": [
+      "INFORCE"
+    ],
+    "latestStatusDate": "06/13/2026",
+    "carriers": [
+      "National Life Group"
+    ],
+    "phone": "9096822392",
+    "email": "mokogwuj@gmail.com"
+  },
+  {
+    "client": "Jude Akalawu",
+    "policies": 2,
+    "submittedPoints": 2786.76,
+    "totalPoints": 2786.76,
+    "statuses": [
+      "INFORCE",
+      "ISSUED"
+    ],
+    "latestStatusDate": "06/17/2026",
+    "carriers": [
+      "National Life Group"
+    ],
+    "phone": "3104046508",
+    "email": "judeakalawu01@gmail.com"
+  },
+  {
+    "client": "Tornike Tsagareishvili",
+    "policies": 1,
+    "submittedPoints": 2676.96,
+    "totalPoints": 2676.96,
+    "statuses": [
+      "INFORCE"
+    ],
+    "latestStatusDate": "05/27/2026",
+    "carriers": [
+      "National Life Group"
+    ],
+    "phone": "13109935746",
+    "email": "tsagarat010@gmail.com"
+  },
+  {
+    "client": "Adewale Taiwo",
+    "policies": 1,
+    "submittedPoints": 2626.92,
+    "totalPoints": 2590.7,
+    "statuses": [
+      "PENDING"
+    ],
+    "latestStatusDate": "05/27/2026",
+    "carriers": [
+      "AIG"
+    ],
+    "phone": "",
+    "email": "at397@aol.com"
+  },
+  {
+    "client": "Maurice Banks",
+    "policies": 1,
+    "submittedPoints": 2570.4,
+    "totalPoints": 2570.4,
+    "statuses": [
+      "CLOSED"
+    ],
+    "latestStatusDate": "03/23/2026",
+    "carriers": [
+      "National Life Group"
+    ],
+    "phone": "5109413668",
+    "email": "Gracemox6@gmail.com"
+  },
+  {
+    "client": "Chinonyerem Ekechukwu",
+    "policies": 2,
+    "submittedPoints": 2422.32,
+    "totalPoints": 2422.32,
+    "statuses": [
+      "INFORCE"
+    ],
+    "latestStatusDate": "02/22/2026",
+    "carriers": [
+      "National Life Group"
+    ],
+    "phone": "3239966935",
+    "email": "Chinonyeeke23@gmail.com"
+  },
+  {
+    "client": "Esther Nwokoji",
+    "policies": 1,
+    "submittedPoints": 2284.8,
+    "totalPoints": 2284.8,
+    "statuses": [
+      "INFORCE"
+    ],
+    "latestStatusDate": "02/15/2026",
+    "carriers": [
+      "National Life Group"
+    ],
+    "phone": "13109978256",
+    "email": "esthernn777@gmail.com"
+  },
+  {
+    "client": "Ayotunde Sodeke",
+    "policies": 1,
+    "submittedPoints": 2261.52,
+    "totalPoints": 2261.52,
+    "statuses": [
+      "INFORCE"
+    ],
+    "latestStatusDate": "04/12/2026",
+    "carriers": [
+      "National Life Group"
+    ],
+    "phone": "13236757364",
+    "email": "sodekeayotunde@gmail.com"
+  },
+  {
+    "client": "Constance Codling",
+    "policies": 1,
+    "submittedPoints": 2255.64,
+    "totalPoints": 2255.64,
+    "statuses": [
+      "INFORCE"
+    ],
+    "latestStatusDate": "06/17/2026",
+    "carriers": [
+      "Mutual of Omaha"
+    ],
+    "phone": "2029753217",
+    "email": "PHPDYNASTYNEWBUSINESS@GMAIL.COM"
+  },
+  {
+    "client": "Oluwabukola Osadua",
+    "policies": 1,
+    "submittedPoints": 2205.96,
+    "totalPoints": 2205.96,
+    "statuses": [
+      "INFORCE"
+    ],
+    "latestStatusDate": "02/25/2026",
+    "carriers": [
+      "National Life Group"
+    ],
+    "phone": "13107209156",
+    "email": "ojahney11@gmail.com"
+  },
+  {
+    "client": "Horacio Gutierrez",
+    "policies": 3,
+    "submittedPoints": 2184.84,
+    "totalPoints": 2607.36,
+    "statuses": [
+      "INCOMPLETE"
+    ],
+    "latestStatusDate": "05/12/2026",
+    "carriers": [
+      "AIG",
+      "National Life Group"
+    ],
+    "phone": "4242939533",
+    "email": "gutierrez.horacio75@gmail.com"
+  },
+  {
+    "client": "Ngozi Adaran",
+    "policies": 1,
+    "submittedPoints": 2107.2,
+    "totalPoints": 2107.2,
+    "statuses": [
+      "INCOMPLETE"
+    ],
+    "latestStatusDate": "03/16/2026",
+    "carriers": [
+      "National Life Group"
+    ],
+    "phone": "3108448987",
+    "email": "ngoziadaran@gmail.com"
+  },
+  {
+    "client": "Juliana Ezeuka",
+    "policies": 0,
+    "submittedPoints": 1798.2,
+    "totalPoints": 1798.2,
+    "statuses": [
+      "SUBMITTED"
+    ],
+    "latestStatusDate": "06/17/2026",
+    "carriers": [
+      "Foresters Financial "
+    ],
+    "phone": "",
+    "email": "juliezeuka@yahoo.com"
+  },
+  {
+    "client": "Love Anuakpado",
+    "policies": 1,
+    "submittedPoints": 1791.79,
+    "totalPoints": 1396.28,
+    "statuses": [
+      "APPROVED"
+    ],
+    "latestStatusDate": "04/20/2026",
+    "carriers": [
+      "AIG"
+    ],
+    "phone": "",
+    "email": "EMAI1_"
+  },
+  {
+    "client": "Manuel Aguilar",
+    "policies": 1,
+    "submittedPoints": 1681.92,
+    "totalPoints": 1681.92,
+    "statuses": [
+      "ISSUED"
+    ],
+    "latestStatusDate": "06/17/2026",
+    "carriers": [
+      "National Life Group"
+    ],
+    "phone": "5624864431",
+    "email": "aguilarmanuel245482@gmail.com"
+  },
+  {
+    "client": "Chimezie Mgbobile",
+    "policies": 2,
+    "submittedPoints": 1652.58,
+    "totalPoints": 1652.58,
+    "statuses": [
+      "INFORCE"
+    ],
+    "latestStatusDate": "02/08/2026",
+    "carriers": [
+      "National Life Group"
+    ],
+    "phone": "5014787215",
+    "email": "Brightstonex@gmail.com"
+  },
+  {
+    "client": "Lilly Uzondu-Umeojiako",
+    "policies": 1,
+    "submittedPoints": 1597.8,
+    "totalPoints": 1597.8,
+    "statuses": [
+      "INFORCE"
+    ],
+    "latestStatusDate": "06/13/2026",
+    "carriers": [
+      "National Life Group"
+    ],
+    "phone": "3235348102",
+    "email": "Ifylili12@gmail.com"
+  },
+  {
+    "client": "La Tasha Sheridan",
+    "policies": 1,
+    "submittedPoints": 1373.16,
+    "totalPoints": 1354.19,
+    "statuses": [
+      "INFORCE"
+    ],
+    "latestStatusDate": "02/05/2026",
+    "carriers": [
+      "AIG"
+    ],
+    "phone": "",
+    "email": "latasha29@gmail.com"
+  },
+  {
+    "client": "Peace Umeh",
+    "policies": 2,
+    "submittedPoints": 1288.84,
+    "totalPoints": 1288.84,
+    "statuses": [
+      "INFORCE"
+    ],
+    "latestStatusDate": "06/13/2026",
+    "carriers": [
+      "Fidelity & Guaranty Life",
+      "National Life Group"
+    ],
+    "phone": "5626449667",
+    "email": "pcumeh15@gmail.com"
+  },
+  {
+    "client": "Bridget Okonkwo",
+    "policies": 1,
+    "submittedPoints": 1128.0,
+    "totalPoints": 1128.0,
+    "statuses": [
+      "SUBMITTED"
+    ],
+    "latestStatusDate": "06/17/2026",
+    "carriers": [
+      "Foresters Financial "
+    ],
+    "phone": "3234815431",
+    "email": "mokogwuj@gmail.com"
+  },
+  {
+    "client": "Zoezita Holifield-Okine",
+    "policies": 1,
+    "submittedPoints": 1071.96,
+    "totalPoints": 1071.96,
+    "statuses": [
+      "INFORCE"
+    ],
+    "latestStatusDate": "03/08/2026",
+    "carriers": [
+      "National Life Group"
+    ],
+    "phone": "2532022472",
+    "email": "zoezita2014@yahoo.com"
+  },
+  {
+    "client": "Elie Nwokorie",
+    "policies": 1,
+    "submittedPoints": 1053.9,
+    "totalPoints": 1053.9,
+    "statuses": [
+      "INFORCE"
+    ],
+    "latestStatusDate": "05/20/2026",
+    "carriers": [
+      "Foresters Financial "
+    ],
+    "phone": "",
+    "email": "elieolu14@gmail.com"
+  },
+  {
+    "client": "Paul Agbor",
+    "policies": 1,
+    "submittedPoints": 794.28,
+    "totalPoints": 794.28,
+    "statuses": [
+      "INFORCE"
+    ],
+    "latestStatusDate": "04/28/2026",
+    "carriers": [
+      "National Life Group"
+    ],
+    "phone": "19493254607",
+    "email": "agborpaul260@gmail.com"
+  },
+  {
+    "client": "Priscilla Favela",
+    "policies": 1,
+    "submittedPoints": 552.48,
+    "totalPoints": 552.48,
+    "statuses": [
+      "INFORCE"
+    ],
+    "latestStatusDate": "04/23/2026",
+    "carriers": [
+      "National Life Group"
+    ],
+    "phone": "14242939533",
+    "email": "gutierrez.horacio75@gmail.com"
+  },
+  {
+    "client": "Kosisochi Wosuezi",
+    "policies": 1,
+    "submittedPoints": 531.72,
+    "totalPoints": 531.72,
+    "statuses": [
+      "INFORCE"
+    ],
+    "latestStatusDate": "06/06/2026",
+    "carriers": [
+      "National Life Group"
+    ],
+    "phone": "17735443775",
+    "email": "melasjj@gmail.com"
+  },
+  {
+    "client": "Victory George",
+    "policies": 1,
+    "submittedPoints": 426.48,
+    "totalPoints": 426.48,
+    "statuses": [
+      "INFORCE"
+    ],
+    "latestStatusDate": "02/22/2026",
+    "carriers": [
+      "National Life Group"
+    ],
+    "phone": "13239966935",
+    "email": "georgrnwaeke110@gmail.com"
+  },
+  {
+    "client": "Ermiyas Morris",
+    "policies": 1,
+    "submittedPoints": 392.88,
+    "totalPoints": 392.88,
+    "statuses": [
+      "INFORCE"
+    ],
+    "latestStatusDate": "04/02/2026",
+    "carriers": [
+      "National Life Group"
+    ],
+    "phone": "4242361481",
+    "email": "Bprecious34@gmail.com"
+  },
+  {
+    "client": "Princess Nwosu",
+    "policies": 1,
+    "submittedPoints": 340.13,
+    "totalPoints": 340.13,
+    "statuses": [
+      "ISSUED"
+    ],
+    "latestStatusDate": "06/17/2026",
+    "carriers": [
+      "National Life Group"
+    ],
+    "phone": "3102134063",
+    "email": "patience_ugboaja@yahoo.com"
+  },
+  {
+    "client": "Juana Favela De Gutierrez",
+    "policies": 4,
+    "submittedPoints": 290.16,
+    "totalPoints": 286.2,
+    "statuses": [
+      "INCOMPLETE"
+    ],
+    "latestStatusDate": "05/12/2026",
+    "carriers": [
+      "AIG"
+    ],
+    "phone": "42429395336",
+    "email": "gutierrez.horacio75@gmail.com"
+  },
+  {
+    "client": "Amaka Iruobe",
+    "policies": 1,
+    "submittedPoints": 0.0,
+    "totalPoints": 0.0,
+    "statuses": [
+      "SUBMITTED"
+    ],
+    "latestStatusDate": "06/16/2026",
+    "carriers": [
+      "National Life Group"
+    ],
+    "phone": "7024902725",
+    "email": "amakairuobe88@gmail.com"
+  },
+  {
+    "client": "Ada Anumudu",
+    "policies": 2,
+    "submittedPoints": 0.0,
+    "totalPoints": 0.0,
+    "statuses": [
+      "ISSUED",
+      "WITHDRAWN"
+    ],
+    "latestStatusDate": "06/17/2026",
+    "carriers": [
+      "Foresters Financial "
+    ],
+    "phone": "2916330310",
+    "email": "adachioma.anumudu@gmail.com"
+  },
+  {
+    "client": "Happy Imoni",
+    "policies": 1,
+    "submittedPoints": 0.0,
+    "totalPoints": 0.0,
+    "statuses": [
+      "INFORCE"
+    ],
+    "latestStatusDate": "06/07/2026",
+    "carriers": [
+      "Mutual of Omaha"
+    ],
+    "phone": "9097144089",
+    "email": "PHPDYNASTYNEWBUSINESS@GMAIL.COM"
+  },
+  {
+    "client": "Honorine Watti",
+    "policies": 1,
+    "submittedPoints": 0.0,
+    "totalPoints": 0.0,
+    "statuses": [
+      "WITHDRAWN"
+    ],
+    "latestStatusDate": "04/10/2026",
+    "carriers": [
+      "Foresters Financial "
+    ],
+    "phone": "9097431975",
+    "email": "wattihonorine@gmail.com"
+  },
+  {
+    "client": "Goodluck Nwaka",
+    "policies": 1,
+    "submittedPoints": 0.0,
+    "totalPoints": 0.0,
+    "statuses": [
+      "INFORCE"
+    ],
+    "latestStatusDate": "05/07/2026",
+    "carriers": [
+      "National Life Group"
+    ],
+    "phone": "13107069461",
+    "email": "cnwaka043@gmail.com"
+  },
+  {
+    "client": "Esther Onyenuchie",
+    "policies": 2,
+    "submittedPoints": 0.0,
+    "totalPoints": 0.0,
+    "statuses": [
+      "INFORCE",
+      "REJECTED BEFORE CARRIER"
+    ],
+    "latestStatusDate": "06/16/2026",
+    "carriers": [
+      "National Life Group"
+    ],
+    "phone": "6672315659",
+    "email": "axxtter@yah.com"
+  },
+  {
+    "client": "Emmanuel Nwokeji",
+    "policies": 1,
+    "submittedPoints": 0.0,
+    "totalPoints": 0.0,
+    "statuses": [
+      "PENDING"
+    ],
+    "latestStatusDate": "06/17/2026",
+    "carriers": [
+      "National Life Group"
+    ],
+    "phone": "4244565689",
+    "email": "necshagg@gmail.com"
+  },
+  {
+    "client": "Efemona Daniel",
+    "policies": 1,
+    "submittedPoints": 0.0,
+    "totalPoints": 0.0,
+    "statuses": [
+      "INFORCE"
+    ],
+    "latestStatusDate": "05/13/2026",
+    "carriers": [
+      "National Life Group"
+    ],
+    "phone": "19097144089",
+    "email": "monalois2000@yahoo.com"
+  },
+  {
+    "client": "Blessing Ekeanyanwu",
+    "policies": 0,
+    "submittedPoints": 0.0,
+    "totalPoints": 0.0,
+    "statuses": [
+      "SUBMITTED"
+    ],
+    "latestStatusDate": "04/17/2026",
+    "carriers": [
+      "Nationwide"
+    ],
+    "phone": "3038858080",
+    "email": "osondue@comcast.com"
+  },
+  {
+    "client": "Desiree Mena",
+    "policies": 1,
+    "submittedPoints": 0.0,
+    "totalPoints": 3286.56,
+    "statuses": [
+      "INCOMPLETE"
+    ],
+    "latestStatusDate": "06/08/2026",
+    "carriers": [
+      "AIG"
+    ],
+    "phone": "",
+    "email": "EMAI1_"
+  },
+  {
+    "client": "Mayah Thomsen",
+    "policies": 1,
+    "submittedPoints": 0.0,
+    "totalPoints": 0.0,
+    "statuses": [
+      "SUBMITTED"
+    ],
+    "latestStatusDate": "02/24/2026",
+    "carriers": [
+      "Foresters Financial "
+    ],
+    "phone": "3233835825",
+    "email": "mayahthomsen@gmail.com"
+  },
+  {
+    "client": "Kayode Dada",
+    "policies": 1,
+    "submittedPoints": 0.0,
+    "totalPoints": 0.0,
+    "statuses": [
+      "CLOSED"
+    ],
+    "latestStatusDate": "03/31/2026",
+    "carriers": [
+      "National Life Group"
+    ],
+    "phone": "7479987514",
+    "email": "brightkayode2000@gmail.com"
+  },
+  {
+    "client": "Joseph Ibezim",
+    "policies": 1,
+    "submittedPoints": 0.0,
+    "totalPoints": 0.0,
+    "statuses": [
+      "INFORCE"
+    ],
+    "latestStatusDate": "06/16/2026",
+    "carriers": [
+      "National Life Group"
+    ],
+    "phone": "4245093854",
+    "email": "josephibezim07@gmail.com"
+  },
+  {
+    "client": "Ivy Iheanyichukwu",
+    "policies": 2,
+    "submittedPoints": 0.0,
+    "totalPoints": 0.0,
+    "statuses": [
+      "APPROVED"
+    ],
+    "latestStatusDate": "06/17/2026",
+    "carriers": [
+      "National Life Group"
+    ],
+    "phone": "3109779610",
+    "email": "ivyiheayichukwu@yahoo.com"
+  },
+  {
+    "client": "Michael Ekwuazi",
+    "policies": 1,
+    "submittedPoints": 0.0,
+    "totalPoints": 0.0,
+    "statuses": [
+      "CLOSED"
+    ],
+    "latestStatusDate": "03/09/2026",
+    "carriers": [
+      "National Life Group"
+    ],
+    "phone": "4243474306",
+    "email": "monicaonyia23@gmail.com"
+  },
+  {
+    "client": "Nancy Chidebelu",
+    "policies": 2,
+    "submittedPoints": 0.0,
+    "totalPoints": 1914.72,
+    "statuses": [
+      "CLOSED"
+    ],
+    "latestStatusDate": "05/08/2026",
+    "carriers": [
+      "AIG",
+      "Foresters Financial "
+    ],
+    "phone": "98796286310",
+    "email": "chidebelunancy88@gmail.com"
+  },
+  {
+    "client": "Stella Udoh",
+    "policies": 1,
+    "submittedPoints": 0.0,
+    "totalPoints": 0.0,
+    "statuses": [
+      "ISSUED"
+    ],
+    "latestStatusDate": "06/17/2026",
+    "carriers": [
+      "National Life Group"
+    ],
+    "phone": "4244503394",
+    "email": "perfection4stella@gmail.com"
+  },
+  {
+    "client": "Uzoma Amaefula",
+    "policies": 1,
+    "submittedPoints": 0.0,
+    "totalPoints": 0.0,
+    "statuses": [
+      "INFORCE"
+    ],
+    "latestStatusDate": "03/29/2026",
+    "carriers": [
+      "National Life Group"
+    ],
+    "phone": "9517503727",
+    "email": "uzobeeke@yahoo.com"
+  }
+];
+
+let clients = [];
+let recruits = [];
+let currentView = 'clients';
+
+// Full downline (all levels) including self — index 0 is always the logged-in agent.
+const MY_DOWNLINE = (typeof getFullDownline === 'function') ? getFullDownline(session.agentId) : [];
+const MY_DOWNLINE_IDS = new Set(MY_DOWNLINE.map(a => a.id));
+
+function populateAgentFilter() {
+  const sel = document.getElementById('filter-agent');
+  if (!sel) return;
+  // Keep the "All" option, append one per downline agent (self first, then alphabetically).
+  const rest = MY_DOWNLINE.filter(a => a.id !== session.agentId).sort((a,b)=>a.name.localeCompare(b.name));
+  const ordered = [MY_DOWNLINE.find(a => a.id === session.agentId), ...rest].filter(Boolean);
+  ordered.forEach(a => {
+    const opt = document.createElement('option');
+    opt.value = a.id;
+    opt.textContent = a.id === session.agentId ? `${a.name} (me)` : a.name;
+    sel.appendChild(opt);
+  });
+}
+
+function clearFilters() {
+  document.getElementById('filter-agent').value = '__all__';
+  document.getElementById('filter-date-from').value = '';
+  document.getElementById('filter-date-to').value = '';
+  document.getElementById('search-box').value = '';
+  render();
+}
+
+function load() {
+  try {
+    const storedC = JSON.parse(localStorage.getItem(STORE_KEY) || 'null');
+    clients = (storedC && Array.isArray(storedC) && storedC.length)
+      ? storedC
+      : SEED_CLIENTS.map(c => ({ ...c, source:'seed', manual:false, ownerAgentId: session.agentId, ownerAgentName: session.name }));
+  } catch(e) {
+    clients = SEED_CLIENTS.map(c => ({ ...c, source:'seed', manual:false, ownerAgentId: session.agentId, ownerAgentName: session.name }));
+  }
+  try {
+    const storedR = JSON.parse(localStorage.getItem(RECRUIT_STORE_KEY) || 'null');
+    recruits = (storedR && Array.isArray(storedR)) ? storedR : [];
+  } catch(e) {
+    recruits = [];
+  }
+}
+
+function saveClients()  { localStorage.setItem(STORE_KEY, JSON.stringify(clients)); }
+function saveRecruits() { localStorage.setItem(RECRUIT_STORE_KEY, JSON.stringify(recruits)); }
+
+// ── VIEW TOGGLE ──────────────────────────────────────────────
+function setView(view, btn) {
+  currentView = view;
+  document.querySelectorAll('.vt-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('table-clients').style.display = view === 'clients' ? '' : 'none';
+  document.getElementById('table-recruits').style.display = view === 'recruits' ? '' : 'none';
+  document.getElementById('summary-clients').style.display = view === 'clients' ? '' : 'none';
+  document.getElementById('summary-recruits').style.display = view === 'recruits' ? '' : 'none';
+  document.getElementById('search-box').placeholder = view === 'clients' ? 'Search client name…' : 'Search recruit name…';
+  render();
+}
+
+// ── MONDAY.COM SYNC ──────────────────────────────────────────
+// Pulls clients from the Policy Applications board and recruits from the
+// Recruiting Pipeline board, matched against EVERY agent in the logged-in
+// agent's downline (not just themself), and tags each resulting row with
+// which downline agent it belongs to (ownerAgentId / ownerAgentName) so the
+// Agent filter dropdown can slice the data afterward.
+// Uses fuzzy column-title matching (no manual mapping step required).
+async function syncFromMonday() {
+  if (!AUTH.getMondayKey()) {
+    showToast('Connect your Monday.com API key first (Hub → Board Sync)');
+    return;
+  }
+  const btn = document.getElementById('sync-btn');
+  const statusEl = document.getElementById('sync-status');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Syncing…';
+  statusEl.style.display = 'block';
+  statusEl.textContent = `Fetching policies from Monday.com for you and your ${MY_DOWNLINE.length-1} downline agent${MY_DOWNLINE.length-1===1?'':'s'}…`;
+
+  try {
+    // Build a lookup so any matched item can be tagged with the owning agent.
+    // Matches on either the agent's full name (first-name substring match,
+    // same leniency as before) or their PHP code / agent ID.
+    const downlineByNameFrag = MY_DOWNLINE.map(a => ({
+      id: a.id, name: a.name,
+      firstFrag: (a.name||'').toLowerCase().split(' ')[0],
+      phpId: a.phpId || ''
+    }));
+    function matchDownlineAgent(agentNameRaw, agentIdRaw) {
+      const agentName = (agentNameRaw||'').toLowerCase();
+      const agentIdVal = (agentIdRaw||'').toLowerCase();
+      return downlineByNameFrag.find(a =>
+        (a.firstFrag && agentName.includes(a.firstFrag)) ||
+        (a.phpId && agentIdVal && agentIdVal === a.phpId.toLowerCase()) ||
+        (agentIdVal && agentIdVal === a.id.toLowerCase())
+      );
+    }
+
+    // ---- 1. Fetch Policy Applications board (clients) ----
+    const policyItems = await fetchAllItems(TEAM.monday.boardPolicies);
+    const policyTitles = await fetchColTitleMap(TEAM.monday.boardPolicies);
+    const get = (item, ...kws) => {
+      const cv = item.column_values.find(c => kws.some(k => (policyTitles[c.id]||'').toLowerCase().includes(k)));
+      return cv ? (cv.text || '') : '';
+    };
+
+    const matchedPolicyItems = [];
+    policyItems.forEach(item => {
+      const agentName = get(item,'agent 1 name','agent1 name','agent name');
+      const agentId    = get(item,'agent id','agent_id','php code','phpcode');
+      const match = matchDownlineAgent(agentName, agentId);
+      if (match) matchedPolicyItems.push({ item, owner: match });
+    });
+    statusEl.textContent = `Found ${matchedPolicyItems.length} of ${policyItems.length} policy items across your downline. Aggregating by client…`;
+
+    const byClient = {};
+    matchedPolicyItems.forEach(({item, owner}) => {
+      const first = get(item,'first name','firstname') || item.name.split(' ')[0] || '';
+      const last  = get(item,'last name','lastname') || item.name.split(' ').slice(1).join(' ') || '';
+      const name  = `${first} ${last}`.trim() || item.name;
+      // Key by client name + owning agent, so the same client name under two
+      // different downline agents doesn't get merged into one row.
+      const key   = name.toLowerCase() + '::' + owner.id;
+      if (!byClient[key]) byClient[key] = {
+        client:name, policies:0, submittedPoints:0, totalPoints:0,
+        statuses:new Set(), submitDate:'', carriers:new Set(),
+        phone: get(item,'phone'), email: get(item,'email'),
+        ownerAgentId: owner.id, ownerAgentName: owner.name,
+      };
+      const rec = byClient[key];
+      rec.policies++;
+      rec.submittedPoints += parseFloat((get(item,'submitted points')||'0').replace(/,/g,'')) || 0;
+      rec.totalPoints     += parseFloat((get(item,'total points')||'0').replace(/,/g,'')) || 0;
+      const status = (get(item,'status')||'').toUpperCase();
+      if (status) rec.statuses.add(status);
+      const carrier = get(item,'carrier');
+      if (carrier) rec.carriers.add(carrier);
+      const subDate = get(item,'php submit date','submit date');
+      if (subDate && subDate > rec.submitDate) rec.submitDate = subDate;
+    });
+
+    const fetchedClients = Object.values(byClient).map(c => ({
+      client:c.client, policies:c.policies,
+      submittedPoints:Math.round(c.submittedPoints*100)/100,
+      totalPoints:Math.round(c.totalPoints*100)/100,
+      statuses:[...c.statuses], submitDate:c.submitDate||'',
+      carriers:[...c.carriers], phone:c.phone, email:c.email,
+      ownerAgentId:c.ownerAgentId, ownerAgentName:c.ownerAgentName,
+      source:'monday', manual:false
+    }));
+
+    // Merge: keep manual entries, replace synced ones
+    const manualClients = clients.filter(c => c.manual);
+    clients = [...fetchedClients, ...manualClients];
+    saveClients();
+
+    // ---- 2. Fetch recruits from Agent Roster board (18411252280) ----
+    // Recruits = agents on the roster whose Upline column matches a downline agent's name.
+    statusEl.textContent = 'Fetching recruits from Agent Roster board…';
+    const ROSTER_BOARD = '18411252280';
+    const rosterItems = await fetchAllItems(ROSTER_BOARD);
+    const rosterTitles = await fetchColTitleMap(ROSTER_BOARD);
+    const getA = (item, ...kws) => {
+      const cv = item.column_values.find(c => kws.some(k => (rosterTitles[c.id]||'').toLowerCase().includes(k)));
+      return cv ? (cv.text || '') : '';
+    };
+
+    function normName(s) {
+      return (s||'').toLowerCase().replace(/[^a-z\s]/g,'').replace(/\s+/g,' ').trim();
+    }
+
+    // Build a name→downlineAgent lookup for matching upline column values
+    const downlineByNorm = MY_DOWNLINE.map(a => ({
+      ...a, norm: normName(a.name), firstFrag: normName(a.name).split(' ')[0]
+    }));
+    function matchUplineToAgent(uplineText) {
+      const norm = normName(uplineText);
+      return downlineByNorm.find(a => norm && (norm === a.norm || norm.includes(a.firstFrag)));
+    }
+
+    const fetchedRecruits = [];
+    rosterItems.forEach(item => {
+      const upline = getA(item, 'upline', 'sponsor', 'referring');
+      if (!upline) return;
+      const owner = matchUplineToAgent(upline);
+      if (!owner) return;
+      fetchedRecruits.push({
+        name: item.name,
+        stage: (getA(item,'stage','status','role','level') || 'AGENT').toUpperCase(),
+        submitDate: getA(item,'enrollment','enroll date','enroll') || '',
+        phone: getA(item,'phone'),
+        email: getA(item,'email'),
+        ownerAgentId: owner.id,
+        ownerAgentName: owner.name,
+        source: 'monday', manual: false
+      });
+    });
+
+    const manualRecruits = recruits.filter(r => r.manual);
+    recruits = [...fetchedRecruits, ...manualRecruits];
+    saveRecruits();
+
+    statusEl.textContent = `✅ Synced ${fetchedClients.length} clients and ${fetchedRecruits.length} recruits from Agent Roster — ${new Date().toLocaleTimeString()}`;
+    showToast('Synced from Monday.com');
+  } catch (e) {
+    statusEl.textContent = '⚠ Sync failed: ' + (e.message||e);
+    showToast('Sync failed — check console for details');
+    console.error('[My Clients] Monday sync error:', e);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '☁ Sync from Monday.com';
+    render();
+  }
+}
+
+// Fetch column id→title map for a board (one call, cached per boardId)
+const _colTitleCache = {};
+async function fetchColTitleMap(boardId) {
+  if (_colTitleCache[boardId]) return _colTitleCache[boardId];
+  const res = await mondayQuery(`{ boards(ids:${boardId}) { columns { id title } } }`);
+  const cols = res?.data?.boards?.[0]?.columns || [];
+  const map = {};
+  cols.forEach(c => { map[c.id] = c.title; });
+  _colTitleCache[boardId] = map;
+  return map;
+}
+
+async function fetchAllItems(boardId) {
+  if (!boardId) return [];
+  let items = [], cursor = null;
+  do {
+    const curArg = cursor ? `,cursor:"${cursor}"` : '';
+    const res = await mondayQuery(`{
+      boards(ids:${boardId}) {
+        items_page(limit:100${curArg}) {
+          cursor
+          items { id name column_values { id text } }
+        }
+      }
+    }`);
+    if (res?.errors) { console.warn('[My Clients] Monday query error:', res.errors); break; }
+    const page = res?.data?.boards?.[0]?.items_page;
+    if (!page) break;
+    items = items.concat(page.items || []);
+    cursor = page.cursor || null;
+  } while (cursor);
+  return items;
+}
+
+// ── RENDER HELPERS ───────────────────────────────────────────
+function statusClass(s) {
+  const map = {
+    INFORCE:'st-inforce', ISSUED:'st-issued', SUBMITTED:'st-submitted',
+    PENDING:'st-pending', APPROVED:'st-approved', INCOMPLETE:'st-incomplete',
+    CLOSED:'st-closed', WITHDRAWN:'st-withdrawn', 'REJECTED BEFORE CARRIER':'st-rejected',
+    'NEW LEAD':'st-pending', CONTACTED:'st-submitted', 'INTERVIEW SET':'st-approved',
+    LICENSING:'st-incomplete', LICENSED:'st-inforce', ACTIVE:'st-inforce'
+  };
+  return map[s] || 'st-pending';
+}
+
+function fmtPhone(p) {
+  if (!p) return '';
+  const digits = String(p).replace(/\D/g,'');
+  if (digits.length === 10) return `(${digits.slice(0,3)}) ${digits.slice(3,6)}-${digits.slice(6)}`;
+  if (digits.length === 11) return fmtPhone(digits.slice(1));
+  return p;
+}
+
+function fmtNum(n) {
+  return Number(n||0).toLocaleString(undefined, { minimumFractionDigits:2, maximumFractionDigits:2 });
+}
+
+function parseDateVal(d) {
+  if (!d) return 0;
+  const [m,day,y] = d.split('/');
+  return y ? new Date(`${y}-${m}-${day}`).getTime() : (new Date(d).getTime() || 0);
+}
+
+// ── RENDER: CLIENTS ──────────────────────────────────────────
+// ── SHARED AGENT + DATE FILTERING ────────────────────────────
+// Filters any array of records (clients or recruits) by the selected
+// downline agent and date range. Records with no recognizable date are
+// excluded only when a date range is actually set; otherwise they pass through.
+function applyAgentAndDateFilters(rows) {
+  const agentFilter = document.getElementById('filter-agent').value;
+  const fromVal = document.getElementById('filter-date-from').value;
+  const toVal = document.getElementById('filter-date-to').value;
+
+  if (agentFilter && agentFilter !== '__all__') {
+    rows = rows.filter(r => r.ownerAgentId === agentFilter);
+  } else {
+    // "All in my downline" — still restrict to records actually owned by
+    // someone in the downline (guards against stray/unmatched data).
+    rows = rows.filter(r => !r.ownerAgentId || MY_DOWNLINE_IDS.has(r.ownerAgentId));
+  }
+
+  if (fromVal || toVal) {
+    const fromMs = fromVal ? new Date(fromVal+'T00:00:00').getTime() : -Infinity;
+    const toMs   = toVal   ? new Date(toVal+'T23:59:59').getTime()   : Infinity;
+    rows = rows.filter(r => {
+      const d = parseDateVal(r.submitDate || r.latestStatusDate);
+      if (!d) return false; // exclude undated rows once a range is active
+      return d >= fromMs && d <= toMs;
+    });
+  }
+  return rows;
+}
+
+function ownerLabel(r) {
+  if (!r.ownerAgentId) return '';
+  if (r.ownerAgentId === session.agentId) return '';
+  return `<div class="client-sub" style="color:var(--blue2);">👤 ${r.ownerAgentName||r.ownerAgentId}</div>`;
+}
+
+function renderClients() {
+  const q = document.getElementById('search-box').value.trim().toLowerCase();
+  const sortMode = document.getElementById('sort-select').value;
+  let rows = clients.filter(c => c.client.toLowerCase().includes(q));
+  rows = applyAgentAndDateFilters(rows);
+
+  switch(sortMode) {
+    case 'submitted-desc': rows.sort((a,b)=>b.submittedPoints-a.submittedPoints); break;
+    case 'submitted-asc':  rows.sort((a,b)=>a.submittedPoints-b.submittedPoints); break;
+    case 'total-desc':     rows.sort((a,b)=>b.totalPoints-a.totalPoints); break;
+    case 'name-asc':       rows.sort((a,b)=>a.client.localeCompare(b.client)); break;
+    case 'date-desc':      rows.sort((a,b)=>parseDateVal(b.submitDate||b.latestStatusDate)-parseDateVal(a.submitDate||a.latestStatusDate)); break;
+  }
+
+  const tbody = document.getElementById('tbl-body');
+  if (!rows.length) {
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="7">No clients match your search and filters.</td></tr>`;
+  } else {
+    tbody.innerHTML = rows.map(c => {
+      const idx = clients.indexOf(c);
+      const statuses = (c.statuses||[]).map(s => `<span class="status-pill ${statusClass(s)}">${s}</span>`).join('');
+      const carriers = (c.carriers||[]).filter(Boolean).join(', ');
+      const phone = fmtPhone(c.phone);
+      const email = c.email && c.email.includes('@') ? c.email : '';
+      const dateShown = c.submitDate || c.latestStatusDate || '—';
+      const srcTag = c.source === 'monday' ? '<span class="src-tag src-monday">Monday</span>' : (c.manual ? '<span class="manual-tag">Manual</span>' : '');
+      return `<tr>
+        <td>
+          <div class="client-name">${c.client}${srcTag}</div>
+          <div class="client-sub">${c.policies||0} polic${c.policies===1?'y':'ies'}${carriers ? ' · '+carriers : ''}</div>
+          ${ownerLabel(c)}
+        </td>
+        <td>${statuses}</td>
+        <td><span class="pts-val ${c.submittedPoints?'':'zero'}">${fmtNum(c.submittedPoints)}</span></td>
+        <td><span class="pts-val ${c.totalPoints?'':'zero'}">${fmtNum(c.totalPoints)}</span></td>
+        <td style="color:var(--slate);font-size:12px;">${dateShown}</td>
+        <td class="contact-cell">
+          ${phone ? phone+'<br>' : ''}${email ? `<a href="mailto:${email}">${email}</a>` : ''}
+        </td>
+        <td>${c.manual ? `<button class="del-btn" onclick="deleteClient(${idx})" title="Remove">✕</button>` : ''}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  document.getElementById('sum-clients').textContent = rows.length;
+  document.getElementById('sum-policies').textContent = rows.reduce((s,c)=>s+(c.policies||0),0);
+  document.getElementById('sum-submitted').textContent = fmtNum(rows.reduce((s,c)=>s+(c.submittedPoints||0),0));
+  document.getElementById('sum-total').textContent = fmtNum(rows.reduce((s,c)=>s+(c.totalPoints||0),0));
+}
+
+// ── RENDER: RECRUITS ─────────────────────────────────────────
+function renderRecruits() {
+  const q = document.getElementById('search-box').value.trim().toLowerCase();
+  let rows = recruits.filter(r => r.name.toLowerCase().includes(q));
+  rows = applyAgentAndDateFilters(rows);
+  rows.sort((a,b) => parseDateVal(b.submitDate) - parseDateVal(a.submitDate));
+
+  const tbody = document.getElementById('tbl-body-recruits');
+  if (!rows.length) {
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="6">No recruits match your search and filters.</td></tr>`;
+  } else {
+    tbody.innerHTML = rows.map(r => {
+      const idx = recruits.indexOf(r);
+      const phone = fmtPhone(r.phone);
+      const email = r.email && r.email.includes('@') ? r.email : '';
+      const srcTag = r.source === 'monday' ? '<span class="src-tag src-monday">Monday</span>' : (r.manual ? '<span class="manual-tag">Manual</span>' : '');
+      return `<tr>
+        <td><div class="client-name">${r.name}${srcTag}</div>${ownerLabel(r)}</td>
+        <td><span class="status-pill ${statusClass(r.stage)}">${r.stage}</span></td>
+        <td style="color:var(--slate);font-size:12px;">${r.submitDate||'—'}</td>
+        <td class="contact-cell">${phone ? phone+'<br>' : ''}${email ? `<a href="mailto:${email}">${email}</a>` : ''}</td>
+        <td style="color:var(--slate);font-size:12px;">${r.source==='monday'?'Agent Roster':'Manual entry'}</td>
+        <td>${r.manual ? `<button class="del-btn" onclick="deleteRecruit(${idx})" title="Remove">✕</button>` : ''}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  document.getElementById('sum-recruits').textContent = rows.length;
+  document.getElementById('sum-licensed').textContent = rows.filter(r=>r.stage==='LICENSED'||r.stage==='ACTIVE').length;
+  document.getElementById('sum-inprogress').textContent = rows.filter(r=>!['LICENSED','ACTIVE'].includes(r.stage)).length;
+  const now = new Date();
+  document.getElementById('sum-thismonth').textContent = rows.filter(r => {
+    const d = parseDateVal(r.submitDate);
+    if (!d) return false;
+    const dd = new Date(d);
+    return dd.getMonth()===now.getMonth() && dd.getFullYear()===now.getFullYear();
+  }).length;
+}
+
+function render() {
+  if (currentView === 'clients') renderClients();
+  else renderRecruits();
+}
+
+// ── ADD MODAL ────────────────────────────────────────────────
+function toggleEntryType() {
+  const type = document.getElementById('f-type').value;
+  document.getElementById('client-fields').style.display = type === 'client' ? '' : 'none';
+  document.getElementById('recruit-fields').style.display = type === 'recruit' ? '' : 'none';
+  document.getElementById('f-name-label').textContent = type === 'client' ? 'Client Name *' : 'Recruit Name *';
+  document.getElementById('f-date-label').textContent = type === 'client' ? 'Submission Date' : 'Enrollment Date';
+  document.getElementById('modal-title').textContent = type === 'client' ? 'Add a Client' : 'Add a Recruit';
+  document.getElementById('modal-hint').textContent = type === 'client'
+    ? 'Stored locally and tagged "Manual" until synced with Monday.com.'
+    : 'Stored locally and tagged "Manual" until synced with the Recruiting Pipeline board.';
+}
+
+function openAddModal(presetType) {
+  document.getElementById('f-type').value = presetType || (currentView === 'recruits' ? 'recruit' : 'client');
+  toggleEntryType();
+  document.getElementById('f-name').value = '';
+  document.getElementById('f-submitted').value = '';
+  document.getElementById('f-total').value = '';
+  document.getElementById('f-status').value = 'SUBMITTED';
+  document.getElementById('f-stage').value = 'NEW LEAD';
+  document.getElementById('f-date').value = new Date().toISOString().slice(0,10);
+  document.getElementById('f-phone').value = '';
+  document.getElementById('f-email').value = '';
+
+  // Owner dropdown: defaults to whoever is currently selected in the Agent filter,
+  // or the logged-in agent if the filter is set to "All".
+  const ownerSel = document.getElementById('f-owner');
+  ownerSel.innerHTML = '';
+  const restOwners = MY_DOWNLINE.filter(a => a.id !== session.agentId).sort((a,b)=>a.name.localeCompare(b.name));
+  const orderedOwners = [MY_DOWNLINE.find(a => a.id === session.agentId), ...restOwners].filter(Boolean);
+  orderedOwners.forEach(a => {
+    const opt = document.createElement('option');
+    opt.value = a.id;
+    opt.dataset.name = a.name;
+    opt.textContent = a.id === session.agentId ? `${a.name} (me)` : a.name;
+    ownerSel.appendChild(opt);
+  });
+  const currentFilterAgent = document.getElementById('filter-agent').value;
+  ownerSel.value = (currentFilterAgent && currentFilterAgent !== '__all__') ? currentFilterAgent : session.agentId;
+
+  document.getElementById('add-modal').classList.add('show');
+}
+function closeAddModal() {
+  document.getElementById('add-modal').classList.remove('show');
+}
+
+function fmtDateForDisplay(isoDate) {
+  if (!isoDate) return '';
+  const [y,m,d] = isoDate.split('-');
+  return `${m}/${d}/${y}`;
+}
+
+function saveNewEntry() {
+  const type = document.getElementById('f-type').value;
+  const name = document.getElementById('f-name').value.trim();
+  if (!name) { showToast('Name is required'); return; }
+  const dateStr = fmtDateForDisplay(document.getElementById('f-date').value) || fmtDateForDisplay(new Date().toISOString().slice(0,10));
+  const phone = document.getElementById('f-phone').value.trim();
+  const email = document.getElementById('f-email').value.trim();
+  const ownerSel = document.getElementById('f-owner');
+  const ownerAgentId = ownerSel.value || session.agentId;
+  const ownerAgentName = ownerSel.selectedOptions[0]?.dataset.name || session.name;
+
+  if (type === 'client') {
+    const submitted = parseFloat(document.getElementById('f-submitted').value) || 0;
+    const total = parseFloat(document.getElementById('f-total').value) || submitted;
+    const status = document.getElementById('f-status').value;
+    clients.unshift({
+      client: name, policies: 1, submittedPoints: submitted, totalPoints: total,
+      statuses: [status], submitDate: dateStr, carriers: [], phone, email,
+      ownerAgentId, ownerAgentName,
+      source:'manual', manual: true
+    });
+    saveClients();
+    showToast(`${name} added under ${ownerAgentName}`);
+  } else {
+    const stage = document.getElementById('f-stage').value;
+    recruits.unshift({
+      name, stage, submitDate: dateStr, phone, email,
+      ownerAgentId, ownerAgentName,
+      source:'manual', manual: true
+    });
+    saveRecruits();
+    showToast(`${name} added under ${ownerAgentName}`);
+  }
+  closeAddModal();
+  render();
+}
+
+function deleteClient(idx) {
+  if (!confirm(`Remove ${clients[idx].client} from your tracker?`)) return;
+  clients.splice(idx, 1);
+  saveClients();
+  render();
+  showToast('Client removed');
+}
+function deleteRecruit(idx) {
+  if (!confirm(`Remove ${recruits[idx].name} from your tracker?`)) return;
+  recruits.splice(idx, 1);
+  saveRecruits();
+  render();
+  showToast('Recruit removed');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2400);
+}
+
+document.getElementById('add-modal').addEventListener('click', (e) => {
+  if (e.target.id === 'add-modal') closeAddModal();
+});
+
+load();
+populateAgentFilter();
+render();
+</script>
+</body>
+</html>

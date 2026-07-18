@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Build Your Future | Dynasty Builders Academy</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400;1,700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --navy:#0A1628;--navy-mid:#132240;--navy-light:#1E3460;
+  --gold:#C9A84C;--gold-light:#E8C97A;--gold-dim:rgba(201,168,76,0.14);
+  --green:#2DCA73;--green-dim:rgba(45,202,115,0.1);
+  --blue:#4C8EC9;--blue-dim:rgba(76,142,201,0.12);
+  --red:#E05252;--cream:#FDF8F0;--white:#fff;
+  --border:rgba(201,168,76,0.22);--bs:rgba(255,255,255,0.07);
+}
+body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--white);min-height:100vh;overflow-x:hidden;}
+.bg{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 80% 60% at 15% 20%,rgba(201,168,76,.07),transparent 60%),
+  radial-gradient(ellipse 60% 80% at 85% 80%,rgba(201,168,76,.05),transparent 60%),
+  linear-gradient(160deg,#0A1628,#0E1C35 50%,#0A1628);}
+.bgrid{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:linear-gradient(rgba(201,168,76,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(201,168,76,.04) 1px,transparent 1px);
+  background-size:60px 60px;}
+.page{position:relative;z-index:1;}
+
+/* HEADER */
+header{padding:20px 5vw;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--bs);}
+.logo{font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700;letter-spacing:.1em;color:var(--gold);text-transform:uppercase;}
+.logo span{color:rgba(255,255,255,.4);}
+.header-right{display:flex;align-items:center;gap:12px;}
+.hub-btn{font-size:.7rem;color:rgba(255,255,255,.4);text-decoration:none;border:1px solid rgba(255,255,255,.12);padding:7px 14px;border-radius:3px;letter-spacing:.07em;transition:all .2s;}
+.hub-btn:hover{color:var(--gold);border-color:var(--border);}
+
+/* HERO */
+.hero{max-width:820px;margin:0 auto;padding:64px 5vw 48px;text-align:center;}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;background:var(--gold-dim);border:1px solid var(--border);color:var(--gold-light);font-size:.62rem;letter-spacing:.22em;font-weight:600;text-transform:uppercase;padding:6px 18px;border-radius:2px;margin-bottom:24px;}
+.dot{width:5px;height:5px;border-radius:50%;background:var(--gold);animation:blink 2s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+h1{font-family:'Playfair Display',serif;font-size:clamp(2.4rem,6vw,4.2rem);font-weight:900;line-height:1.08;margin-bottom:20px;}
+h1 em{font-style:italic;color:var(--gold);}
+.hero-sub{font-size:1.05rem;color:rgba(255,255,255,.55);line-height:1.75;max-width:580px;margin:0 auto 36px;}
+.hero-sub strong{color:rgba(255,255,255,.85);}
+.hero-stats{display:flex;gap:0;justify-content:center;flex-wrap:wrap;margin-bottom:40px;}
+.hs{padding:14px 28px;text-align:center;border:1px solid var(--border);background:rgba(201,168,76,.05);}
+.hs:not(:last-child){border-right:none;}
+.hs-val{font-family:'Playfair Display',serif;font-size:2.2rem;font-weight:700;color:var(--gold-light);line-height:1;}
+.hs-lbl{font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-top:4px;}
+
+/* STEP CARDS (funnel flow) */
+.funnel-steps{display:flex;align-items:center;justify-content:center;gap:0;max-width:820px;margin:0 auto 48px;padding:0 5vw;flex-wrap:wrap;}
+.fs{display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;min-width:120px;padding:12px 8px;}
+.fs-num{width:36px;height:36px;border-radius:50%;background:rgba(201,168,76,.12);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:.7rem;color:var(--gold);font-weight:600;}
+.fs-lbl{font-size:.7rem;color:rgba(255,255,255,.5);text-align:center;letter-spacing:.04em;line-height:1.4;}
+.fs-arrow{font-size:1.2rem;color:rgba(201,168,76,.3);align-self:center;margin-bottom:20px;}
+
+/* VIDEO GATE CARD */
+.gate-wrap{max-width:600px;margin:0 auto;padding:0 5vw 60px;}
+.gate-card{background:var(--navy-mid);border:1px solid var(--border);border-radius:4px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.4);}
+.gate-card::before{content:'';display:block;height:3px;background:linear-gradient(90deg,transparent,var(--gold),transparent);}
+
+/* VIDEO THUMBNAIL (step 1 hidden) */
+.thumb-box{position:relative;cursor:pointer;overflow:hidden;background:#000;}
+.thumb-box img{width:100%;display:block;object-fit:cover;filter:brightness(.75);transition:filter .3s;}
+.thumb-box:hover img{filter:brightness(.85);}
+.play-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;}
+.play-circle{width:72px;height:72px;border-radius:50%;background:rgba(201,168,76,.9);display:flex;align-items:center;justify-content:center;transition:transform .2s,background .2s;box-shadow:0 8px 30px rgba(0,0,0,.5);}
+.thumb-box:hover .play-circle{transform:scale(1.08);background:var(--gold);}
+.play-circle svg{width:26px;height:26px;fill:var(--navy);margin-left:4px;}
+.thumb-label{position:absolute;bottom:0;left:0;right:0;padding:18px 22px;background:linear-gradient(to top,rgba(10,22,40,.95),transparent);font-size:.78rem;color:rgba(255,255,255,.7);}
+.thumb-label strong{color:var(--gold-light);}
+
+/* EMAIL GATE FORM */
+.gate-form{padding:24px 28px;}
+.gate-title{font-family:'Playfair Display',serif;font-size:1.35rem;font-weight:700;margin-bottom:6px;}
+.gate-sub{font-size:.82rem;color:rgba(255,255,255,.45);margin-bottom:20px;line-height:1.6;}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(201,168,76,.7);font-weight:600;margin-bottom:6px;}
+.field input{width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(201,168,76,.18);border-radius:3px;color:var(--white);font-family:'DM Sans',sans-serif;font-size:.92rem;padding:12px 14px;outline:none;transition:border-color .2s;}
+.field input:focus{border-color:var(--gold);}
+.field input::placeholder{color:rgba(255,255,255,.15);}
+.err{font-size:.68rem;color:var(--red);margin-top:4px;display:none;}
+.err.show{display:block;}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media(max-width:420px){.row2{grid-template-columns:1fr;}}
+.sbtn{display:block;width:100%;background:linear-gradient(135deg,#8B6F2E,var(--gold),var(--gold-light));color:var(--navy);font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;border:none;border-radius:3px;padding:16px;cursor:pointer;transition:opacity .2s,transform .15s;margin-bottom:12px;}
+.sbtn:hover{opacity:.9;transform:translateY(-1px);}
+.sbtn:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+.form-note{font-size:.62rem;color:rgba(255,255,255,.18);text-align:center;line-height:1.5;}
+.spin{display:none;width:14px;height:14px;border:2px solid rgba(0,0,0,.15);border-top-color:#000;border-radius:50%;animation:sp .7s linear infinite;margin:0 auto;}
+@keyframes sp{to{transform:rotate(360deg);}}
+
+/* VIDEO PLAYER */
+.video-box{display:none;padding-bottom:56.25%;position:relative;}
+.video-box iframe{position:absolute;inset:0;width:100%;height:100%;border:none;}
+.video-cta{padding:24px 28px;}
+.vcta-title{font-family:'Playfair Display',serif;font-size:1.2rem;margin-bottom:12px;}
+.cta-opts{display:flex;flex-direction:column;gap:10px;}
+.cta-opt{display:flex;align-items:center;gap:14px;padding:14px 16px;background:rgba(255,255,255,.03);border:1px solid var(--bs);border-radius:3px;text-decoration:none;color:var(--white);cursor:pointer;transition:all .2s;}
+.cta-opt:hover{border-color:var(--border);background:rgba(201,168,76,.07);}
+.cta-opt-icon{font-size:1.4rem;flex-shrink:0;}
+.cta-opt-body h4{font-size:.88rem;font-weight:600;margin-bottom:2px;}
+.cta-opt-body p{font-size:.72rem;color:rgba(255,255,255,.4);line-height:1.4;}
+.cta-opt-arrow{margin-left:auto;color:var(--gold);font-size:1rem;flex-shrink:0;}
+
+/* BENEFITS */
+.benefits{max-width:860px;margin:0 auto;padding:0 5vw 72px;}
+.sec-label{font-size:.62rem;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);font-weight:600;text-align:center;margin-bottom:12px;}
+.sec-title{font-family:'Playfair Display',serif;font-size:clamp(1.6rem,3.5vw,2.4rem);font-weight:700;line-height:1.15;text-align:center;margin-bottom:40px;}
+.benefits-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+@media(max-width:640px){.benefits-grid{grid-template-columns:1fr 1fr;}}
+@media(max-width:400px){.benefits-grid{grid-template-columns:1fr;}}
+.ben{background:var(--navy-mid);border:1px solid var(--border);border-radius:3px;padding:20px 18px;}
+.ben-icon{font-size:1.6rem;margin-bottom:10px;}
+.ben h3{font-size:.88rem;font-weight:600;margin-bottom:6px;}
+.ben p{font-size:.76rem;color:rgba(255,255,255,.45);line-height:1.6;}
+
+/* SOCIAL PROOF */
+.proof-strip{background:rgba(201,168,76,.04);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:28px 5vw;margin-bottom:48px;}
+.proof-inner{max-width:820px;margin:0 auto;display:flex;gap:32px;align-items:center;flex-wrap:wrap;justify-content:center;}
+.proof-item{display:flex;align-items:center;gap:10px;font-size:.78rem;color:rgba(255,255,255,.55);}
+.proof-item span:first-child{font-size:1.2rem;}
+
+/* FOOTER CTA */
+.final-cta{max-width:600px;margin:0 auto;padding:0 5vw 72px;text-align:center;}
+.final-cta h2{font-family:'Playfair Display',serif;font-size:clamp(1.6rem,4vw,2.4rem);font-weight:700;line-height:1.15;margin-bottom:14px;}
+.final-cta p{font-size:.9rem;color:rgba(255,255,255,.45);line-height:1.7;margin-bottom:28px;}
+.final-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+.btn-pri{background:linear-gradient(135deg,#8B6F2E,var(--gold),var(--gold-light));color:var(--navy);font-weight:700;font-size:.78rem;letter-spacing:.15em;text-transform:uppercase;padding:15px 28px;border-radius:3px;text-decoration:none;transition:opacity .2s;}
+.btn-sec{background:transparent;color:var(--gold-light);font-weight:600;font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;padding:15px 28px;border-radius:3px;text-decoration:none;border:1px solid var(--border);transition:all .2s;}
+.btn-sec:hover{border-color:var(--gold);background:var(--gold-dim);}
+
+footer{padding:28px 5vw;border-top:1px solid var(--bs);text-align:center;font-size:.65rem;color:rgba(255,255,255,.2);letter-spacing:.06em;}
+footer a{color:rgba(255,255,255,.3);text-decoration:none;}
+footer a:hover{color:var(--gold);}
+</style>
+</head>
+<body>
+<div class="bg"></div><div class="bgrid"></div>
+<div class="page">
+
+<header>
+  <div class="logo">Dynasty <span>&</span> Builders Academy</div>
+  <div class="header-right">
+    <a href="client.html" class="hub-btn">For Clients →</a>
+    <a href="hub.html" class="hub-btn">← Agent Hub</a>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="eyebrow"><div class="dot"></div>Opportunity Presentation</div>
+  <h1>A Career That Pays You <em>What You're Worth</em></h1>
+  <p class="hero-sub">No experience required. No ceiling on income. Licensed agents at PHP Agency earn commissions, overrides, and bonuses helping families protect what matters most — their <strong>lives, income, and financial future</strong>.</p>
+  <div class="hero-stats">
+    <div class="hs"><div class="hs-val">30%</div><div class="hs-lbl">Starting Commission</div></div>
+    <div class="hs"><div class="hs-val">84%</div><div class="hs-lbl">Max Commission Level</div></div>
+    <div class="hs"><div class="hs-val">16</div><div class="hs-lbl">Promotion Levels</div></div>
+    <div class="hs"><div class="hs-val">$0</div><div class="hs-lbl">Startup Cost</div></div>
+  </div>
+</section>
+
+<!-- FUNNEL STEPS -->
+<div class="funnel-steps">
+  <div class="fs"><div class="fs-num">01</div><div class="fs-lbl">Watch Video</div></div>
+  <div class="fs-arrow">›</div>
+  <div class="fs"><div class="fs-num">02</div><div class="fs-lbl">See the Opportunity</div></div>
+  <div class="fs-arrow">›</div>
+  <div class="fs"><div class="fs-num">03</div><div class="fs-lbl">Book a 1-on-1</div></div>
+  <div class="fs-arrow">›</div>
+  <div class="fs"><div class="fs-num">04</div><div class="fs-lbl">Attend BOM Event</div></div>
+  <div class="fs-arrow">›</div>
+  <div class="fs"><div class="fs-num">05</div><div class="fs-lbl">Get Licensed</div></div>
+</div>
+
+<!-- GATE CARD -->
+<div class="gate-wrap">
+  <div class="gate-card" id="gate-card">
+
+
+    <!-- STEP 0: Intro video with dual CTA -->
+    <div id="step-intro">
+      <!-- Intro video embed -->
+      <div style="position:relative;padding-bottom:56.25%;background:#000;border-radius:6px;overflow:hidden;margin-bottom:20px;">
+        <iframe id="intro-frame"
+          src="https://www.youtube.com/embed/QpT7BJl4bpg?rel=0&modestbranding=1"
+          allowfullscreen allow="autoplay; encrypted-media"
+          style="position:absolute;inset:0;width:100%;height:100%;border:none;"></iframe>
+      </div>
+      <!-- Dual CTA -->
+      <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:6px;padding:22px;text-align:center;margin-bottom:12px;">
+        <div style="font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;color:var(--cream);margin-bottom:6px;">Interested in what you just saw?</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.5);margin-bottom:20px;">Take the next step — book a quick call or watch the full opportunity presentation.</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:480px;margin:0 auto;">
+          <a id="intro-book-btn" href="schedule-1on1.html?type=ri" onclick="trackIntroCTA('book')"
+            style="background:var(--gold);color:var(--navy);display:flex;flex-direction:column;align-items:center;gap:4px;padding:16px 12px;border-radius:4px;text-decoration:none;transition:opacity .15s;"
+            onmouseover="this.style.opacity='.87'" onmouseout="this.style.opacity='1'">
+            <span style="font-size:1.4rem;">🗓️</span>
+            <span style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;">Schedule a Call</span>
+            <span style="font-size:11px;opacity:.7;">Talk to an agent today</span>
+          </a>
+          <button onclick="showIntroIntake()"
+            style="background:transparent;border:1px solid rgba(201,168,76,.4);color:var(--cream);display:flex;flex-direction:column;align-items:center;gap:4px;padding:16px 12px;border-radius:4px;cursor:pointer;transition:all .15s;"
+            onmouseover="this.style.background='rgba(201,168,76,.08)'" onmouseout="this.style.background='transparent'">
+            <span style="font-size:1.4rem;">▶</span>
+            <span style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;">Watch Full Video</span>
+            <span style="font-size:11px;opacity:.5;">5-min opportunity overview</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- INTAKE GATE -->
+    <div id="step-intake" style="display:none;">
+      <div class="thumb-box" onclick="showIntakeForm()">
+        <img src="https://img.youtube.com/vi/D66p_kJqieo/maxresdefault.jpg"
+             onerror="this.src='https://img.youtube.com/vi/D66p_kJqieo/hqdefault.jpg'"
+             alt="DBA Opportunity Video" style="width:100%;display:block;aspect-ratio:16/9;object-fit:cover;">
+        <div class="play-overlay">
+          <div class="play-circle">
+            <svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
+          </div>
+        </div>
+        <div class="thumb-label">&#9654; <strong>5-Minute Overview</strong> &mdash; Watch how agents build real income at PHP Agency</div>
+      </div>
+      <div class="gate-form" id="intake-form" style="display:none;">
+        <div class="gate-title">Watch the Opportunity Video</div>
+        <div class="gate-sub">Enter your info to unlock the 5-minute presentation. You'll also get our free agent resource guide sent to you.</div>
+        <div class="row2">
+          <div class="field"><label>First Name</label><input type="text" id="g-fname" placeholder="First name" autocomplete="given-name"><div class="err" id="err-fname">Required</div></div>
+          <div class="field"><label>Last Name</label><input type="text" id="g-lname" placeholder="Last name" autocomplete="family-name"></div>
+        </div>
+        <div class="field"><label>Email Address</label><input type="email" id="g-email" placeholder="your@email.com" autocomplete="email"><div class="err" id="err-email">Valid email required</div></div>
+        <div class="field"><label>Phone Number</label><input type="tel" id="g-phone" placeholder="(555) 000-0000" autocomplete="tel"><div class="err" id="err-phone">Phone required</div></div>
+        <div class="field" id="referrer-field" style="display:none;">
+          <label>Referred by (Agent Name)</label>
+          <input type="text" id="g-referrer" placeholder="Agent who shared this with you" readonly style="opacity:0.6;cursor:not-allowed;">
+        </div>
+        <button class="sbtn" id="gate-btn" onclick="submitIntake()">
+          <span id="gate-btn-txt">Unlock the Video &rarr;</span>
+          <div class="spin" id="gate-spin"></div>
+        </button>
+        <p class="form-note">No spam. No sales pressure. Your info is shared only with the agent who referred you.</p>
+      </div>
+    </div>
+
+
+    <!-- STEP 2: Video player + CTAs -->
+    <div id="step-video" style="display:none;">
+      <div class="video-box" id="video-box" style="display:block;padding-bottom:56.25%;position:relative;">
+        <iframe id="yt-frame" src="" allowfullscreen allow="autoplay" style="position:absolute;inset:0;width:100%;height:100%;border:none;"></iframe>
+      </div>
+      <div class="video-cta">
+        <div class="vcta-title">Ready to take the next step?</div>
+        <div class="cta-opts">
+          <a href="schedule-1on1.html" class="cta-opt" id="cta-1on1">
+            <div class="cta-opt-icon">🗓️</div>
+            <div class="cta-opt-body"><h4>Book a 1-on-1 Recruiting Interview</h4><p>15–30 min call with Obi or Jen — learn if this is the right fit for you.</p></div>
+            <div class="cta-opt-arrow">→</div>
+          </a>
+          <a href="register-inperson.html" class="cta-opt">
+            <div class="cta-opt-icon">🏢</div>
+            <div class="cta-opt-body"><h4>Attend a Business Opportunity Meeting</h4><p>In-person events where you meet the full team and see the business live.</p></div>
+            <div class="cta-opt-arrow">→</div>
+          </a>
+          <a href="register-zoom.html" class="cta-opt">
+            <div class="cta-opt-icon">💻</div>
+            <div class="cta-opt-body"><h4>Join a Zoom Webinar</h4><p>Watch from home — live Q&A with licensed agents on the team.</p></div>
+            <div class="cta-opt-arrow">→</div>
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- PROOF STRIP -->
+<div class="proof-strip">
+  <div class="proof-inner">
+    <div class="proof-item"><span>✅</span><span>No degree required to get licensed</span></div>
+    <div class="proof-item"><span>✅</span><span>Work full-time or part-time</span></div>
+    <div class="proof-item"><span>✅</span><span>Unlimited earning potential</span></div>
+    <div class="proof-item"><span>✅</span><span>16 promotion levels with clear criteria</span></div>
+    <div class="proof-item"><span>✅</span><span>Warm market + referral-based system</span></div>
+  </div>
+</div>
+
+<!-- BENEFITS -->
+<section class="benefits">
+  <div class="sec-label">Why PHP Agency</div>
+  <h2 class="sec-title">Everything You Need to <em>Build a Dynasty</em></h2>
+  <div class="benefits-grid">
+    <div class="ben"><div class="ben-icon">💰</div><h3>Commission + Overrides</h3><p>Earn 30–84% commission on every policy plus overrides on your team's production.</p></div>
+    <div class="ben"><div class="ben-icon">📋</div><h3>Full Training System</h3><p>PHP Playbook, Fast Start School, Life Class, PHP University — structured from day one.</p></div>
+    <div class="ben"><div class="ben-icon">🏆</div><h3>President's Club</h3><p>Top producers earn watches, ring stones, luxury trips, and national recognition.</p></div>
+    <div class="ben"><div class="ben-icon">📈</div><h3>Clear Promotion Path</h3><p>16 levels from Trainee to Sr. Executive Board Council — criteria you can hit in months.</p></div>
+    <div class="ben"><div class="ben-icon">👥</div><h3>Build Your Team</h3><p>Recruit agents under you and earn overrides on every policy they write — forever.</p></div>
+    <div class="ben"><div class="ben-icon">🛡️</div><h3>Products People Need</h3><p>Term life, IUL with living benefits, annuities — solving real problems for real families.</p></div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="final-cta">
+  <h2>Your Next Step Starts <em>Today</em></h2>
+  <p>Thousands of families need life insurance and retirement planning right now. The agents helping them — and earning commissions — are people who said yes when this was put in front of them. This is that moment.</p>
+  <div class="final-btns">
+    <a href="schedule-1on1.html" class="btn-pri">Book My 1-on-1 Interview</a>
+    <a href="register-zoom.html" class="btn-sec">Join a Zoom Webinar</a>
+  </div>
+</section>
+
+<footer>
+  <div style="margin-bottom:8px;">
+    <a href="hub.html">← Agent Command Hub</a>&ensp;·&ensp;
+    <a href="client.html">Client Information</a>&ensp;·&ensp;
+    <a href="register-inperson.html">In-Person Events</a>&ensp;·&ensp;
+    <a href="register-zoom.html">Zoom Webinars</a>&ensp;·&ensp;
+    <a href="free-guide.html">Free Guide</a>&ensp;·&ensp;
+    <a href="schedule-1on1.html">Book 1-on-1</a>
+  </div>
+  <div>Dynasty Builders Academy &nbsp;·&nbsp; PHP Agency &nbsp;·&nbsp; People Helping People</div>
+  <div style="margin-top:6px;">For Training and Educational Purposes. Not for Public Use without agent authorization.</div>
+</footer>
+</div>
+
+<script>
+
+// ── INTAKE CONFIG ─────────────────────────────────────────────
+const MAKE_HOOK_RECRUIT  = 'https://hook.us2.make.com/jky3rg3jsql0r8pp9d7v6d1aclvblvu4';
+const MONDAY_RECRUIT_BOARD = '18409897469';
+const YT_VIDEO_ID = 'D66p_kJqieo';
+
+function showIntroIntake() {
+  // Pause intro video
+  const frame = document.getElementById('intro-frame');
+  if (frame) frame.src = frame.src;
+  // Show intake gate
+  document.getElementById('step-intro').style.display = 'none';
+  document.getElementById('step-intake').style.display = 'block';
+  document.getElementById('step-intake').scrollIntoView({ behavior:'smooth' });
+}
+
+function trackIntroCTA(type) {
+  // Track which CTA was clicked for analytics
+  try {
+    const leads = JSON.parse(localStorage.getItem('ea_opp_leads')||'[]');
+    leads.push({ type:'opportunity_cta', event: type, timestamp: new Date().toISOString() });
+    localStorage.setItem('ea_opp_leads', JSON.stringify(leads));
+  } catch(e) {}
+}
+
+const params    = new URLSearchParams(location.search);
+const agentId   = params.get('agent') || '';
+const utmSrc    = params.get('utm_source') || 'opportunity_page';
+
+// Show referring agent label if agent param present
+if (agentId) {
+  const refField = document.getElementById('referrer-field');
+  const refInput = document.getElementById('g-referrer');
+  if (refField) refField.style.display = 'block';
+  if (refInput) refInput.value = decodeURIComponent(agentId);
+}
+
+function showIntakeForm() {
+  const form = document.getElementById('intake-form');
+  if (form) { form.style.display = 'block'; form.scrollIntoView({ behavior:'smooth', block:'center' }); }
+}
+
+function validateIntake() {
+  const fn = document.getElementById('g-fname').value.trim();
+  const em = document.getElementById('g-email').value.trim();
+  const ph = document.getElementById('g-phone').value.trim();
+  let ok = true;
+  document.getElementById('err-fname').classList.toggle('show', !fn); if (!fn) ok=false;
+  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em);
+  document.getElementById('err-email').classList.toggle('show', !emailOk); if (!emailOk) ok=false;
+  document.getElementById('err-phone').classList.toggle('show', !ph); if (!ph) ok=false;
+  return ok;
+}
+
+async function submitIntake() {
+  if (!validateIntake()) return;
+
+  const btn  = document.getElementById('gate-btn');
+  const btxt = document.getElementById('gate-btn-txt');
+  const spin = document.getElementById('gate-spin');
+  btn.disabled=true; btxt.style.display='none'; spin.style.display='block';
+
+  const fname = document.getElementById('g-fname').value.trim();
+  const lname = document.getElementById('g-lname').value.trim();
+  const email = document.getElementById('g-email').value.trim();
+  const phone = document.getElementById('g-phone').value.trim();
+  const now   = new Date().toISOString().slice(0,10);
+
+  const siteBase = window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '');
+  const payload = {
+    event:          'opportunity_intake',
+    drip_sequence:  'recruiting',                     // → Make.com Scenario 1 routes to recruiting drip
+    source:         'opportunity_page',
+    firstName:      fname,
+    lastName:       lname,
+    email,
+    phone,
+    referringAgent: decodeURIComponent(agentId) || 'direct',
+    video_link:     `${siteBase}/opportunity.html${agentId ? '?agent=' + encodeURIComponent(agentId) : ''}`,
+    booking_link:   `${siteBase}/schedule-1on1.html?type=ri${agentId ? '&agent=' + encodeURIComponent(agentId) : ''}`,
+    utmSource:      utmSrc,
+    submittedAt:    new Date().toISOString()
+  };
+
+  // ── 1. Make.com (no-cors, no Content-Type header)
+  fetch(MAKE_HOOK_RECRUIT, { method:'POST', mode:'no-cors', body:JSON.stringify(payload) }).catch(()=>{});
+
+  // ── 2. Monday.com Recruiting Pipeline board
+  if (window.AUTH && AUTH.getMondayKey()) {
+    // Fetch actual column IDs first — Monday requires IDs not display names
+    mondayQuery(`{boards(ids:${MONDAY_RECRUIT_BOARD}){columns{id title}}}`)
+      .then(colRes => {
+        const cols = colRes?.data?.boards?.[0]?.columns || [];
+        const findId = (...kws) => cols.find(c => kws.some(k => (c.title||'').toLowerCase().includes(k)))?.id;
+
+        const cv = {};
+        const fId  = findId('first name','first_name','fname');
+        const lId  = findId('last name','last_name','lname');
+        const emId = findId('email');
+        const phId = findId('phone');
+        const stId = findId('status');
+        const srId = findId('source');
+        const rfId = findId('refer','agent','by');
+        const dtId = findId('date','created');
+
+        if (fId)  cv[fId] = fname;
+        if (lId)  cv[lId] = lname;
+        if (emId) cv[emId] = { email, text: email };
+        if (phId) cv[phId] = { phone: phone.replace(/\D/g,''), countryShortName:'US' };
+        if (stId) cv[stId] = 'New Lead';
+        if (srId) cv[srId] = 'Opportunity Page';
+        if (rfId) cv[rfId] = decodeURIComponent(agentId) || '';
+        if (dtId) cv[dtId] = { date: now };
+
+        const itemName = `${fname} ${lname} \u2014 Opportunity Lead`;
+        const q = `mutation { create_item(board_id:${MONDAY_RECRUIT_BOARD}, item_name:"${itemName.replace(/"/g,"'")}", column_values:${JSON.stringify(JSON.stringify(cv))}) { id } }`;
+        return mondayQuery(q);
+      })
+      .catch(e => console.warn('Monday recruit write failed:', e.message));
+  }
+
+  // ── 3. Show video
+  spin.style.display='none';
+  document.getElementById('step-intake').style.display = 'none';
+  document.getElementById('step-video').style.display  = 'block';
+  document.getElementById('yt-frame').src = `https://www.youtube.com/embed/${YT_VIDEO_ID}?autoplay=1&rel=0`;
+
+  // Update 1on1 link with agent param
+  const cta1on1 = document.getElementById('cta-1on1');
+  if (cta1on1 && agentId) cta1on1.href = `schedule-1on1.html?agent=${encodeURIComponent(agentId)}&type=ri`;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const thumb = document.querySelector('.thumb-box');
+  if (thumb) thumb.addEventListener('click', showIntakeForm);
+  // Wire agent param into intro book button
+  if (agentId) {
+    const introBtn = document.getElementById('intro-book-btn');
+    if (introBtn) introBtn.href = `schedule-1on1.html?agent=${encodeURIComponent(agentId)}&type=ri`;
+  }
+});
+
+</script>
+</body>
+</html>

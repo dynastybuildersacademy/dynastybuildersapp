@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DBA — BOM Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700&family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="auth.js?v=20260713"></script>
+<style>
+:root{--navy:#0A1628;--navy-mid:#112040;--navy-light:#1A3158;--gold:#C9A84C;--gold-light:#E8C97A;--cream:#FAF6EE;--success:#27AE60;--warn:#E67E22;--danger:#C0392B;--slate:#6B7C93;--border:rgba(201,168,76,0.22);}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);min-height:100vh;}
+.header{background:rgba(10,22,40,0.97);border-bottom:1px solid var(--border);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.header-left{display:flex;align-items:center;gap:12px;}
+.shield{width:30px;height:34px;background:linear-gradient(160deg,var(--gold) 0%,#7a5c14 100%);clip-path:polygon(50% 0%,100% 18%,100% 65%,50% 100%,0% 65%,0% 18%);display:flex;align-items:center;justify-content:center;font-size:12px;}
+.header h1{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--gold);}
+.back-btn{font-size:12px;color:var(--gold);text-decoration:none;border:1px solid var(--border);padding:6px 12px;border-radius:3px;}
+.save-btn{font-size:12px;background:var(--gold);color:var(--navy);border:none;padding:7px 16px;border-radius:3px;font-family:'Barlow Condensed',sans-serif;font-weight:700;cursor:pointer;}
+.content{padding:22px 24px;max-width:820px;margin:0 auto;}
+.page-title{font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--gold);margin-bottom:6px;}
+.page-sub{font-size:13px;color:var(--slate);margin-bottom:22px;}
+/* SCHEDULE */
+.schedule{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px;}
+@media(max-width:540px){.schedule{grid-template-columns:1fr;}}
+.sched-card{background:var(--navy-mid);border:1px solid var(--border);border-radius:4px;padding:18px;display:flex;align-items:flex-start;gap:14px;}
+.sched-icon{font-size:28px;flex-shrink:0;}
+.sched-day{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;color:var(--gold);letter-spacing:0.03em;}
+.sched-time{font-size:14px;color:var(--cream);margin-top:2px;}
+.sched-tip{font-size:11px;color:var(--slate);margin-top:6px;line-height:1.5;}
+/* CAPTAIN BANNER */
+.captain-banner{background:linear-gradient(135deg,rgba(201,168,76,0.1) 0%,var(--navy-mid) 70%);border:1px solid rgba(201,168,76,0.35);border-radius:6px;padding:20px;margin-bottom:24px;}
+.cap-title{font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--gold);margin-bottom:14px;}
+.cap-nums{display:flex;border-radius:4px;overflow:hidden;border:1px solid var(--border);}
+.cap-num{flex:1;text-align:center;padding:14px 8px;background:var(--navy-light);}
+.cap-num:not(:last-child){border-right:1px solid var(--border);}
+.cap-n{font-family:'Barlow Condensed',sans-serif;font-size:38px;font-weight:800;color:var(--gold-light);line-height:1;}
+.cap-l{font-size:10px;color:var(--slate);text-transform:uppercase;letter-spacing:0.09em;margin-top:4px;}
+.cap-note{font-size:12px;color:var(--slate);margin-top:12px;line-height:1.6;}
+/* LOG SESSION */
+.card{background:var(--navy-mid);border:1px solid var(--border);border-radius:4px;padding:20px;margin-bottom:18px;}
+.card-title{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--gold);margin-bottom:14px;}
+.counter-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px;}
+@media(max-width:540px){.counter-row{grid-template-columns:1fr;}}
+.counter-input{background:var(--navy);border:1px solid var(--border);border-radius:4px;padding:14px;text-align:center;}
+.ci-label{font-size:10px;color:var(--slate);text-transform:uppercase;letter-spacing:0.09em;margin-bottom:8px;}
+.ci-controls{display:flex;align-items:center;justify-content:center;gap:10px;}
+.ci-btn{width:36px;height:36px;border-radius:50%;background:transparent;border:1.5px solid var(--border);color:var(--cream);font-size:18px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;}
+.ci-btn.plus{border-color:var(--gold);color:var(--gold);background:rgba(201,168,76,0.1);}
+.ci-btn.plus:hover{background:var(--gold);color:var(--navy);}
+.ci-btn.minus:hover{background:rgba(192,57,43,0.15);border-color:var(--danger);}
+.ci-val{font-family:'Barlow Condensed',sans-serif;font-size:36px;font-weight:800;color:var(--gold-light);min-width:44px;text-align:center;}
+/* STATUS BANNER */
+.status-banner{padding:14px 16px;border-radius:4px;font-size:13px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:10px;}
+.sb-captain{background:rgba(39,174,96,0.12);border:1px solid rgba(39,174,96,0.3);color:var(--success);}
+.sb-working{background:rgba(230,126,34,0.1);border:1px solid rgba(230,126,34,0.3);color:var(--warn);}
+.sb-start{background:rgba(201,168,76,0.07);border:1px solid var(--border);color:var(--slate);}
+/* GUEST LIST */
+.guest-add-row{display:flex;gap:10px;margin-bottom:12px;}
+input,select{background:var(--navy);border:1px solid var(--border);color:var(--cream);font-family:'Barlow',sans-serif;font-size:13px;padding:10px 12px;border-radius:3px;}
+input:focus,select:focus{outline:none;border-color:var(--gold);}
+.btn-add{padding:10px 18px;background:var(--gold);color:var(--navy);border:none;border-radius:3px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;}
+.guest-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(201,168,76,0.07);}
+.guest-row:last-child{border:none;}
+.g-name{flex:1;font-size:13px;font-weight:600;}
+.g-phone{font-size:11px;color:var(--slate);}
+.status-pill{font-size:10px;padding:3px 9px;border-radius:20px;font-family:'Barlow Condensed',sans-serif;font-weight:700;cursor:pointer;letter-spacing:0.04em;border:none;transition:all 0.15s;}
+.sp-invited{background:rgba(107,124,147,0.15);color:var(--slate);border:1px solid rgba(107,124,147,0.2);}
+.sp-confirmed{background:rgba(93,173,226,0.15);color:#5dade2;border:1px solid rgba(93,173,226,0.3);}
+.sp-showed{background:rgba(39,174,96,0.15);color:#2ecc71;border:1px solid rgba(39,174,96,0.3);}
+.sp-noshow{background:rgba(192,57,43,0.15);color:#e87070;border:1px solid rgba(192,57,43,0.3);}
+.del-btn{background:transparent;border:none;color:var(--slate);cursor:pointer;font-size:14px;padding:0 4px;}
+.del-btn:hover{color:var(--danger);}
+/* SCRIPTS */
+.script-box{background:var(--navy);border-left:3px solid var(--gold);padding:14px 16px;border-radius:0 4px 4px 0;margin:10px 0;font-size:13px;line-height:1.8;font-style:italic;}
+/* TOAST */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--navy-mid);border:1px solid var(--gold);border-radius:4px;padding:10px 18px;font-size:13px;transform:translateY(60px);opacity:0;transition:all 0.3s;z-index:999;color:var(--gold-light);}
+.toast.show{transform:translateY(0);opacity:1;}
+</style>
+
+<style>
+#guest-modal { display: none; }
+#guest-modal.open { display: flex; }
+</style>
+</head>
+<body>
+<script>AUTH.require('bom.html');</script>
+<div class="header">
+  <div class="header-left">
+    <div class="shield">👑</div>
+    <h1>BOM Tracker</h1>
+  </div>
+  <div style="display:flex;gap:8px;">
+    <button class="save-btn" onclick="saveBOM()">💾 Save Session</button>
+    <a href="hub.html" class="back-btn">← Hub</a>
+  </div>
+</div>
+<div class="content">
+  <div class="page-title">Business Opportunity Meeting</div>
+  <div class="page-sub">Your team meets twice weekly. Every agent is a Captain — bring at least 1 guest every BOM.</div>
+
+  <!-- SCHEDULE -->
+  <div class="schedule">
+    <div class="sched-card">
+      <div class="sched-icon">🌙</div>
+      <div>
+        <div class="sched-day">Tuesday Evenings</div>
+        <div class="sched-time">7:00 PM – 9:00 PM</div>
+        <div class="sched-tip">Dress professionally. Arrive 20 min early to greet your guests. Lead from the front.</div>
+      </div>
+    </div>
+    <div class="sched-card">
+      <div class="sched-icon">☀️</div>
+      <div>
+        <div class="sched-day">Saturday Mornings</div>
+        <div class="sched-time">10:30 AM – 12:30 PM</div>
+        <div class="sched-tip">Best for weekend prospects. Protects family afternoons. Great energy for the week ahead.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CAPTAIN SYSTEM -->
+  <div class="captain-banner">
+    <div class="cap-title">⚓ The Captain System</div>
+    <div class="cap-nums">
+      <div class="cap-num"><div class="cap-n">10</div><div class="cap-l">Invites Sent</div></div>
+      <div class="cap-num"><div class="cap-n">3</div><div class="cap-l">Confirmations</div></div>
+      <div class="cap-num"><div class="cap-n">1</div><div class="cap-l">Guest Shows</div></div>
+    </div>
+    <div class="cap-note">Every agent aims for this ratio. Send 10 invites expecting 3 to confirm and 1 to show. That 1 show is your recruiting momentum — it compounds over time.</div>
+  </div>
+
+  <!-- LOG THIS BOM -->
+  <div class="card">
+    <div class="card-title">📊 Log This Session</div>
+    <div class="counter-row">
+      <div class="counter-input">
+        <div class="ci-label">Invites Sent</div>
+        <div class="ci-controls">
+          <button class="ci-btn minus" onclick="adjust('invites',-1)">−</button>
+          <div class="ci-val" id="val-invites">0</div>
+          <button class="ci-btn plus" onclick="adjust('invites',1)">+</button>
+        </div>
+      </div>
+      <div class="counter-input">
+        <div class="ci-label">Confirmed</div>
+        <div class="ci-controls">
+          <button class="ci-btn minus" onclick="adjust('confirmed',-1)">−</button>
+          <div class="ci-val" id="val-confirmed">0</div>
+          <button class="ci-btn plus" onclick="adjust('confirmed',1)">+</button>
+        </div>
+      </div>
+      <div class="counter-input">
+        <div class="ci-label">Showed Up</div>
+        <div class="ci-controls">
+          <button class="ci-btn minus" onclick="adjust('showed',-1)">−</button>
+          <div class="ci-val" id="val-showed">0</div>
+          <button class="ci-btn plus" onclick="adjust('showed',1)">+</button>
+        </div>
+      </div>
+    </div>
+    <div class="status-banner sb-start" id="status-banner">
+      <span>⚓</span> Enter your numbers above to check Captain status
+    </div>
+  </div>
+
+  <!-- GUEST LIST -->
+  <div class="card">
+    <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;">
+      <span>👥 Guest List <span id="guest-count" style="color:var(--slate);font-weight:400;font-size:11px;">0 guests</span></span>
+      <button onclick="openGuestModal(null)" style="background:var(--gold);color:var(--navy);border:none;padding:6px 14px;border-radius:3px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;cursor:pointer;">+ Add Guest</button>
+    </div>
+    <div id="guest-list" style="margin-top:10px;"><div style="color:var(--slate);font-size:13px;padding:8px 0;">No guests yet — click Add Guest to start tracking.</div></div>
+  </div>
+
+  <!-- BOM SCRIPTS -->
+  <div class="card">
+    <div class="card-title">📝 BOM Invite Scripts</div>
+    <p style="font-size:12px;color:var(--slate);margin-bottom:12px;">Use these when inviting prospects — keep it short and create curiosity, not information overload.</p>
+    <div style="font-size:12px;font-weight:600;color:var(--gold-light);margin-bottom:6px;">Text Message Invite:</div>
+    <div class="script-box">"Hey [Name], I've been meaning to reach out. I'm doing something in the financial services space and I wanted to invite you to an info session I'm hosting with some colleagues. Zero pressure — just sharing what we do. This [Tuesday 7PM / Saturday 10:30AM]. Can you make it?"</div>
+    <div style="font-size:12px;font-weight:600;color:var(--gold-light);margin-top:14px;margin-bottom:6px;">Confirmation Call (Day Before):</div>
+    <div class="script-box">"Hey [Name], just confirming for tomorrow! We start at [time] — the session usually wraps in about 90 minutes. You'll be hearing from some top producers in our field. Excited for you to see this. You're still coming?"</div>
+    <div style="font-size:12px;font-weight:600;color:var(--gold-light);margin-top:14px;margin-bottom:6px;">Same-Night Follow-Up (After BOM):</div>
+    <div class="script-box">"Hey [Name], glad you came tonight! What stood out most to you? [Listen] — Great. I'd love to get you started. When are you free this week to sit down for 20 minutes?"</div>
+    <a href="portal.html" style="display:inline-block;margin-top:14px;font-size:12px;color:var(--gold);text-decoration:none;">More scripts in Agent Portal → Scripts tab →</a>
+  </div>
+
+  <!-- ── CAPTAIN LEADERBOARD ─────────────────────────────────── -->
+  <div class="card" style="margin-top:24px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px;">
+      <div class="card-title" style="margin:0;">🏆 Captain Leaderboard</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+        <select id="lb-period" onchange="loadLeaderboard()" style="font-size:11px;padding:6px 10px;">
+          <option value="all">All Time</option>
+          <option value="30">Last 30 Days</option>
+          <option value="7">Last 7 Days</option>
+          <option value="month">This Month</option>
+          <option value="custom">Custom Range</option>
+        </select>
+        <div id="lb-custom-range" style="display:none;gap:5px;align-items:center;display:none;">
+          <input type="date" id="lb-from" onchange="loadLeaderboard()" style="font-size:11px;padding:5px 8px;">
+          <span style="font-size:11px;color:var(--slate);">to</span>
+          <input type="date" id="lb-to" onchange="loadLeaderboard()" style="font-size:11px;padding:5px 8px;">
+        </div>
+        <select id="lb-day-filter" onchange="loadLeaderboard()" style="font-size:11px;padding:6px 10px;">
+          <option value="all">All Days</option>
+          <option value="Tuesday">Tuesdays</option>
+          <option value="Saturday">Saturdays</option>
+        </select>
+        <select id="lb-metric" onchange="loadLeaderboard()" style="font-size:11px;padding:6px 10px;">
+          <option value="showed">Guests Showed</option>
+          <option value="invites">Guests Invited</option>
+          <option value="confirmed">Guests Confirmed</option>
+          <option value="sessions">Sessions Attended</option>
+        </select>
+        <button onclick="loadLeaderboard()" style="font-size:11px;background:var(--gold);color:var(--navy);border:none;padding:6px 12px;border-radius:3px;font-family:'Barlow Condensed',sans-serif;font-weight:700;cursor:pointer;">↻ Refresh</button>
+      </div>
+    </div>
+    <div id="lb-loading" style="font-size:13px;color:var(--slate);text-align:center;padding:20px;display:none;">Loading from Monday.com…</div>
+    <div id="lb-content"></div>
+    <div id="lb-detail" style="margin-top:12px;"></div>
+  </div>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const session = AUTH.getSession();
+let counts = { invites:0, confirmed:0, showed:0 };
+let guests = [];
+
+function adjust(key, delta) {
+  counts[key] = Math.max(0, counts[key]+delta);
+  document.getElementById('val-'+key).textContent = counts[key];
+  updateStatus();
+}
+
+function updateStatus() {
+  const { invites, confirmed, showed } = counts;
+  const banner = document.getElementById('status-banner');
+  if (invites >= 10 && confirmed >= 3 && showed >= 1) {
+    banner.className = 'status-banner sb-captain';
+    banner.innerHTML = '⚓ <strong>Captain Status Achieved!</strong> 10 invites · 3 confirmed · 1+ showed. Great work!';
+  } else {
+    const missing = [];
+    if (invites  < 10) missing.push(`${10-invites} more invites`);
+    if (confirmed < 3) missing.push(`${3-confirmed} more confirmations`);
+    if (showed    < 1) missing.push('1 guest to show');
+    banner.className = 'status-banner sb-working';
+    banner.innerHTML = '⚠️ Not yet captain — need: <strong>' + missing.join(' · ') + '</strong>';
+  }
+}
+
+// ── GUEST MODAL SYSTEM ───────────────────────────────────────
+function openGuestModal(guestId) {
+  const g = guestId ? guests.find(x => x.id === guestId) : null;
+  const agentName = (AUTH.getSession()?.name) || '';
+  document.getElementById('gm-id').value        = guestId || '';
+  document.getElementById('gm-name').value      = g?.name      || '';
+  document.getElementById('gm-phone').value     = g?.phone     || '';
+  document.getElementById('gm-email').value     = g?.email     || '';
+  document.getElementById('gm-date').value      = g?.date      || new Date().toISOString().slice(0,10);
+  document.getElementById('gm-captain').value   = g?.captain   || agentName;
+  document.getElementById('gm-generator').value = g?.generator || '';
+  document.getElementById('gm-notes').value     = g?.notes     || '';
+  document.getElementById('gm-status').value    = g?.status    || 'Invited';
+  document.getElementById('gm-title').textContent = g ? 'Edit Guest — '+g.name : 'Add Guest';
+  document.getElementById('guest-modal').classList.add('open');
+}
+
+function saveGuestModal() {
+  const id   = parseInt(document.getElementById('gm-id').value) || null;
+  const name = document.getElementById('gm-name').value.trim();
+  if (!name) { toast('Guest name required'); return; }
+  const data = {
+    name,
+    phone:     document.getElementById('gm-phone').value.trim(),
+    email:     document.getElementById('gm-email').value.trim(),
+    date:      document.getElementById('gm-date').value,
+    captain:   document.getElementById('gm-captain').value.trim(),
+    generator: document.getElementById('gm-generator').value.trim(),
+    notes:     document.getElementById('gm-notes').value.trim(),
+    status:    document.getElementById('gm-status').value,
+  };
+  if (id) {
+    const g = guests.find(x => x.id === id);
+    if (g) Object.assign(g, data);
+    toast(name+' updated');
+  } else {
+    guests.push({ id: Date.now(), ...data });
+    adjust('invites', 1);
+    toast(name+' added');
+  }
+  document.getElementById('guest-modal').classList.remove('open');
+  renderGuests();
+  updateStatus();
+}
+
+function closeGuestModal() {
+  document.getElementById('guest-modal').classList.remove('open');
+}
+
+function addGuest() { openGuestModal(null); }
+
+const STATUS_CYCLE = ['Invited','Confirmed','Showed','No-Show'];
+const STATUS_CLS   = { Invited:'sp-invited', Confirmed:'sp-confirmed', Showed:'sp-showed', 'No-Show':'sp-noshow' };
+
+function cycleStatus(id) {
+  const g = guests.find(x=>x.id===id);
+  if (!g) return;
+  const ci = STATUS_CYCLE.indexOf(g.status);
+  const prev = g.status;
+  g.status = STATUS_CYCLE[(ci+1) % STATUS_CYCLE.length];
+  // Auto-update counters
+  if (prev === 'Invited' && g.status === 'Confirmed') adjust('confirmed', 1);
+  if (prev === 'Confirmed' && g.status === 'Showed') { adjust('showed', 1); }
+  if (g.status === 'No-Show' && prev === 'Showed') adjust('showed', -1);
+  renderGuests();
+}
+
+function removeGuest(id) {
+  guests = guests.filter(x=>x.id!==id);
+  renderGuests();
+}
+
+function renderGuests() {
+  document.getElementById('guest-count').textContent = guests.length + ' guest' + (guests.length!==1?'s':'');
+  const el = document.getElementById('guest-list');
+  if (!guests.length) {
+    el.innerHTML = '<div style="color:var(--slate);font-size:13px;padding:8px 0;">No guests added yet.</div>';
+    return;
+  }
+  el.innerHTML = guests.map(g => `
+    <div class="guest-row" style="flex-wrap:wrap;gap:8px;padding:12px 0;">
+      <div style="flex:1;min-width:180px;">
+        <div class="g-name">${g.name}</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:3px;">
+          ${g.phone ? `<a href="tel:${g.phone}" style="font-size:11px;color:var(--gold-light);text-decoration:none;">📞 ${g.phone}</a>` : ''}
+          ${g.email ? `<span style="font-size:11px;color:var(--slate);">✉ ${g.email}</span>` : ''}
+          ${g.captain ? `<span style="font-size:11px;color:var(--slate);" title="Captain — agent who invited guest to office">⚓ Captain: ${g.captain}</span>` : ''}
+          ${g.generator ? `<span style="font-size:11px;color:var(--gold-light);" title="Generator — original referrer">⚡ Gen: ${g.generator}</span>` : ''}
+          ${g.date ? `<span style="font-size:11px;color:var(--slate);">📅 ${g.date}</span>` : ''}
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
+        <button class="status-pill ${STATUS_CLS[g.status]||'sp-invited'}" onclick="cycleStatus(${g.id})">${g.status}</button>
+        <button onclick="openGuestModal(${g.id})" style="background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.25);color:var(--gold);padding:4px 10px;border-radius:3px;font-size:11px;cursor:pointer;">✏️</button>
+        <button class="del-btn" onclick="removeGuest(${g.id})">✕</button>
+      </div>
+    </div>`).join('');
+}
+
+function saveBOM() {
+  const data = {
+    agentId: session.agentId, agentName: session.name,
+    date: new Date().toISOString(),
+    ...counts, guests,
+    savedAt: new Date().toLocaleTimeString()
+  };
+
+  // Save to localStorage
+  try {
+    const all = JSON.parse(localStorage.getItem('dba_bom_sessions')||'[]');
+    all.push(data);
+    localStorage.setItem('dba_bom_sessions', JSON.stringify(all));
+  } catch(e){}
+
+  // Write to Monday.com BOM Guests board with correct column formats
+  const bomDate = new Date().toISOString().slice(0,10);
+  const bomType = new Date().getDay() === 2 ? 'Tuesday' : 'Saturday';
+
+  if (AUTH.getMondayKey()) {
+    syncBOMToMonday(bomDate, bomType);
+  }
+
+  // Write attendance record
+  writeAttendance(bomDate, bomType);
+
+  toast(`BOM saved ✅ — ${guests.length} guest${guests.length!==1?'s':''} logged to Monday.com`);
+}
+
+// ── MONDAY.COM BOM SYNC (correct column formats) ──────────────
+let _bomColIds = null;
+
+async function getBOMColIds() {
+  if (_bomColIds) return _bomColIds;
+  const res = await mondayQuery(`{ boards(ids:${TEAM.monday.boardBOMGuests}) { columns { id title type } } }`);
+  const cols = res?.data?.boards?.[0]?.columns || [];
+  if (!cols.length) { console.warn('[BOM] No columns on board', TEAM.monday.boardBOMGuests); return null; }
+  const find = (...kws) => cols.find(c => kws.some(k => (c.title||'').toLowerCase().includes(k)))?.id || null;
+  _bomColIds = {
+    agentId:    find('agent id','agent_id'),
+    agentName:  find('agent name','agent_name'),
+    bomDate:    find('bom date','date'),
+    bomType:    find('bom type','type','day'),
+    invites:    find('invite'),
+    confirmed:  find('confirmed','confirm'),
+    showed:     find('showed','show','attended'),
+    guestName:  find('guest name','guest_name'),
+    guestPhone: find('guest phone','phone'),
+    guestEmail: find('guest email','email'),
+    captain:    find('captain'),
+    generator:  find('generator','referrer','referred by'),
+    notes:      find('notes','note'),
+    status:     find('status'),
+  };
+  console.log('[BOM] Column IDs:', _bomColIds);
+  return _bomColIds;
+}
+
+async function syncBOMToMonday(bomDate, bomType) {
+  try {
+    const cols = await getBOMColIds();
+    if (!cols) return;
+
+    const cv = (map) => {
+      const obj = {};
+      Object.entries(map).forEach(([colId, val]) => { if (colId && val !== null && val !== undefined) obj[colId] = val; });
+      return JSON.stringify(JSON.stringify(obj));
+    };
+
+    // Fetch existing items once for dedup checking
+    let existingItems = [];
+    try {
+      const er = await mondayQuery(`{boards(ids:${TEAM.monday.boardBOMGuests}){items_page(limit:500){items{id name column_values{id text}}}}}`);
+      existingItems = er?.data?.boards?.[0]?.items_page?.items || [];
+    } catch(e) { console.warn('[BOM] Could not fetch existing items for dedup:', e.message); }
+
+    const findExisting = (matchName) => existingItems.find(item =>
+      item.name.toLowerCase() === matchName.toLowerCase()
+    );
+
+    const upsert = async (itemName, colMap) => {
+      const existing = findExisting(itemName);
+      if (existing) {
+        // Update existing row — no duplicate created
+        await mondayQuery(`mutation{change_multiple_column_values(board_id:${TEAM.monday.boardBOMGuests},item_id:${existing.id},column_values:${cv(colMap)}){id}}`);
+        console.log('[BOM] Updated existing:', itemName);
+      } else {
+        await mondayQuery(`mutation{create_item(board_id:${TEAM.monday.boardBOMGuests},item_name:"${itemName.replace(/"/g,"'")}",column_values:${cv(colMap)}){id}}`);
+        console.log('[BOM] Created new:', itemName);
+      }
+    };
+
+    // 1. Session summary row — keyed by "AgentName · BomType BOM · Date"
+    const summaryMap = {};
+    if (cols.agentId)   summaryMap[cols.agentId]   = session.agentId;
+    if (cols.agentName) summaryMap[cols.agentName] = session.name;
+    if (cols.bomDate)   summaryMap[cols.bomDate]   = { date: bomDate };
+    if (cols.bomType)   summaryMap[cols.bomType]   = bomType;
+    if (cols.invites)   summaryMap[cols.invites]   = counts.invites;
+    if (cols.confirmed) summaryMap[cols.confirmed] = counts.confirmed;
+    if (cols.showed)    summaryMap[cols.showed]    = counts.showed;
+
+    await upsert(`${session.name} · ${bomType} BOM · ${bomDate}`, summaryMap);
+
+    // 2. One row per guest — keyed by "GuestName · AgentName · Date"
+    //    If same guest name + same agent + same date exists, update it
+    for (const g of guests) {
+      const gMap = {};
+      if (cols.agentId)    gMap[cols.agentId]   = session.agentId;
+      if (cols.agentName)  gMap[cols.agentName] = session.name;
+      if (cols.bomDate)    gMap[cols.bomDate]   = { date: bomDate };
+      if (cols.bomType)    gMap[cols.bomType]   = bomType;
+      if (cols.guestName)  gMap[cols.guestName] = g.name;
+      if (cols.captain && g.captain)    gMap[cols.captain]    = g.captain;
+      if (cols.generator && g.generator) gMap[cols.generator]  = g.generator;
+      if (cols.guestEmail && g.email)   gMap[cols.guestEmail] = { email: g.email, text: g.email };
+      if (cols.notes && g.notes)        gMap[cols.notes]      = g.notes;
+      if (cols.guestPhone && g.phone) {
+        const d = (g.phone||'').replace(/\D/g,'');
+        gMap[cols.guestPhone] = d.length >= 7 ? { phone: d, countryShortName:'US' } : g.phone;
+      }
+
+      // Dedup key: guest name + agent + date
+      await upsert(`Guest: ${g.name} · ${session.name} · ${bomDate}`, gMap);
+    }
+    console.log('[BOM] Sync complete — session + ' + guests.length + ' guests');
+  } catch(e) {
+    console.warn('[BOM] Sync error:', e.message);
+  }
+}
+
+// ── BOM ATTENDANCE BOARD ──────────────────────────────────────
+const ATTEND_KEY = 'dba_bom_attend_board';
+
+const ATTEND_BOARD_DEFAULT = '18416040867'; // BOM Attendance — static, admin-created
+
+async function getAttendBoard() {
+  const stored = localStorage.getItem(ATTEND_KEY);
+  if (stored) return stored;
+  if (ATTEND_BOARD_DEFAULT) return ATTEND_BOARD_DEFAULT;
+  // Auto-create (fallback only if static default not set)
+  try {
+    const res = await mondayQuery(`mutation {
+      create_board(board_name:"DBA — BOM Attendance", board_kind:public) { id }
+    }`);
+    const id = res?.data?.create_board?.id;
+    if (!id) return null;
+    const COLS = [
+      {title:'Agent ID',    type:'text'},
+      {title:'Agent Name',  type:'text'},
+      {title:'BOM Date',    type:'date'},
+      {title:'BOM Day',     type:'text'},
+      {title:'BOM Type',    type:'text'},
+      {title:'Guests',      type:'numbers'},
+      {title:'Confirmed',   type:'numbers'},
+      {title:'Showed',      type:'numbers'},
+      {title:'Week',        type:'text'},
+    ];
+    for (const c of COLS) {
+      await mondayQuery(`mutation{create_column(board_id:${id},title:"${c.title}",column_type:${c.type}){id}}`).catch(()=>{});
+    }
+    localStorage.setItem(ATTEND_KEY, id);
+    return id;
+  } catch(e){ return null; }
+}
+
+async function writeAttendance(bomDate, bomType) {
+  if (!AUTH.getMondayKey()) return;
+  const boardId = await getAttendBoard();
+  if (!boardId) return;
+
+  // Resolve columns
+  let cv = {};
+  try {
+    const r = await mondayQuery(`{boards(ids:${boardId}){columns{id title type}}}`);
+    const cols = r?.data?.boards?.[0]?.columns||[];
+    const find = (...kws) => cols.find(c=>kws.some(k=>(c.title||'').toLowerCase().includes(k)))?.id||null;
+    const cAId  = find('agent id');
+    const cANm  = find('agent name');
+    const cDate = find('bom date','date');
+    const cDay  = find('bom day','day');
+    const cType = find('bom type','type');
+    const cGst  = find('guests');
+    const cConf = find('confirmed');
+    const cSh   = find('showed');
+    const cWk   = find('week');
+    const week  = `${new Date().getFullYear()}-W${String(getISOWeek(new Date())).padStart(2,'0')}`;
+    if(cAId)  cv[cAId]  = session.agentId;
+    if(cANm)  cv[cANm]  = session.name;
+    if(cDate && bomDate) cv[cDate] = {date:bomDate};
+    if(cDay)  cv[cDay]  = bomType; // Tuesday / Saturday
+    if(cType) cv[cType] = 'BOM';
+    if(cGst)  cv[cGst]  = counts.invites||0;
+    if(cConf) cv[cConf] = counts.confirmed||0;
+    if(cSh)   cv[cSh]   = counts.showed||0;
+    if(cWk)   cv[cWk]   = week;
+  } catch(e){ cv = {}; }
+
+  const itemName = `${session.name} · ${bomType} BOM · ${bomDate}`;
+  mondayQuery(`mutation{create_item(board_id:${boardId},item_name:"${itemName.replace(/"/g,"'")}",column_values:${JSON.stringify(JSON.stringify(cv))}){id}}`).catch(()=>{});
+}
+
+function getISOWeek(d) {
+  const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  date.setUTCDate(date.getUTCDate() + 4 - (date.getUTCDay()||7));
+  const yearStart = new Date(Date.UTC(date.getUTCFullYear(),0,1));
+  return Math.ceil((((date - yearStart) / 86400000) + 1)/7);
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+
+// ── CAPTAIN LEADERBOARD ───────────────────────────────────────
+document.getElementById('lb-period').addEventListener('change', function() {
+  const cr = document.getElementById('lb-custom-range');
+  cr.style.display = this.value === 'custom' ? 'flex' : 'none';
+  if (this.value !== 'custom') loadLeaderboard();
+});
+
+async function loadLeaderboard() {
+  const period    = document.getElementById('lb-period').value;
+  const dayFilter = document.getElementById('lb-day-filter').value;
+  const metric    = document.getElementById('lb-metric').value;
+  const fromEl    = document.getElementById('lb-from');
+  const toEl      = document.getElementById('lb-to');
+
+  // Calculate date range
+  const now  = new Date();
+  let fromDate = null, toDate = now.toISOString().slice(0,10);
+  if (period === '7')      fromDate = new Date(now - 7*86400000).toISOString().slice(0,10);
+  else if (period === '30') fromDate = new Date(now - 30*86400000).toISOString().slice(0,10);
+  else if (period === 'month') fromDate = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0,10);
+  else if (period === 'custom') { fromDate = fromEl.value; toDate = toEl.value || toDate; }
+
+  document.getElementById('lb-loading').style.display = 'block';
+  document.getElementById('lb-content').innerHTML = '';
+
+  if (!AUTH.getMondayKey()) {
+    // Fall back to localStorage sessions
+    loadLocalLeaderboard(fromDate, toDate, dayFilter, metric);
+    return;
+  }
+
+  try {
+    // Fetch all items from BOM Guests board
+    let allItems = [], cursor = null;
+    do {
+      const ca = cursor ? `,cursor:"${cursor}"` : '';
+      const res = await mondayQuery(`{
+        boards(ids:${TEAM.monday.boardBOMGuests}) {
+          items_page(limit:100${ca}) {
+            cursor
+            items { id name column_values { id text } }
+          }
+        }
+      }`);
+      const page = res?.data?.boards?.[0]?.items_page;
+      if (!page) break;
+      allItems = allItems.concat(page.items||[]);
+      cursor = page.cursor||null;
+    } while (cursor);
+
+    // Parse items — filter to session rows (not guest rows)
+    const sessions = allItems
+      .filter(item => !item.name.startsWith('Guest:'))
+      .map(item => {
+        const get = (...kws) => item.column_values.find(c => kws.some(k=>(c.title||'').toLowerCase().includes(k)))?.text||'';
+        return {
+          agentId:   get('agent id','agent_id'),
+          agentName: get('agent name','agent_name') || item.name.split(' ·')[0],
+          date:      get('bom date','date'),
+          day:       get('bom type','type','day','bom day'),
+          invites:   parseInt(get('invite'))||0,
+          confirmed: parseInt(get('confirmed','confirm'))||0,
+          showed:    parseInt(get('showed','show','attended'))||0,
+        };
+      })
+      .filter(s => {
+        if (!s.agentId && !s.agentName) return false;
+        if (fromDate && s.date < fromDate) return false;
+        if (toDate   && s.date > toDate)   return false;
+        if (dayFilter !== 'all' && s.day && !s.day.toLowerCase().includes(dayFilter.toLowerCase())) return false;
+        return true;
+      });
+
+    renderLeaderboard(sessions, metric, dayFilter);
+
+  } catch(e) {
+    document.getElementById('lb-content').innerHTML = `<div style="color:var(--slate);font-size:13px;padding:16px;">Could not load from Monday.com: ${e.message}. Showing local data.</div>`;
+    loadLocalLeaderboard(fromDate, toDate, dayFilter, metric);
+  }
+  document.getElementById('lb-loading').style.display = 'none';
+}
+
+function loadLocalLeaderboard(fromDate, toDate, dayFilter, metric) {
+  try {
+    const sessions = JSON.parse(localStorage.getItem('dba_bom_sessions')||'[]')
+      .filter(s => {
+        const d = s.date?.slice(0,10);
+        if (fromDate && d < fromDate) return false;
+        if (toDate   && d > toDate)   return false;
+        if (dayFilter !== 'all') {
+          const day = new Date(d).getDay();
+          if (dayFilter === 'Tuesday'  && day !== 2) return false;
+          if (dayFilter === 'Saturday' && day !== 6) return false;
+        }
+        return true;
+      });
+    renderLeaderboard(sessions, metric, dayFilter);
+  } catch(e) {}
+  document.getElementById('lb-loading').style.display = 'none';
+}
+
+function renderLeaderboard(sessions, metric, dayFilter) {
+  // Aggregate by agent
+  const agentMap = {};
+  sessions.forEach(s => {
+    const key = s.agentId || s.agentName || 'Unknown';
+    const name = s.agentName || AGENTS.find(a=>a.id===key)?.name || key;
+    if (!agentMap[key]) agentMap[key] = { name, sessions:0, invites:0, confirmed:0, showed:0, tue:0, sat:0 };
+    agentMap[key].sessions++;
+    agentMap[key].invites   += s.invites   || 0;
+    agentMap[key].confirmed += s.confirmed || 0;
+    agentMap[key].showed    += s.showed    || 0;
+    if ((s.day||'').toLowerCase().includes('tue')) agentMap[key].tue++;
+    else agentMap[key].sat++;
+  });
+
+  const metricKey = metric === 'sessions' ? 'sessions' : metric;
+  const rows = Object.values(agentMap).sort((a,b) => b[metricKey] - a[metricKey]);
+  const maxVal = Math.max(...rows.map(r=>r[metricKey]), 1);
+
+  const METRIC_LABELS = { showed:'Guests Showed', invites:'Guests Invited', confirmed:'Guests Confirmed', sessions:'Sessions' };
+
+  if (!rows.length) {
+    document.getElementById('lb-content').innerHTML = `<div style="color:var(--slate);font-size:13px;padding:16px;text-align:center;">No BOM sessions found for this period. Save a session above to start tracking.</div>`;
+    return;
+  }
+
+  // Summary stats
+  const totalSessions = sessions.length;
+  const totalGuests   = sessions.reduce((s,r)=>s+r.showed,0);
+  const tueCount      = sessions.filter(s=>(s.day||'').toLowerCase().includes('tue')).length;
+  const satCount      = sessions.filter(s=>(s.day||'').toLowerCase().includes('sat')).length;
+
+  const isMeKey = session.agentId;
+
+  document.getElementById('lb-content').innerHTML = `
+    <div style="display:flex;gap:16px;margin-bottom:14px;flex-wrap:wrap;">
+      <div style="font-size:12px;color:var(--slate);">📅 <strong style="color:var(--cream);">${totalSessions}</strong> sessions</div>
+      <div style="font-size:12px;color:var(--slate);">📅 Tue: <strong style="color:var(--cream);">${tueCount}</strong></div>
+      <div style="font-size:12px;color:var(--slate);">📅 Sat: <strong style="color:var(--cream);">${satCount}</strong></div>
+      <div style="font-size:12px;color:var(--slate);">👥 <strong style="color:var(--cream);">${totalGuests}</strong> total guests showed</div>
+    </div>
+    <table style="width:100%;border-collapse:collapse;">
+      <thead><tr>
+        <th style="font-size:10px;color:var(--slate);padding:7px 12px;text-align:left;border-bottom:1px solid var(--border);font-family:'Barlow Condensed',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.09em;">#</th>
+        <th style="font-size:10px;color:var(--slate);padding:7px 12px;text-align:left;border-bottom:1px solid var(--border);font-family:'Barlow Condensed',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.09em;">Captain</th>
+        <th style="font-size:10px;color:var(--slate);padding:7px 12px;text-align:center;border-bottom:1px solid var(--border);font-family:'Barlow Condensed',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.09em;">Sessions</th>
+        <th style="font-size:10px;color:var(--slate);padding:7px 12px;text-align:center;border-bottom:1px solid var(--border);font-family:'Barlow Condensed',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.09em;">Tue</th>
+        <th style="font-size:10px;color:var(--slate);padding:7px 12px;text-align:center;border-bottom:1px solid var(--border);font-family:'Barlow Condensed',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.09em;">Sat</th>
+        <th style="font-size:10px;color:var(--slate);padding:7px 12px;text-align:center;border-bottom:1px solid var(--border);font-family:'Barlow Condensed',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.09em;">Invited</th>
+        <th style="font-size:10px;color:var(--slate);padding:7px 12px;text-align:center;border-bottom:1px solid var(--border);font-family:'Barlow Condensed',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.09em;">Showed</th>
+        <th style="font-size:10px;color:var(--slate);padding:7px 12px;border-bottom:1px solid var(--border);font-family:'Barlow Condensed',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.09em;">${METRIC_LABELS[metric]}</th>
+      </tr></thead>
+      <tbody>
+        ${rows.map((r,i) => {
+          const isMe = (r.agentId || Object.keys(agentMap)[i]) === isMeKey;
+          const rank = i+1;
+          const rkColor = rank===1?'var(--gold)':rank===2?'#C0C0C0':rank===3?'#CD7F32':'var(--slate)';
+          const pct = Math.round((r[metricKey]/maxVal)*100);
+          return `<tr style="${isMe?'background:rgba(201,168,76,.05);':''}">
+            <td style="padding:9px 12px;font-family:'DM Mono',monospace;font-size:12px;color:${rkColor};font-weight:700;">${rank}</td>
+            <td style="padding:9px 12px;font-size:13px;font-weight:600;">${r.name}${isMe?' <span style="font-size:9px;color:var(--gold);font-family:Barlow Condensed,sans-serif;font-weight:700;">(you)</span>':''}</td>
+            <td style="padding:9px 12px;text-align:center;font-family:'DM Mono',monospace;font-size:13px;">${r.sessions}</td>
+            <td style="padding:9px 12px;text-align:center;font-size:12px;color:var(--slate);">${r.tue}</td>
+            <td style="padding:9px 12px;text-align:center;font-size:12px;color:var(--slate);">${r.sat}</td>
+            <td style="padding:9px 12px;text-align:center;font-family:'DM Mono',monospace;font-size:13px;">${r.invites}</td>
+            <td style="padding:9px 12px;text-align:center;font-family:'DM Mono',monospace;font-size:13px;color:var(--success);font-weight:700;">${r.showed}</td>
+            <td style="padding:9px 12px;">
+              <div style="display:flex;align-items:center;gap:6px;">
+                <div style="flex:1;height:5px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;"><div style="width:${pct}%;height:100%;background:var(--gold);border-radius:2px;"></div></div>
+                <span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--gold-light);font-weight:700;min-width:24px;">${r[metricKey]}</span>
+              </div>
+            </td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>`;
+}
+
+// Load leaderboard on page open
+setTimeout(loadLeaderboard, 500);
+
+renderGuests();
+</script>
+
+<!-- ── GUEST ADD/EDIT MODAL ── -->
+<div id="guest-modal" style="position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:500;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#132240;border:1px solid rgba(201,168,76,.25);border-radius:6px;width:100%;max-width:480px;max-height:92vh;overflow-y:auto;font-family:'Barlow',sans-serif;">
+    <div style="height:3px;background:linear-gradient(90deg,transparent,#C9A84C,transparent);"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid rgba(201,168,76,.15);">
+      <div id="gm-title" style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;color:#E8C97A;text-transform:uppercase;letter-spacing:.08em;">Add Guest</div>
+      <button onclick="closeGuestModal()" style="background:transparent;border:none;color:#6B7C93;font-size:18px;cursor:pointer;line-height:1;">✕</button>
+    </div>
+    <div style="padding:20px;">
+      <input type="hidden" id="gm-id">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+        <div style="grid-column:1/-1;">
+          <label style="display:block;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(201,168,76,.7);margin-bottom:5px;">Guest Name *</label>
+          <input type="text" id="gm-name" placeholder="Full name" style="width:100%;background:#0A1628;border:1px solid rgba(201,168,76,.2);color:#FAF6EE;font-size:13px;padding:10px 12px;border-radius:3px;outline:none;">
+        </div>
+        <div>
+          <label style="display:block;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(201,168,76,.7);margin-bottom:5px;">Phone</label>
+          <input type="tel" id="gm-phone" placeholder="(555) 000-0000" style="width:100%;background:#0A1628;border:1px solid rgba(201,168,76,.2);color:#FAF6EE;font-size:13px;padding:10px 12px;border-radius:3px;outline:none;">
+        </div>
+        <div>
+          <label style="display:block;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(201,168,76,.7);margin-bottom:5px;">Email</label>
+          <input type="email" id="gm-email" placeholder="guest@email.com" style="width:100%;background:#0A1628;border:1px solid rgba(201,168,76,.2);color:#FAF6EE;font-size:13px;padding:10px 12px;border-radius:3px;outline:none;">
+        </div>
+        <div>
+          <label style="display:block;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(201,168,76,.7);margin-bottom:5px;">BOM Date</label>
+          <input type="date" id="gm-date" style="width:100%;background:#0A1628;border:1px solid rgba(201,168,76,.2);color:#FAF6EE;font-size:13px;padding:10px 12px;border-radius:3px;outline:none;">
+        </div>
+        <div>
+          <label style="display:block;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(201,168,76,.7);margin-bottom:5px;">Captain <span style="color:rgba(255,255,255,.3);font-size:9px;">(Agent who invited guest to office)</span></label>
+          <input type="text" id="gm-captain" placeholder="Agent name who brought guest" style="width:100%;background:#0A1628;border:1px solid rgba(201,168,76,.2);color:#FAF6EE;font-size:13px;padding:10px 12px;border-radius:3px;outline:none;">
+        </div>
+        <div>
+          <label style="display:block;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(201,168,76,.7);margin-bottom:5px;">Generator <span style="color:rgba(255,255,255,.3);font-size:9px;">(Original referrer)</span></label>
+          <input type="text" id="gm-generator" placeholder="Who originally referred this guest" style="width:100%;background:#0A1628;border:1px solid rgba(201,168,76,.2);color:#FAF6EE;font-size:13px;padding:10px 12px;border-radius:3px;outline:none;">
+        </div>
+        <div>
+          <label style="display:block;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(201,168,76,.7);margin-bottom:5px;">Status</label>
+          <select id="gm-status" style="width:100%;background:#0A1628;border:1px solid rgba(201,168,76,.2);color:#FAF6EE;font-size:13px;padding:10px 12px;border-radius:3px;outline:none;">
+            <option>Invited</option>
+            <option>Confirmed</option>
+            <option>Showed</option>
+            <option>No-Show</option>
+          </select>
+        </div>
+        <div style="grid-column:1/-1;">
+          <label style="display:block;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(201,168,76,.7);margin-bottom:5px;">Notes</label>
+          <textarea id="gm-notes" placeholder="Interest level, follow-up needed, etc." style="width:100%;background:#0A1628;border:1px solid rgba(201,168,76,.2);color:#FAF6EE;font-size:13px;padding:10px 12px;border-radius:3px;outline:none;min-height:60px;resize:vertical;font-family:'Barlow',sans-serif;"></textarea>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;padding:14px 20px;border-top:1px solid rgba(201,168,76,.15);">
+      <button onclick="closeGuestModal()" style="background:transparent;border:1px solid rgba(255,255,255,.1);color:#6B7C93;padding:9px 18px;border-radius:3px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;">Cancel</button>
+      <button onclick="saveGuestModal()" style="background:#C9A84C;color:#0A1628;border:none;padding:9px 22px;border-radius:3px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:.05em;">Save Guest</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

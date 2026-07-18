@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DBA — Incentives & Contests</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700&family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="auth.js?v=20260713"></script>
+<style>
+:root{--navy:#0A1628;--navy-mid:#112040;--navy-light:#1A3158;--gold:#C9A84C;--gold-light:#E8C97A;--cream:#FAF6EE;--success:#27AE60;--warn:#E67E22;--danger:#C0392B;--slate:#6B7C93;--border:rgba(201,168,76,0.22);}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);min-height:100vh;}
+.header{background:rgba(10,22,40,0.97);border-bottom:1px solid var(--border);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.header-left{display:flex;align-items:center;gap:12px;}
+.shield{width:30px;height:34px;background:linear-gradient(160deg,var(--gold) 0%,#7a5c14 100%);clip-path:polygon(50% 0%,100% 18%,100% 65%,50% 100%,0% 65%,0% 18%);display:flex;align-items:center;justify-content:center;font-size:12px;}
+.header h1{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--gold);}
+.back-btn{font-size:12px;color:var(--gold);text-decoration:none;border:1px solid var(--border);padding:6px 12px;border-radius:3px;}
+.content{padding:22px 24px;max-width:900px;margin:0 auto;}
+.page-title{font-family:'Cormorant Garamond',serif;font-size:28px;color:var(--gold);margin-bottom:6px;}
+.page-sub{font-size:13px;color:var(--slate);margin-bottom:24px;}
+.section-title{font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--gold);margin:28px 0 16px;display:flex;align-items:center;gap:10px;}
+/* HERO EVENT */
+.event-hero{background:linear-gradient(135deg,rgba(201,168,76,0.12) 0%,var(--navy-mid) 50%,rgba(10,22,40,0.9) 100%);border:1px solid rgba(201,168,76,0.4);border-radius:8px;padding:28px;margin-bottom:28px;position:relative;overflow:hidden;}
+.event-hero::before{content:'';position:absolute;top:-60px;right:-60px;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(201,168,76,0.08) 0%,transparent 70%);pointer-events:none;}
+.event-name{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;color:var(--gold);letter-spacing:0.15em;text-transform:uppercase;margin-bottom:8px;}
+.event-title{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:700;color:var(--cream);line-height:1.1;margin-bottom:8px;}
+.event-details{font-size:13px;color:var(--slate);line-height:1.8;margin-bottom:18px;}
+.event-details strong{color:var(--cream);}
+.event-link{display:inline-flex;align-items:center;gap:6px;background:var(--gold);color:var(--navy);padding:10px 20px;border-radius:3px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;text-decoration:none;letter-spacing:0.05em;transition:opacity 0.2s;}
+.event-link:hover{opacity:0.88;}
+/* TIER CARDS */
+.tiers{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:28px;}
+@media(max-width:640px){.tiers{grid-template-columns:1fr;}}
+.tier{border-radius:6px;padding:24px 18px;text-align:center;position:relative;}
+.tier-bronze{background:linear-gradient(160deg,rgba(180,100,30,0.15) 0%,var(--navy-mid) 60%);border:1px solid rgba(180,100,30,0.4);}
+.tier-silver{background:linear-gradient(160deg,rgba(160,170,185,0.12) 0%,var(--navy-mid) 60%);border:1px solid rgba(160,170,185,0.35);}
+.tier-gold{background:linear-gradient(160deg,rgba(201,168,76,0.18) 0%,var(--navy-mid) 60%);border:1px solid var(--gold);}
+.tier-medal{font-size:42px;margin-bottom:10px;}
+.tier-name{font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:800;letter-spacing:0.06em;margin-bottom:8px;}
+.tier-bronze .tier-name{color:#cd8030;}
+.tier-silver .tier-name{color:#b0bac8;}
+.tier-gold .tier-name{color:var(--gold);}
+.tier-req{font-size:14px;color:var(--cream);font-weight:600;margin-bottom:6px;}
+.tier-reward{font-size:11px;color:var(--slate);margin-bottom:12px;line-height:1.5;}
+.tier-badge{display:inline-block;padding:4px 12px;border-radius:20px;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.04em;}
+.tier-bronze .tier-badge{background:rgba(180,100,30,0.15);color:#cd8030;border:1px solid rgba(180,100,30,0.3);}
+.tier-silver .tier-badge{background:rgba(160,170,185,0.1);color:#b0bac8;border:1px solid rgba(160,170,185,0.3);}
+.tier-gold .tier-badge{background:rgba(201,168,76,0.15);color:var(--gold);border:1px solid rgba(201,168,76,0.3);}
+/* PROGRESS CALCULATOR */
+.calc-card{background:var(--navy-mid);border:1px solid var(--border);border-radius:4px;padding:22px;margin-bottom:24px;}
+.calc-title{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:16px;}
+.calc-inputs{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px;}
+@media(max-width:500px){.calc-inputs{grid-template-columns:1fr;}}
+.field-label{font-size:11px;color:rgba(250,246,238,0.6);font-weight:600;letter-spacing:0.09em;text-transform:uppercase;display:block;margin-bottom:6px;}
+input[type=number]{width:100%;background:var(--navy);border:1px solid var(--border);color:var(--cream);font-family:'Barlow Condensed',sans-serif;font-size:22px;padding:10px 13px;border-radius:3px;font-weight:700;}
+input[type=number]:focus{outline:none;border-color:var(--gold);}
+.tier-bars{display:flex;flex-direction:column;gap:14px;}
+.tier-bar-group{}
+.tbg-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.tbg-name{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.04em;}
+.tbg-status{font-size:11px;font-weight:600;}
+.prog-row{margin-bottom:6px;}
+.prog-lbl{display:flex;justify-content:space-between;font-size:11px;color:var(--slate);margin-bottom:4px;}
+.prog-bar{height:7px;background:rgba(201,168,76,0.1);border-radius:3px;overflow:hidden;}
+.prog-fill{height:7px;border-radius:3px;transition:width 0.6s ease;}
+.fill-bronze{background:linear-gradient(90deg,#cd8030 0%,#e09848 100%);}
+.fill-silver{background:linear-gradient(90deg,#8090a8 0%,#b0bac8 100%);}
+.fill-gold{background:linear-gradient(90deg,var(--gold) 0%,var(--gold-light) 100%);}
+.fill-done{background:linear-gradient(90deg,var(--success) 0%,#2ecc71 100%);}
+/* MILESTONES */
+.milestone-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px;}
+@media(max-width:560px){.milestone-grid{grid-template-columns:1fr;}}
+.milestone{background:var(--navy-mid);border:1px solid var(--border);border-radius:4px;padding:16px;display:flex;align-items:flex-start;gap:14px;transition:border-color 0.2s;}
+.milestone:hover{border-color:rgba(201,168,76,0.4);}
+.ms-icon{font-size:26px;flex-shrink:0;}
+.ms-body h3{font-size:14px;font-weight:600;margin-bottom:3px;}
+.ms-body p{font-size:12px;color:var(--slate);line-height:1.5;}
+.ms-reward{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:var(--gold);margin-top:6px;}
+/* TEAM LEADERBOARD MINI */
+.lb-mini{background:var(--navy-mid);border:1px solid var(--border);border-radius:4px;overflow:hidden;margin-bottom:24px;}
+.lb-mini-row{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid rgba(201,168,76,0.07);}
+.lb-mini-row:last-child{border-bottom:none;}
+.lb-rank{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;width:28px;flex-shrink:0;}
+.lb-name{flex:1;font-size:13px;font-weight:600;}
+.lb-pts{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;color:var(--gold-light);}
+.lb-bar-wrap{width:80px;height:4px;background:rgba(201,168,76,0.1);border-radius:2px;}
+.lb-bar-fill{height:4px;background:var(--gold);border-radius:2px;}
+</style>
+</head>
+<body>
+<script>AUTH.require('incentives.html');</script>
+<div class="header">
+  <div class="header-left">
+    <div class="shield">👑</div>
+    <h1>Contests & Incentives</h1>
+  </div>
+  <a href="incentive-tracker.html" class="back-btn" style="margin-right:8px;">📊 Agent Tracker</a><a href="hub.html" class="back-btn">← Hub</a>
+</div>
+<div class="content">
+  <div class="page-title">Incentives & Recognition</div>
+  <div class="page-sub">Track contest progress, earn your trip to Las Vegas, and build toward every DBA milestone.</div>
+
+  <!-- EVENT HERO -->
+  <div class="event-hero">
+    <div class="event-name">PHP Agency · August 2026</div>
+    <div class="event-title">PHP Lights Out 2026 🎰</div>
+    <div class="event-details">
+      <strong>MGM Grand Garden Arena · Las Vegas, Nevada</strong><br>
+      August 3–6, 2026<br>
+      Speakers: Tony Robbins · Patrick Bet-David · Guenther Steiner (F1)<br>
+      Gala Night · Recognition Ceremony · Team Reunion
+    </div>
+    <a href="lights-out.html" class="event-link">Register Now — Lights Out 2026 →</a>
+  </div>
+
+  <!-- TIER CARDS -->
+  <div class="section-title">🏆 Contest Tiers</div>
+  <div class="tiers">
+    <div class="tier tier-bronze">
+      <div class="tier-medal">🥉</div>
+      <div class="tier-name">Bronze</div>
+      <div class="tier-req">10 Recruits + 10,000 Pts</div>
+      <div class="tier-reward">Trip to Las Vegas paid<br>within contest window</div>
+      <div class="tier-badge">Trip Covered</div>
+    </div>
+    <div class="tier tier-silver">
+      <div class="tier-medal">🥈</div>
+      <div class="tier-name">Silver</div>
+      <div class="tier-req">20 Recruits + 20,000 Pts</div>
+      <div class="tier-reward">Trip + Hotel covered<br>within contest window</div>
+      <div class="tier-badge">Trip + Hotel</div>
+    </div>
+    <div class="tier tier-gold">
+      <div class="tier-medal">🥇</div>
+      <div class="tier-name">Gold</div>
+      <div class="tier-req">30 Recruits + 30,000 Pts</div>
+      <div class="tier-reward">Full package: trip, hotel,<br>VIP recognition on stage</div>
+      <div class="tier-badge">Full VIP Package</div>
+    </div>
+  </div>
+
+  <!-- MY PROGRESS CALCULATOR -->
+  <div class="calc-card">
+    <div class="calc-title">📊 My Contest Progress</div>
+    <div class="calc-inputs">
+      <div>
+        <label class="field-label">My Recruits (Contest Period)</label>
+        <input type="number" id="i-recruits" value="0" min="0" oninput="updateCalc()">
+      </div>
+      <div>
+        <label class="field-label">My Production Points</label>
+        <input type="number" id="i-pts" value="0" min="0" step="500" oninput="updateCalc()">
+      </div>
+    </div>
+    <div class="tier-bars" id="tier-bars"></div>
+    <div id="contest-verdict" style="margin-top:14px;padding:12px 14px;border-radius:3px;font-size:13px;font-weight:600;"></div>
+  </div>
+
+  <!-- ══ JUNE PROMOTIONS INCENTIVE ══ -->
+  <div class="section-title" style="margin-top:28px;">🗓️ June 2026 Official Announcements</div>
+
+  <!-- OFFICIAL BANNER -->
+  <div style="background:linear-gradient(135deg,rgba(201,168,76,.1),rgba(201,168,76,.03));border:1px solid rgba(201,168,76,.4);border-radius:6px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:14px;">
+    <div style="font-size:1.8rem;flex-shrink:0;">📣</div>
+    <div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:.08em;">Jubilee June 2026 — PHP Agency Official Announcements</div>
+      <div style="font-size:12px;color:var(--slate);margin-top:2px;">Subject to change at any time &nbsp;·&nbsp; © PHP Agency, LLC 2026</div>
+    </div>
+  </div>
+
+  <!-- ① ASSOCIATE FAST TRACK -->
+  <div style="background:linear-gradient(135deg,rgba(39,174,96,.08),var(--navy-mid));border:1px solid rgba(39,174,96,.35);border-radius:6px;padding:20px 22px;margin-bottom:14px;position:relative;overflow:hidden;">
+    <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,#27AE60,transparent);"></div>
+    <div style="display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap;">
+      <div style="background:rgba(39,174,96,.15);border:1px solid rgba(39,174,96,.3);border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;color:#2DCA73;flex-shrink:0;">1</div>
+      <div style="flex:1;min-width:220px;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;color:#2DCA73;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Associate Promotion — Fast Track</div>
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(45,202,115,.7);letter-spacing:.12em;margin-bottom:12px;">JUNE 1 – JUNE 6, 2026 ONLY</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+          <div style="background:rgba(39,174,96,.1);border:1px solid rgba(39,174,96,.25);border-radius:4px;padding:12px 14px;text-align:center;">
+            <div style="font-family:'Cormorant Garamond',serif;font-size:2.4rem;font-weight:700;color:#2DCA73;line-height:1;">1</div>
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--slate);margin-top:4px;">Personal Recruit</div>
+          </div>
+          <div style="background:rgba(39,174,96,.1);border:1px solid rgba(39,174,96,.25);border-radius:4px;padding:12px 14px;text-align:center;">
+            <div style="font-family:'Cormorant Garamond',serif;font-size:2.4rem;font-weight:700;color:#2DCA73;line-height:1;">1,000</div>
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--slate);margin-top:4px;">Personal Submitted Points</div>
+          </div>
+        </div>
+        <div style="font-size:12px;background:rgba(39,174,96,.06);border:1px solid rgba(39,174,96,.18);border-radius:3px;padding:9px 12px;color:rgba(255,255,255,.55);">
+          ⚡ Complete both in the first 6 days of June for an immediate promotion to <strong style="color:var(--cream)">Associate (40% commission)</strong>. Must be a licensed Trainee to qualify.
+        </div>
+        <!-- Fast Track calculator -->
+        <div style="margin-top:14px;border-top:1px solid rgba(39,174,96,.15);padding-top:12px;">
+          <div style="font-size:10px;font-weight:700;color:rgba(39,174,96,.7);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;">My Fast Track Progress</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div>
+              <label style="font-size:10px;color:var(--slate);text-transform:uppercase;letter-spacing:.08em;">Personal Recruits</label>
+              <input type="number" id="ft-recruits" value="0" min="0" max="5" oninput="updateFastTrack()"
+                style="width:100%;background:var(--navy);border:1px solid var(--border);color:var(--cream);font-size:18px;font-weight:700;font-family:'DM Mono',monospace;padding:10px 12px;border-radius:3px;margin-top:4px;outline:none;">
+            </div>
+            <div>
+              <label style="font-size:10px;color:var(--slate);text-transform:uppercase;letter-spacing:.08em;">Personal Submitted Pts</label>
+              <input type="number" id="ft-apps" value="0" min="0" step="100" oninput="updateFastTrack()"
+                style="width:100%;background:var(--navy);border:1px solid var(--border);color:var(--cream);font-size:18px;font-weight:700;font-family:'DM Mono',monospace;padding:10px 12px;border-radius:3px;margin-top:4px;outline:none;">
+            </div>
+          </div>
+          <div id="ft-verdict" style="margin-top:10px;font-size:13px;font-weight:600;padding:10px 12px;border-radius:3px;background:rgba(201,168,76,.05);border:1px solid var(--border);">Enter your numbers above</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ② ROLEX RAFFLE -->
+  <div style="background:linear-gradient(135deg,rgba(155,89,182,.08),var(--navy-mid));border:1px solid rgba(155,89,182,.35);border-radius:6px;padding:20px 22px;margin-bottom:14px;position:relative;overflow:hidden;">
+    <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,#BB8FCE,transparent);"></div>
+    <div style="display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap;">
+      <div style="background:rgba(155,89,182,.15);border:1px solid rgba(155,89,182,.3);border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;color:#BB8FCE;flex-shrink:0;">2</div>
+      <div style="flex:1;min-width:220px;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;color:#BB8FCE;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">⌚ Raffle — Jubilee June (Rolex)</div>
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(187,143,206,.7);letter-spacing:.12em;margin-bottom:12px;">JUNE 1 – JUNE 3, 2026 ONLY</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;">
+          <div style="background:rgba(155,89,182,.1);border:1px solid rgba(155,89,182,.25);border-radius:4px;padding:12px;text-align:center;">
+            <div style="font-size:1.4rem;margin-bottom:4px;">🎟️</div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:700;color:#BB8FCE;line-height:1;">1</div>
+            <div style="font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--slate);margin-top:3px;">Ticket for<br>1 Recruit</div>
+          </div>
+          <div style="background:rgba(155,89,182,.1);border:1px solid rgba(155,89,182,.25);border-radius:4px;padding:12px;text-align:center;">
+            <div style="font-size:1.4rem;margin-bottom:4px;">🎟️🎟️</div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:700;color:#BB8FCE;line-height:1;">2</div>
+            <div style="font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--slate);margin-top:3px;">Tickets for<br>2 Recruits</div>
+          </div>
+          <div style="background:rgba(155,89,182,.15);border:1px solid rgba(155,89,182,.4);border-radius:4px;padding:12px;text-align:center;">
+            <div style="font-size:1.4rem;margin-bottom:4px;">🎟️🎟️🎟️</div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:700;color:#BB8FCE;line-height:1;">3</div>
+            <div style="font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--slate);margin-top:3px;">Tickets for<br>3 Recruits</div>
+          </div>
+        </div>
+        <div style="font-size:12px;background:rgba(155,89,182,.08);border:1px solid rgba(155,89,182,.2);border-radius:3px;padding:10px 14px;color:rgba(255,255,255,.55);line-height:1.7;">
+          ⭐ <strong style="color:var(--cream)">Recruits must be in the system by June 3</strong> to count toward raffle tickets. Raffle drawn live at MGM Grand. <strong style="color:#BB8FCE;">Winners must be present to receive the Rolex watch.</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ③ NYSE CLOSING BELL -->
+  <div style="background:linear-gradient(135deg,rgba(52,152,219,.08),var(--navy-mid));border:1px solid rgba(52,152,219,.35);border-radius:6px;padding:20px 22px;margin-bottom:14px;position:relative;overflow:hidden;">
+    <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,#5DADE2,transparent);"></div>
+    <div style="display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap;">
+      <div style="background:rgba(52,152,219,.15);border:1px solid rgba(52,152,219,.3);border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;color:#5DADE2;flex-shrink:0;">3</div>
+      <div style="flex:1;min-width:220px;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;color:#5DADE2;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">🏛️ NYSE Closing Bell Experience</div>
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(93,173,226,.7);letter-spacing:.12em;margin-bottom:12px;">JUNE QUALIFICATION ONLY — TOP 25 GOLF SCORE</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
+          <div style="background:rgba(52,152,219,.06);border:1px solid rgba(52,152,219,.18);border-radius:4px;padding:10px 12px;">
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#5DADE2;margin-bottom:6px;">Top 25 Qualifiers Get:</div>
+            <ul style="list-style:none;padding:0;font-size:12px;color:rgba(255,255,255,.55);line-height:2;">
+              <li>• Base Recruit (minimum)</li>
+              <li>• Base Paid Points (minimum)</li>
+              <li>• Base New Licensed (minimum)</li>
+              <li>• 🍽️ Private Dinner Event</li>
+            </ul>
+          </div>
+          <div style="background:rgba(52,152,219,.1);border:1px solid rgba(52,152,219,.3);border-radius:4px;padding:10px 12px;">
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#5DADE2;margin-bottom:6px;">Top 5 Golf Score Qualifiers:</div>
+            <ul style="list-style:none;padding:0;font-size:12px;color:rgba(255,255,255,.55);line-height:2;">
+              <li style="color:#5DADE2;font-weight:600;">🏦 Private Meeting at</li>
+              <li style="color:#5DADE2;font-weight:600;">Goldman Sachs</li>
+              <li style="font-size:10px;font-style:italic;">(Top 5 ONLY)</li>
+            </ul>
+          </div>
+        </div>
+        <div style="font-size:12px;background:rgba(52,152,219,.05);border:1px solid rgba(52,152,219,.15);border-radius:3px;padding:9px 12px;color:rgba(255,255,255,.5);">
+          📊 Qualification is based on <strong style="color:var(--cream)">June production only</strong> — a combined Golf Score ranking across base recruits, base paid points, and base new licensed agents.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ④ MD PROMOTION — GREATNESS PATH -->
+  <div style="background:linear-gradient(135deg,rgba(201,168,76,.08),var(--navy-mid));border:1px solid var(--border);border-radius:6px;padding:20px 22px;margin-bottom:16px;position:relative;overflow:hidden;">
+    <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,var(--gold),transparent);"></div>
+    <div style="display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap;">
+      <div style="background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.3);border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;color:var(--gold);flex-shrink:0;">4</div>
+      <div style="flex:1;min-width:220px;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">👑 Marketing Director Promotion — Greatness Path</div>
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(201,168,76,.7);letter-spacing:.12em;margin-bottom:12px;">JUNE 1 – JUNE 30, 2026 · 90 DAYS TO COMPLETE STRUCTURE (SEP 30 DEADLINE)</div>
+
+        <!-- Three main milestones -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;">
+          <div style="background:var(--gold-dim);border:1px solid var(--border);border-radius:4px;padding:12px;text-align:center;">
+            <div style="font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:700;color:var(--gold);line-height:1;">25</div>
+            <div style="font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--slate);margin-top:4px;line-height:1.4;">Base<br>Recruits</div>
+          </div>
+          <div style="background:var(--gold-dim);border:1px solid var(--border);border-radius:4px;padding:12px;text-align:center;">
+            <div style="font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:700;color:var(--gold);line-height:1;">25</div>
+            <div style="font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--slate);margin-top:4px;line-height:1.4;">Base<br>Applications</div>
+          </div>
+          <div style="background:var(--gold-dim);border:1px solid var(--border);border-radius:4px;padding:12px;text-align:center;">
+            <div style="font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:700;color:var(--gold);line-height:1;">25K</div>
+            <div style="font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--slate);margin-top:4px;line-height:1.4;">Base Paid<br>Points ($)</div>
+          </div>
+        </div>
+
+        <!-- Checkpoints -->
+        <div style="font-size:10px;font-weight:700;color:rgba(201,168,76,.7);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;">Checkpoints</div>
+        <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px;">
+          <div style="display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:3px;padding:10px 14px;">
+            <div style="font-size:1rem;flex-shrink:0;">📅</div>
+            <div style="flex:1;">
+              <div style="font-size:12px;font-weight:700;color:var(--cream);">By June 10th</div>
+              <div style="font-size:11px;color:var(--slate);">Must be at <strong style="color:var(--cream)">10 Base Recruits</strong> to continue in the promotion</div>
+            </div>
+            <div style="font-size:10px;color:#E67E22;font-family:'DM Mono',monospace;font-weight:700;white-space:nowrap;">CHECKPOINT 1</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:3px;padding:10px 14px;">
+            <div style="font-size:1rem;flex-shrink:0;">📅</div>
+            <div style="flex:1;">
+              <div style="font-size:12px;font-weight:700;color:var(--cream);">By June 20th</div>
+              <div style="font-size:11px;color:var(--slate);">Must be at <strong style="color:var(--cream)">15 Base Recruits &amp; $15,000 Base Paid Points</strong> to continue</div>
+            </div>
+            <div style="font-size:10px;color:#E67E22;font-family:'DM Mono',monospace;font-weight:700;white-space:nowrap;">CHECKPOINT 2</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:3px;padding:10px 14px;">
+            <div style="font-size:1rem;flex-shrink:0;">🏁</div>
+            <div style="flex:1;">
+              <div style="font-size:12px;font-weight:700;color:var(--cream);">By September 30, 2026 — FINAL DEADLINE</div>
+              <div style="font-size:11px;color:var(--slate);">Complete full structure: <strong style="color:var(--cream)">15 Licensed Agents · 50% rule applies · 3 Direct FAs <em style="color:rgba(255,255,255,.3);">or</em> 1 Direct Director + 1 Direct FA</strong></div>
+            </div>
+            <div style="font-size:10px;color:var(--gold);font-family:'DM Mono',monospace;font-weight:700;white-space:nowrap;">FINAL GOAL</div>
+          </div>
+        </div>
+
+        <!-- Important notes -->
+        <div style="background:rgba(224,82,82,.06);border:1px solid rgba(224,82,82,.2);border-radius:3px;padding:12px 14px;margin-bottom:12px;">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:#E05252;margin-bottom:8px;">⚠ Important Rules</div>
+          <ul style="list-style:none;padding:0;font-size:12px;color:rgba(255,255,255,.5);line-height:1.9;">
+            <li>• If <strong style="color:var(--cream)">September 30 deadline is missed</strong>, the MD Promotion will <strong style="color:#E05252;">not count</strong></li>
+            <li>• MDs promoted via 25/25/25K guidelines <strong style="color:var(--cream)">do NOT qualify to speak on stage at MGM</strong></li>
+            <li>• They <strong style="color:var(--cream)">do</strong> get the opportunity to <strong style="color:var(--gold)">walk on stage during Gala Night recognition</strong></li>
+            <li>• 50% rule applies to all recruits and applications</li>
+          </ul>
+        </div>
+
+        <!-- MD progress calculator -->
+        <div style="border-top:1px solid var(--border);padding-top:12px;">
+          <div style="font-size:10px;font-weight:700;color:rgba(201,168,76,.7);letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px;">My MD Promotion Progress</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:10px;">
+            <div>
+              <label style="font-size:10px;color:var(--slate);text-transform:uppercase;letter-spacing:.08em;">Base Recruits</label>
+              <input type="number" id="md-recruits" value="0" min="0" oninput="updateMDCalc()"
+                style="width:100%;background:var(--navy);border:1px solid var(--border);color:var(--cream);font-size:16px;font-weight:700;font-family:'DM Mono',monospace;padding:9px 12px;border-radius:3px;margin-top:4px;outline:none;">
+            </div>
+            <div>
+              <label style="font-size:10px;color:var(--slate);text-transform:uppercase;letter-spacing:.08em;">Base Applications</label>
+              <input type="number" id="md-apps" value="0" min="0" oninput="updateMDCalc()"
+                style="width:100%;background:var(--navy);border:1px solid var(--border);color:var(--cream);font-size:16px;font-weight:700;font-family:'DM Mono',monospace;padding:9px 12px;border-radius:3px;margin-top:4px;outline:none;">
+            </div>
+            <div>
+              <label style="font-size:10px;color:var(--slate);text-transform:uppercase;letter-spacing:.08em;">Base Paid Points ($)</label>
+              <input type="number" id="md-pts" value="0" min="0" step="1000" oninput="updateMDCalc()"
+                style="width:100%;background:var(--navy);border:1px solid var(--border);color:var(--cream);font-size:16px;font-weight:700;font-family:'DM Mono',monospace;padding:9px 12px;border-radius:3px;margin-top:4px;outline:none;">
+            </div>
+            <div>
+              <label style="font-size:10px;color:var(--slate);text-transform:uppercase;letter-spacing:.08em;">Licensed Agents</label>
+              <input type="number" id="md-licensed" value="0" min="0" oninput="updateMDCalc()"
+                style="width:100%;background:var(--navy);border:1px solid var(--border);color:var(--cream);font-size:16px;font-weight:700;font-family:'DM Mono',monospace;padding:9px 12px;border-radius:3px;margin-top:4px;outline:none;">
+            </div>
+          </div>
+          <div id="md-verdict" style="font-size:12px;font-weight:600;padding:10px 12px;border-radius:3px;background:rgba(201,168,76,.05);border:1px solid var(--border);margin-top:2px;">Enter your team numbers above</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DBA MILESTONES -->
+  <div class="section-title" style="margin-top:4px;">⭐ DBA Milestone Rewards</div>
+  <div class="milestone-grid" id="milestone-grid"></div>
+
+  <!-- MINI LEADERBOARD -->
+  <div class="section-title">📊 This Month's Team Standings</div>
+  <div class="lb-mini" id="lb-mini"></div>
+
+  <div style="text-align:center;margin-bottom:24px;">
+    <a href="leaderboard.html" style="font-size:13px;color:var(--gold);text-decoration:none;border:1px solid var(--border);padding:9px 20px;border-radius:3px;display:inline-block;">View Full Leaderboard →</a>
+  </div>
+</div>
+
+<script>
+const session = AUTH.getSession();
+
+// ── PROGRESS CALCULATOR ───────────────────────────────────────
+const TIERS_DEF = [
+  { name:'Bronze', rec:10, pts:10000, colorClass:'bronze', fill:'fill-bronze' },
+  { name:'Silver', rec:20, pts:20000, colorClass:'silver', fill:'fill-silver' },
+  { name:'Gold',   rec:30, pts:30000, colorClass:'gold',   fill:'fill-gold'   }
+];
+const TIER_COLORS = { bronze:'#cd8030', silver:'#b0bac8', gold:'#C9A84C' };
+
+function updateCalc() {
+  const rec = Math.max(0, parseInt(document.getElementById('i-recruits').value)||0);
+  const pts = Math.max(0, parseInt(document.getElementById('i-pts').value)||0);
+  const bars = document.getElementById('tier-bars');
+  bars.innerHTML = TIERS_DEF.map(t => {
+    const rPct = Math.min(100, Math.round((rec/t.rec)*100));
+    const pPct = Math.min(100, Math.round((pts/t.pts)*100));
+    const rDone = rec >= t.rec, pDone = pts >= t.pts;
+    const achieved = rDone && pDone;
+    const fillR = rDone ? 'fill-done' : t.fill;
+    const fillP = pDone ? 'fill-done' : t.fill;
+    return `
+    <div class="tier-bar-group">
+      <div class="tbg-header">
+        <div class="tbg-name" style="color:${TIER_COLORS[t.colorClass]};">${t.name.toUpperCase()}</div>
+        <div class="tbg-status" style="color:${achieved?'var(--success)':TIER_COLORS[t.colorClass]};">${achieved?'✅ ACHIEVED':'In Progress'}</div>
+      </div>
+      <div class="prog-row">
+        <div class="prog-lbl"><span>Recruits: ${rec} / ${t.rec}</span><span>${rPct}%</span></div>
+        <div class="prog-bar"><div class="prog-fill ${fillR}" style="width:${rPct}%"></div></div>
+      </div>
+      <div class="prog-row">
+        <div class="prog-lbl"><span>Points: ${pts.toLocaleString()} / ${t.pts.toLocaleString()}</span><span>${pPct}%</span></div>
+        <div class="prog-bar"><div class="prog-fill ${fillP}" style="width:${pPct}%"></div></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Verdict
+  const achieved = TIERS_DEF.filter(t => rec>=t.rec && pts>=t.pts);
+  const next = TIERS_DEF.find(t => !(rec>=t.rec && pts>=t.pts));
+  const v = document.getElementById('contest-verdict');
+  if (achieved.length===3) {
+    v.style.background='rgba(201,168,76,0.15)';v.style.border='1px solid rgba(201,168,76,0.4)';
+    v.innerHTML='🥇 <strong style="color:var(--gold)">GOLD ACHIEVED</strong> — Full VIP Las Vegas package earned!';
+  } else if (achieved.length>0) {
+    const top = achieved[achieved.length-1];
+    v.style.background='rgba(39,174,96,0.1)';v.style.border='1px solid rgba(39,174,96,0.3)';
+    v.innerHTML = `✅ <strong style="color:var(--success)">${top.name} Achieved!</strong>${next ? ` Next: ${next.name} — need ${Math.max(0,next.rec-rec)} more recruits and ${Math.max(0,next.pts-pts).toLocaleString()} more pts` : ''}`;
+  } else if (next) {
+    v.style.background='rgba(201,168,76,0.06)';v.style.border='1px solid var(--border)';
+    v.innerHTML = `Keep going — need <strong style="color:var(--gold)">${next.rec-rec} more recruits</strong> and <strong style="color:var(--gold)">${(next.pts-pts).toLocaleString()} more pts</strong> for Bronze tier.`;
+  }
+}
+
+// Load my stats from demo
+const myStats = DEMO_STATS[session.agentId] || {};
+document.getElementById('i-recruits').value = myStats.recruits || 0;
+document.getElementById('i-pts').value = myStats.pts || 0;
+updateCalc();
+
+// ── MILESTONES ────────────────────────────────────────────────
+const MILESTONES = [
+  { icon:'🏆', title:'First Policy Closed',      desc:'Submit and close your first life insurance application',        reward:'+100 Bonus Points · Team Recognition' },
+  { icon:'👥', title:'First Personal Recruit',    desc:'Enroll your first licensed team member',                        reward:'+200 Bonus Points · Trophy' },
+  { icon:'📞', title:'20-Call Power Day',          desc:'Log 20 calls in a single work session',                        reward:'Badge + Public Recognition' },
+  { icon:'🔥', title:'Power Week',                 desc:'20 calls every single day for 5 consecutive days',             reward:'+500 Bonus Points · Feature in Team Chat' },
+  { icon:'💎', title:'Reach Field Associate',      desc:'Hit 50% commission level through promotion',                   reward:'Engraved Trophy + Leadership Spotlight' },
+  { icon:'🎯', title:'10 BOM Guests in a Month',  desc:'Bring 10 guests to Business Opportunity Meetings in one month', reward:'+300 Bonus Points · Captain Award' },
+  { icon:'🌟', title:'First $5K Month',            desc:'Earn over $5,000 in commissions in a single month',            reward:'Featured in Dynasty Newsletter' },
+  { icon:'🏅', title:'First Director Promotion',   desc:'Build a team to Director level',                               reward:'Leadership Plaque + Mentorship Recognition' },
+];
+document.getElementById('milestone-grid').innerHTML = MILESTONES.map(m => `
+  <div class="milestone">
+    <div class="ms-icon">${m.icon}</div>
+    <div class="ms-body">
+      <h3>${m.title}</h3>
+      <p>${m.desc}</p>
+      <div class="ms-reward">${m.reward}</div>
+    </div>
+  </div>`).join('');
+
+// ── MINI LEADERBOARD ──────────────────────────────────────────
+const sorted = AGENTS
+  .map(a => ({...a, pts: DEMO_STATS[a.id]?.pts||0, recruits: DEMO_STATS[a.id]?.recruits||0}))
+  .sort((a,b) => b.pts - a.pts).slice(0,6);
+const maxPts = sorted[0]?.pts || 1;
+// ── FAST TRACK CALCULATOR ─────────────────────────────────────
+function updateFastTrack() {
+  const rec  = parseInt(document.getElementById('ft-recruits').value)||0;
+  const apps = parseInt(document.getElementById('ft-apps').value)||0;
+  const v    = document.getElementById('ft-verdict');
+  if (rec >= 1 && apps >= 1000) { // 1000 submitted points
+    v.style.background = 'rgba(39,174,96,0.12)';
+    v.style.border     = '1px solid rgba(39,174,96,0.35)';
+    v.innerHTML = '✅ <strong style="color:#2DCA73">QUALIFIED</strong> — You meet the June 1–7 Fast Track requirements! Notify your upline to process your Associate promotion.';
+  } else {
+    const missing = [];
+    if (rec < 1)  missing.push('<strong style="color:var(--gold)">1 personal recruit</strong>');
+    if (apps < 1000) missing.push('<strong style="color:var(--gold)">1,000 submitted points</strong> (have ' + apps + ')');
+    v.style.background = 'rgba(201,168,76,0.05)';
+    v.style.border     = '1px solid var(--border)';
+    v.innerHTML = `Still need: ${missing.join(' and ')} by June 6th`;
+  }
+}
+
+// ── MD PROMOTION CALCULATOR ───────────────────────────────────
+function updateMDCalc() {
+  const rec     = parseInt(document.getElementById('md-recruits').value)||0;
+  const apps    = parseInt(document.getElementById('md-apps').value)||0;
+  const pts     = parseInt(document.getElementById('md-pts').value)||0;
+  const lic     = parseInt(document.getElementById('md-licensed').value)||0;
+  const v       = document.getElementById('md-verdict');
+
+  const c1_rec  = rec >= 10;
+  const c1_pts  = pts >= 15000;
+  const c2_pts  = pts >= 15000;
+  const full_rec = rec >= 25;
+  const full_app = apps >= 25;
+  const full_pts = pts >= 25000;
+  const full_lic = lic >= 15;
+
+  const parts = [];
+  if (!full_rec) parts.push(`<span style="color:#E67E22">${25-rec} more recruits needed</span>`);
+  if (!full_app) parts.push(`<span style="color:#E67E22">${25-apps} more applications needed</span>`);
+  if (!full_pts) parts.push(`<span style="color:#E67E22">$${(25000-pts).toLocaleString()} more paid points needed</span>`);
+  if (!full_lic) parts.push(`<span style="color:#E67E22">${15-lic} more licensed agents needed</span>`);
+
+  const checkpoints = [];
+  checkpoints.push(`Checkpoint 1 (Jun 10): Recruits ${c1_rec?'<span style="color:#2DCA73">✅</span>':'<span style="color:#E67E22">✗ (need 10)</span>'} · Paid Pts ${c1_pts?'<span style="color:#2DCA73">✅</span>':'<span style="color:#E67E22">✗ (need $15K)</span>'}`);
+
+  if (full_rec && full_app && full_pts && full_lic) {
+    v.style.background = 'rgba(201,168,76,0.12)';
+    v.style.border     = '1px solid rgba(201,168,76,0.4)';
+    v.innerHTML        = '👑 <strong style="color:var(--gold)">ALL REQUIREMENTS MET</strong> — You qualify for Marketing Director! Contact upline to process your promotion.';
+  } else {
+    v.style.background = 'rgba(201,168,76,0.05)';
+    v.style.border     = '1px solid var(--border)';
+    v.innerHTML        = checkpoints.join('<br>') + (parts.length ? '<br>Still needed: ' + parts.join(' · ') : '');
+  }
+}
+
+document.getElementById('lb-mini').innerHTML = sorted.map((a, i) => {
+  const pct = Math.round((a.pts/maxPts)*100);
+  const medals = ['🥇','🥈','🥉'];
+  return `<div class="lb-mini-row">
+    <div class="lb-rank" style="color:${i<3?'var(--gold)':'var(--slate)'}">${medals[i]||i+1}</div>
+    <div class="lb-name">${a.name}<div style="font-size:10px;color:var(--slate);font-weight:400;">${getRoleLabel(a.role)}</div></div>
+    <div style="flex:1;margin:0 12px;"><div class="lb-bar-wrap"><div class="lb-bar-fill" style="width:${pct}%"></div></div></div>
+    <div class="lb-pts">${a.pts.toLocaleString()}<span style="font-size:10px;color:var(--slate);margin-left:2px;">pts</span></div>
+  </div>`;
+}).join('');
+</script>
+</body>
+</html>

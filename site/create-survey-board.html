@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DBA — Create Financial Survey Board</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="auth.js?v=20260713"></script>
+<style>
+:root{--navy:#0A1628;--navy-mid:#112040;--gold:#C9A84C;--gold-light:#E8C97A;--cream:#FAF6EE;--success:#27AE60;--danger:#C0392B;--slate:#6B7C93;--border:rgba(201,168,76,0.22);}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);min-height:100vh;padding:28px 22px;}
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;}
+h1{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:var(--gold);}
+.back{font-size:12px;color:var(--gold);text-decoration:none;border:1px solid var(--border);padding:7px 14px;border-radius:3px;}
+.card{background:var(--navy-mid);border:1px solid var(--border);border-radius:6px;padding:24px;max-width:680px;margin:0 auto;}
+.card-title{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.1em;margin-bottom:16px;}
+p{font-size:13px;color:var(--slate);line-height:1.7;margin-bottom:16px;}
+.col-list{display:flex;flex-direction:column;gap:6px;margin-bottom:20px;}
+.col-row{display:flex;align-items:center;gap:10px;background:var(--navy);border:1px solid var(--border);border-radius:3px;padding:9px 14px;font-size:12px;}
+.col-name{font-family:'DM Mono',monospace;color:var(--gold-light);min-width:180px;}
+.col-type{font-size:11px;color:var(--slate);}
+.btn{display:inline-block;padding:11px 24px;border-radius:3px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:.06em;cursor:pointer;border:none;transition:all .2s;}
+.btn-gold{background:var(--gold);color:var(--navy);}
+.btn-gold:hover{opacity:.87;}
+.btn-gold:disabled{opacity:.45;cursor:not-allowed;}
+.log{background:var(--navy);border:1px solid var(--border);border-radius:3px;padding:14px;font-family:'DM Mono',monospace;font-size:11px;line-height:1.8;margin-top:16px;min-height:80px;white-space:pre-wrap;display:none;}
+.log.show{display:block;}
+.ok{color:var(--success);}
+.err{color:var(--danger);}
+.warn{color:#E67E22;}
+.result-box{background:rgba(39,174,96,.08);border:1px solid rgba(39,174,96,.3);border-radius:4px;padding:16px;margin-top:16px;display:none;}
+.result-box.show{display:block;}
+.bid{font-family:'DM Mono',monospace;font-size:18px;color:var(--success);font-weight:700;}
+</style>
+</head>
+<body>
+<script>AUTH.require('create-survey-board.html');</script>
+
+<div class="header">
+  <h1>📋 Create Financial Survey Board</h1>
+  <a href="monday-setup.html" class="back">← Board Setup</a>
+</div>
+
+<div class="card">
+  <div class="card-title">What This Creates</div>
+  <p>This will create a dedicated <strong style="color:var(--cream)">DBA — Financial Surveys</strong> board in your Monday.com workspace with all the columns needed to capture survey submissions automatically. Once created, the board ID is saved and all future survey submissions will write to it.</p>
+
+  <div class="card-title" style="margin-top:4px;">Columns That Will Be Created</div>
+  <div class="col-list">
+    <div class="col-row"><span class="col-name">first_name</span><span class="col-type">Text — Prospect first name</span></div>
+    <div class="col-row"><span class="col-name">last_name</span><span class="col-type">Text — Prospect last name</span></div>
+    <div class="col-row"><span class="col-name">phone</span><span class="col-type">Phone — Mobile number</span></div>
+    <div class="col-row"><span class="col-name">email</span><span class="col-type">Email — Email address</span></div>
+    <div class="col-row"><span class="col-name">profile</span><span class="col-type">Text — Financial profile type</span></div>
+    <div class="col-row"><span class="col-name">budget</span><span class="col-type">Numbers — Monthly budget ($)</span></div>
+    <div class="col-row"><span class="col-name">goals</span><span class="col-type">Long Text — Financial goals</span></div>
+    <div class="col-row"><span class="col-name">referring_agent</span><span class="col-type">Text — Agent who shared the survey</span></div>
+    <div class="col-row"><span class="col-name">source</span><span class="col-type">Text — Lead source</span></div>
+    <div class="col-row"><span class="col-name">survey_date</span><span class="col-type">Date — Date submitted</span></div>
+    <div class="col-row"><span class="col-name">best_time</span><span class="col-type">Text — Best follow-up time</span></div>
+    <div class="col-row"><span class="col-name">health</span><span class="col-type">Text — Health rating</span></div>
+    <div class="col-row"><span class="col-name">tobacco</span><span class="col-type">Text — Tobacco use</span></div>
+    <div class="col-row"><span class="col-name">notes</span><span class="col-type">Long Text — Additional notes</span></div>
+    <div class="col-row"><span class="col-name">status</span><span class="col-type">Status — Lead status (New / Contacted / Appointed / Closed)</span></div>
+  </div>
+
+  <button class="btn btn-gold" id="create-btn" onclick="createBoard()">Create Survey Board →</button>
+
+  <div class="log" id="log"></div>
+
+  <div class="result-box" id="result-box">
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:var(--success);text-transform:uppercase;letter-spacing:.09em;margin-bottom:8px;">✅ Board Created Successfully</div>
+    <div style="font-size:12px;color:var(--slate);margin-bottom:6px;">Board ID (saved automatically):</div>
+    <div class="bid" id="result-bid">—</div>
+    <div style="font-size:12px;color:var(--slate);margin-top:16px;margin-bottom:6px;">Update in <code style="color:var(--gold-light)">auth.js</code> → redeploy to sync all devices:</div>
+    <div style="font-family:'DM Mono',monospace;font-size:12px;background:var(--navy);border:1px solid var(--border);padding:10px 14px;border-radius:3px;color:var(--gold-light);" id="result-auth">—</div>
+    <div style="font-size:12px;color:var(--slate);margin-top:12px;line-height:1.7;">
+      The survey board ID has been saved to your browser. All future survey submissions will write to this board automatically.<br><br>
+      <strong style="color:var(--cream)">Next step:</strong> Open Monday.com and confirm the board appears in your workspace.
+    </div>
+    <div style="margin-top:14px;display:flex;gap:8px;">
+      <a href="survey.html" class="btn btn-gold" style="text-decoration:none;font-size:12px;padding:9px 18px;">Open Survey →</a>
+      <a href="hub.html" class="btn" style="background:transparent;border:1px solid var(--border);color:var(--slate);text-decoration:none;font-size:12px;padding:9px 18px;">← Hub</a>
+    </div>
+  </div>
+</div>
+
+<script>
+async function createBoard() {
+  const btn = document.getElementById('create-btn');
+  const log = document.getElementById('log');
+  btn.disabled = true;
+  btn.textContent = 'Creating…';
+  log.className = 'log show';
+  log.textContent = '';
+
+  function write(msg, cls='') {
+    log.innerHTML += `<span class="${cls}">${msg}</span>\n`;
+  }
+
+  try {
+    write('Connecting to Monday.com…');
+
+    // 1. Create the board
+    write('Creating board "DBA — Financial Surveys"…');
+    const createRes = await mondayQuery(`mutation {
+      create_board(
+        board_name: "DBA — Financial Surveys",
+        board_kind: public
+      ) { id name }
+    }`);
+
+    const boardId = createRes?.data?.create_board?.id;
+    if (!boardId) throw new Error('Board creation failed — ' + JSON.stringify(createRes?.errors || createRes));
+    write(`✓ Board created — ID: ${boardId}`, 'ok');
+
+    // 2. Create columns
+    const COLUMNS = [
+      { title:'First Name',       type:'text' },
+      { title:'Last Name',        type:'text' },
+      { title:'Phone',            type:'phone' },
+      { title:'Email',            type:'email' },
+      { title:'Profile',          type:'text' },
+      { title:'Budget',           type:'numbers' },
+      { title:'Goals',            type:'long_text' },
+      { title:'Referring Agent',  type:'text' },
+      { title:'Source',           type:'text' },
+      { title:'Survey Date',      type:'date' },
+      { title:'Best Time',        type:'text' },
+      { title:'Health',           type:'text' },
+      { title:'Tobacco',          type:'text' },
+      { title:'Notes',            type:'long_text' },
+    ];
+
+    const colIds = {};
+    for (const col of COLUMNS) {
+      write(`  Adding column: ${col.title}…`);
+      try {
+        const colRes = await mondayQuery(`mutation {
+          create_column(
+            board_id: ${boardId},
+            title: "${col.title}",
+            column_type: ${col.type}
+          ) { id title }
+        }`);
+        const colId = colRes?.data?.create_column?.id;
+        if (colId) {
+          colIds[col.title.toLowerCase().replace(/\s+/g,'_')] = colId;
+          write(`    ✓ ${col.title} → ${colId}`, 'ok');
+        }
+      } catch(e) {
+        write(`    ⚠ ${col.title} skipped: ${e.message}`, 'warn');
+      }
+    }
+
+    // 3. Save board ID and column map to localStorage — survey.html reads this immediately
+    localStorage.setItem('dba_survey_board_id', boardId);
+    localStorage.setItem('dba_survey_col_ids', JSON.stringify(colIds));
+    write(`\n✓ Board ID saved to browser: ${boardId}`, 'ok');
+    write('✓ Column IDs cached in browser', 'ok');
+    write('\n🎉 Survey board is live — submissions will write here immediately.', 'ok');
+    write('\n── PERMANENT FIX ──────────────────────────────────────────', 'warn');
+    write(`To hard-code this board ID into auth.js so all agents and devices use it:`, 'warn');
+    write(`  Replace: boardSurveys: "18409897469"`, 'warn');
+    write(`  With:    boardSurveys: "${boardId}"`, 'warn');
+    write('Then redeploy the site ZIP.', 'warn');
+
+    document.getElementById('result-bid').textContent = boardId;
+    document.getElementById('result-auth').textContent = `boardSurveys: "${boardId}"`;
+    document.getElementById('result-box').classList.add('show');
+
+  } catch(e) {
+    write(`\n✗ Error: ${e.message}`, 'err');
+    btn.disabled = false;
+    btn.textContent = 'Retry →';
+  }
+}
+</script>
+</body>
+</html>

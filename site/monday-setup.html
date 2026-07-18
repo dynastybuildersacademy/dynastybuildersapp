@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DBA — Monday.com Board Setup</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@700&family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="auth.js?v=20260713"></script>
+<style>
+:root{--navy:#0A1628;--navy-mid:#112040;--navy-light:#1A3158;--gold:#C9A84C;--gold-light:#E8C97A;--cream:#FAF6EE;--success:#27AE60;--warn:#E67E22;--danger:#C0392B;--slate:#6B7C93;--border:rgba(201,168,76,0.22);}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);min-height:100vh;}
+.header{background:rgba(10,22,40,0.97);border-bottom:1px solid var(--border);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;backdrop-filter:blur(10px);}
+.shield{width:30px;height:34px;background:linear-gradient(160deg,var(--gold) 0%,#7a5c14 100%);clip-path:polygon(50% 0%,100% 18%,100% 65%,50% 100%,0% 65%,0% 18%);display:flex;align-items:center;justify-content:center;font-size:12px;}
+.back-btn{font-size:12px;color:var(--gold);text-decoration:none;border:1px solid var(--border);padding:6px 12px;border-radius:3px;}
+.content{padding:24px;max-width:900px;margin:0 auto;}
+.page-title{font-family:'Cormorant Garamond',serif;font-size:28px;color:var(--gold);margin-bottom:6px;}
+.page-sub{font-size:13px;color:var(--slate);margin-bottom:28px;line-height:1.6;}
+
+/* API KEY INPUT */
+.api-card{background:var(--navy-mid);border:1px solid rgba(201,168,76,0.4);border-radius:6px;padding:22px;margin-bottom:24px;}
+.api-row{display:flex;gap:10px;align-items:flex-start;}
+input[type=password],input[type=text]{flex:1;background:var(--navy);border:1px solid var(--border);color:var(--cream);font-family:'DM Mono',monospace;font-size:13px;padding:11px 13px;border-radius:3px;}
+input:focus{outline:none;border-color:var(--gold);}
+.btn{padding:11px 20px;border-radius:3px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.06em;cursor:pointer;border:none;transition:all 0.2s;white-space:nowrap;}
+.btn-gold{background:linear-gradient(135deg,var(--gold) 0%,#9a7018 100%);color:var(--navy);}
+.btn-gold:hover{opacity:0.87;}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--slate);}
+.btn-outline:hover{border-color:var(--gold);color:var(--gold);}
+.btn-sm{padding:7px 14px;font-size:12px;}
+.btn-danger{background:rgba(192,50,50,0.15);border:1px solid rgba(192,50,50,0.4);color:#e87070;}
+.status-pill{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;font-size:11px;font-family:'DM Mono',monospace;font-weight:600;margin-top:10px;}
+.pill-ok{background:rgba(39,174,96,0.15);border:1px solid rgba(39,174,96,0.3);color:var(--success);}
+.pill-err{background:rgba(192,50,50,0.15);border:1px solid rgba(192,50,50,0.3);color:#e87070;}
+.pill-idle{background:rgba(107,124,147,0.15);border:1px solid rgba(107,124,147,0.3);color:var(--slate);}
+
+/* BOARD CARDS */
+.boards-grid{display:flex;flex-direction:column;gap:14px;margin-bottom:28px;}
+.board-card{background:var(--navy-mid);border:1px solid var(--border);border-radius:6px;overflow:hidden;}
+.board-hdr{display:flex;align-items:center;gap:12px;padding:16px 20px;cursor:pointer;transition:background 0.15s;}
+.board-hdr:hover{background:rgba(201,168,76,0.04);}
+.board-icon{font-size:20px;flex-shrink:0;}
+.board-info{flex:1;}
+.board-name{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:0.04em;margin-bottom:2px;}
+.board-id{font-size:10px;color:var(--slate);font-family:'DM Mono',monospace;}
+.board-status{display:flex;align-items:center;gap:6px;font-size:11px;padding:4px 10px;border-radius:20px;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:0.04em;}
+.status-ok{background:rgba(39,174,96,0.15);border:1px solid rgba(39,174,96,0.3);color:var(--success);}
+.status-warn{background:rgba(230,126,34,0.15);border:1px solid rgba(230,126,34,0.3);color:var(--warn);}
+.status-err{background:rgba(192,50,50,0.15);border:1px solid rgba(192,50,50,0.3);color:#e87070;}
+.status-idle{background:rgba(107,124,147,0.12);border:1px solid rgba(107,124,147,0.2);color:var(--slate);}
+.board-body{display:none;border-top:1px solid var(--border);padding:18px 20px;}
+.board-body.open{display:block;}
+.board-toggle{font-size:13px;color:var(--gold);transition:transform 0.2s;}
+
+/* COLUMNS TABLE */
+.col-table{width:100%;border-collapse:collapse;margin-bottom:16px;}
+.col-table th{font-family:'Barlow Condensed',sans-serif;font-size:10px;color:var(--gold);letter-spacing:0.1em;text-transform:uppercase;padding:7px 10px;text-align:left;border-bottom:1px solid var(--gold);}
+.col-table td{padding:8px 10px;font-size:12px;border-bottom:1px solid rgba(201,168,76,0.07);font-family:'DM Mono',monospace;}
+.col-table tr:hover td{background:rgba(201,168,76,0.03);}
+.col-type{font-size:10px;padding:2px 7px;border-radius:2px;background:rgba(107,124,147,0.15);color:var(--slate);border:1px solid rgba(107,124,147,0.2);}
+.col-required{font-size:10px;padding:2px 7px;border-radius:2px;background:rgba(230,126,34,0.15);color:var(--warn);border:1px solid rgba(230,126,34,0.3);}
+.col-ok{font-size:10px;padding:2px 7px;border-radius:2px;background:rgba(39,174,96,0.15);color:var(--success);border:1px solid rgba(39,174,96,0.3);}
+.col-missing{font-size:10px;padding:2px 7px;border-radius:2px;background:rgba(192,50,50,0.15);color:#e87070;border:1px solid rgba(192,50,50,0.3);}
+
+/* LOG */
+.log-box{background:var(--navy);border:1px solid var(--border);border-radius:4px;padding:14px;font-family:'DM Mono',monospace;font-size:11px;line-height:1.8;max-height:260px;overflow-y:auto;margin-top:14px;}
+.log-ok{color:var(--success);}
+.log-warn{color:var(--warn);}
+.log-err{color:#e87070;}
+.log-info{color:var(--slate);}
+
+/* RUN ALL */
+.run-card{background:linear-gradient(135deg,rgba(201,168,76,0.08) 0%,var(--navy-mid) 60%);border:1px solid rgba(201,168,76,0.3);border-radius:6px;padding:22px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;}
+.run-title{font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--gold);}
+.run-sub{font-size:13px;color:var(--slate);margin-top:4px;}
+.progress-bar{height:6px;background:rgba(201,168,76,0.12);border-radius:3px;overflow:hidden;margin-top:12px;}
+.progress-fill{height:6px;background:linear-gradient(90deg,var(--gold),var(--gold-light));border-radius:3px;transition:width 0.5s ease;width:0%;}
+</style>
+</head>
+<body>
+<script>AUTH.require('monday-setup.html');</script>
+
+<div class="header">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <div class="shield">👑</div>
+    <div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--gold);">Monday.com Board Setup</div>
+      <div style="font-size:10px;color:var(--slate);text-transform:uppercase;letter-spacing:0.08em;">Configure & Verify All DBA Boards</div>
+    </div>
+  </div>
+  <a href="monday-test.html" class="back-btn" style="margin-right:6px;">🔬 Test Tool</a><a href="hub.html" class="back-btn">← Hub</a>
+</div>
+
+<div class="content">
+  <div class="page-title">Board Configuration Tool</div>
+  <div class="page-sub">This tool verifies all 12 Monday.com boards, creates missing columns, and confirms the DBA platform can read and write data correctly. Run once after initial setup, or any time a board is recreated.</div>
+
+  <!-- API KEY -->
+  <div class="api-card">
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:var(--gold);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:12px;">Monday.com API Key</div>
+    <div class="api-row">
+      <input type="password" id="api-key-input" placeholder="eyJhbGciOiJIUzI1NiJ9...">
+      <button class="btn btn-gold" onclick="connectAPI()">Connect</button>
+      <button class="btn btn-outline btn-sm" onclick="toggleKeyVis()" id="eye-btn">👁</button>
+    </div>
+    <div id="api-status" class="status-pill pill-idle">● Not connected</div>
+  </div>
+
+  <!-- ANTHROPIC API KEY -->
+  <div class="api-card" style="margin-top:14px;">
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:var(--gold);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;">Anthropic API Key</div>
+    <div style="font-size:11px;color:var(--slate);margin-bottom:12px;">Required for AI features — Marketing Hub content generation, AI Role-Play coach, and the Agency OS assistant. Get your key at <a href="https://console.anthropic.com" target="_blank" style="color:var(--gold);">console.anthropic.com</a></div>
+    <div class="api-row">
+      <input type="password" id="anthropic-key-input" placeholder="sk-ant-api03-...">
+      <button class="btn btn-gold" onclick="saveAnthropicKeyUI()">Save</button>
+      <button class="btn btn-outline btn-sm" onclick="toggleAnthropicVis()" id="anthropic-eye-btn">👁</button>
+    </div>
+    <div id="anthropic-status" class="status-pill pill-idle">● Not set</div>
+  </div>
+
+  <!-- RUN ALL -->
+  <div class="run-card">
+    <div>
+      <div class="run-title">Setup All Boards</div>
+      <div class="run-sub">Verify existence → check columns → create missing columns → run test write → confirm read</div>
+      <div class="progress-bar"><div class="progress-fill" id="run-progress"></div></div>
+    </div>
+    <button class="btn btn-gold" onclick="runAllSetup()" id="run-all-btn" disabled style="min-width:160px;">Run Full Setup →</button>
+  </div>
+
+  <!-- BOARD CARDS -->
+  <div class="boards-grid" id="boards-grid"></div>
+
+  <!-- GLOBAL LOG -->
+  <div style="font-family:'Barlow Condensed',sans-serif;font-size:12px;color:var(--gold);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px;">Setup Log</div>
+  <div class="log-box" id="global-log"><span class="log-info">Connect your API key to begin…</span></div>
+</div>
+
+<script>
+const session = AUTH.getSession();
+let mondayKey = AUTH.getMondayKey() || '';
+if (mondayKey) {
+  document.getElementById('api-key-input').value = mondayKey;
+}
+
+// ── BOARD DEFINITIONS ─────────────────────────────────────────
+// Each board defines the EXACT columns DBA needs, with monday.com column types
+const BOARD_DEFS = [
+  {
+    id: '18411252612',
+    name: 'Call Production Log',
+    icon: '📞',
+    description: 'Written by tracker.html on every session save. Now includes RI, FT, FS appointments, Guest system (GI/GC/GA), and Personal Submitted/Paid Points.',
+    usedBy: ['tracker.html', 'leaderboard.html', 'os.html'],
+    requiredColumns: [
+      { title:'Agent ID',              id_hint:'agent_id',       type:'text',    note:'Short ID e.g. obi001' },
+      { title:'Agent Name',            id_hint:'agent_name',     type:'text',    note:'Full display name' },
+      { title:'Role',                  id_hint:'role',           type:'text',    note:'PHP role string' },
+      { title:'Session Date',          id_hint:'date',           type:'date',    note:'Date of the call session' },
+      { title:'Week',                  id_hint:'week',           type:'text',    note:'ISO week e.g. 2026-W22' },
+      { title:'Calls',                 id_hint:'calls',          type:'numbers', note:'Total calls made' },
+      { title:'Contacts',              id_hint:'contacts',       type:'numbers', note:'Contacts who answered' },
+      { title:'Appointments',          id_hint:'appointments',   type:'numbers', note:'Appointments set' },
+      { title:'Shows',                 id_hint:'shows',          type:'numbers', note:'Appointments that showed' },
+      { title:'Recruits',              id_hint:'recruits',       type:'numbers', note:'Recruits this session' },
+      { title:'Points',                id_hint:'points',         type:'numbers', note:'Session ATP (production points)' },
+      { title:'Recruiting Interviews', id_hint:'ri',             type:'numbers', note:'R.I. conducted this session' },
+      { title:'FT Appointments',       id_hint:'ft',             type:'numbers', note:'Client/Field Training appointments' },
+      { title:'FS Appointments',       id_hint:'fs',             type:'numbers', note:'Fast Start appointments' },
+      { title:'Guests Invited',        id_hint:'gi',             type:'numbers', note:'Personal BOM guests invited' },
+      { title:'Guests Confirmed',      id_hint:'gc',             type:'numbers', note:'Personal BOM guests confirmed' },
+      { title:'Guests Attended',       id_hint:'ga',             type:'numbers', note:'Personal BOM guests who attended' },
+      { title:'Submitted Points',      id_hint:'submitted_pts',  type:'numbers', note:'Personal submitted pts (from PHP Bamboo)' },
+      { title:'Paid Points',           id_hint:'paid_pts',       type:'numbers', note:'Personal paid pts (from PHP Bamboo)' },
+    ]
+  },
+  {
+    id: '18411252280',
+    name: 'Agent Roster',
+    icon: '👥',
+    description: 'The official DBA agent roster board. Synced directly from agents.html. One row per licensed agent — name, ID, role, PHP#, phone, email, upline, license states, enrollment date.',
+    usedBy: ['agents.html', 'agent-dashboard.html'],
+    requiredColumns: [
+      { title:'Agent ID',        id_hint:'agent_id',       type:'text',    note:'DBA login ID e.g. obi001' },
+      { title:'First Name',      id_hint:'first_name',     type:'text',    note:'Agent first name' },
+      { title:'Last Name',       id_hint:'last_name',      type:'text',    note:'Agent last name' },
+      { title:'Phone',           id_hint:'phone',          type:'phone',   note:'Mobile number' },
+      { title:'Email',           id_hint:'email',          type:'email',   note:'Email address' },
+      { title:'Role',            id_hint:'role',           type:'text',    note:'PHP level label e.g. Director' },
+      { title:'PHP Agent #',     id_hint:'php_id',         type:'text',    note:'PHP Bamboo agent number' },
+      { title:'Upline',          id_hint:'upline',         type:'text',    note:'Sponsor agent name' },
+      { title:'License States',  id_hint:'license_states', type:'text',    note:'Licensed states e.g. TX, CA' },
+      { title:'Enrollment Date', id_hint:'enrollment_date',type:'date',    note:'Date agent enrolled with DBA' },
+      { title:'Source',          id_hint:'source',         type:'text',    note:'Agent Roster (auto-set)' },
+      { title:'PIN',             id_hint:'pin',            type:'text',    note:'4-digit login PIN (stored as text)' },
+      { title:'Top 25 Board ID', id_hint:'top25_board',    type:'text',    note:'Monday.com board ID for this agent\'s personal Top 25 list' },
+      { title:'Status',          id_hint:'status',         type:'color',   note:'Active / Inactive / In Training' },
+    ]
+  },
+  {
+    id: '18409897469',
+    name: 'Recruiting Pipeline',
+    icon: '👥',
+    description: 'Tracks all recruiting prospects and client leads from every funnel page. Written by opportunity.html, brochure.html, recruit.html, client.html, free-guide.html, and agents.html.',
+    usedBy: ['opportunity.html', 'brochure.html', 'recruit.html', 'client.html', 'free-guide.html', 'agents.html', 'os.html', 'pmd-hub.html'],
+    requiredColumns: [
+      { title:'Agent ID',         id_hint:'agent_id',       type:'text',  note:'DBA agent ID of recruit' },
+      { title:'First Name',       id_hint:'first_name',     type:'text',  note:'Prospect first name' },
+      { title:'Last Name',        id_hint:'last_name',      type:'text',  note:'Prospect last name' },
+      { title:'Phone',            id_hint:'phone',          type:'phone', note:'Recruit phone number' },
+      { title:'Email',            id_hint:'email',          type:'email', note:'Recruit email' },
+      { title:'Source',           id_hint:'source',         type:'text',  note:'Opportunity Page / Recruit Funnel / Direct' },
+      { title:'Referring Agent',  id_hint:'referred',       type:'text',  note:'Agent who referred them' },
+      { title:'Status',           id_hint:'status',         type:'status',note:'New Lead / Contacted / Scheduled / Enrolled' },
+      { title:'Date',             id_hint:'date',           type:'date',  note:'Date submitted' },
+      { title:'PHP Agent #',      id_hint:'php_id',         type:'text',  note:'phpbamboo.com agent number (post-license)' },
+      { title:'Role',             id_hint:'role',           type:'text',  note:'Current PHP level' },
+      { title:'Upline ID',        id_hint:'upline_id',      type:'text',  note:'Sponsor agent ID' },
+      { title:'License States',   id_hint:'license_states', type:'text',  note:'e.g. TX, CA' },
+      { title:'Enrollment Date',  id_hint:'enrollment_date',type:'date',  note:'Date agent enrolled' },
+    ]
+  },
+  {
+    id: '18393747809',
+    name: 'BOM Guests',
+    icon: '📅',
+    description: 'Static board — tracks BOM guest invitations and captain assignments.',
+    usedBy: ['bom.html'],
+    requiredColumns: [
+      { title:'Agent ID',     id_hint:'agent_id',    type:'text',    note:'Captain agent ID' },
+      { title:'Agent Name',   id_hint:'agent_name',  type:'text',    note:'Captain name' },
+      { title:'BOM Date',     id_hint:'bom_date',    type:'date',    note:'Date of the BOM' },
+      { title:'BOM Type',     id_hint:'bom_type',    type:'text',    note:'Tuesday or Saturday' },
+      { title:'Guest Name',   id_hint:'guest_name',  type:'text',    note:'Prospect name' },
+      { title:'Guest Phone',  id_hint:'guest_phone', type:'phone',   note:'Guest phone number' },
+      { title:'Status',       id_hint:'status',      type:'status',  note:'Invited/Confirmed/Showed/No-Show' },
+      { title:'Invites Sent', id_hint:'invites',     type:'numbers', note:'Total invites sent' },
+      { title:'Confirmed',    id_hint:'confirmed',   type:'numbers', note:'Total confirmed' },
+      { title:'Showed',       id_hint:'showed',      type:'numbers', note:'Total showed up' },
+      { title:'Guest Name',   id_hint:'guest_name',  type:'text',    note:'Individual guest full name' },
+      { title:'Guest Phone',  id_hint:'guest_phone', type:'phone',   note:'Guest phone number' },
+      { title:'Guest Email',  id_hint:'guest_email', type:'email',   note:'Guest email address' },
+      { title:'Captain',      id_hint:'captain',     type:'text',    note:'Agent who physically brought guest to the office' },
+      { title:'Generator',    id_hint:'generator',   type:'text',    note:'Original referrer — who first referred this guest' },
+      { title:'Notes',        id_hint:'notes',       type:'long_text', note:'Interest level, follow-up notes' },
+    ]
+  },
+  {
+    id: '18397757902',
+    name: 'Policy Applications',
+    icon: '📄',
+    description: 'Tracks submitted policy applications through the lifecycle: Pending → Approved → Inforce. Written by agents when policies are submitted via tracker.html.',
+    usedBy: ['tracker.html', 'pmd-hub.html', 'os.html'],
+    requiredColumns: [
+      { title:'Agent ID',       id_hint:'agent_id',    type:'text',    note:'Writing agent DBA ID' },
+      { title:'Agent Name',     id_hint:'agent_name',  type:'text',    note:'Writing agent name' },
+      { title:'Client Name',    id_hint:'client',      type:'text',    note:'Insured / annuitant name' },
+      { title:'Carrier',        id_hint:'carrier',     type:'text',    note:'Insurance carrier name' },
+      { title:'Product Type',   id_hint:'type',        type:'text',    note:'Term / IUL / Annuity / Perm' },
+      { title:'Annual Premium', id_hint:'atp',         type:'numbers', note:'ATP — annual target premium ($)' },
+      { title:'Face Amount',    id_hint:'face',        type:'numbers', note:'Death benefit face amount ($)' },
+      { title:'Submit Date',    id_hint:'submit_date', type:'date',    note:'Date submitted to carrier' },
+      { title:'Status',         id_hint:'status',      type:'status',  note:'Pending / Approved / Inforce / Declined / Chargeback' },
+      { title:'Approved Date',  id_hint:'approved_date',type:'date',   note:'Date carrier approved' },
+      { title:'Inforce Date',   id_hint:'inforce_date',type:'date',    note:'Date policy went inforce' },
+      { title:'Notes',          id_hint:'notes',       type:'long_text',note:'Underwriting notes or follow-up' },
+    ]
+  },
+  {
+    id: '18415701893',
+    name: 'Financial Surveys',
+    icon: '📋',
+    description: 'Static board — dedicated board for financial survey submissions (Employer vs IUL, World Cup Game Plan, etc.) with a source column to differentiate funnels.',
+    usedBy: ['survey.html', 'survey-leaderboard.html', 'create-survey-board.html'],
+    dynamicId: true,
+    dynamicIdKey: 'dba_survey_board_id',
+    dynamicIdFallback: '18409897469',
+    requiredColumns: [
+      { title:'First Name',      id_hint:'first_name',     type:'text',      note:'Prospect first name' },
+      { title:'Last Name',       id_hint:'last_name',      type:'text',      note:'Prospect last name' },
+      { title:'Phone',           id_hint:'phone',          type:'phone',     note:'Mobile number' },
+      { title:'Email',           id_hint:'email',          type:'email',     note:'Email address' },
+      { title:'Profile',         id_hint:'profile',        type:'text',      note:'Financial profile type' },
+      { title:'Budget',          id_hint:'budget',         type:'numbers',   note:'Monthly budget ($)' },
+      { title:'Goals',           id_hint:'goals',          type:'long_text', note:'Financial goals selected' },
+      { title:'Referring Agent', id_hint:'referring_agent',type:'text',      note:'Agent who shared the survey' },
+      { title:'Source',          id_hint:'source',         type:'text',      note:'Financial Survey' },
+      { title:'Survey Date',     id_hint:'survey_date',    type:'date',      note:'Date submitted' },
+      { title:'Best Time',       id_hint:'best_time',      type:'text',      note:'Best follow-up time' },
+      { title:'Health',          id_hint:'health',         type:'text',      note:'Health rating' },
+      { title:'Tobacco',         id_hint:'tobacco',        type:'text',      note:'Tobacco use' },
+      { title:'Notes',           id_hint:'notes',          type:'long_text', note:'Additional notes' },
+      { title:'Status',          id_hint:'status',         type:'status',    note:'New / Contacted / Appointed / Closed' },
+    ]
+  },
+  {
+    id: '18416041047',
+    name: 'June 2026 Incentives',
+    icon: '🏆',
+    description: 'Static board — tracks all agents running for June 2026 incentives (Fast Track Associate, MD Promotion, Rolex Raffle).',
+    usedBy: ['incentive-tracker.html', 'incentives.html'],
+    dynamicId: true,
+    dynamicIdKey: 'dba_incentive_board_id',
+    dynamicIdFallback: '18409897469',
+    requiredColumns: [
+      { title:'Agent ID',          id_hint:'agent_id',   type:'text',    note:'DBA agent ID' },
+      { title:'Incentives',        id_hint:'incentive',  type:'text',    note:'A,B,C,P — comma-separated tracks' },
+      { title:'Personal Recruits', id_hint:'recruit',    type:'numbers', note:'Personal recruits this period' },
+      { title:'Personal Apps',     id_hint:'personal app',type:'numbers',note:'Personal submitted applications' },
+      { title:'Submitted Points',  id_hint:'submitted',  type:'numbers', note:'Personal submitted pts ($)' },
+      { title:'Paid Points',       id_hint:'paid points',type:'numbers', note:'Personal paid pts ($)' },
+      { title:'Raffle Tickets',    id_hint:'ticket',     type:'numbers', note:'Auto-calc: min(recruits,3)' },
+      { title:'Notes',             id_hint:'notes',      type:'long_text',note:'Agent notes' },
+      { title:'Last Updated',      id_hint:'updated',    type:'date',    note:'Last save date' },
+    ]
+  },
+  {
+    id: '18416040867',
+    name: 'BOM Attendance',
+    icon: '📅',
+    description: 'Static board — tracks which agents attended each Tuesday and Saturday BOM, with guest counts per session.',
+    usedBy: ['bom.html', 'agent-dashboard.html'],
+    dynamicId: true,
+    dynamicIdKey: 'dba_bom_attend_board',
+    dynamicIdFallback: '18393747809',
+    requiredColumns: [
+      { title:'Agent ID',   id_hint:'agent_id',   type:'text',    note:'Agent who attended' },
+      { title:'Agent Name', id_hint:'agent_name', type:'text',    note:'Agent display name' },
+      { title:'BOM Date',   id_hint:'bom_date',   type:'date',    note:'Date of the BOM meeting' },
+      { title:'BOM Day',    id_hint:'bom_day',    type:'text',    note:'Tuesday or Saturday' },
+      { title:'BOM Type',   id_hint:'bom_type',   type:'text',    note:'BOM (standard label)' },
+      { title:'Guests',     id_hint:'guests',     type:'numbers', note:'Personal guests invited' },
+      { title:'Confirmed',  id_hint:'confirmed',  type:'numbers', note:'Guests confirmed' },
+      { title:'Showed',     id_hint:'showed',     type:'numbers', note:'Guests who attended' },
+      { title:'Week',       id_hint:'week',       type:'text',    note:'ISO week e.g. 2026-W22' },
+    ]
+  },
+  {
+    id: '18416042293',
+    name: 'Agent Licensing',
+    icon: '📜',
+    description: 'Static board — tracks each agent through the 7-stage licensing journey: Not Started → Studying → Exam Scheduled → Exam Passed → License Pending → Licensed → Appointed.',
+    usedBy: ['licensing.html', 'agents.html'],
+    dynamicId: true,
+    dynamicIdKey: 'dba_licensing_board_id',
+    dynamicIdFallback: '18409897469',
+    requiredColumns: [
+      { title:'Agent ID',       id_hint:'agent_id',     type:'text',      note:'DBA agent ID' },
+      { title:'Upline',         id_hint:'upline',       type:'text',      note:'Sponsor agent name' },
+      { title:'Phone',          id_hint:'phone',        type:'phone',     note:'Agent mobile' },
+      { title:'Stage',          id_hint:'stage',        type:'text',      note:'Current licensing stage label' },
+      { title:'Study Start',    id_hint:'study_start',  type:'date',      note:'Date agent started studying' },
+      { title:'Exam Date',      id_hint:'exam_date',    type:'date',      note:'Scheduled Pearl/PSI exam date' },
+      { title:'Exam Passed',    id_hint:'exam_passed',  type:'date',      note:'Date agent passed the exam' },
+      { title:'License Date',   id_hint:'license_date', type:'date',      note:'Date state license was issued' },
+      { title:'License Number', id_hint:'license_num',  type:'text',      note:'State license number' },
+      { title:'States',         id_hint:'states',       type:'text',      note:'Licensed states e.g. TX, CA' },
+      { title:'Appt Date',      id_hint:'appt_date',    type:'date',      note:'Carrier appointment date' },
+      { title:'Days in Stage',  id_hint:'days',         type:'numbers',   note:'Days in current stage (auto-calc)' },
+      { title:'Notes',          id_hint:'notes',        type:'long_text', note:'Blockers, issues, follow-up notes' },
+      { title:'Status',         id_hint:'status',       type:'color',     note:'Board status column' },
+    ]
+  },
+  {
+    id: '18216458584',
+    name: 'Top 25 Prospects',
+    icon: '🎯',
+    description: 'Each agent manages their personal top 25 prospect list. Written and read by top25.html. One row per prospect per agent.',
+    usedBy: ['top25.html', 'portal.html'],
+    requiredColumns: [
+      { title:'Agent ID',       id_hint:'agent_id',   type:'text',   note:'Owning agent DBA ID' },
+      { title:'Prospect Name',  id_hint:'prospect',   type:'text',   note:'Full name of prospect' },
+      { title:'Phone',          id_hint:'phone',      type:'phone',  note:'Prospect mobile number' },
+      { title:'Email',          id_hint:'email',      type:'email',  note:'Prospect email' },
+      { title:'Category',       id_hint:'category',   type:'text',   note:'Recruit / Client / Both' },
+      { title:'Status',         id_hint:'status',     type:'status', note:'Not Contacted / Reached / Appointed / Closed' },
+      { title:'Last Contact',   id_hint:'last_contact',type:'date',  note:'Date of last outreach' },
+      { title:'Notes',          id_hint:'notes',      type:'long_text',note:'Conversation notes' },
+    ]
+  },
+  {
+    id: '18411962317',
+    name: 'Events',
+    icon: '🎪',
+    description: 'Tracks event registrations and attendance. Used for BOM events, Zoom webinars, and PHP Lights Out 2026.',
+    usedBy: ['register-zoom.html', 'register-inperson.html', 'lights-out.html', 'incentives.html'],
+    requiredColumns: [
+      { title:'Agent ID',      id_hint:'agent_id',    type:'text',     note:'Agent DBA ID' },
+      { title:'Agent Name',    id_hint:'agent_name',  type:'text',     note:'Agent display name' },
+      { title:'Event Name',    id_hint:'event_name',  type:'text',     note:'e.g. PHP Lights Out 2026' },
+      { title:'Event Date',    id_hint:'event_date',  type:'date',     note:'Date of the event' },
+      { title:'Event Type',    id_hint:'event_type',  type:'text',     note:'Zoom / In-Person / BOM' },
+      { title:'Attending',     id_hint:'attending',   type:'status',   note:'Yes/No/Maybe' },
+      { title:'Ticket Bought', id_hint:'ticket',      type:'checkbox', note:'Ticket purchased' },
+      { title:'Hotel Booked',  id_hint:'hotel',       type:'checkbox', note:'Hotel reservation made' },
+      { title:'Guest Name',    id_hint:'guest_name',  type:'text',     note:'Guest bringing with them' },
+      { title:'Tier Achieved', id_hint:'tier',        type:'text',     note:'Bronze/Silver/Gold' },
+    ]
+  },
+  {
+    id: '18415179731',
+    name: 'PHP Lights Out 2026',
+    icon: '🎰',
+    description: 'Tracks contest progress per agent toward the Las Vegas trip. Written by tracker.html on milestone hits.',
+    usedBy: ['lights-out.html', 'incentives.html', 'hub.html'],
+    requiredColumns: [
+      { title:'Agent ID',    id_hint:'agent_id',   type:'text',     note:'DBA agent ID' },
+      { title:'Agent Name',  id_hint:'agent_name', type:'text',     note:'Agent display name' },
+      { title:'Recruits',    id_hint:'recruits',   type:'numbers',  note:'Contest-period recruits' },
+      { title:'Points',      id_hint:'points',     type:'numbers',  note:'Contest-period points' },
+      { title:'Tier',        id_hint:'tier',       type:'text',     note:'None/Bronze/Silver/Gold' },
+      { title:'Registered',  id_hint:'registered', type:'checkbox', note:'Registered on PHP Bamboo' },
+      { title:'Last Updated',id_hint:'updated_at', type:'date',     note:'Auto-updated by platform' },
+    ]
+  }
+];
+
+// ── RENDER BOARDS ─────────────────────────────────────────────
+function resolveBoardId(b) {
+  if (!b.dynamicId) return b.id;
+  const stored = localStorage.getItem(b.dynamicIdKey);
+  return stored || b.dynamicIdFallback;
+}
+
+function renderBoards() {
+  const grid = document.getElementById('boards-grid');
+  grid.innerHTML = BOARD_DEFS.map((b,i) => {
+    const resolvedId = resolveBoardId(b);
+    const isDynamic  = b.dynamicId;
+    const isSet      = isDynamic ? !!localStorage.getItem(b.dynamicIdKey) : true;
+    const idLabel    = isDynamic
+      ? (isSet
+          ? `<span style="color:var(--success)">✅ ${resolvedId}</span>`
+          : `<span style="color:var(--warn)">⚠ Not created yet — using fallback ${resolvedId}</span>`)
+      : resolvedId;
+
+    const setupAction = isDynamic && !isSet
+      ? (b.dynamicIdKey === 'dba_survey_board_id'
+          ? { href: 'create-survey-board.html', label: '📋 Create Survey Board →' }
+          : b.dynamicIdKey === 'dba_licensing_board_id'
+          ? { href: 'licensing.html', label: '📜 Sync from Licensing Tracker to auto-create →' }
+          : b.dynamicIdKey === 'dba_bom_attend_board'
+          ? { href: 'create-bom-board.html', label: '📅 Create BOM Attendance Board →' }
+          : { href: 'incentive-tracker.html', label: '💾 Save from Incentive Tracker to auto-create →' })
+      : null;
+
+    // Open boards with real IDs by default; collapse placeholder dynamic boards
+    const openByDefault = !isDynamic || isSet;
+
+    return `
+    <div class="board-card" id="board-card-${resolvedId}">
+      <div class="board-hdr" onclick="toggleBoard('${resolvedId}')">
+        <div class="board-icon">${b.icon}</div>
+        <div class="board-info">
+          <div class="board-name">${b.name}</div>
+          <div class="board-id">Board ID: ${idLabel} &nbsp;·&nbsp; Used by: ${b.usedBy.join(', ')}</div>
+        </div>
+        <div class="board-status" id="status-${resolvedId}">—</div>
+        <div class="board-chevron" id="chev-${resolvedId}" style="transition:transform .2s;${openByDefault?'transform:rotate(180deg)':''}">▼</div>
+      </div>
+      <div class="board-body ${openByDefault?'open':''}" id="body-${resolvedId}">
+        <div class="board-desc">${b.description}</div>
+        <div class="col-list">
+          ${b.requiredColumns.map(col => `
+            <div class="col-row" id="col-${resolvedId}-${col.id_hint}">
+              <div class="col-info">
+                <div class="col-title">${col.title}</div>
+                <div class="col-type">${col.type} &nbsp;·&nbsp; ${col.note}</div>
+              </div>
+              <div class="col-status" id="colst-${resolvedId}-${col.id_hint}">?</div>
+            </div>`).join('')}
+        </div>
+        <div class="board-actions">
+          <button class="btn btn-sm btn-blue" onclick="verifyBoard('${resolvedId}',${i})">🔍 Verify Columns</button>
+          <button class="btn btn-sm btn-green" onclick="createMissingColumns('${resolvedId}',${i})">➕ Create Missing</button>
+          <a class="btn btn-sm btn-outline" href="https://monday.com/boards/${resolvedId}" target="_blank">Open in Monday ↗</a>
+          ${setupAction ? `<a href="${setupAction.href}" class="btn btn-sm" style="background:rgba(230,126,34,.15);border:1px solid rgba(230,126,34,.35);color:var(--warn);">${setupAction.label}</a>` : ''}
+        </div>
+      </div>
+    </div>`}).join('');
+}
+
+function toggleBoard(id) {
+  const body = document.getElementById('body-'+id);
+  const tog  = document.getElementById('chev-'+id) || document.getElementById('toggle-'+id);
+  const open = body.classList.toggle('open');
+  tog.style.transform = open ? 'rotate(180deg)' : '';
+}
+
+// ── API CONNECTION ────────────────────────────────────────────
+async function connectAPI() {
+  const key = document.getElementById('api-key-input').value.trim();
+  if (!key) { alert('Enter your Monday.com API key'); return; }
+  mondayKey = key;
+  AUTH.saveMondayKey(key);
+  const statusEl = document.getElementById('api-status');
+  statusEl.className = 'status-pill pill-idle';
+  statusEl.textContent = '● Connecting…';
+  try {
+    const res = await gql(`query { me { name email } }`);
+    const me = res?.data?.me;
+    if (me) {
+      statusEl.className = 'status-pill pill-ok';
+      statusEl.textContent = `✓ Connected as ${me.name}`;
+      document.getElementById('run-all-btn').disabled = false;
+      log('global', `✓ API connected as ${me.name} (${me.email})`, 'ok');
+    } else {
+      throw new Error('Invalid response');
+    }
+  } catch(e) {
+    statusEl.className = 'status-pill pill-err';
+    statusEl.textContent = '✗ Connection failed — check key';
+    log('global', `✗ Connection failed: ${e.message}`, 'err');
+  }
+}
+
+// ── VERIFY BOARD ──────────────────────────────────────────────
+async function verifyBoard(boardId) {
+  // Accept either placeholder id (e.g. 'SURVEY_BOARD_ID') or resolved numeric id
+  const def = BOARD_DEFS.find(b => b.id === boardId || resolveBoardId(b) === boardId);
+  if (!def || !mondayKey) return;
+  const resolvedId = resolveBoardId(def);
+
+  const btn = document.getElementById('verify-btn-'+resolvedId);
+  if (btn) { btn.textContent = 'Checking…'; btn.disabled = true; }
+  showLog(resolvedId);
+  log(resolvedId, `Checking board: ${def.name} (${resolvedId})…`, 'info');
+
+  try {
+    const res = await gql(`{
+      boards(ids: ${resolvedId}) {
+        id name description
+        columns { id title type }
+        groups { id title }
+      }
+    }`);
+    const board = res?.data?.boards?.[0];
+    if (!board) {
+      setStatus(resolvedId, 'err', '✗ Board not found');
+      log(resolvedId, `✗ Board ${resolvedId} not found — check ID or permissions`, 'err');
+      if (btn) { btn.textContent = 'Retry'; btn.disabled = false; }
+      return;
+    }
+    log(resolvedId, `✓ Board found: "${board.name}" — ${board.columns.length} columns, ${board.groups.length} groups`, 'ok');
+
+    // Check each required column
+    const existingCols = board.columns.map(c => ({ id: c.id, title: c.title.toLowerCase(), type: c.type }));
+    let missing = [];
+    def.requiredColumns.forEach(req => {
+      const found = existingCols.find(ec =>
+        ec.title.includes(req.id_hint.replace(/_/g,' ')) ||
+        ec.title.includes(req.title.toLowerCase()) ||
+        ec.id === req.id_hint
+      );
+      // Support both old colstatus- prefix and new colst- prefix
+      const el = document.getElementById(`colst-${resolvedId}-${req.id_hint}`)
+              || document.getElementById(`colstatus-${resolvedId}-${req.id_hint}`);
+      if (found) {
+        if (el) { el.className='col-ok'; el.textContent='✓ Found'; }
+        log(resolvedId, `  ✓ Column "${req.title}" → found as "${found.title}" (${found.type})`, 'ok');
+      } else {
+        if (el) { el.className='col-missing'; el.textContent='✗ Missing'; }
+        log(resolvedId, `  ✗ Column "${req.title}" (${req.type}) — MISSING`, 'warn');
+        missing.push(req);
+      }
+    });
+
+    if (missing.length === 0) {
+      setStatus(resolvedId, 'ok', `✓ All ${def.requiredColumns.length} columns present`);
+      log(resolvedId, `✓ Board fully configured`, 'ok');
+    } else {
+      setStatus(resolvedId, 'warn', `⚠ ${missing.length} columns missing`);
+      const fixBtn = document.getElementById('fix-btn-'+resolvedId);
+      if (fixBtn) { fixBtn.style.display = 'inline-block'; fixBtn.dataset.missing = JSON.stringify(missing); }
+    }
+  } catch(e) {
+    setStatus(resolvedId, 'err', '✗ Error — check console');
+    log(resolvedId, `✗ Error: ${e.message}`, 'err');
+  }
+  if (btn) { btn.textContent = 'Verify Board'; btn.disabled = false; }
+}
+
+// ── FIX BOARD — CREATE MISSING COLUMNS ───────────────────────
+// Alias used by renderBoards template
+async function createMissingColumns(boardId, defIdx) {
+  if (defIdx !== undefined) {
+    const b = BOARD_DEFS[defIdx];
+    if (b) boardId = resolveBoardId(b);
+  }
+  return fixBoard(boardId);
+}
+
+async function fixBoard(boardId) {
+  const def = BOARD_DEFS.find(b => b.id === boardId || resolveBoardId(b) === boardId);
+  if (def) boardId = resolveBoardId(def);
+  const btn = document.getElementById('fix-btn-'+boardId);
+  const missing = JSON.parse(btn?.dataset?.missing || '[]');
+  if (!missing.length) return;
+  btn.textContent = 'Creating…'; btn.disabled = true;
+  log(boardId, `Creating ${missing.length} missing columns…`, 'info');
+
+  // Monday.com column type mapping
+  const TYPE_MAP = {
+    text: 'text', numbers: 'numbers', date: 'date', status: 'color',
+    phone: 'phone', email: 'email', checkbox: 'boolean', long_text: 'long_text'
+  };
+
+  let created = 0;
+  for (const col of missing) {
+    const colType = TYPE_MAP[col.type] || 'text';
+    try {
+      const res = await gql(`
+        mutation {
+          create_column(
+            board_id: ${boardId},
+            title: "${col.title}",
+            column_type: ${colType}
+          ) { id title }
+        }
+      `);
+      const created_col = res?.data?.create_column;
+      if (created_col) {
+        const el = document.getElementById(`colst-${boardId}-${col.id_hint}`) || document.getElementById(`colstatus-${boardId}-${col.id_hint}`);
+        if (el) { el.className='col-ok'; el.textContent='✓ Created'; }
+        log(boardId, `  ✓ Created "${col.title}" as ${colType} (id: ${created_col.id})`, 'ok');
+        created++;
+      }
+    } catch(e) {
+      log(boardId, `  ✗ Failed to create "${col.title}": ${e.message}`, 'err');
+    }
+    await sleep(400); // Rate limit protection
+  }
+
+  if (created === missing.length) {
+    setStatus(boardId, 'ok', `✓ All columns created`);
+    btn.style.display = 'none';
+    log(boardId, `✓ All ${created} columns created successfully`, 'ok');
+  } else {
+    log(boardId, `⚠ ${created}/${missing.length} columns created — some may need manual creation`, 'warn');
+  }
+  btn.textContent = 'Create Missing Columns'; btn.disabled = false;
+}
+
+// ── TEST WRITE ────────────────────────────────────────────────
+async function testWrite(boardId) {
+  if (!mondayKey) { alert('Connect API key first'); return; }
+  const def = BOARD_DEFS.find(b=>b.id===boardId);
+  showLog(boardId);
+  log(boardId, `Testing write to ${def.name}…`, 'info');
+
+  // Build appropriate test payload per board
+  const TEST_PAYLOADS = {
+    '18411252612': { agent_id:'test001', agent_name:'Test Agent', role:'trainee', calls:'5', contacts:'2', appointments:'1', shows:'1', recruits:'0', points:'350', week:'2026-W22' },
+    '18409897469': { agent_id:'test001', agent_name:'Test Recruit', role:'trainee', php_id:'99999', phone:'555-0000', email:'test@test.com', upline_id:'obi001', upline_name:'Obi Iroezi', enrollment_date:'2026-05-30', status:'New' },
+    '18393747809': { agent_id:'obi001', agent_name:'Obi Iroezi', bom_date:'2026-05-30', bom_type:'Tuesday', guest_name:'Test Guest', guest_phone:'555-1234', status:'Invited', invites:'10', confirmed:'3', showed:'1' },
+    '18397757902': { agent_id:'obi001', agent_name:'Obi Iroezi', first_name:'Test', last_name:'Prospect', phone:'555-5555', email:'test@email.com', profile:'Family with Children', budget:'150', source:'Survey', survey_date:'2026-05-30', status:'New' },
+    '249673213':   { agent_id:'obi001', agent_name:'Obi Iroezi', event_name:'PHP Lights Out 2026', attending:'Yes', ticket:'false', hotel:'false', tier:'None' },
+    '18415179731': { agent_id:'obi001', agent_name:'Obi Iroezi', recruits:'5', points:'4500', tier:'None', registered:'false', updated_at:'2026-05-30' }
+  };
+
+  const payload = TEST_PAYLOADS[boardId] || {};
+  const colVals = JSON.stringify(JSON.stringify(payload));
+
+  try {
+    const res = await gql(`
+      mutation {
+        create_item(
+          board_id: ${boardId},
+          item_name: "DBA Platform Test — ${new Date().toLocaleString()}",
+          column_values: ${colVals}
+        ) { id }
+      }
+    `);
+    const itemId = res?.data?.create_item?.id;
+    if (itemId) {
+      log(boardId, `✓ Test item created (id: ${itemId}) — delete this test row from Monday.com`, 'ok');
+    } else {
+      log(boardId, `⚠ Item may not have saved — check board manually`, 'warn');
+      if (res?.errors) res.errors.forEach(e => log(boardId, `  Error: ${e.message}`, 'err'));
+    }
+  } catch(e) {
+    log(boardId, `✗ Write failed: ${e.message}`, 'err');
+  }
+}
+
+// ── TEST READ ─────────────────────────────────────────────────
+async function testRead(boardId) {
+  if (!mondayKey) { alert('Connect API key first'); return; }
+  const def = BOARD_DEFS.find(b=>b.id===boardId);
+  showLog(boardId);
+  log(boardId, `Reading from ${def.name}…`, 'info');
+  try {
+    const res = await gql(`{
+      boards(ids: ${boardId}) {
+        items_page(limit: 5) {
+          items { id name column_values { id title text } }
+        }
+      }
+    }`);
+    const items = res?.data?.boards?.[0]?.items_page?.items || [];
+    log(boardId, `✓ Read ${items.length} items (showing up to 5)`, 'ok');
+    items.forEach(item => {
+      const vals = item.column_values.filter(c=>c.text).map(c=>`${c.title}: ${c.text}`).slice(0,4).join(' | ');
+      log(boardId, `  → "${item.name}" — ${vals||'(no column data)'}`, 'info');
+    });
+    if (!items.length) log(boardId, '  (Board is empty — add data or run a test write first)', 'warn');
+  } catch(e) {
+    log(boardId, `✗ Read failed: ${e.message}`, 'err');
+  }
+}
+
+// ── RUN ALL SETUP ─────────────────────────────────────────────
+async function runAllSetup() {
+  if (!mondayKey) { alert('Connect API key first'); return; }
+  const btn = document.getElementById('run-all-btn');
+  btn.textContent = 'Running…'; btn.disabled = true;
+  log('global', '═══ Starting full board setup ═══', 'info');
+  const progress = document.getElementById('run-progress');
+
+  for (let i = 0; i < BOARD_DEFS.length; i++) {
+    const b = BOARD_DEFS[i];
+    const resolvedId = resolveBoardId(b);
+    const bodyEl   = document.getElementById('body-'+resolvedId);
+    const chevEl   = document.getElementById('chev-'+resolvedId) || document.getElementById('toggle-'+resolvedId);
+    if (bodyEl)  bodyEl.classList.add('open');
+    if (chevEl)  chevEl.style.transform = 'rotate(180deg)';
+    log('global', `\n[${i+1}/${BOARD_DEFS.length}] Verifying: ${b.name}`, 'info');
+    await verifyBoard(resolvedId);
+    if (progress) progress.style.width = `${Math.round(((i+1)/BOARD_DEFS.length)*100)}%`;
+    await sleep(500);
+  }
+
+  log('global', '\n═══ Setup complete — review any ⚠ warnings above ═══', 'ok');
+  btn.textContent = '✓ Setup Complete'; btn.disabled = false;
+}
+
+// ── COPY COLUMN IDs TO TRACKER ────────────────────────────────
+async function copyColIds(boardId) {
+  if (!mondayKey) { alert('Connect API key first'); return; }
+  log(boardId, 'Fetching actual column IDs from board…', 'info');
+  showLog(boardId);
+  try {
+    const res = await gql(`{ boards(ids: ${boardId}) { columns { id title type } } }`);
+    const cols = res?.data?.boards?.[0]?.columns || [];
+    if (!cols.length) { log(boardId, '✗ No columns found', 'err'); return; }
+
+    // Map our logical names to the actual board column IDs by matching title keywords
+    const find = (keywords) => {
+      const kw = Array.isArray(keywords) ? keywords : [keywords];
+      return cols.find(c => kw.some(k => c.title.toLowerCase().includes(k.toLowerCase())))?.id || '';
+    };
+
+    const colMap = {
+      agent_id:     find(['agent id', 'agent_id']),
+      agent_name:   find(['agent name', 'agent_name']),
+      role:         find(['role']),
+      date:         find(['session date', 'date']),
+      calls:        find(['calls']),
+      contacts:     find(['contacts']),
+      appointments: find(['appointments', 'appts']),
+      shows:        find(['shows']),
+      recruits:     find(['recruits']),
+      points:       find(['points']),
+      week:         find(['week']),
+    };
+
+    // Save to localStorage so tracker.html picks it up automatically
+    localStorage.setItem('dba_col_ids', JSON.stringify(colMap));
+
+    log(boardId, '✅ Column IDs saved to browser — tracker will use them automatically:', 'ok');
+    Object.entries(colMap).forEach(([k,v]) => {
+      log(boardId, `  ${k.padEnd(15)} → ${v || '(not found — check column title)'}`, v ? 'ok' : 'warn');
+    });
+
+    if (Object.values(colMap).every(v => v)) {
+      log(boardId, '\n✓ All column IDs mapped. Tracker is now fully configured.', 'ok');
+    } else {
+      log(boardId, '\n⚠ Some columns not found — verify column titles match expected names, then run Board Setup → Create Missing Columns.', 'warn');
+    }
+  } catch(e) {
+    log(boardId, `✗ Error: ${e.message}`, 'err');
+  }
+}
+
+// ── GQL HELPER ────────────────────────────────────────────────
+async function gql(query, variables={}) {
+  const res = await fetch('https://api.monday.com/v2', {
+    method: 'POST',
+    headers: { 'Content-Type':'application/json', 'Authorization': mondayKey, 'API-Version': '2023-10' },
+    body: JSON.stringify({ query, variables })
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
+// ── UI HELPERS ────────────────────────────────────────────────
+function setStatus(boardId, type, text) {
+  const el = document.getElementById('status-'+boardId);
+  el.className = 'board-status ' + ({ok:'status-ok',warn:'status-warn',err:'status-err',idle:'status-idle'}[type]||'status-idle');
+  el.textContent = text;
+}
+
+function showLog(boardId) {
+  const el = document.getElementById('log-'+boardId);
+  if (el) el.style.display = 'block';
+}
+
+function log(target, msg, type='info') {
+  const cls = {ok:'log-ok',warn:'log-warn',err:'log-err',info:'log-info'}[type]||'log-info';
+  const box = document.getElementById(target==='global' ? 'global-log' : 'log-'+target);
+  if (!box) return;
+  if (box.querySelector('.log-info')?.textContent?.includes('Connect your API key')) box.innerHTML='';
+  const line = document.createElement('div');
+  line.className = cls;
+  line.textContent = new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit'}) + ' ' + msg;
+  box.appendChild(line);
+  box.scrollTop = box.scrollHeight;
+}
+
+function toggleKeyVis() {
+  const input = document.getElementById('api-key-input');
+  input.type = input.type === 'password' ? 'text' : 'password';
+}
+
+function toggleAnthropicVis() {
+  const input = document.getElementById('anthropic-key-input');
+  input.type = input.type === 'password' ? 'text' : 'password';
+}
+
+function saveAnthropicKeyUI() {
+  const key = document.getElementById('anthropic-key-input').value.trim();
+  if (!key) {
+    document.getElementById('anthropic-status').className = 'status-pill pill-error';
+    document.getElementById('anthropic-status').textContent = '● Key is empty';
+    return;
+  }
+  AUTH.saveAnthropicKey(key);
+  document.getElementById('anthropic-status').className = 'status-pill pill-ok';
+  document.getElementById('anthropic-status').textContent = '✓ Saved — AI features are enabled';
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// ── INIT ──────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  renderBoards();
+  if (mondayKey) {
+    document.getElementById('api-key-input').value = mondayKey;
+    connectAPI();
+  }
+  const anthropicKey = AUTH.getAnthropicKey();
+  if (anthropicKey) {
+    document.getElementById('anthropic-key-input').value = anthropicKey;
+    document.getElementById('anthropic-status').className = 'status-pill pill-ok';
+    document.getElementById('anthropic-status').textContent = '✓ Saved — AI features are enabled';
+  }
+});
+</script>
+</body>
+</html>

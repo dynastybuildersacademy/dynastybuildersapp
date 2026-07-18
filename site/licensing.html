@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Licensing Tracker · Dynasty Builders</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700&family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="auth.js?v=20260713"></script>
+<style>
+:root{
+  --navy:#0A1628;--navy2:#0F1E38;--navy3:#132240;--navy4:#1A2E50;
+  --gold:#C9A84C;--gold2:#E8C97A;--gold-dim:rgba(201,168,76,.12);
+  --green:#27AE60;--green2:#2DCA73;--green-dim:rgba(39,174,96,.1);
+  --blue:#3498DB;--blue2:#5DADE2;--blue-dim:rgba(52,152,219,.1);
+  --purple:#9B59B6;--orange:#E67E22;--red:#E05252;
+  --slate:#6B7C93;--cream:#FAF6EE;--border:rgba(201,168,76,.2);--bs:rgba(255,255,255,.06);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);min-height:100vh;}
+.bg{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 70% 50% at 15% 20%,rgba(52,152,219,.05),transparent 55%),
+  radial-gradient(ellipse 50% 70% at 85% 80%,rgba(201,168,76,.05),transparent 60%),
+  linear-gradient(160deg,#0A1628,#0E1C35 50%,#0A1628);}
+.bgrid{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:linear-gradient(rgba(201,168,76,.03) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(201,168,76,.03) 1px,transparent 1px);
+  background-size:60px 60px;}
+.page{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:24px 18px 72px;}
+
+/* HEADER */
+.hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:12px;}
+.hl{display:flex;align-items:center;gap:14px;}
+.shield{font-size:2rem;}
+.hdr-title{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:700;color:var(--gold2);}
+.hdr-sub{font-size:12px;color:var(--slate);font-family:'DM Mono',monospace;margin-top:2px;}
+.hr{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:8px 16px;border-radius:3px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:.05em;cursor:pointer;border:none;transition:all .15s;text-decoration:none;}
+.btn-gold{background:var(--gold);color:var(--navy);}
+.btn-gold:hover{opacity:.87;}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--gold);}
+.btn-outline:hover{background:var(--gold-dim);}
+.btn-ghost{background:transparent;border:1px solid var(--bs);color:rgba(255,255,255,.4);}
+.btn-ghost:hover{border-color:var(--border);color:var(--gold);}
+.btn-blue{background:var(--blue-dim);border:1px solid rgba(52,152,219,.35);color:var(--blue2);}
+.btn-sm{padding:5px 11px;font-size:11px;}
+
+/* STAGE PIPELINE (horizontal flow) */
+.pipeline{display:flex;gap:0;margin-bottom:24px;overflow-x:auto;padding-bottom:4px;}
+.stage-pill{flex:1;min-width:100px;text-align:center;padding:10px 6px;border-top:3px solid;position:relative;cursor:pointer;transition:background .15s;}
+.stage-pill:first-child{border-radius:4px 0 0 4px;}
+.stage-pill:last-child{border-radius:0 4px 4px 0;}
+.stage-pill:not(:last-child)::after{content:'›';position:absolute;right:-8px;top:50%;transform:translateY(-50%);color:var(--slate);font-size:16px;z-index:1;}
+.sp-label{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px;}
+.sp-count{font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:700;line-height:1;}
+.sp-sub{font-size:9px;color:var(--slate);margin-top:2px;font-family:'DM Mono',monospace;}
+
+/* KANBAN / TABLE TOGGLE */
+.view-toggle{display:flex;gap:0;margin-bottom:16px;}
+.vt-btn{padding:7px 16px;border:1px solid var(--border);background:transparent;color:var(--slate);font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;}
+.vt-btn:first-child{border-radius:3px 0 0 3px;}
+.vt-btn:last-child{border-radius:0 3px 3px 0;border-left:none;}
+.vt-btn.active{background:var(--gold-dim);border-color:var(--gold);color:var(--gold);}
+
+/* TABLE VIEW */
+.tbl-card{background:var(--navy3);border:1px solid var(--border);border-radius:4px;overflow:hidden;margin-bottom:20px;}
+.tbl-hdr{display:flex;align-items:center;justify-content:space-between;padding:13px 18px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:10px;}
+.tbl-title{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.08em;}
+.tbl-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;}
+th{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--slate);padding:9px 14px;text-align:left;border-bottom:1px solid var(--border);background:rgba(255,255,255,.02);white-space:nowrap;}
+td{padding:10px 14px;border-bottom:1px solid rgba(201,168,76,.05);font-size:13px;vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(201,168,76,.03);}
+.mono{font-family:'DM Mono',monospace;font-size:11px;color:var(--slate);}
+
+/* STAGE BADGE */
+.stage-badge{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-family:'Barlow Condensed',sans-serif;font-weight:700;padding:3px 9px;border-radius:2px;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;}
+
+/* DAYS BADGE */
+.days-badge{font-family:'DM Mono',monospace;font-size:11px;padding:2px 7px;border-radius:2px;font-weight:700;}
+.days-ok{background:rgba(39,174,96,.1);color:var(--green2);}
+.days-warn{background:rgba(230,126,34,.1);color:var(--orange);}
+.days-late{background:rgba(224,82,82,.1);color:var(--red);}
+
+/* KANBAN VIEW */
+.kanban{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:20px;}
+.kb-col{background:var(--navy3);border:1px solid var(--border);border-radius:4px;overflow:hidden;}
+.kb-col-hdr{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.kb-col-title{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;}
+.kb-col-count{font-family:'DM Mono',monospace;font-size:11px;color:var(--slate);}
+.kb-cards{padding:8px;display:flex;flex-direction:column;gap:6px;min-height:80px;}
+.kb-card{background:var(--navy2);border:1px solid var(--bs);border-radius:3px;padding:10px 12px;cursor:pointer;transition:border-color .15s;}
+.kb-card:hover{border-color:var(--border);}
+.kb-card-name{font-size:13px;font-weight:600;margin-bottom:3px;}
+.kb-card-meta{font-size:10px;color:var(--slate);line-height:1.5;}
+
+/* EDIT/ADD MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:500;display:none;align-items:center;justify-content:center;padding:20px;}
+.modal-bg.open{display:flex;}
+.modal{background:var(--navy3);border:1px solid var(--border);border-radius:6px;width:100%;max-width:580px;max-height:92vh;overflow-y:auto;}
+.modal::before{content:'';display:block;height:3px;background:linear-gradient(90deg,transparent,var(--blue2),transparent);}
+.mhdr{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);}
+.mtitle{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;color:var(--blue2);text-transform:uppercase;letter-spacing:.08em;}
+.mclose{background:transparent;border:none;color:var(--slate);font-size:18px;cursor:pointer;line-height:1;}
+.mbody{padding:20px;}
+.mfooter{display:flex;gap:8px;justify-content:flex-end;padding:14px 20px;border-top:1px solid var(--border);}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(201,168,76,.7);margin-bottom:5px;}
+.field input,.field select,.field textarea{width:100%;background:var(--navy);border:1px solid var(--border);color:var(--cream);font-family:'Barlow',sans-serif;font-size:13px;padding:10px 12px;border-radius:3px;outline:none;transition:border-color .2s;}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--blue2);}
+.field select option{background:var(--navy3);}
+.field textarea{min-height:70px;resize:vertical;}
+.field-hint{font-size:10px;color:var(--slate);margin-top:4px;line-height:1.5;}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media(max-width:460px){.frow{grid-template-columns:1fr;}}
+
+/* CHECKLIST inside modal */
+.stage-checklist{list-style:none;padding:0;margin-top:8px;}
+.stage-checklist li{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:12px;color:var(--slate);}
+.stage-checklist li:last-child{border-bottom:none;}
+.stage-checklist li input[type=checkbox]{accent-color:var(--blue2);width:14px;height:14px;cursor:pointer;flex-shrink:0;}
+.stage-checklist li.done{color:var(--green2);}
+
+/* SYNC LOG */
+.sync-log{background:var(--navy);border:1px solid var(--border);border-radius:3px;padding:12px;font-family:'DM Mono',monospace;font-size:11px;line-height:1.8;max-height:180px;overflow-y:auto;margin-top:10px;}
+.sl-ok{color:var(--green2);}
+.sl-warn{color:var(--orange);}
+.sl-err{color:var(--red);}
+.sl-info{color:var(--slate);}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--navy4);border:1px solid var(--border);border-radius:4px;padding:10px 18px;font-size:13px;transform:translateY(60px);opacity:0;transition:all .3s;z-index:999;color:var(--gold2);white-space:nowrap;}
+.toast.show{transform:translateY(0);opacity:1;}
+</style>
+</head>
+<body>
+<div class="bg"></div><div class="bgrid"></div>
+<div class="page">
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hl">
+    <div class="shield">📜</div>
+    <div>
+      <div class="hdr-title">Licensing Tracker</div>
+      <div class="hdr-sub">// Dynasty Builders Academy · PHP Agent Licensing Journey</div>
+    </div>
+  </div>
+  <div class="hr">
+    <button class="btn btn-gold" onclick="openAddModal()">+ Add Agent</button>
+    <button class="btn btn-blue" onclick="syncAllToMonday()">☁ Sync Monday.com</button>
+    <button class="btn btn-outline" onclick="loadFromMonday()">↻ Load</button>
+    <a href="agents.html" class="btn btn-ghost">Roster →</a>
+    <a href="hub.html" class="btn btn-ghost">← Hub</a>
+  </div>
+</div>
+
+<!-- PIPELINE STAGES (funnel counts) -->
+<div class="pipeline" id="pipeline-stages"></div>
+
+<!-- VIEW TOGGLE + FILTER -->
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
+  <div class="view-toggle">
+    <button class="vt-btn active" id="vt-table" onclick="setView('table',this)">☰ Table</button>
+    <button class="vt-btn" id="vt-kanban" onclick="setView('kanban',this)">⊞ Kanban</button>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <select id="filter-stage" onchange="renderAll()" style="background:var(--navy);border:1px solid var(--border);color:var(--cream);font-size:12px;padding:7px 12px;border-radius:3px;outline:none;">
+      <option value="">All Stages</option>
+    </select>
+    <input type="text" id="search-box" placeholder="Search name…" oninput="renderAll()"
+      style="background:var(--navy);border:1px solid var(--border);color:var(--cream);font-size:12px;padding:7px 12px;border-radius:3px;outline:none;width:180px;">
+  </div>
+</div>
+
+<!-- TABLE VIEW -->
+<div id="view-table">
+  <div class="tbl-card">
+    <div class="tbl-hdr">
+      <div class="tbl-title">Agent Licensing Pipeline — <span id="agent-count">0</span> agents</div>
+      <div style="font-size:11px;color:var(--slate);font-family:'DM Mono',monospace;" id="last-sync-label">Not yet synced</div>
+    </div>
+  <!-- STUDY RESOURCES CARD -->
+  <div style="background:linear-gradient(135deg,rgba(201,168,76,.1),var(--navy-mid));border:1px solid var(--border);border-radius:6px;padding:20px 24px;margin-bottom:20px;position:relative;overflow:hidden;">
+    <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,var(--gold),transparent);"></div>
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px;">📚 DBA Study Resources</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;">
+      <a href="CA_Life_Health_Study_Guide.pdf" target="_blank" title="Download DBA CA Life &amp; Health Insurance Study Guide PDF"
+        style="display:flex;align-items:center;gap:12px;background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.3);border-radius:4px;padding:14px;text-decoration:none;transition:all .15s;"
+        onmouseover="this.style.background='rgba(201,168,76,.15)'" onmouseout="this.style.background='rgba(201,168,76,.08)'">
+        <div style="font-size:2rem;flex-shrink:0;">📖</div>
+        <div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.06em;">DBA Study Guide</div>
+          <div style="font-size:11px;color:var(--slate);margin-top:2px;">CA Life &amp; Health · 12 Chapters · 150+ Q&amp;A · Exam Strategies</div>
+          <div style="font-size:10px;color:var(--gold);margin-top:3px;font-family:'DM Mono',monospace;">↓ Download PDF</div>
+        </div>
+      </a>
+      <a href="https://www.xcelsolutions.com/insurance-licensing/california" target="_blank"
+        style="display:flex;align-items:center;gap:12px;background:rgba(52,152,219,.06);border:1px solid rgba(52,152,219,.2);border-radius:4px;padding:14px;text-decoration:none;transition:all .15s;"
+        onmouseover="this.style.background='rgba(52,152,219,.12)'" onmouseout="this.style.background='rgba(52,152,219,.06)'">
+        <div style="font-size:2rem;flex-shrink:0;">🎓</div>
+        <div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:#5DADE2;text-transform:uppercase;letter-spacing:.06em;">XcelSolutions</div>
+          <div style="font-size:11px;color:var(--slate);margin-top:2px;">CA pre-licensing course · State-approved · Online or in-person</div>
+          <div style="font-size:10px;color:#5DADE2;margin-top:3px;font-family:'DM Mono',monospace;">↗ External Site</div>
+        </div>
+      </a>
+      <a href="https://www.examfx.com/insurance/california" target="_blank"
+        style="display:flex;align-items:center;gap:12px;background:rgba(39,174,96,.06);border:1px solid rgba(39,174,96,.2);border-radius:4px;padding:14px;text-decoration:none;transition:all .15s;"
+        onmouseover="this.style.background='rgba(39,174,96,.12)'" onmouseout="this.style.background='rgba(39,174,96,.06)'">
+        <div style="font-size:2rem;flex-shrink:0;">✅</div>
+        <div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:#2DCA73;text-transform:uppercase;letter-spacing:.06em;">ExamFX</div>
+          <div style="font-size:11px;color:var(--slate);margin-top:2px;">State exam simulator · Practice tests · Pass guarantee</div>
+          <div style="font-size:10px;color:#2DCA73;margin-top:3px;font-family:'DM Mono',monospace;">↗ External Site</div>
+        </div>
+      </a>
+      <a href="https://home.pearsonvue.com/ca/insurance" target="_blank"
+        style="display:flex;align-items:center;gap:12px;background:rgba(230,126,34,.06);border:1px solid rgba(230,126,34,.2);border-radius:4px;padding:14px;text-decoration:none;transition:all .15s;"
+        onmouseover="this.style.background='rgba(230,126,34,.12)'" onmouseout="this.style.background='rgba(230,126,34,.06)'">
+        <div style="font-size:2rem;flex-shrink:0;">🏢</div>
+        <div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:#E67E22;text-transform:uppercase;letter-spacing:.06em;">Pearson VUE</div>
+          <div style="font-size:11px;color:var(--slate);margin-top:2px;">Schedule CA state exam · Find test center · $250 fee</div>
+          <div style="font-size:10px;color:#E67E22;margin-top:3px;font-family:'DM Mono',monospace;">↗ Register for Exam</div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>Agent</th><th>Stage</th><th>Exam Date</th><th>License #</th>
+          <th>States</th><th>Study Start</th><th>Days in Stage</th>
+          <th>Upline</th><th>Notes</th><th style="text-align:center;">Actions</th>
+        </tr></thead>
+        <tbody id="license-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- KANBAN VIEW -->
+<div id="view-kanban" style="display:none;">
+  <div class="kanban" id="kanban-board"></div>
+</div>
+
+<!-- STALLED ALERTS -->
+<div id="stalled-section" style="display:none;">
+  <div style="font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:var(--orange);text-transform:uppercase;letter-spacing:.09em;margin-bottom:10px;">⚠ Stalled — 14+ Days in Stage</div>
+  <div id="stalled-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;"></div>
+</div>
+
+</div><!-- /page -->
+
+<!-- ADD/EDIT MODAL -->
+<div class="modal-bg" id="agent-modal">
+  <div class="modal">
+    <div class="mhdr">
+      <div class="mtitle" id="modal-title">📜 Add Agent to Licensing Tracker</div>
+      <button class="mclose" onclick="closeModal()">✕</button>
+    </div>
+    <div class="mbody">
+      <input type="hidden" id="m-record-id">
+
+      <div class="frow">
+        <div class="field">
+          <label>Agent Name *</label>
+          <select id="m-agent-select" onchange="onAgentSelect()">
+            <option value="">Select from roster…</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Or enter name manually</label>
+          <input type="text" id="m-name" placeholder="Full name">
+        </div>
+      </div>
+      <div class="frow">
+        <div class="field">
+          <label>Agent ID</label>
+          <input type="text" id="m-agent-id" placeholder="e.g. sha001">
+        </div>
+        <div class="field">
+          <label>Upline / Sponsor</label>
+          <input type="text" id="m-upline" placeholder="Upline agent name">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Licensing Stage *</label>
+        <select id="m-stage" onchange="updateChecklist()">
+          <option value="">Select stage…</option>
+        </select>
+      </div>
+
+      <div class="frow">
+        <div class="field">
+          <label>Study Start Date</label>
+          <input type="date" id="m-study-start">
+          <div class="field-hint">Date agent started studying for the exam</div>
+        </div>
+        <div class="field">
+          <label>Exam Date (Scheduled)</label>
+          <input type="date" id="m-exam-date">
+          <div class="field-hint">Pearl exam appointment date</div>
+        </div>
+      </div>
+      <div class="frow">
+        <div class="field">
+          <label>Exam Date (Passed)</label>
+          <input type="date" id="m-exam-passed">
+          <div class="field-hint">Date agent passed the state exam</div>
+        </div>
+        <div class="field">
+          <label>License Issued Date</label>
+          <input type="date" id="m-license-date">
+        </div>
+      </div>
+      <div class="frow">
+        <div class="field">
+          <label>License Number</label>
+          <input type="text" id="m-license-num" placeholder="State license #">
+        </div>
+        <div class="field">
+          <label>License States</label>
+          <input type="text" id="m-states" placeholder="TX, CA">
+        </div>
+      </div>
+      <div class="frow">
+        <div class="field">
+          <label>Appointment Date (Carrier)</label>
+          <input type="date" id="m-appt-date">
+          <div class="field-hint">Date appointed with PHP / carrier</div>
+        </div>
+        <div class="field">
+          <label>Phone</label>
+          <input type="tel" id="m-phone" placeholder="(555) 000-0000">
+        </div>
+      </div>
+      <div class="field">
+        <label>Notes / Blockers</label>
+        <textarea id="m-notes" placeholder="Background check issue, study delay, etc."></textarea>
+      </div>
+
+      <!-- Stage Checklist -->
+      <div id="stage-checklist-wrap" style="margin-top:4px;"></div>
+    </div>
+    <div class="mfooter">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-blue" onclick="saveRecord(true)">Save &amp; Sync Monday</button>
+      <button class="btn btn-gold" onclick="saveRecord(false)">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+AUTH.require('licensing.html');
+const session = AUTH.getSession();
+
+// ── STAGE DEFINITIONS ─────────────────────────────────────────
+const STAGES = [
+  {
+    id: 'not_started',
+    label: 'Not Started',
+    color: '#6B7C93',
+    icon: '○',
+    desc: 'Agent enrolled but not yet studying',
+    checklist: [
+      'Confirm agent wants to pursue licensing',
+      'Explain exam requirements and cost (~$250)',
+      'Share DBA CA Life & Health Study Guide (download from resources)',
+      'Share study material recommendations (XcelSolutions, ExamFX)',
+      'Set target study start date',
+      'Set 4-week study plan: 40+ hours minimum',
+    ]
+  },
+  {
+    id: 'studying',
+    label: 'Studying',
+    color: '#3498DB',
+    icon: '📚',
+    desc: 'Actively studying for state life insurance exam',
+    checklist: [
+      'Download DBA CA Life & Health Study Guide (in resources below)',
+      'Enrolled in study course (XcelSolutions / ExamFX)',
+      'Study schedule set (2–3 hrs/day — minimum 40 hours total)',
+      'Completed Chapters 1–6 summary review',
+      'Completed Chapters 7–12 summary review',
+      'Practiced 150+ Q&A from DBA Study Guide',
+      'Target exam date identified',
+      'Exam registration completed',
+    ]
+  },
+  {
+    id: 'exam_scheduled',
+    label: 'Exam Scheduled',
+    color: '#E67E22',
+    icon: '📅',
+    desc: 'Exam booked at Pearson VUE or PSI',
+    checklist: [
+      'Exam registered at Pearson VUE / PSI',
+      'Confirmation email received',
+      'Test location and time confirmed',
+      'ID documents prepared',
+    ]
+  },
+  {
+    id: 'exam_passed',
+    label: 'Exam Passed',
+    color: '#9B59B6',
+    icon: '✅',
+    desc: 'State exam passed — submitting license application',
+    checklist: [
+      'Passed state life insurance exam',
+      'Score sheet / result saved',
+      'State license application submitted',
+      'Background check initiated (if required)',
+    ]
+  },
+  {
+    id: 'license_pending',
+    label: 'License Pending',
+    color: '#F39C12',
+    icon: '⏳',
+    desc: 'Application submitted — awaiting state approval',
+    checklist: [
+      'License application submitted to state DOI',
+      'Background check cleared',
+      'Fingerprinting completed (if required)',
+      'Awaiting state approval (3–21 days)',
+    ]
+  },
+  {
+    id: 'licensed',
+    label: 'Licensed',
+    color: '#27AE60',
+    icon: '🪪',
+    desc: 'State license received — ready for carrier appointment',
+    checklist: [
+      'State license number received',
+      'License verified on state DOI website',
+      'License copy uploaded to PHP Bamboo',
+      'Carrier appointment initiated',
+    ]
+  },
+  {
+    id: 'appointed',
+    label: 'Appointed',
+    color: '#C9A84C',
+    icon: '🏆',
+    desc: 'Carrier appointed — ready to write business',
+    checklist: [
+      'Carrier appointment approved (PHP / integrity)',
+      'Agent appointed on PHP Bamboo',
+      'First policy training completed',
+      'Ready to submit applications',
+    ]
+  },
+];
+
+// ── DATA ──────────────────────────────────────────────────────
+let records = [];        // Array of license tracking records
+let mondayItemMap = {};  // record.agentId → Monday item ID
+const STORE_KEY    = 'dba_licensing_tracker';
+const BOARD_KEY    = 'dba_licensing_board_id';
+const BOARD_FALLBACK = '18416042293'; // Agent Licensing — static, admin-created
+
+function getBoardId() {
+  return localStorage.getItem(BOARD_KEY) || BOARD_FALLBACK;
+}
+
+function newRecord(overrides={}) {
+  return {
+    id:          Date.now().toString(),
+    agentId:     '',
+    name:        '',
+    upline:      '',
+    phone:       '',
+    stage:       'not_started',
+    studyStart:  '',
+    examDate:    '',
+    examPassed:  '',
+    licenseDate: '',
+    licenseNum:  '',
+    states:      '',
+    apptDate:    '',
+    notes:       '',
+    checklist:   {},   // stageId → [bool, bool, ...]
+    stageDate:   new Date().toISOString().slice(0,10), // date entered current stage
+    ...overrides
+  };
+}
+
+function daysInStage(rec) {
+  if (!rec.stageDate) return 0;
+  return Math.floor((Date.now() - new Date(rec.stageDate)) / 86400000);
+}
+
+function daysBadge(days) {
+  if (days <= 7)  return `<span class="days-badge days-ok">${days}d</span>`;
+  if (days <= 14) return `<span class="days-badge days-warn">${days}d</span>`;
+  return `<span class="days-badge days-late">${days}d ⚠</span>`;
+}
+
+function stageDef(id) { return STAGES.find(s=>s.id===id) || STAGES[0]; }
+
+function stageBadge(stageId) {
+  const s = stageDef(stageId);
+  return `<span class="stage-badge" style="background:${s.color}22;color:${s.color};border:1px solid ${s.color}44;">${s.icon} ${s.label}</span>`;
+}
+
+// ── PERSIST ───────────────────────────────────────────────────
+function save() {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify({ records, mondayItemMap })); } catch(e){}
+}
+
+function load() {
+  try {
+    const d = JSON.parse(localStorage.getItem(STORE_KEY)||'null');
+    if (d) { records = d.records||[]; mondayItemMap = d.mondayItemMap||{}; }
+  } catch(e){}
+
+  // ── SEED NEW AGENTS (added if not already in tracker) ──────
+  const seedAgents = [
+    { agentId:'romcru001', name:'Romeo Cruz', phone:'310-733-9994', stage:'not_started', upline:'Obi Iroezi' },
+  ];
+  seedAgents.forEach(seed => {
+    if (!records.find(r => r.agentId === seed.agentId)) {
+      records.push(newRecord({
+        agentId:   seed.agentId,
+        name:      seed.name,
+        phone:     seed.phone,
+        upline:    seed.upline,
+        stage:     seed.stage,
+        stageDate: new Date().toISOString().slice(0,10),
+      }));
+      save();
+    }
+  });
+}
+
+// ── RENDER ────────────────────────────────────────────────────
+let currentView = 'table';
+
+function setView(v, btn) {
+  currentView = v;
+  document.getElementById('view-table').style.display  = v==='table'  ? 'block' : 'none';
+  document.getElementById('view-kanban').style.display = v==='kanban' ? 'block' : 'none';
+  document.querySelectorAll('.vt-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function getFiltered() {
+  const stageF  = document.getElementById('filter-stage').value;
+  const searchF = (document.getElementById('search-box').value||'').toLowerCase();
+  return records.filter(r =>
+    (!stageF  || r.stage === stageF) &&
+    (!searchF || r.name.toLowerCase().includes(searchF) || r.agentId.toLowerCase().includes(searchF))
+  );
+}
+
+function renderAll() {
+  renderPipeline();
+  renderTable();
+  renderKanban();
+  renderStalled();
+}
+
+function renderPipeline() {
+  const counts = {};
+  STAGES.forEach(s => counts[s.id] = records.filter(r=>r.stage===s.id).length);
+  document.getElementById('pipeline-stages').innerHTML = STAGES.map(s => `
+    <div class="stage-pill" style="border-top-color:${s.color};background:${s.color}08;"
+      onclick="document.getElementById('filter-stage').value='${s.id}';renderAll()">
+      <div class="sp-label" style="color:${s.color};">${s.icon} ${s.label}</div>
+      <div class="sp-count" style="color:${s.color};">${counts[s.id]||0}</div>
+      <div class="sp-sub">${counts[s.id]===1?'agent':'agents'}</div>
+    </div>`).join('');
+}
+
+function renderTable() {
+  const rows = getFiltered();
+  document.getElementById('agent-count').textContent = rows.length;
+  document.getElementById('license-tbody').innerHTML = rows.length
+    ? rows.map(r => {
+        const days = daysInStage(r);
+        const uplineAgent = AGENTS.find(a=>a.id===r.agentId);
+        const uplineName  = r.upline || uplineAgent?.uplineId && AGENTS.find(a=>a.id===uplineAgent.uplineId)?.name || '—';
+        return `<tr>
+          <td><div style="font-weight:600;">${r.name}</div><div class="mono">${r.agentId||'—'}</div></td>
+          <td>${stageBadge(r.stage)}</td>
+          <td class="mono">${r.examDate||'—'}</td>
+          <td class="mono">${r.licenseNum||'—'}</td>
+          <td style="font-size:12px;">${r.states||'—'}</td>
+          <td class="mono">${r.studyStart||'—'}</td>
+          <td style="text-align:center;">${daysBadge(days)}</td>
+          <td style="font-size:12px;color:var(--slate);">${uplineName}</td>
+          <td style="font-size:11px;color:var(--slate);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.notes||'—'}</td>
+          <td style="text-align:center;white-space:nowrap;">
+            <button class="btn btn-sm btn-outline" onclick="openEditModal('${r.id}')" style="margin-right:4px;">✏️</button>
+            <button class="btn btn-sm btn-blue" onclick="advanceStage('${r.id}')">→</button>
+          </td>
+        </tr>`;
+      }).join('')
+    : `<tr><td colspan="10" style="text-align:center;padding:32px;color:var(--slate);font-size:13px;">No agents yet — click + Add Agent to start tracking</td></tr>`;
+}
+
+function renderKanban() {
+  const board = document.getElementById('kanban-board');
+  board.innerHTML = STAGES.map(s => {
+    const cols = records.filter(r=>r.stage===s.id);
+    return `<div class="kb-col">
+      <div class="kb-col-hdr">
+        <div class="kb-col-title" style="color:${s.color};">${s.icon} ${s.label}</div>
+        <div class="kb-col-count">${cols.length}</div>
+      </div>
+      <div class="kb-cards">
+        ${cols.map(r=>`
+          <div class="kb-card" onclick="openEditModal('${r.id}')">
+            <div class="kb-card-name">${r.name}</div>
+            <div class="kb-card-meta">${r.agentId||''} ${r.examDate?'· Exam: '+r.examDate:''} ${r.states?'· '+r.states:''}</div>
+          </div>`).join('') || `<div style="font-size:11px;color:var(--slate);text-align:center;padding:12px;">Empty</div>`}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderStalled() {
+  const stalled = records.filter(r => daysInStage(r) > 14 && r.stage !== 'appointed');
+  const sec = document.getElementById('stalled-section');
+  sec.style.display = stalled.length ? 'block' : 'none';
+  document.getElementById('stalled-list').innerHTML = stalled.map(r => {
+    const s = stageDef(r.stage);
+    return `<div style="display:flex;align-items:center;gap:14px;background:rgba(230,126,34,.06);border:1px solid rgba(230,126,34,.2);border-radius:3px;padding:12px 16px;">
+      <div style="font-size:1.4rem;">${s.icon}</div>
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:600;">${r.name} <span style="font-size:10px;color:var(--slate);">${r.agentId}</span></div>
+        <div style="font-size:11px;color:var(--orange);">${daysInStage(r)} days in <em>${s.label}</em> — ${s.checklist[0]||'Check next step'}</div>
+      </div>
+      <button class="btn btn-sm btn-outline" onclick="openEditModal('${r.id}')" style="border-color:rgba(230,126,34,.4);color:var(--orange);">Update</button>
+    </div>`;
+  }).join('');
+}
+
+// ── ADVANCE STAGE ─────────────────────────────────────────────
+function advanceStage(recordId) {
+  const rec = records.find(r=>r.id===recordId);
+  if (!rec) return;
+  const idx = STAGES.findIndex(s=>s.id===rec.stage);
+  if (idx >= STAGES.length-1) { toast('Already at final stage'); return; }
+  rec.stage     = STAGES[idx+1].id;
+  rec.stageDate = new Date().toISOString().slice(0,10);
+  save(); renderAll();
+  toast(`${rec.name} → ${stageDef(rec.stage).label}`);
+}
+
+// ── MODAL ─────────────────────────────────────────────────────
+function populateModalDropdowns() {
+  // Agent select
+  const sel = document.getElementById('m-agent-select');
+  sel.innerHTML = '<option value="">Select from roster…</option>';
+  // Only show agents in the logged-in agent's downline (all levels),
+  // so Obi sees his full team, but Jacinta only sees her own downline.
+  const downline = (typeof getFullDownline === 'function')
+    ? getFullDownline(session.agentId).filter(a => a.id !== session.agentId)
+    : AGENTS.filter(a => a.uplineId === session.agentId);
+  downline.sort((a,b) => a.name.localeCompare(b.name));
+  downline.forEach(a=>{
+    const o=document.createElement('option');
+    o.value=a.id; o.textContent=a.name+' — '+getRoleLabel(a.role);
+    sel.appendChild(o);
+  });
+
+  // Stage select
+  const stageSel = document.getElementById('m-stage');
+  stageSel.innerHTML = '<option value="">Select stage…</option>';
+  STAGES.forEach(s=>{
+    const o=document.createElement('option');
+    o.value=s.id; o.textContent=s.icon+' '+s.label;
+    stageSel.appendChild(o);
+  });
+
+  // Filter stage dropdown
+  const filterSel = document.getElementById('filter-stage');
+  filterSel.innerHTML = '<option value="">All Stages</option>';
+  STAGES.forEach(s=>{
+    const o=document.createElement('option');
+    o.value=s.id; o.textContent=s.icon+' '+s.label;
+    filterSel.appendChild(o);
+  });
+}
+
+function onAgentSelect() {
+  const agentId = document.getElementById('m-agent-select').value;
+  if (!agentId) return;
+  const a = AGENTS.find(x=>x.id===agentId);
+  if (!a) return;
+  document.getElementById('m-name').value    = a.name;
+  document.getElementById('m-agent-id').value= a.id;
+  document.getElementById('m-phone').value   = a.phone||'';
+  document.getElementById('m-states').value  = (a.licenseStates||[]).join(', ');
+  const upline = AGENTS.find(u=>u.id===a.uplineId);
+  document.getElementById('m-upline').value  = upline?.name||'';
+}
+
+function updateChecklist() {
+  const stageId = document.getElementById('m-stage').value;
+  const s = stageDef(stageId);
+  const recId = document.getElementById('m-record-id').value;
+  const rec = records.find(r=>r.id===recId);
+  const savedChecks = rec?.checklist?.[stageId] || [];
+  const wrap = document.getElementById('stage-checklist-wrap');
+  if (!stageId || !s.checklist?.length) { wrap.innerHTML=''; return; }
+  wrap.innerHTML = `
+    <div style="font-size:10px;font-weight:700;color:rgba(93,173,226,.7);text-transform:uppercase;letter-spacing:.09em;margin-bottom:8px;">Stage Checklist — ${s.label}</div>
+    <ul class="stage-checklist">
+      ${s.checklist.map((item,i)=>`
+        <li class="${savedChecks[i]?'done':''}">
+          <input type="checkbox" id="chk-${i}" ${savedChecks[i]?'checked':''} onchange="toggleCheck(${i})">
+          <label for="chk-${i}" style="cursor:pointer;">${item}</label>
+        </li>`).join('')}
+    </ul>`;
+}
+
+function toggleCheck(idx) {
+  const stageId = document.getElementById('m-stage').value;
+  const recId   = document.getElementById('m-record-id').value;
+  const rec     = records.find(r=>r.id===recId);
+  if (!rec) return;
+  if (!rec.checklist[stageId]) rec.checklist[stageId] = [];
+  rec.checklist[stageId][idx] = document.getElementById('chk-'+idx).checked;
+}
+
+function openAddModal() {
+  document.getElementById('m-record-id').value = '';
+  document.getElementById('modal-title').textContent = '📜 Add Agent to Licensing Tracker';
+  ['m-name','m-agent-id','m-upline','m-phone','m-study-start','m-exam-date',
+   'm-exam-passed','m-license-date','m-license-num','m-states','m-appt-date','m-notes'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
+  });
+  document.getElementById('m-agent-select').value = '';
+  document.getElementById('m-stage').value = '';
+  document.getElementById('stage-checklist-wrap').innerHTML = '';
+  document.getElementById('agent-modal').classList.add('open');
+}
+
+function openEditModal(recordId) {
+  const rec = records.find(r=>r.id===recordId);
+  if (!rec) return;
+  document.getElementById('m-record-id').value  = rec.id;
+  document.getElementById('modal-title').textContent = `✏️ Edit — ${rec.name}`;
+  document.getElementById('m-name').value        = rec.name;
+  document.getElementById('m-agent-id').value    = rec.agentId;
+  document.getElementById('m-upline').value      = rec.upline||'';
+  document.getElementById('m-phone').value       = rec.phone||'';
+  document.getElementById('m-stage').value       = rec.stage;
+  document.getElementById('m-study-start').value = rec.studyStart||'';
+  document.getElementById('m-exam-date').value   = rec.examDate||'';
+  document.getElementById('m-exam-passed').value = rec.examPassed||'';
+  document.getElementById('m-license-date').value= rec.licenseDate||'';
+  document.getElementById('m-license-num').value = rec.licenseNum||'';
+  document.getElementById('m-states').value      = rec.states||'';
+  document.getElementById('m-appt-date').value   = rec.apptDate||'';
+  document.getElementById('m-notes').value       = rec.notes||'';
+  document.getElementById('m-agent-select').value= rec.agentId||'';
+  updateChecklist();
+  document.getElementById('agent-modal').classList.add('open');
+}
+
+function closeModal() { document.getElementById('agent-modal').classList.remove('open'); }
+
+function saveRecord(syncAfter) {
+  const recId = document.getElementById('m-record-id').value;
+  const isNew = !recId;
+  let rec = isNew ? newRecord() : records.find(r=>r.id===recId);
+  if (!rec) return;
+
+  const oldStage = rec.stage;
+  rec.name        = document.getElementById('m-name').value.trim();
+  rec.agentId     = document.getElementById('m-agent-id').value.trim();
+  rec.upline      = document.getElementById('m-upline').value.trim();
+  rec.phone       = document.getElementById('m-phone').value.trim();
+  rec.stage       = document.getElementById('m-stage').value || 'not_started';
+  rec.studyStart  = document.getElementById('m-study-start').value;
+  rec.examDate    = document.getElementById('m-exam-date').value;
+  rec.examPassed  = document.getElementById('m-exam-passed').value;
+  rec.licenseDate = document.getElementById('m-license-date').value;
+  rec.licenseNum  = document.getElementById('m-license-num').value.trim();
+  rec.states      = document.getElementById('m-states').value.trim();
+  rec.apptDate    = document.getElementById('m-appt-date').value;
+  rec.notes       = document.getElementById('m-notes').value.trim();
+
+  // Reset stageDate if stage changed
+  if (rec.stage !== oldStage) rec.stageDate = new Date().toISOString().slice(0,10);
+
+  if (isNew) records.push(rec);
+  save();
+  closeModal();
+  renderAll();
+  toast(`${rec.name} saved ✅`);
+  if (syncAfter) syncRecord(rec);
+}
+
+// ── MONDAY.COM ────────────────────────────────────────────────
+function logSync(msg,cls='sl-info'){console.log('[LicSync]',msg);}
+
+async function ensureLicensingBoard() {
+  const stored = localStorage.getItem(BOARD_KEY);
+  if (stored) return stored;
+
+  toast('Creating Licensing board in Monday.com…');
+  try {
+    const res = await mondayQuery(`mutation {
+      create_board(board_name:"DBA — Agent Licensing Tracker", board_kind:public) { id name }
+    }`);
+    const boardId = res?.data?.create_board?.id;
+    if (!boardId) throw new Error('Board creation failed');
+
+    const COLS = [
+      {title:'Agent ID',      type:'text'},
+      {title:'Upline',        type:'text'},
+      {title:'Phone',         type:'phone'},
+      {title:'Stage',         type:'text'},
+      {title:'Study Start',   type:'date'},
+      {title:'Exam Date',     type:'date'},
+      {title:'Exam Passed',   type:'date'},
+      {title:'License Date',  type:'date'},
+      {title:'License Number',type:'text'},
+      {title:'States',        type:'text'},
+      {title:'Appt Date',     type:'date'},
+      {title:'Days in Stage', type:'numbers'},
+      {title:'Notes',         type:'long_text'},
+      {title:'Status',        type:'color'},
+    ];
+    for (const col of COLS) {
+      await mondayQuery(`mutation{create_column(board_id:${boardId},title:"${col.title}",column_type:${col.type}){id}}`).catch(()=>{});
+    }
+    localStorage.setItem(BOARD_KEY, boardId);
+    toast('✅ Licensing board created: '+boardId);
+    return boardId;
+  } catch(e) {
+    toast('Using fallback board');
+    return BOARD_FALLBACK;
+  }
+}
+
+async function buildCV(rec, cols) {
+  const find = (...kws) => cols.find(c=>kws.some(k=>(c.title||'').toLowerCase().includes(k)))?.id||null;
+  const s   = stageDef(rec.stage);
+  const cv  = {};
+  const cId = find('agent id');   if(cId)  cv[cId]  = rec.agentId;
+  const cUp = find('upline');     if(cUp)  cv[cUp]  = rec.upline||'';
+  const cPh = find('phone');      if(cPh && rec.phone) cv[cPh] = {phone:rec.phone.replace(/\D/g,''),countryShortName:'US'};
+  const cSt = find('stage');      if(cSt)  cv[cSt]  = s.label;
+  const cSS = find('study start');if(cSS && rec.studyStart) cv[cSS]={date:rec.studyStart};
+  const cED = find('exam date');  if(cED && rec.examDate)   cv[cED]={date:rec.examDate};
+  const cEP = find('exam passed');if(cEP && rec.examPassed) cv[cEP]={date:rec.examPassed};
+  const cLD = find('license date');if(cLD && rec.licenseDate) cv[cLD]={date:rec.licenseDate};
+  const cLN = find('license num','license number');if(cLN) cv[cLN]=rec.licenseNum||'';
+  const cStates=find('states');   if(cStates) cv[cStates]=rec.states||'';
+  const cAD = find('appt');       if(cAD && rec.apptDate) cv[cAD]={date:rec.apptDate};
+  const cDs = find('days');       if(cDs)  cv[cDs]  = daysInStage(rec);
+  const cNo = find('notes');      if(cNo)  cv[cNo]  = rec.notes||'';
+  return cv;
+}
+
+// Fetch existing board items and build agentId → item ID map
+// ── BMP-PATTERN HELPERS ───────────────────────────────────────
+// Normalize a string for matching (mirrors bmp-platform.html)
+function normalize(s){ return String(s||'').toLowerCase().replace(/[^a-z0-9]/g,''); }
+
+// Full cursor-paginated item fetch — no item cap, handles boards of any size
+async function fetchAllBoardItems(boardId) {
+  const items = [];
+  let cursor = null;
+  do {
+    const ca = cursor ? `, cursor: "${cursor}"` : '';
+    const r = await mondayQuery(`{boards(ids:${boardId}){items_page(limit:100${ca}){cursor items{id name column_values{id text}}}}}`);
+    const page = r?.data?.boards?.[0]?.items_page;
+    items.push(...(page?.items || []));
+    cursor = page?.cursor || null;
+    if (!page?.items?.length) break;
+  } while (cursor);
+  return items;
+}
+
+// Build agentId → Monday item ID map using full pagination + normalize matching
+async function refreshItemMap(boardId) {
+  try {
+    const colR = await mondayQuery(`{boards(ids:${boardId}){columns{id title}}}`);
+    const cols  = colR?.data?.boards?.[0]?.columns || [];
+    const agentIdColId = cols.find(c =>
+      normalize(c.title).includes('agentid') || normalize(c.title).includes('agentcode') || normalize(c.title).includes('phpcode')
+    )?.id || null;
+
+    const items = await fetchAllBoardItems(boardId);
+    const newMap = {};
+
+    items.forEach(item => {
+      // Primary: dedicated Agent ID column
+      if (agentIdColId) {
+        const cv = item.column_values.find(c => c.id === agentIdColId);
+        const val = cv?.text?.trim();
+        if (val) { newMap[val] = item.id; return; }
+      }
+      // Secondary: any column value that looks like an agent/PHP code
+      item.column_values.forEach(cv => {
+        const val = cv?.text?.trim();
+        if (val && /^\d{3,10}$/.test(val)) newMap[val] = item.id;
+      });
+      // Fallback: match local record by normalized name
+      const nName = normalize(item.name);
+      const rec = records.find(r => normalize(r.name) === nName || nName.startsWith(normalize(r.name)));
+      if (rec && !newMap[rec.agentId]) newMap[rec.agentId] = item.id;
+    });
+
+    Object.assign(mondayItemMap, newMap);
+    save();
+    console.log('[Licensing] Item map refreshed:', Object.keys(mondayItemMap).length, 'entries from', items.length, 'board items');
+  } catch(e) {
+    console.warn('[Licensing] Could not refresh item map:', e.message);
+  }
+}
+
+async function syncRecord(rec) {
+  if (!AUTH.getMondayKey()) { toast('No Monday.com API key'); return; }
+  const boardId = await ensureLicensingBoard();
+
+  let cols = [];
+  try {
+    const r = await mondayQuery(`{boards(ids:${boardId}){columns{id title type}}}`);
+    cols = r?.data?.boards?.[0]?.columns || [];
+  } catch(e){}
+
+  // Always refresh item map before every sync — prevents stale cache creating duplicates
+  await refreshItemMap(boardId);
+
+  const cv    = await buildCV(rec, cols);
+  const cvStr = JSON.stringify(JSON.stringify(cv));
+  const iname = `${rec.name} — Licensing`;
+  const existingId = mondayItemMap[rec.agentId];
+
+  try {
+    if (existingId) {
+      // UPDATE — confirmed match, no duplicate risk
+      await mondayQuery(`mutation{change_multiple_column_values(board_id:${boardId},item_id:${existingId},column_values:${cvStr}){id}}`);
+      toast(`${rec.name} updated in Monday.com ✅`);
+    } else {
+      // UPSERT — final name-check via full pagination before creating
+      const allItems = await fetchAllBoardItems(boardId);
+      const nameMatch = allItems.find(item =>
+        normalize(item.name) === normalize(iname) || normalize(item.name) === normalize(rec.name)
+      );
+      if (nameMatch) {
+        mondayItemMap[rec.agentId] = nameMatch.id;
+        await mondayQuery(`mutation{change_multiple_column_values(board_id:${boardId},item_id:${nameMatch.id},column_values:${cvStr}){id}}`);
+        toast(`${rec.name} updated in Monday.com ✅`);
+      } else {
+        // Truly new — create exactly once
+        const r = await mondayQuery(`mutation{create_item(board_id:${boardId},item_name:${JSON.stringify(iname)},column_values:${cvStr}){id}}`);
+        const newId = r?.data?.create_item?.id;
+        if (newId) mondayItemMap[rec.agentId] = newId;
+        toast(`${rec.name} added to Monday.com ✅`);
+      }
+    }
+    save();
+    document.getElementById('last-sync-label').textContent = 'Synced ' + new Date().toLocaleTimeString();
+  } catch(e) { toast('Sync failed: ' + e.message); }
+}
+
+async function syncAllToMonday() {
+  if (!AUTH.getMondayKey()) { toast('No Monday.com API key'); return; }
+  toast('Syncing ' + records.length + ' agents…');
+  const boardId = await ensureLicensingBoard();
+  let cols = [];
+  try {
+    const r = await mondayQuery(`{boards(ids:${boardId}){columns{id title type}}}`);
+    cols = r?.data?.boards?.[0]?.columns || [];
+  } catch(e){}
+
+  // Always refresh item map before batch to catch any records added outside this device
+  await refreshItemMap(boardId);
+
+  let ok = 0;
+  for (const rec of records) {
+    try { await syncRecord(rec); ok++; await new Promise(r=>setTimeout(r,150)); } catch(e){}
+  }
+  toast(`Synced ${ok}/${records.length} agents ✅`);
+  document.getElementById('last-sync-label').textContent = 'Synced ' + new Date().toLocaleTimeString();
+}
+
+async function loadFromMonday() {
+  if (!AUTH.getMondayKey()) { toast('Loading from local cache only'); renderAll(); return; }
+  const boardId = getBoardId();
+  toast('Loading from Monday.com…');
+  try {
+    const colR = await mondayQuery(`{boards(ids:${boardId}){columns{id title}}}`);
+    const colTitles = {};
+    (colR?.data?.boards?.[0]?.columns||[]).forEach(col => { colTitles[col.id] = (col.title||'').toLowerCase(); });
+    const items = await fetchAllBoardItems(boardId);
+    items.forEach(item => {
+      if (!item.name.includes('Licensing')) return;
+      const get=(...kws)=>item.column_values.find(cv=>kws.some(k=>(colTitles[cv.id]||'').includes(k)))?.text||'';
+      const agentId=get('agent id');
+      if(!agentId) return;
+      mondayItemMap[agentId]=item.id;
+      let rec=records.find(r=>r.agentId===agentId);
+      if(!rec){rec=newRecord();records.push(rec);}
+      const stageLabel=get('stage');
+      const s=STAGES.find(s=>s.label.toLowerCase()===stageLabel.toLowerCase());
+      rec.agentId    = agentId;
+      rec.name       = item.name.replace(' — Licensing','').trim();
+      rec.stage      = s?.id||'not_started';
+      rec.upline     = get('upline');
+      rec.examDate   = get('exam date');
+      rec.examPassed = get('exam passed');
+      rec.licenseDate= get('license date');
+      rec.licenseNum = get('license num','license number');
+      rec.states     = get('states');
+      rec.apptDate   = get('appt');
+      rec.notes      = get('notes');
+    });
+    save(); renderAll();
+    toast(`Loaded ${items.length} records ✅`);
+  } catch(e){ toast('Load failed: '+e.message); }
+}
+
+// ── TOAST ─────────────────────────────────────────────────────
+let toastTimer;
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+// ── INIT ──────────────────────────────────────────────────────
+load();
+populateModalDropdowns();
+
+// Pre-populate with roster agents not yet in tracker
+AGENTS.forEach(a => {
+  if (!records.find(r=>r.agentId===a.id)) {
+    // Only auto-add trainees and associates without license states as candidates
+    if (['trainee','associate'].includes(a.role) && !(a.licenseStates||[]).length) {
+      records.push(newRecord({
+        agentId: a.id,
+        name: a.name,
+        stage: 'not_started',
+        phone: a.phone||'',
+        states: (a.licenseStates||[]).join(', '),
+        stageDate: a.enrollmentDate||new Date().toISOString().slice(0,10),
+        upline: AGENTS.find(u=>u.id===a.uplineId)?.name||''
+      }));
+    } else if ((a.licenseStates||[]).length) {
+      // Already licensed — add as appointed
+      records.push(newRecord({
+        agentId: a.id,
+        name: a.name,
+        stage: 'appointed',
+        states: (a.licenseStates||[]).join(', '),
+        stageDate: a.enrollmentDate||new Date().toISOString().slice(0,10),
+        upline: AGENTS.find(u=>u.id===a.uplineId)?.name||''
+      }));
+    }
+  }
+});
+save();
+renderAll();
+</script>
+</body>
+</html>

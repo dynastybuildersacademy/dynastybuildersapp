@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DBA — Marketing Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700&family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="auth.js?v=20260713"></script>
+<style>
+:root{--navy:#0A1628;--navy-mid:#112040;--navy-light:#1A3158;--gold:#C9A84C;--gold-light:#E8C97A;--cream:#FAF6EE;--success:#27AE60;--warn:#E67E22;--danger:#C0392B;--slate:#6B7C93;--border:rgba(201,168,76,0.22);}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);min-height:100vh;}
+.header{background:rgba(10,22,40,0.97);border-bottom:1px solid var(--border);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.header-left{display:flex;align-items:center;gap:12px;}
+.shield{width:30px;height:34px;background:linear-gradient(160deg,var(--gold) 0%,#7a5c14 100%);clip-path:polygon(50% 0%,100% 18%,100% 65%,50% 100%,0% 65%,0% 18%);display:flex;align-items:center;justify-content:center;font-size:12px;}
+.header h1{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--gold);}
+.back-btn{font-size:12px;color:var(--gold);text-decoration:none;border:1px solid var(--border);padding:6px 12px;border-radius:3px;}
+.tab-bar{display:flex;border-bottom:1px solid var(--border);background:var(--navy-mid);overflow-x:auto;padding:0 22px;}
+.tab{padding:13px 18px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;cursor:pointer;border-bottom:2px solid transparent;color:var(--slate);transition:all 0.2s;white-space:nowrap;}
+.tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+.tab:hover:not(.active){color:var(--cream);}
+.content{padding:22px 24px;max-width:860px;margin:0 auto;}
+.panel{display:none;animation:fadeIn 0.3s ease;}
+.panel.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.page-title{font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--gold);margin-bottom:6px;}
+.page-sub{font-size:13px;color:var(--slate);margin-bottom:22px;line-height:1.6;}
+.section-title{font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--gold);margin:24px 0 14px;}
+/* AUDIENCE CARDS */
+.audience-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px;}
+@media(max-width:640px){.audience-grid{grid-template-columns:1fr;}}
+.audience-card{background:var(--navy-mid);border:1.5px solid var(--border);border-radius:4px;padding:16px;cursor:pointer;transition:all 0.2s;text-align:center;}
+.audience-card:hover,.audience-card.selected{border-color:var(--gold);background:rgba(201,168,76,0.07);}
+.ac-icon{font-size:28px;margin-bottom:8px;}
+.ac-name{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;color:var(--cream);letter-spacing:0.04em;}
+.ac-ages{font-size:11px;color:var(--slate);margin-top:3px;}
+/* CAPTION CARDS */
+.caption-grid{display:flex;flex-direction:column;gap:12px;margin-bottom:22px;}
+.caption-card{background:var(--navy-mid);border:1px solid var(--border);border-radius:4px;padding:16px;}
+.cc-platform{font-size:10px;color:var(--gold);font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;display:flex;align-items:center;gap:6px;}
+.cc-body{font-size:13px;line-height:1.7;white-space:pre-wrap;color:var(--cream);}
+.cc-foot{display:flex;align-items:center;justify-content:space-between;margin-top:10px;}
+.copy-btn{padding:5px 14px;background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.3);color:var(--gold);border-radius:3px;font-size:11px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:0.05em;transition:all 0.15s;}
+.copy-btn:hover{background:var(--gold);color:var(--navy);}
+/* EMAIL */
+.email-card{background:var(--navy-mid);border:1px solid var(--border);border-radius:4px;padding:20px;margin-bottom:14px;}
+.email-subject{font-size:12px;color:var(--slate);text-transform:uppercase;letter-spacing:0.09em;margin-bottom:4px;}
+.email-subj-val{font-size:15px;font-weight:700;color:var(--gold-light);margin-bottom:12px;}
+.email-body{font-size:13px;line-height:1.8;white-space:pre-wrap;border-top:1px solid var(--border);padding-top:12px;}
+/* AI GENERATOR */
+.ai-card{background:rgba(201,168,76,0.06);border:1px solid rgba(201,168,76,0.25);border-radius:4px;padding:20px;margin-bottom:22px;}
+.ai-title{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;color:var(--gold);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:14px;}
+.field-label{font-size:11px;color:rgba(250,246,238,0.6);font-weight:600;letter-spacing:0.09em;text-transform:uppercase;display:block;margin-bottom:6px;}
+select,input,textarea{width:100%;background:var(--navy);border:1px solid var(--border);color:var(--cream);font-family:'Barlow',sans-serif;font-size:13px;padding:10px 12px;border-radius:3px;margin-bottom:12px;}
+select:focus,input:focus,textarea:focus{outline:none;border-color:var(--gold);}
+select option{background:var(--navy-mid);}
+textarea{resize:vertical;min-height:80px;}
+.btn-generate{background:linear-gradient(135deg,var(--gold) 0%,#9a7018 100%);color:var(--navy);border:none;padding:11px 22px;border-radius:3px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;letter-spacing:0.06em;cursor:pointer;transition:opacity 0.2s;}
+.btn-generate:hover{opacity:0.87;}
+.btn-generate:disabled{opacity:0.5;cursor:not-allowed;}
+.ai-output{background:var(--navy);border:1px solid var(--border);border-radius:4px;padding:16px;margin-top:14px;font-size:13px;line-height:1.8;white-space:pre-wrap;display:none;}
+/* CALENDAR */
+.calendar-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
+@media(max-width:600px){.calendar-grid{grid-template-columns:1fr 1fr;}}
+.cal-day{background:var(--navy-mid);border:1px solid var(--border);border-radius:4px;padding:12px;font-size:11px;}
+.cal-num{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;color:var(--gold);margin-bottom:4px;}
+.cal-type{font-size:9px;color:var(--gold);text-transform:uppercase;letter-spacing:0.09em;font-weight:700;margin-bottom:3px;}
+.cal-desc{color:var(--slate);line-height:1.4;}
+/* TOAST */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--navy-mid);border:1px solid var(--gold);border-radius:4px;padding:10px 18px;font-size:13px;transform:translateY(60px);opacity:0;transition:all 0.3s;z-index:999;color:var(--gold-light);}
+.toast.show{transform:translateY(0);opacity:1;}
+</style>
+</head>
+<body>
+<script>AUTH.require('marketing.html');</script>
+<div class="header">
+  <div class="header-left">
+    <div class="shield">👑</div>
+    <h1>Marketing Hub</h1>
+  </div>
+  <a href="hub.html" class="back-btn">← Hub</a>
+</div>
+<div class="tab-bar">
+  <div class="tab active" onclick="switchTab('campaigns',this)">📢 Campaign Kits</div>
+  <div class="tab" onclick="switchTab('funnels',this)">🎯 Funnels & Pages</div>
+  <div class="tab" onclick="switchTab('surveys',this)">📋 Surveys</div>
+  <div class="tab" onclick="switchTab('ai',this)">✨ AI Generator</div>
+  <div class="tab" onclick="switchTab('calendar',this)">📅 Content Calendar</div>
+  <div class="tab" onclick="switchTab('objections',this)">🛡️ Objection Scripts</div>
+</div>
+<div class="content">
+
+<!-- CAMPAIGNS -->
+<div class="panel active" id="panel-campaigns">
+  <div class="page-title">Campaign Kits</div>
+  <div class="page-sub">Select your target audience to load ready-to-post captions and email templates.</div>
+  <div class="audience-grid" id="audience-grid"></div>
+  <div id="campaign-content"></div>
+</div>
+
+<!-- FUNNELS & PAGES -->
+<div class="panel" id="panel-funnels">
+  <div class="page-title">Funnels & Landing Pages</div>
+  <div class="page-sub">Share your personal referral links with prospects. Each link pre-fills your agent info so every lead is tracked back to you.</div>
+
+  <!-- REFERRAL LINK GENERATOR -->
+  <div style="background:var(--navy-mid);border:1px solid var(--gold);border-radius:6px;padding:20px 22px;margin-bottom:22px;position:relative;overflow:hidden;">
+    <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,var(--gold),transparent);"></div>
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:14px;">🔗 Your Personalized Referral Links</div>
+    <div style="font-size:13px;color:var(--slate);margin-bottom:16px;line-height:1.6;">Share these links on social media, via text, or by email. Prospects who click them are tagged with your agent ID so every lead routes back to you in Monday.com.</div>
+    <div style="display:grid;grid-template-columns:1fr auto;gap:10px;margin-bottom:10px;align-items:center;">
+      <div style="font-size:11px;color:var(--slate);text-transform:uppercase;letter-spacing:0.08em;font-weight:700;">Base URL (your deployed site)</div>
+      <div></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:16px;">
+      <input type="text" id="base-url-input" placeholder="https://agent.yourdynastybuilder.com" value="https://agent.yourdynastybuilder.com"
+        style="flex:1;background:var(--navy);border:1px solid var(--border);color:var(--cream);font-family:'DM Mono',monospace;font-size:12px;padding:9px 12px;border-radius:3px;outline:none;"
+        oninput="refreshLinks()">
+      <button onclick="refreshLinks()" style="background:rgba(201,168,76,0.15);border:1px solid var(--border);color:var(--gold);padding:9px 16px;border-radius:3px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;">Refresh</button>
+    </div>
+    <div id="ref-links-grid" style="display:flex;flex-direction:column;gap:8px;"></div>
+  </div>
+
+  <!-- FUNNEL PAGES CARDS -->
+  <div style="font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px;">Funnel Pages</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-bottom:24px;" id="funnel-cards-grid"></div>
+
+  <!-- PROSPECT TRACKER (leads captured via referral links) -->
+  <div style="font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px;">📋 Recent Prospects From Your Links</div>
+  <div id="prospect-tracker-panel">
+    <div style="background:var(--navy-mid);border:1px solid var(--border);border-radius:4px;padding:14px;font-size:13px;color:var(--slate);">
+      Prospects who use your referral links and complete the intake form will appear here automatically.
+      <br><br>
+      <a href="top25.html" style="color:var(--gold);text-decoration:none;">→ Manage prospects in your Top 25 →</a>
+    </div>
+  </div>
+</div>
+
+<!-- SURVEYS -->
+<div class="panel" id="panel-surveys">
+  <div class="page-title">Financial Surveys & Quizzes</div>
+  <div class="page-sub">Interactive surveys that capture leads while educating prospects. Every submission writes to the Financial Surveys board in Monday.com, tagged with your agent ID and a source label so you always know which funnel a lead came from.</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-bottom:24px;" id="survey-cards-grid"></div>
+
+  <div style="background:var(--navy-mid);border:1px solid var(--border);border-radius:4px;padding:14px 18px;font-size:12px;color:var(--slate);line-height:1.7;">
+    💡 <strong style="color:var(--cream);">Tip:</strong> Share the quiz link directly, or send prospects to the themed landing page first (Employer vs IUL Guide or World Cup Financial Hub) — the landing page gives context before the quiz and also offers a downloadable flyer with your contact info.
+  </div>
+</div>
+
+<!-- AI GENERATOR -->
+<div class="panel" id="panel-ai">
+  <div class="page-title">AI Content Generator</div>
+  <div class="page-sub">Generate fresh social captions, email copy, or BOM invite messages powered by AI.</div>
+  <div class="ai-card">
+    <div class="ai-title">✨ Generate New Content</div>
+    <label class="field-label">Content Type</label>
+    <select id="ai-type">
+      <option value="ig_caption">Instagram Caption</option>
+      <option value="fb_post">Facebook Post</option>
+      <option value="linkedin_post">LinkedIn Post</option>
+      <option value="email_subject">Email Subject Line (5 options)</option>
+      <option value="email_body">Email Body (intro paragraph)</option>
+      <option value="bom_invite">BOM Invite Text Message</option>
+      <option value="recruit_dm">Recruiting DM / Social Message</option>
+      <option value="story_hook">Instagram Story Hook</option>
+    </select>
+    <label class="field-label">Target Audience</label>
+    <select id="ai-audience">
+      <option value="young_family">Growing Families (ages 25–44, kids, mortgage)</option>
+      <option value="peak_earner">Peak Earners (ages 45–54, dual income)</option>
+      <option value="boomer">Baby Boomers / Pre-Retirees (ages 55–70)</option>
+      <option value="entrepreneur">Entrepreneurs / Business Owners</option>
+      <option value="healthcare">Healthcare Professionals</option>
+      <option value="recruit">Potential Recruits (money-motivated professionals)</option>
+    </select>
+    <label class="field-label">Key Message or Hook (optional)</label>
+    <textarea id="ai-hook" placeholder="e.g. 'living benefits pay you while alive' or 'your income is your biggest asset'"></textarea>
+    <button class="btn-generate" onclick="generateContent()" id="ai-btn">Generate Content →</button>
+    <div class="ai-output" id="ai-output"></div>
+    <div id="ai-copy-row" style="display:none;margin-top:10px;">
+      <button class="copy-btn" onclick="copyAI()">Copy Content</button>
+    </div>
+  </div>
+</div>
+
+<!-- CALENDAR -->
+<div class="panel" id="panel-calendar">
+  <div class="page-title">30-Day Content Calendar</div>
+  <div class="page-sub">A structured content plan — one post type per weekday. Adapt to your voice and audience.</div>
+  <div class="calendar-grid" id="calendar-grid"></div>
+</div>
+
+<!-- OBJECTIONS -->
+<div class="panel" id="panel-objections">
+  <div class="page-title">Objection Handlers</div>
+  <div class="page-sub">Word-for-word responses to the 5 most common objections across all three audiences.</div>
+  <div id="objections-content"></div>
+</div>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+let session = AUTH.getSession();
+
+function switchTab(id, el) {
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  el.classList.add('active');
+}
+
+// ── FUNNEL PAGES CONFIG ───────────────────────────────────────
+const FUNNEL_PAGES = [
+  { id:'opportunity',       icon:'🎯', title:'Opportunity Page',          desc:'Recruiting video funnel. Prospect completes intake form before watching — tagged with your agent ID.', file:'opportunity.html', audience:'Recruiting', color:'#C9A84C', badge:'Video Gate' },
+  { id:'client',            icon:'💼', title:'Client Funnel',              desc:'Life insurance and annuity landing page. Free review form routes leads directly to your pipeline.', file:'client.html', audience:'Clients', color:'#2DCA73', badge:'Lead Form' },
+  { id:'recruit',           icon:'🚀', title:'Full Recruit Funnel',        desc:'Multi-step recruit funnel with email gate, video, phone collection, and next-step options.', file:'recruit.html', audience:'Recruiting', color:'#5DADE2', badge:'Multi-Step' },
+  { id:'free-guide',        icon:'📄', title:'Free Guide Download',        desc:'"5 Things Nobody Tells You" lead magnet — captures email then redirects to opportunity video.', file:'free-guide.html', audience:'Clients', color:'#BB8FCE', badge:'Lead Magnet' },
+  { id:'register-zoom',     icon:'💻', title:'Zoom Webinar Registration',  desc:'Registers prospects for upcoming virtual BOM / webinar events. Sends confirmation via Make.com.', file:'register-zoom.html', audience:'Both', color:'#4C8EC9', badge:'Event Reg' },
+  { id:'register-inperson', icon:'🏢', title:'In-Person Event Registration',desc:'BOM in-person event calendar with date picker and confirmation flow.', file:'register-inperson.html', audience:'Both', color:'#E67E22', badge:'Event Reg' },
+  { id:'schedule-1on1',     icon:'🗓️', title:'Book 1-on-1 Interview',     desc:'Calendar-style booking for recruiting interviews or client financial reviews.', file:'schedule-1on1.html', audience:'Both', color:'#27AE60', badge:'Booking' },
+  { id:'brochure',          icon:'📖', title:'Client Brochure',            desc:'Print-ready financial education brochure covering life insurance, IUL, and retirement planning.', file:'brochure.html', audience:'Clients', color:'#C9A84C', badge:'Printable' }
+];
+
+function getBaseUrl() {
+  const input = document.getElementById('base-url-input');
+  let base = (input ? input.value.trim() : '') || window.location.origin;
+  return base.replace(/\/$/, '');
+}
+
+function getAgentParam() {
+  return encodeURIComponent(session && (session.agentId || session.id) || 'agent');
+}
+
+function refreshLinks() {
+  const base  = getBaseUrl();
+  const agent = getAgentParam();
+  const grid  = document.getElementById('ref-links-grid');
+  if (!grid) return;
+  const links = [
+    { label:'🎯 Opportunity Page',       url:`${base}/opportunity.html?agent=${agent}` },
+    { label:'💼 Client Funnel',          url:`${base}/client.html?agent=${agent}` },
+    { label:'🚀 Recruit Funnel',         url:`${base}/recruit.html?agent=${agent}` },
+    { label:'📊 Employer vs IUL Guide',  url:`${base}/employer-vs-iul-brochure.html?agent=${agent}` },
+    { label:'📋 IUL Coverage Quiz',      url:`${base}/employer-vs-iul-survey.html?agent=${agent}` },
+    { label:'⚽ World Cup Financial Hub', url:`${base}/world-cup.html?agent=${agent}` },
+    { label:'📄 Free Guide',             url:`${base}/free-guide.html?agent=${agent}` },
+    { label:'💻 Zoom Registration',      url:`${base}/register-zoom.html?agent=${agent}` },
+    { label:'🏢 In-Person Registration', url:`${base}/register-inperson.html?agent=${agent}` },
+    { label:'🗓️ Book 1-on-1',           url:`${base}/schedule-1on1.html?agent=${agent}` },
+  ];
+  grid.innerHTML = links.map(l => `
+    <div style="display:flex;align-items:center;gap:10px;background:var(--navy);border:1px solid var(--border);border-radius:3px;padding:10px 14px;">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:11px;font-weight:700;color:var(--cream);margin-bottom:2px;">${l.label}</div>
+        <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--slate);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${l.url}</div>
+      </div>
+      <button onclick="copyLink('${l.url}',this)" style="flex-shrink:0;background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.3);color:var(--gold);padding:6px 14px;border-radius:3px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;white-space:nowrap;">Copy</button>
+      <a href="${l.url}" target="_blank" style="flex-shrink:0;background:transparent;border:1px solid var(--border);color:var(--slate);padding:6px 12px;border-radius:3px;text-decoration:none;font-size:11px;">Open ↗</a>
+    </div>`).join('');
+}
+
+function copyLink(url, btn) {
+  navigator.clipboard.writeText(url).then(()=>{
+    const orig=btn.textContent; btn.textContent='Copied ✓'; btn.style.color='#2ecc71'; btn.style.borderColor='rgba(39,174,96,0.4)';
+    setTimeout(()=>{ btn.textContent=orig; btn.style.color=''; btn.style.borderColor=''; },2000);
+  }).catch(()=>toast('Copy failed'));
+}
+
+function buildFunnelCards() {
+  const grid = document.getElementById('funnel-cards-grid');
+  if (!grid) return;
+  const base = getBaseUrl(); const agent = getAgentParam();
+  grid.innerHTML = FUNNEL_PAGES.map(p => `
+    <div style="background:var(--navy-mid);border:1px solid var(--border);border-radius:6px;overflow:hidden;transition:border-color 0.2s;" onmouseover="this.style.borderColor='rgba(201,168,76,0.4)'" onmouseout="this.style.borderColor='var(--border)'">
+      <div style="height:3px;background:${p.color};opacity:0.7;"></div>
+      <div style="padding:16px 18px;">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:1.4rem;">${p.icon}</span>
+            <div><div style="font-size:13px;font-weight:700;">${p.title}</div><div style="font-size:10px;color:var(--slate);">${p.audience}</div></div>
+          </div>
+          <span style="font-size:9px;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.25);color:var(--gold);padding:2px 7px;border-radius:2px;font-family:'Barlow Condensed',sans-serif;font-weight:700;">${p.badge}</span>
+        </div>
+        <p style="font-size:12px;color:var(--slate);line-height:1.6;margin-bottom:14px;">${p.desc}</p>
+        <div style="display:flex;gap:8px;">
+          <a href="${base}/${p.file}?agent=${agent}" target="_blank" style="flex:1;background:var(--gold);color:var(--navy);text-align:center;padding:8px;border-radius:3px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;text-decoration:none;">Open ↗</a>
+          <button onclick="copyLink('${base}/${p.file}?agent=${agent}',this)" style="background:transparent;border:1px solid var(--border);color:var(--slate);padding:8px 14px;border-radius:3px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;">Copy</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+
+// ── SURVEY PAGES CONFIG ────────────────────────────────────────
+const SURVEY_PAGES = [
+  { id:'world-cup-hub',     icon:'⚽', title:'World Cup Financial Hub',     desc:'Landing page with financial tips tied to the 2026 World Cup, links to the quiz, and a downloadable personalized flyer.', file:'world-cup.html', audience:'Both', color:'#2DCA73', badge:'Landing Page' },
+  { id:'world-cup-survey',  icon:'🏆', title:'World Cup Game Plan Quiz',    desc:'10-question trivia + financial literacy quiz tied to the World Cup. Scores the lead and shows a personalized result.', file:'world-cup-survey.html', audience:'Both', color:'#2DCA73', badge:'Quiz' },
+  { id:'iul-brochure',      icon:'📊', title:'Employer vs IUL Guide',       desc:'Side-by-side comparison brochure: employer/union group term vs. personal IUL with living benefits.', file:'employer-vs-iul-brochure.html', audience:'Clients', color:'#C9A84C', badge:'Brochure' },
+  { id:'iul-survey',        icon:'📋', title:'IUL Coverage Quiz',           desc:"7-question survey that scores the prospect's current coverage gap and shows a personalized recommendation.", file:'employer-vs-iul-survey.html', audience:'Clients', color:'#C9A84C', badge:'Quiz' },
+];
+
+function buildSurveyCards() {
+  const grid = document.getElementById('survey-cards-grid');
+  if (!grid) return;
+  const base = getBaseUrl(); const agent = getAgentParam();
+  grid.innerHTML = SURVEY_PAGES.map(p => `
+    <div style="background:var(--navy-mid);border:1px solid var(--border);border-radius:6px;overflow:hidden;transition:border-color 0.2s;" onmouseover="this.style.borderColor='rgba(201,168,76,0.4)'" onmouseout="this.style.borderColor='var(--border)'">
+      <div style="height:3px;background:${p.color};opacity:0.7;"></div>
+      <div style="padding:16px 18px;">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:1.4rem;">${p.icon}</span>
+            <div><div style="font-size:13px;font-weight:700;">${p.title}</div><div style="font-size:10px;color:var(--slate);">${p.audience}</div></div>
+          </div>
+          <span style="font-size:9px;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.25);color:var(--gold);padding:2px 7px;border-radius:2px;font-family:'Barlow Condensed',sans-serif;font-weight:700;">${p.badge}</span>
+        </div>
+        <p style="font-size:12px;color:var(--slate);line-height:1.6;margin-bottom:14px;">${p.desc}</p>
+        <div style="display:flex;gap:8px;">
+          <a href="${base}/${p.file}?agent=${agent}" target="_blank" style="flex:1;background:var(--gold);color:var(--navy);text-align:center;padding:8px;border-radius:3px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;text-decoration:none;">Open ↗</a>
+          <button onclick="copyLink('${base}/${p.file}?agent=${agent}',this)" style="background:transparent;border:1px solid var(--border);color:var(--slate);padding:8px 14px;border-radius:3px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;">Copy</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+// ── AUDIENCES ─────────────────────────────────────────────────
+const AUDIENCES = [
+  { id:'family', icon:'👨‍👩‍👧', name:'Growing Families', ages:'Ages 25–44 · Kids · Mortgage' },
+  { id:'peak',   icon:'💼', name:'Peak Earner Couples', ages:'Ages 45–54 · High income' },
+  { id:'boomer', icon:'🌿', name:'Baby Boomers',         ages:'Ages 55–70 · Pre-retirement' },
+];
+
+document.addEventListener('DOMContentLoaded', function() {
+  const grid = document.getElementById('audience-grid');
+  if (grid) {
+    grid.innerHTML = AUDIENCES.map(a => `
+      <div class="audience-card" data-id="${a.id}" onclick="selectAudience(this,'${a.id}')">
+        <div class="ac-icon">${a.icon}</div>
+        <div class="ac-name">${a.name}</div>
+        <div class="ac-ages">${a.ages}</div>
+      </div>`).join('');
+  }
+  refreshLinks();
+  buildFunnelCards();
+  buildSurveyCards();
+  buildCalendar();
+  buildObjections();
+});
+
+const CAMPAIGNS = {
+  family: {
+    captions: [
+      { platform:'📸 Instagram', text:`Most parents have life insurance. Very few have the kind that pays you while you're ALIVE.\n\nIf you had a heart attack tomorrow:\n– Your mortgage doesn't pause ❌\n– Your kids' school doesn't pause ❌\n– Your grocery bill doesn't pause ❌\n\nBut your policy COULD pay you a lump sum to cover all of it. 💰\n\nThis is called living benefits — and most families don't know they exist.\n\nDM me "FAMILY" to learn what your family could have. 👇\n\n#LifeInsurance #LivingBenefits #FinancialProtection #DynastyBuilders` },
+      { platform:'📘 Facebook', text:`QUESTION FOR PARENTS: If you missed 6 months of work due to illness, could your family make it financially?\n\nMost families couldn't last 3 months.\n\nThat's why we help families get protection that pays for life events — not just death.\n\nComment "LEARN MORE" below and I'll send you a free 10-minute video that explains everything. No obligation, no pressure.` },
+      { platform:'💼 LinkedIn', text:`Financial professionals often tell clients to "get term life and invest the rest."\n\nBut they rarely mention what happens if a critical illness hits before retirement.\n\nPermanent life with living benefits bridges that gap — providing:\n✅ Lifetime protection\n✅ Tax-deferred cash value growth\n✅ Critical illness payout (heart attack, stroke, cancer)\n\nIf your current coverage doesn't include living benefits, you may have a significant gap. Happy to discuss — drop a connection request.` },
+    ],
+    emails: [
+      { subject:'Your family might have a $500K gap in protection', body: `Hi {{name}},\n\nI want to ask you something most financial professionals never do:\n\nIf you were diagnosed with a serious illness tomorrow — heart attack, cancer, stroke — would your life insurance pay out anything?\n\nFor most people, the answer is no. Their policy only pays when they die.\n\nBut there's a newer category of coverage called Permanent Life with Living Benefits that pays you a lump sum the moment you're diagnosed — while you're still fighting.\n\nI'm reaching out because I work with families in your area who didn't know this existed until we talked.\n\nWould you be open to a 20-minute conversation this week? I'll walk you through exactly what your options look like at your age and health level.\n\n— {{agent_name}}\nDynasty Builders Academy | PHP Agency\n{{phone}}` },
+      { subject:'Following up — your family\'s coverage review', body: `Hi {{name}},\n\nJust following up on my last message.\n\nI know life gets busy — so I'll keep this short:\n\nIn the past month, I've helped 3 families just like yours discover they were significantly underinsured — and fix it for less than $100/month.\n\nIf you have 20 minutes, I'd love to show you the same options.\n\nWould [Day] or [Day] work for a quick call?\n\n— {{agent_name}}` },
+    ]
+  },
+  peak: {
+    captions: [
+      { platform:'📸 Instagram', text:`High earners — your biggest financial asset is your income. 💸\n\nYou've spent 20+ years building it.\nWho protects it if you can't work?\n\nMost high-income professionals have:\n✅ Good 401(k)\n✅ Investments\n❌ Zero income protection beyond group life at work\n\nGroup life pays 1–2× salary. That's it.\n\nWe help peak earners bridge the gap with strategies that protect income AND grow tax-free.\n\nDM me "INCOME" to see what this looks like for your situation.` },
+      { platform:'📘 Facebook', text:`A question for people in their 40s and 50s:\n\nYou've worked hard to build your income. You've invested, saved, and planned.\n\nBut what's the plan if a major health event hit before you crossed the finish line?\n\nWe specialize in solutions that protect both your income TODAY and your retirement TOMORROW.\n\nLeave a comment below and I'll send you a private breakdown of how it works.` },
+      { platform:'💼 LinkedIn', text:`Most dual-income households operate on an invisible assumption: both incomes continue.\n\nBut 1 in 3 Americans will face a critical illness before age 65.\n\nThe financial impact isn't just the medical bills — it's the income interruption, the depleted savings, the retirement timeline pushed back by years.\n\nI help peak earners in their 40s and 50s build protection strategies that account for this. If you'd like to review what you have, I'm glad to connect.` },
+    ],
+    emails: [
+      { subject:'One gap most high earners overlook', body: `Hi {{name}},\n\nMost financially-savvy people in their 40s and 50s have checked off the boxes:\n\n✅ Maxing out retirement contributions\n✅ Building an investment portfolio\n✅ Some form of life insurance\n\nBut there's a gap that shows up in almost every review I do:\n\nNo income protection if a critical illness hits before retirement.\n\nI specialize in closing that gap with solutions that fit around what you already have — without disrupting your existing strategy.\n\nWould you be open to a 20-minute review call?\n\n— {{agent_name}}` },
+    ]
+  },
+  boomer: {
+    captions: [
+      { platform:'📸 Instagram', text:`Retirement means your paycheck stops. 🛑\n\nBut these don't:\n– Mortgage ❌\n– Healthcare ❌\n– Grandkids ❌\n– Legacy goals ❌\n\nFixed Indexed Annuities are designed for one thing: guaranteed income that lasts as long as YOU do.\n\nNo market risk. Principal protected. Income guaranteed.\n\nDM me "RETIRE" and I'll show you what this looks like for your timeline.` },
+      { platform:'📘 Facebook', text:`Question for anyone within 10 years of retirement:\n\nDo you have a plan for income that CANNOT run out — no matter how long you live?\n\nIf your answer is "I'll rely on my 401k," that comes with market risk, withdrawal timing risk, and tax exposure.\n\nThere's a safer path for a portion of your retirement savings. I'd love to share it with you.\n\nComment "RETIREMENT" below and I'll follow up privately.` },
+    ],
+    emails: [
+      { subject:'A retirement income question for you', body: `Hi {{name}},\n\nI want to ask you something directly:\n\nIf you lived to 95 — would your retirement savings last that long?\n\nFor most people, the honest answer is: probably not.\n\nI specialize in helping people near or in retirement add a layer of guaranteed income that cannot be outlived. It's not a stock, not a mutual fund — it's a contractual guarantee.\n\nI'd love to show you how it works in a 20-minute conversation.\n\n— {{agent_name}}` },
+    ]
+  }
+};
+
+let selectedAudience = null;
+
+function selectAudience(el, id) {
+  document.querySelectorAll('.audience-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedAudience = id;
+  renderCampaign(id);
+}
+
+function renderCampaign(id) {
+  const data = CAMPAIGNS[id];
+  if (!data) return;
+  const el = document.getElementById('campaign-content');
+  let html = '<div class="section-title">Social Media Captions</div><div class="caption-grid">';
+  data.captions.forEach((c,i) => {
+    html += `<div class="caption-card">
+      <div class="cc-platform">${c.platform}</div>
+      <div class="cc-body" id="cap-${id}-${i}">${c.text}</div>
+      <div class="cc-foot">
+        <span style="font-size:10px;color:var(--slate);">${c.text.length} characters</span>
+        <button class="copy-btn" onclick="copyText('cap-${id}-${i}')">Copy Caption</button>
+      </div>
+    </div>`;
+  });
+  html += '</div><div class="section-title">Email Templates</div>';
+  data.emails.forEach((e,i) => {
+    html += `<div class="email-card">
+      <div class="email-subject">Subject Line</div>
+      <div class="email-subj-val" id="subj-${id}-${i}">${e.subject}</div>
+      <div class="email-body" id="body-${id}-${i}">${e.body.replace(/{{agent_name}}/g, session.name).replace(/{{phone}}/g, '')}</div>
+      <div style="margin-top:12px;display:flex;gap:8px;">
+        <button class="copy-btn" onclick="copyText('subj-${id}-${i}')">Copy Subject</button>
+        <button class="copy-btn" onclick="copyText('body-${id}-${i}')">Copy Email</button>
+      </div>
+    </div>`;
+  });
+  el.innerHTML = html;
+}
+
+// ── AI GENERATOR ──────────────────────────────────────────────
+async function generateContent() {
+  const type     = document.getElementById('ai-type').value;
+  const audience = document.getElementById('ai-audience').value;
+  const hook     = document.getElementById('ai-hook').value.trim();
+  const btn      = document.getElementById('ai-btn');
+  const out      = document.getElementById('ai-output');
+  btn.disabled = true;
+  btn.textContent = 'Generating…';
+  out.style.display = 'none';
+  const typeLabels = { ig_caption:'Instagram caption (with emojis and hashtags)', fb_post:'Facebook post', linkedin_post:'LinkedIn post (professional tone)', email_subject:'5 email subject line options', email_body:'Email intro paragraph with personalization placeholders', bom_invite:'BOM invite text message (short, creates curiosity)', recruit_dm:'Recruiting DM (social media, creates intrigue)', story_hook:'Instagram Story hook slide (one punchy line)' };
+  const audienceLabels = { young_family:'growing families (ages 25–44, kids, mortgage, income protection)', peak_earner:'peak earner couples (ages 45–54, high income, approaching retirement)', boomer:'Baby Boomers/pre-retirees (ages 55–70, retirement income, legacy)', entrepreneur:'entrepreneurs and business owners (key person, buy-sell, personal protection)', healthcare:'healthcare professionals (disability income, malpractice, student loans)', recruit:'potential recruits (money-motivated professionals looking for income opportunity)' };
+  const prompt = `Write a ${typeLabels[type]||type} for a PHP Agency life insurance agent named ${session.name} targeting ${audienceLabels[audience]||audience}.${hook ? ` Key message or hook: "${hook}".` : ''} The agency is Dynasty Builders Academy. Products include: Term Life, Permanent Life with Living Benefits, and Fixed Indexed Annuities. Use a warm, direct, human voice. No jargon. Focus on the prospect's problem, not product features. Include a clear call to action.`;
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:600, system:'You are a financial services marketing expert specializing in life insurance. Write compelling, human social media and email copy that builds trust and drives action without sounding salesy or using insurance jargon. Always include a clear, low-friction call to action.', messages:[{role:'user',content:prompt}] })
+    });
+    const d = await res.json();
+    const txt = d?.content?.[0]?.text || '(API key required — set your Anthropic key to enable AI generation)';
+    out.textContent = txt;
+    out.style.display = 'block';
+    document.getElementById('ai-copy-row').style.display = 'block';
+  } catch(e) {
+    out.textContent = 'Generation failed. Check your API key configuration.';
+    out.style.display = 'block';
+  }
+  btn.disabled = false;
+  btn.textContent = 'Generate Content →';
+}
+function copyAI() { copyText('ai-output'); }
+
+// ── CONTENT CALENDAR ──────────────────────────────────────────
+const CALENDAR_DAYS = [
+  { num:'Wk 1', type:'Education', desc:'What are living benefits? Short explainer' },
+  { num:'',     type:'Story',     desc:'Behind-the-scenes — your morning routine' },
+  { num:'',     type:'Social Proof',desc:'Client story / testimonial (with permission)' },
+  { num:'',     type:'CTA',       desc:'"DM me FAMILY to learn more" post' },
+  { num:'',     type:'Value',     desc:'Myth vs Fact: "I already have coverage through work"' },
+  { num:'Wk 2', type:'Personal',  desc:'Your why — why you joined this industry' },
+  { num:'',     type:'Education', desc:'The difference between term and permanent life' },
+  { num:'',     type:'Question',  desc:'"What would happen to your family if…" post' },
+  { num:'',     type:'Recruiting',desc:'Open to extra income? Low-friction invite post' },
+  { num:'',     type:'Value',     desc:'Tip: How to calculate how much coverage you need' },
+  { num:'Wk 3', type:'Education', desc:'What is a Fixed Indexed Annuity? (for retirees)' },
+  { num:'',     type:'Personal',  desc:'Team win celebration — recognition post' },
+  { num:'',     type:'Social Proof',desc:'Before/after: client protection gap closed' },
+  { num:'',     type:'CTA',       desc:'Free financial review offer post' },
+  { num:'',     type:'Story',     desc:'Day in the life — appointment day' },
+  { num:'Wk 4', type:'Education', desc:'Top 3 reasons people put off life insurance' },
+  { num:'',     type:'Recruiting',desc:'"We\'re expanding the team" — opportunity post' },
+  { num:'',     type:'Value',     desc:'The income replacement formula (quick math post)' },
+  { num:'',     type:'Personal',  desc:'Gratitude post — shoutout to a client or team member' },
+  { num:'',     type:'CTA',       desc:'End of month push — book a call this week' },
+];
+const TYPE_COLORS = { Education:'#5dade2', Story:'#bb8fce', 'Social Proof':'#2ecc71', CTA:'#C9A84C', Value:'#e67e22', Personal:'#ec407a', Recruiting:'#26c6da', Question:'#ab47bc' };
+function buildCalendar() {
+  const el = document.getElementById('calendar-grid');
+  if (!el) return;
+  el.innerHTML = CALENDAR_DAYS.map((d,i) => `
+  <div class="cal-day" style="border-top:2px solid ${TYPE_COLORS[d.type]||'var(--border)'};">
+    ${d.num ? `<div class="cal-num">${d.num}</div>` : `<div class="cal-num" style="color:var(--slate);">Day ${i+1}</div>`}
+    <div class="cal-type" style="color:${TYPE_COLORS[d.type]||'var(--gold)'};">${d.type}</div>
+    <div class="cal-desc">${d.desc}</div>
+  </div>`).join('');
+}
+
+// ── OBJECTION HANDLERS ────────────────────────────────────────
+const OBJECTIONS = [
+  { obj:'I need to think about it', handle:`"I completely understand — and I want to respect your time. Can I ask: what specifically do you need to think about? Is it the premium, the timing, or something about the product itself?\n\n[Let them answer.]\n\n"Great — let me address that right now. [Address the specific concern.] Does that help clarify things? [Yes] Great — let's go ahead and get the paperwork started. I can have you covered before we hang up."`, audience:'Universal' },
+  { obj:'I can\'t afford it', handle:`"I completely hear you — and that's exactly why we need to have this conversation.\n\nCan I ask you something honestly? If you couldn't work for 6 months because of a health issue, could your family make it financially?\n\n[Wait for answer.]\n\nHere's the thing — this coverage is [amount]/month. That's less than most people's streaming subscriptions. And what it does is make sure your family doesn't have to ask that question.\n\nLet's at least run the numbers so you know what you're looking at. Fair?"`, audience:'Universal' },
+  { obj:'I already have coverage through work', handle:`"That's great that your employer provides something. Can I ask — do you know if it has living benefits? Most group plans don't.\n\nHere's why that matters: 90% of insurance claims happen while someone is still alive — heart attack, stroke, cancer. Group life only pays if you die.\n\nWould you be open to a quick side-by-side comparison? It takes 10 minutes and you'll know exactly what you have — and what you're missing."`, audience:'Universal' },
+  { obj:'I need to talk to my spouse', handle:`"Absolutely — that's the right move. This affects both of you.\n\nWhen can we get on a call together? I can do [Day] at [Time] or [Day] at [Time]. I want to make sure you both have the same information so you can make a decision together.\n\nIn fact, the best meetings I have are when both partners are on. Would [Day] work for both of you?"`, audience:'Families / Couples' },
+  { obj:'I\'ll do it later / I\'m not ready', handle:`"I totally understand — life is busy. But I want to be honest with you about one thing:\n\nUnderwriting is based on your age and health TODAY. Every year you wait, the premium goes up. And if your health changes, you could become uninsurable.\n\nI'm not trying to pressure you — I just want to make sure you have all the information. If we start the application today, you can still change your mind. But you can't go back in time.\n\nCan we at least get you a quote so you know what today's number looks like?"`, audience:'Universal' },
+];
+function buildObjections() {
+  const el = document.getElementById('objections-content');
+  if (!el) return;
+  el.innerHTML = OBJECTIONS.map(o => `
+  <div class="caption-card" style="margin-bottom:14px;">
+    <div class="cc-platform" style="color:var(--danger);">⚠️ Objection: "${o.obj}" <span style="color:var(--slate);font-size:9px;margin-left:8px;">${o.audience}</span></div>
+    <div class="cc-body" id="obj-${o.obj.slice(0,10).replace(/\s/g,'')}">${o.handle}</div>
+    <div class="cc-foot">
+      <span></span>
+      <button class="copy-btn" onclick="copyText('obj-${o.obj.slice(0,10).replace(/\s/g,'')}')">Copy Script</button>
+    </div>
+  </div>`).join('');
+}
+
+// ── HELPERS ───────────────────────────────────────────────────
+function copyText(id) {
+  const txt = document.getElementById(id)?.textContent || document.getElementById(id)?.innerText || '';
+  navigator.clipboard.writeText(txt).then(() => toast('Copied to clipboard ✓')).catch(() => {});
+}
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+</script>
+</body>
+</html>

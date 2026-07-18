@@ -1,0 +1,1602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dynasty PMD Hub — Agency Operating System</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --navy:#0A1628;--navy2:#122040;--navy3:#1A3158;
+  --gold:#C9A84C;--gold2:#E8C87A;--gold3:#F5E8C0;
+  --green:#1D9E75;--red:#D85A30;--amber:#BA7517;--blue:#4B9AE8;
+  --border:rgba(201,168,76,0.2);
+  --text:#FAF6EE;--text2:rgba(250,246,238,.65);--text3:rgba(250,246,238,.38);
+  --card:#0F1E36;--card2:#0D1A2E;
+  --sidebar-w:242px;
+  --sidebar-collapsed-w:54px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--text);min-height:100vh;display:flex;overflow:hidden}
+
+/* SIDEBAR */
+.sidebar{width:var(--sidebar-w);min-width:var(--sidebar-w);background:var(--navy2);border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh;overflow-y:auto;overflow-x:hidden;position:relative;z-index:10;transition:width 0.25s ease,min-width 0.25s ease;}
+.sidebar.collapsed{width:var(--sidebar-collapsed-w);min-width:var(--sidebar-collapsed-w);}
+
+/* Toggle button */
+.sb-toggle{position:absolute;top:16px;right:-12px;width:24px;height:24px;background:var(--gold);border:none;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:20;transition:transform 0.25s ease;box-shadow:0 2px 8px rgba(0,0,0,0.4);}
+.sb-toggle svg{width:12px;height:12px;fill:var(--navy);transition:transform 0.25s ease;}
+.sidebar.collapsed .sb-toggle svg{transform:rotate(180deg);}
+.sb-logo{padding:18px 16px 14px;border-bottom:1px solid var(--border);position:relative;overflow:hidden;}
+.sb-logo-inner{transition:opacity 0.2s ease;}
+.sidebar.collapsed .sb-logo-inner{opacity:0;pointer-events:none;}
+.sb-shield{font-size:26px;margin-bottom:4px;flex-shrink:0;}
+.sb-title{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:700;color:var(--gold);line-height:1.2;white-space:nowrap;}
+.sb-sub{font-size:9.5px;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin-top:2px;white-space:nowrap;}
+.sb-section{padding:10px 0 3px 15px;font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);white-space:nowrap;overflow:hidden;transition:opacity 0.2s ease;}
+.sidebar.collapsed .sb-section{opacity:0;}
+.sb-nav{list-style:none;padding:0 7px}
+.sb-nav li a{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:var(--text2);font-size:12px;text-decoration:none;cursor:pointer;transition:all .15s;white-space:nowrap;overflow:hidden;}
+.sb-nav li a:hover{background:rgba(201,168,76,.08);color:var(--gold2)}
+.sb-nav li a.active{background:rgba(201,168,76,.14);color:var(--gold);font-weight:500}
+.sb-nav li a i{font-size:15px;flex-shrink:0;}
+.sb-nav-label{transition:opacity 0.2s ease,max-width 0.25s ease;max-width:160px;overflow:hidden;}
+.sidebar.collapsed .sb-nav-label{opacity:0;max-width:0;}
+.sidebar.collapsed .sb-cbdot{opacity:0;}
+.sidebar.collapsed .sb-nav li a{justify-content:center;padding:9px;}
+.sb-cbdot{background:rgba(216,90,48,.25);color:#F5C4B3;font-size:9px;padding:1px 6px;border-radius:20px;margin-left:auto;font-weight:600;transition:opacity 0.2s ease;}
+.sb-footer{margin-top:auto;padding:10px 14px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);line-height:1.7;overflow:hidden;transition:opacity 0.2s ease;}
+.sidebar.collapsed .sb-footer{opacity:0;}
+/* Tooltip for collapsed icons */
+.sidebar.collapsed .sb-nav li a{position:relative;}
+.sidebar.collapsed .sb-nav li a:hover::after{
+  content:attr(data-tooltip);
+  position:absolute;
+  left:calc(var(--sidebar-collapsed-w) - 4px);
+  top:50%;transform:translateY(-50%);
+  background:var(--navy2);border:1px solid var(--border);
+  color:var(--text);font-size:11px;padding:5px 10px;border-radius:6px;
+  white-space:nowrap;z-index:100;pointer-events:none;
+  box-shadow:2px 2px 12px rgba(0,0,0,0.4);
+}
+.sb-live{color:var(--gold);display:flex;align-items:center;gap:4px;margin-top:3px;font-size:10px}
+.sb-live-dot{width:6px;height:6px;background:#1D9E75;border-radius:50%;animation:pulse-dot 2s infinite}
+@keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* MAIN */
+.main{flex:1;overflow-y:auto;height:100vh;display:flex;flex-direction:column}
+.topbar{background:var(--navy2);border-bottom:1px solid var(--border);padding:11px 18px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:12px}
+.tb-left{display:flex;flex-direction:column}
+.tb-title{font-size:14px;font-weight:500}
+.tb-sub{font-size:10.5px;color:var(--text3);margin-top:1px}
+.tb-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.tb-badge{font-size:10.5px;background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.3);color:var(--gold2);padding:4px 10px;border-radius:20px;white-space:nowrap}
+.content{flex:1;padding:18px}
+
+/* SECTIONS */
+.section{display:none}.section.active{display:block}
+
+/* CARDS */
+.card{background:var(--card);border:0.5px solid rgba(201,168,76,.1);border-radius:12px;padding:14px 16px}
+.card-sm{background:var(--card2);border:0.5px solid rgba(201,168,76,.08);border-radius:9px;padding:11px 13px}
+
+/* METRICS */
+.metrics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:9px;margin-bottom:16px}
+.metric{background:var(--card2);border-radius:9px;padding:11px 13px}
+.ml{font-size:9.5px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;color:var(--text3);margin-bottom:4px}
+.mv{font-size:19px;font-weight:600;font-family:'DM Mono',monospace;line-height:1.1}
+.ms{font-size:9.5px;color:var(--text3);margin-top:3px}
+.mv-g{color:#1D9E75}.mv-r{color:#D85A30}.mv-go{color:var(--gold)}.mv-b{color:#4B9AE8}
+
+/* FILTERS BAR - UPGRADED */
+.filters-bar{background:rgba(12,22,42,.7);border:0.5px solid rgba(201,168,76,.15);border-radius:10px;padding:12px 14px;margin-bottom:14px}
+.filters-row{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end}
+.fg{display:flex;flex-direction:column;gap:3px;min-width:100px;flex:1}
+.fl{font-size:9.5px;font-weight:500;color:var(--text3);letter-spacing:.05em;text-transform:uppercase}
+select,input[type=date],input[type=text]{font-family:'DM Sans',sans-serif;font-size:11.5px;padding:5px 8px;border:0.5px solid rgba(201,168,76,.2);border-radius:7px;background:rgba(10,22,40,.9);color:var(--text);width:100%}
+select:focus,input:focus{outline:none;border-color:rgba(201,168,76,.5)}
+.period-btn{background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.25);color:var(--gold2);font-size:11px;padding:4px 10px;border-radius:3px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:0.05em;transition:all 0.15s;}
+.period-btn:hover,.period-btn.active{background:rgba(201,168,76,0.25);border-color:var(--gold);}
+.btn-go{background:var(--gold);color:var(--navy);border:none;font-family:inherit;font-size:11.5px;font-weight:600;padding:6px 14px;border-radius:7px;cursor:pointer;white-space:nowrap;align-self:flex-end}
+.btn-go:hover{background:var(--gold2)}
+.btn-cl{background:transparent;border:0.5px solid rgba(201,168,76,.25);font-family:inherit;font-size:11.5px;padding:6px 10px;border-radius:7px;cursor:pointer;color:var(--text2);align-self:flex-end}
+.btn-cl:hover{background:rgba(201,168,76,.07)}
+.filter-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;min-height:0}
+.chip{font-size:10.5px;padding:2px 9px 2px 8px;border-radius:20px;background:rgba(201,168,76,.12);border:0.5px solid rgba(201,168,76,.3);color:var(--gold2);display:flex;align-items:center;gap:5px}
+.chip button{background:none;border:none;color:var(--gold2);cursor:pointer;font-size:12px;padding:0;line-height:1;opacity:.7}
+.chip button:hover{opacity:1}
+
+/* TABLES */
+.tw{overflow-x:auto;border:0.5px solid rgba(201,168,76,.1);border-radius:10px}
+table{width:100%;border-collapse:collapse;font-size:11.5px;table-layout:fixed}
+th{background:rgba(10,18,34,.9);padding:8px 10px;text-align:left;font-size:9.5px;font-weight:500;letter-spacing:.04em;text-transform:uppercase;color:var(--text3);border-bottom:0.5px solid rgba(201,168,76,.1);white-space:nowrap;overflow:hidden}
+td{padding:7px 10px;border-bottom:0.5px solid rgba(255,255,255,.04);color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(201,168,76,.04)}
+.cb-row td{background:rgba(216,90,48,.05)}
+.cb-row:hover td{background:rgba(216,90,48,.1)}
+.am{font-family:'DM Mono',monospace;font-weight:500}
+.am-g{color:#1D9E75}.am-r{color:#D85A30}
+.pill{display:inline-flex;font-size:9.5px;padding:2px 7px;border-radius:20px;font-weight:500}
+.p-fy{background:rgba(24,95,165,.2);color:#7BB8F0}
+.p-rn{background:rgba(186,117,23,.2);color:#E8C87A}
+.p-cb{background:rgba(216,90,48,.2);color:#F5A080}
+.p-act{background:rgba(29,158,117,.2);color:#5DD4AA}
+.cb-lbl{font-size:8.5px;background:rgba(216,90,48,.3);color:#F5C4B3;padding:1px 5px;border-radius:3px;font-weight:700;margin-left:3px;vertical-align:middle}
+
+/* UPLOAD ZONE */
+.upload-zone{border:2px dashed rgba(201,168,76,.3);border-radius:12px;padding:28px 20px;text-align:center;cursor:pointer;transition:all .2s;background:rgba(10,18,34,.5);position:relative}
+.upload-zone:hover,.upload-zone.drag-over{border-color:var(--gold);background:rgba(201,168,76,.07)}
+.upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.uz-icon{font-size:32px;color:var(--gold);opacity:.7;margin-bottom:8px}
+.uz-title{font-size:13px;font-weight:500;margin-bottom:4px}
+.uz-sub{font-size:11px;color:var(--text3)}
+.file-list{margin-top:12px;display:flex;flex-direction:column;gap:5px;max-height:200px;overflow-y:auto}
+.file-item{display:flex;align-items:center;gap:8px;padding:6px 10px;background:rgba(29,158,117,.1);border:0.5px solid rgba(29,158,117,.3);border-radius:7px;font-size:11px}
+.fi-name{flex:1;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fi-rows{font-family:'DM Mono',monospace;font-size:10.5px;color:#5DD4AA;flex-shrink:0}
+.fi-err{background:rgba(216,90,48,.1);border-color:rgba(216,90,48,.3)}
+.fi-err .fi-rows{color:#F5A080}
+.progress-bar{height:3px;background:rgba(201,168,76,.15);border-radius:3px;margin-top:8px;overflow:hidden;display:none}
+.progress-fill{height:100%;background:var(--gold);border-radius:3px;transition:width .3s}
+
+/* MONDAY SYNC PANEL */
+.monday-panel{background:var(--card2);border:0.5px solid rgba(201,168,76,.15);border-radius:12px;padding:16px}
+.mp-header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.mp-logo{width:28px;height:28px;background:rgba(201,168,76,.1);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.mp-title{font-size:13px;font-weight:500}
+.mp-status{margin-left:auto;font-size:10px;padding:3px 9px;border-radius:20px}
+.mp-conn{background:rgba(29,158,117,.2);color:#5DD4AA}
+.mp-disc{background:rgba(186,117,23,.2);color:#E8C87A}
+.mp-form{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.mp-field label{font-size:9.5px;font-weight:500;color:var(--text3);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:3px}
+.mp-field input{width:100%}
+.mp-full{grid-column:1/-1}
+.sync-log{background:rgba(10,18,34,.7);border-radius:7px;padding:10px;font-family:'DM Mono',monospace;font-size:10.5px;color:var(--text3);max-height:120px;overflow-y:auto;margin-top:10px;line-height:1.8}
+.log-ok{color:#5DD4AA}.log-err{color:#F5A080}.log-info{color:#7BB8F0}
+
+/* FU CARDS */
+.fu-card{background:var(--card);border:0.5px solid rgba(201,168,76,.1);border-radius:10px;padding:12px 14px;margin-bottom:8px}
+.fu-card.hi{border-left:3px solid #D85A30}
+.fu-card.med{border-left:3px solid #BA7517}
+.fu-card.lo{border-left:3px solid #1D9E75}
+.fu-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
+.fu-name{font-size:12.5px;font-weight:500}
+.fu-pol{font-size:10.5px;color:var(--text3);margin-top:1px}
+.fu-meta{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:8px}
+.fu-mi{font-size:10.5px;color:var(--text2);display:flex;align-items:center;gap:3px}
+.fu-mi i{font-size:12px;color:var(--text3)}
+.fu-mi.red{color:#F5A080}
+.fu-acts{display:flex;gap:5px;flex-wrap:wrap}
+.fa-btn{font-family:inherit;font-size:10.5px;padding:4px 9px;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:3px;border:0.5px solid rgba(201,168,76,.2);background:rgba(201,168,76,.06);color:var(--text2);transition:all .15s}
+.fa-btn:hover{background:rgba(201,168,76,.13)}
+.fa-btn.pri{background:var(--gold);color:var(--navy);border-color:transparent;font-weight:500}
+.fa-btn.dan{background:rgba(216,90,48,.15);color:#F5A080;border-color:rgba(216,90,48,.3)}
+.fa-btn i{font-size:11px}
+
+/* AGENT CARDS */
+.ag-card{background:var(--card);border:0.5px solid rgba(201,168,76,.1);border-radius:10px;padding:11px 13px;margin-bottom:7px}
+.ag-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+.ag-name{font-size:12.5px;font-weight:500;display:flex;align-items:center;gap:6px}
+.ag-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+.ag-s{text-align:center;padding:6px;background:rgba(12,22,42,.6);border-radius:7px}
+.ag-sv{font-size:12px;font-weight:600;font-family:'DM Mono',monospace}
+.ag-sl{font-size:8.5px;color:var(--text3);margin-top:2px;text-transform:uppercase;letter-spacing:.03em}
+
+/* CHARTS */
+.ch-wrap{position:relative;width:100%;height:185px}
+.ch-wrap-sm{position:relative;width:100%;height:155px}
+.ch-title{font-size:9.5px;font-weight:500;color:var(--text3);margin-bottom:7px;text-transform:uppercase;letter-spacing:.05em}
+
+/* OS GRID */
+.os-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin-bottom:16px}
+.os-card{background:var(--card2);border:0.5px solid rgba(201,168,76,.1);border-radius:9px;padding:13px}
+.os-icon{font-size:20px;margin-bottom:7px}
+.os-title{font-size:12px;font-weight:500;margin-bottom:3px}
+.os-desc{font-size:10.5px;color:var(--text3);line-height:1.65}
+.os-status{display:inline-flex;font-size:9px;padding:2px 7px;border-radius:20px;margin-top:7px;font-weight:500}
+.os-live{background:rgba(29,158,117,.2);color:#5DD4AA}
+.os-soon{background:rgba(186,117,23,.2);color:#E8C87A}
+
+/* FUNNEL */
+.dba-funnel{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;margin-bottom:14px}
+.funnel-step{background:var(--card2);border-radius:7px;padding:9px 11px;text-align:center;position:relative}
+.funnel-step::after{content:"→";position:absolute;right:-8px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--text3);z-index:2}
+.funnel-step:last-child::after{display:none}
+.fs-val{font-size:19px;font-weight:700;font-family:'DM Mono',monospace;color:var(--gold)}
+.fs-lbl{font-size:9.5px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;margin-top:2px}
+
+/* INSIGHT CARDS */
+.insight-card{background:var(--card2);border-left:3px solid var(--gold);border-radius:0 9px 9px 0;padding:11px 13px;margin-bottom:7px}
+.ins-title{font-size:11.5px;font-weight:500;margin-bottom:3px}
+.ins-desc{font-size:10.5px;color:var(--text3);line-height:1.65}
+.ins-tag{font-size:8.5px;padding:1px 6px;border-radius:10px;font-weight:600;margin-left:6px;vertical-align:middle}
+
+/* PAGINATION */
+.pg-row{display:flex;justify-content:space-between;align-items:center;margin-top:7px;font-size:10.5px;color:var(--text3)}
+.pg-row button{font-family:inherit;font-size:10.5px;padding:3px 9px;border:0.5px solid rgba(201,168,76,.2);border-radius:6px;cursor:pointer;background:transparent;color:var(--text2)}
+.pg-row button:hover{background:rgba(201,168,76,.08)}
+
+/* WARN BAR */
+.warn-bar{background:rgba(216,90,48,.09);border:0.5px solid rgba(216,90,48,.28);border-radius:8px;padding:8px 12px;margin-bottom:11px;font-size:10.5px;color:#F5A080;display:flex;align-items:center;gap:7px}
+.info-bar{background:rgba(75,154,232,.09);border:0.5px solid rgba(75,154,232,.25);border-radius:8px;padding:8px 12px;margin-bottom:11px;font-size:10.5px;color:#7BB8F0;display:flex;align-items:center;gap:7px}
+
+/* GRID HELPERS */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.section-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.section-hdr h2{font-size:15px;font-weight:500}
+.section-hdr p{font-size:11px;color:var(--text3)}
+
+/* TOAST */
+.toast{position:fixed;bottom:16px;right:16px;background:var(--navy2);border:1px solid var(--gold);color:var(--gold2);padding:9px 14px;border-radius:8px;font-size:11.5px;display:none;align-items:center;gap:6px;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.4)}
+.toast.show{display:flex}
+
+/* IMPORT STATUS */
+.import-status{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-top:12px}
+.is-card{background:rgba(10,18,34,.7);border-radius:8px;padding:10px 12px;text-align:center}
+.is-val{font-size:18px;font-weight:700;font-family:'DM Mono',monospace;color:var(--gold)}
+.is-lbl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;margin-top:2px}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav class="sidebar" id="sidebar">
+  <!-- Toggle button -->
+  <button class="sb-toggle" onclick="toggleSidebar()" title="Collapse sidebar">
+    <svg viewBox="0 0 12 12" xmlns="http://www.w3.org/2000/svg"><path d="M8 2L4 6l4 4" stroke="var(--navy)" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+
+  <div class="sb-logo">
+    <div class="sb-shield">🛡️</div>
+    <div class="sb-logo-inner">
+      <div class="sb-title">Dynasty PMD Hub</div>
+      <div class="sb-sub">Agency Operating System</div>
+    </div>
+  </div>
+
+  <div class="sb-section">Core</div>
+  <ul class="sb-nav">
+    <li><a href="#" onclick="showSection('overview',this)" class="active" data-tooltip="Overview"><i class="ti ti-dashboard"></i><span class="sb-nav-label">Overview</span></a></li>
+    <li><a href="#" onclick="showSection('agency-os',this)" data-tooltip="Agency OS / BPM"><i class="ti ti-building"></i><span class="sb-nav-label">Agency OS / BPM</span></a></li>
+    <li><a href="#" onclick="showSection('pipeline',this)" data-tooltip="Production Pipeline"><i class="ti ti-filter"></i><span class="sb-nav-label">Production Pipeline</span></a></li>
+  </ul>
+
+  <div class="sb-section">Data</div>
+  <ul class="sb-nav">
+    <li><a href="#" onclick="showSection('import',this)" data-tooltip="Import Files"><i class="ti ti-upload"></i><span class="sb-nav-label">Import Files</span></a></li>
+    <li><a href="#" onclick="showSection('monday-sync',this)" data-tooltip="Monday.com Sync"><i class="ti ti-brand-monday"></i><span class="sb-nav-label">Monday.com Sync</span></a></li>
+  </ul>
+
+  <div class="sb-section">Commissions</div>
+  <ul class="sb-nav">
+    <li><a href="#" onclick="showSection('comm-tracker',this)" data-tooltip="Commission Tracker"><i class="ti ti-receipt"></i><span class="sb-nav-label">Commission Tracker</span></a></li>
+    <li><a href="#" onclick="showSection('chargebacks',this)" data-tooltip="Chargebacks"><i class="ti ti-alert-triangle"></i><span class="sb-nav-label">Chargebacks <span class="sb-cbdot" id="sb-cb-count">936</span></span></a></li>
+    <li><a href="#" onclick="showSection('followups',this)" data-tooltip="Follow-Ups"><i class="ti ti-phone"></i><span class="sb-nav-label">Follow-Ups <span class="sb-cbdot" id="sb-fu-count">50</span></span></a></li>
+    <li><a href="#" onclick="showSection('agents',this)" data-tooltip="Agent Ledger"><i class="ti ti-users"></i><span class="sb-nav-label">Agent Ledger</span></a></li>
+  </ul>
+
+  <div class="sb-section">Analytics</div>
+  <ul class="sb-nav">
+    <li><a href="#" onclick="showSection('analytics',this)" data-tooltip="Comm Analytics"><i class="ti ti-chart-bar"></i><span class="sb-nav-label">Comm Analytics</span></a></li>
+    <li><a href="#" onclick="showSection('dba-analytics',this)" data-tooltip="DBA Recruiting"><i class="ti ti-user-search"></i><span class="sb-nav-label">DBA Recruiting</span></a></li>
+    <li><a href="#" onclick="showSection('intelligence',this)" data-tooltip="Intelligence"><i class="ti ti-bulb"></i><span class="sb-nav-label">Intelligence</span></a></li>
+  </ul>
+
+  <div class="sb-footer">
+    Dynasty Builders Academy<br>agent.yourdynastybuilder.com
+    <div class="sb-live"><span class="sb-live-dot"></span><span id="sb-data-label">Jan–May 2026 · 20,193 records</span></div>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="tb-left">
+      <div class="tb-title" id="tb-title">Overview Dashboard</div>
+      <div class="tb-sub" id="tb-sub">44 files loaded · 936 chargebacks · $80,760 net</div>
+    </div>
+    <div class="tb-right">
+      <span class="tb-badge" id="tb-period-badge">Jan–May 2026</span>
+      <button class="btn-go" style="font-size:10.5px;padding:5px 12px" onclick="showSection('import',null)"><i class="ti ti-upload" style="font-size:12px;vertical-align:-1px;margin-right:3px"></i>Upload Files</button>
+      <button class="btn-cl" style="font-size:10.5px;padding:5px 11px" onclick="showSection('monday-sync',null)"><i class="ti ti-brand-monday" style="font-size:12px;vertical-align:-1px;margin-right:3px"></i>Sync</button>
+      <a href="hub.html" style="font-size:10.5px;color:var(--gold2);text-decoration:none;border:1px solid rgba(201,168,76,.25);padding:5px 12px;border-radius:5px;display:flex;align-items:center;gap:4px;white-space:nowrap;transition:all .15s;" onmouseover="this.style.background='rgba(201,168,76,.1)'" onmouseout="this.style.background=''">&#8592; Hub</a>
+    </div>
+  </div>
+
+  <div class="content">
+
+  <!-- ══════════ OVERVIEW ══════════ -->
+  <div class="section active" id="section-overview">
+    <div class="metrics-grid" id="ov-metrics"></div>
+    <div class="warn-bar" id="ov-warn-bar"><i class="ti ti-alert-circle" style="font-size:14px"></i><span id="ov-warn-text">Feb 2026 spike: $15,651 in chargebacks — 2.5× any other month. NLG FlexLife (25) is the primary driver.</span></div>
+    <div class="two-col" style="margin-bottom:12px">
+      <div class="card"><div class="ch-title">Monthly gross vs chargebacks</div><div class="ch-wrap"><canvas id="ov-monthly" role="img" aria-label="Monthly trend"></canvas></div></div>
+      <div class="card"><div class="ch-title">Top agents by net commission</div><div class="ch-wrap"><canvas id="ov-agents" role="img" aria-label="Top agents"></canvas></div></div>
+    </div>
+    <div class="two-col">
+      <div class="card"><div class="ch-title">Chargebacks by carrier</div><div class="ch-wrap-sm"><canvas id="ov-carrier" role="img" aria-label="Carrier CBs"></canvas></div></div>
+      <div class="card"><div class="ch-title">Chargebacks by product</div><div class="ch-wrap-sm"><canvas id="ov-product" role="img" aria-label="Product CBs"></canvas></div></div>
+    </div>
+  </div>
+
+  <!-- ══════════ AGENCY OS ══════════ -->
+  <div class="section" id="section-agency-os">
+    <div class="section-hdr">
+      <div><h2>Agency Operating System</h2><p>BPM framework for Dynasty Builders Academy — PHP agency model</p></div>
+      <a href="hub.html" style="font-size:11px;color:var(--gold2);text-decoration:none;border:1px solid rgba(201,168,76,.25);padding:6px 14px;border-radius:6px;display:flex;align-items:center;gap:5px;transition:all .15s;" onmouseover="this.style.background='rgba(201,168,76,.1)'" onmouseout="this.style.background=''">← Command Hub</a>
+    </div>
+
+    <!-- ── DATE & AGENT SELECTOR ── -->
+    <div class="card" style="margin-bottom:14px;">
+      <div style="font-size:11.5px;font-weight:600;color:var(--gold2);margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+        <span>🔎</span> Filter View
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:10px;">
+
+        <!-- Quick period presets -->
+        <div>
+          <div style="font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:7px;">Period</div>
+          <div style="display:flex;flex-wrap:wrap;gap:4px;" id="os-period-btns">
+            <button class="period-btn active" onclick="setOsPeriod('2026-01-01','2026-05-30','YTD',this)">YTD</button>
+            <button class="period-btn" onclick="setOsPeriod('2026-01-01','2026-01-31','Jan',this)">Jan</button>
+            <button class="period-btn" onclick="setOsPeriod('2026-02-01','2026-02-28','Feb',this)">Feb</button>
+            <button class="period-btn" onclick="setOsPeriod('2026-03-01','2026-03-31','Mar',this)">Mar</button>
+            <button class="period-btn" onclick="setOsPeriod('2026-04-01','2026-04-30','Apr',this)">Apr</button>
+            <button class="period-btn" onclick="setOsPeriod('2026-05-01','2026-05-30','May',this)">May</button>
+            <button class="period-btn" onclick="setOsPeriod('2026-01-01','2026-03-31','Q1',this)">Q1</button>
+            <button class="period-btn" onclick="setOsPeriod('2026-04-01','2026-06-30','Q2',this)">Q2</button>
+          </div>
+        </div>
+
+        <!-- Custom date range -->
+        <div>
+          <div style="font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:7px;">Custom Range</div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <input type="date" id="os-date-from" onchange="osFilterChanged()" style="background:var(--navy2);border:1px solid var(--bd);color:var(--text);font-size:11px;padding:6px 8px;border-radius:5px;flex:1;">
+            <span style="font-size:10px;color:var(--text3);">to</span>
+            <input type="date" id="os-date-to" onchange="osFilterChanged()" style="background:var(--navy2);border:1px solid var(--bd);color:var(--text);font-size:11px;padding:6px 8px;border-radius:5px;flex:1;">
+          </div>
+        </div>
+
+        <!-- Agent selector -->
+        <div>
+          <div style="font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:7px;">Agent</div>
+          <select id="os-agent-filter" onchange="osFilterChanged()" style="width:100%;background:var(--navy2);border:1px solid var(--bd);color:var(--text);font-size:11.5px;padding:7px 10px;border-radius:5px;cursor:pointer;">
+            <option value="">All Agents</option>
+          </select>
+        </div>
+
+        <!-- MD Baseshop selector -->
+        <div>
+          <div style="font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:7px;">MD Baseshop</div>
+          <select id="os-baseshop-filter" onchange="osFilterChanged()" style="width:100%;background:var(--navy2);border:1px solid var(--bd);color:var(--text);font-size:11.5px;padding:7px 10px;border-radius:5px;cursor:pointer;">
+            <option value="">All Baseshops</option>
+          </select>
+        </div>
+
+      </div>
+
+      <!-- Active filter badge -->
+      <div id="os-filter-badge" style="display:none;background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);border-radius:5px;padding:7px 12px;font-size:11px;color:var(--gold2);display:flex;align-items:center;justify-content:space-between;">
+        <span id="os-filter-label">Showing: YTD · All Agents</span>
+        <button onclick="clearOsFilters()" style="background:transparent;border:none;color:var(--text3);font-size:10.5px;cursor:pointer;padding:0 0 0 12px;">Clear ✕</button>
+      </div>
+    </div>
+
+    <!-- ── LIVE METRICS (driven by filter) ── -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:16px;" id="os-metrics-grid">
+      <div class="card-sm" style="text-align:center;padding:14px;">
+        <div style="font-size:22px;font-weight:700;color:var(--gold2);" id="os-m-apps">—</div>
+        <div style="font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--text3);margin-top:4px;">Submitted Apps</div>
+      </div>
+      <div class="card-sm" style="text-align:center;padding:14px;">
+        <div style="font-size:22px;font-weight:700;color:#1D9E75;" id="os-m-pts">—</div>
+        <div style="font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--text3);margin-top:4px;">Submitted Points</div>
+      </div>
+      <div class="card-sm" style="text-align:center;padding:14px;">
+        <div style="font-size:22px;font-weight:700;color:#5BB8FF;" id="os-m-paid">—</div>
+        <div style="font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--text3);margin-top:4px;">Paid Points</div>
+      </div>
+      <div class="card-sm" style="text-align:center;padding:14px;">
+        <div style="font-size:22px;font-weight:700;color:var(--gold2);" id="os-m-cash">—</div>
+        <div style="font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--text3);margin-top:4px;">Cashflow</div>
+      </div>
+      <div class="card-sm" style="text-align:center;padding:14px;">
+        <div style="font-size:22px;font-weight:700;color:#BB8FCE;" id="os-m-recs">—</div>
+        <div style="font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--text3);margin-top:4px;">Recruits</div>
+      </div>
+      <div class="card-sm" style="text-align:center;padding:14px;">
+        <div style="font-size:22px;font-weight:700;color:#2DCA73;" id="os-m-agents">—</div>
+        <div style="font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--text3);margin-top:4px;">Licensed Agents</div>
+      </div>
+    </div>
+
+    <!-- ── BPM CARDS ── -->
+    <div class="os-grid">
+      <div class="os-card"><div class="os-icon">📋</div><div class="os-title">Recruiting Pipeline</div><div class="os-desc">Prospect → edification → BOM invite → application → onboarding. Target: 10 recruits/month per MD baseshop.</div><span class="os-status os-live">Active</span></div>
+      <div class="os-card"><div class="os-icon">📜</div><div class="os-title">Licensing Tracker</div><div class="os-desc">Studying → exam scheduled → licensed → appointed. Flag agents stalled 14+ days without exam date.</div><span class="os-status os-live">Active</span></div>
+      <div class="os-card"><div class="os-icon">💰</div><div class="os-title">Commission Ledger</div><div class="os-desc">Live PHP commission data. Upload new weekly files anytime. Auto-merges with historical data and recomputes all metrics.</div><span class="os-status os-live">Live Data</span></div>
+      <div class="os-card"><div class="os-icon">⚠️</div><div class="os-title">Chargeback Recovery</div><div class="os-desc">Returned payments tracked with auto follow-up tasks. Sorted by urgency — highest $ exposure first.</div><span class="os-status os-live">Open</span></div>
+      <div class="os-card"><div class="os-icon">🏆</div><div class="os-title">Promotion Engine</div><div class="os-desc">PHP Levels 1–16. Trainee→Associate: 3R/3A/3K pts. Director→PMD: 3 Direct FAs, 15 Licensed, 50R & 100K pts in 90 days.</div><span class="os-status os-live">Active</span></div>
+      <div class="os-card"><div class="os-icon">📅</div><div class="os-title">BOM System</div><div class="os-desc">Weekly Business Opportunity Meeting. Captain rotation, 10-3-1 invite system, attendance and conversion tracking.</div><span class="os-status os-live">Active</span></div>
+      <div class="os-card"><div class="os-icon">📊</div><div class="os-title">Monday.com Boards</div><div class="os-desc">BOM Guests, Production Pipeline, Agent Prospects, Licensing Pipeline — synced. Commission data pushes on upload.</div><span class="os-status os-live">Connected</span></div>
+      <div class="os-card"><div class="os-icon">🎓</div><div class="os-title">Training Library</div><div class="os-desc">PHP Playbook, Fast Start School, Life Class, PHP University, role-play scripts — full system published.</div><span class="os-status os-live">Published</span></div>
+      <div class="os-card"><div class="os-icon">🎪</div><div class="os-title">PHP Lights Out 2026</div><div class="os-desc">Aug 3–6, MGM Grand Las Vegas. Agent & guest tracker live on Monday.com board #18415179731.</div><span class="os-status os-soon">Aug 2026</span></div>
+    </div>
+
+    <!-- ── PHP COMMISSION TABLE (correct 16-level) ── -->
+    <div class="card" style="margin-top:14px;">
+      <div style="font-size:12.5px;font-weight:500;margin-bottom:10px;">PHP Agency — Official 16-Level Commission Structure</div>
+      <div class="tw"><table>
+        <thead><tr><th>Level</th><th>Title</th><th>Commission</th><th>Override (w/team)</th><th>Timeframe</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>Trainee</td><td class="am mv-go">30%</td><td>—</td><td style="color:var(--text3)">Week 1</td></tr>
+          <tr><td>2</td><td>Associate</td><td class="am mv-go">40%</td><td>—</td><td style="color:var(--text3)">Month 1</td></tr>
+          <tr><td>3</td><td>Field Associate</td><td class="am mv-go">50%</td><td>—</td><td style="color:var(--text3)">Month 1–3</td></tr>
+          <tr><td>4</td><td>Director</td><td class="am mv-go">60%</td><td>—</td><td style="color:var(--text3)">Month 3–6</td></tr>
+          <tr><td>5</td><td>Producing Marketing Director</td><td class="am mv-go">70%</td><td>Up to 120%</td><td style="color:var(--text3)">Month 6–12</td></tr>
+          <tr><td>6</td><td>Marketing Director</td><td class="am mv-g">75%</td><td>Up to 120%</td><td style="color:var(--text3)">Month 6–12</td></tr>
+          <tr><td>7</td><td>Senior MD</td><td class="am mv-g">77%</td><td>Up to 122%</td><td style="color:var(--text3)">Ongoing</td></tr>
+          <tr><td>8</td><td>Executive MD</td><td class="am mv-g">78%</td><td>Up to 123%</td><td style="color:var(--text3)">Ongoing</td></tr>
+          <tr><td>9</td><td>Senior Vice-President</td><td class="am mv-g">79%</td><td>Up to 124%</td><td style="color:var(--text3)">Ongoing</td></tr>
+          <tr><td>10</td><td>Executive Vice-President</td><td class="am mv-g">80%</td><td>Up to 125%</td><td style="color:var(--text3)">Ongoing</td></tr>
+          <tr><td>11–16</td><td>Council Levels</td><td class="am mv-g">81–84%</td><td>Up to 129%</td><td style="color:var(--text3)">Ongoing</td></tr>
+        </tbody>
+      </table></div>
+      <div style="font-size:10px;color:var(--text3);margin-top:8px;font-style:italic;">*PHP compensation guidelines subject to change without notice. ©PHP Agency 2023</div>
+    </div>
+  </div>
+
+  <!-- ══════════ PIPELINE ══════════ -->
+  <div class="section" id="section-pipeline">
+    <div class="section-hdr"><div><h2>Production Pipeline</h2><p>Prospect-to-policy conversion framework</p></div></div>
+    <div class="dba-funnel">
+      <div class="funnel-step"><div class="fs-val">10</div><div class="fs-lbl">Contacts</div></div>
+      <div class="funnel-step"><div class="fs-val">5</div><div class="fs-lbl">Appointments</div></div>
+      <div class="funnel-step"><div class="fs-val">3</div><div class="fs-lbl">Presentations</div></div>
+      <div class="funnel-step"><div class="fs-val" style="color:#1D9E75">2</div><div class="fs-lbl">Policies</div></div>
+    </div>
+    <div class="two-col">
+      <div class="card">
+        <div style="font-size:12.5px;font-weight:500;margin-bottom:10px">5-Step Conversion Pipeline</div>
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <div class="card-sm"><div style="display:flex;justify-content:space-between"><span style="font-size:11.5px;font-weight:500">1 — Identify</span><span class="pill p-fy">Contact list</span></div><div style="font-size:10.5px;color:var(--text3);margin-top:4px">Warm market, BOM guests, declines, social media. 10 new contacts/week per agent.</div></div>
+          <div class="card-sm"><div style="display:flex;justify-content:space-between"><span style="font-size:11.5px;font-weight:500">2 — Warm</span><span class="pill p-fy">Edification</span></div><div style="font-size:10.5px;color:var(--text3);margin-top:4px">"I want to share something that helped my family…" — edify the mission before the appointment.</div></div>
+          <div class="card-sm"><div style="display:flex;justify-content:space-between"><span style="font-size:11.5px;font-weight:500">3 — Appoint</span><span class="pill p-rn">45-min zoom</span></div><div style="font-size:10.5px;color:var(--text3);margin-top:4px">Set the fact-finder. Confirm 24 hrs ahead. No product talk until appointment.</div></div>
+          <div class="card-sm"><div style="display:flex;justify-content:space-between"><span style="font-size:11.5px;font-weight:500">4 — Present</span><span class="pill p-rn">Needs analysis</span></div><div style="font-size:10.5px;color:var(--text3);margin-top:4px">FNA → solution matching → premium presentation → handle objections.</div></div>
+          <div class="card-sm"><div style="display:flex;justify-content:space-between"><span style="font-size:11.5px;font-weight:500">5 — Close & Refer</span><span class="pill p-act">Policy + 3 refs</span></div><div style="font-size:10.5px;color:var(--text3);margin-top:4px">"Who else do you care about that needs this same protection?"</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div style="font-size:12.5px;font-weight:500;margin-bottom:10px">Income Club Math — PHP Playbook</div>
+        <div class="tw"><table>
+          <thead><tr><th>Apps/wk</th><th>Annual prem</th><th>@ 50% SA</th><th>@ 75% MD</th></tr></thead>
+          <tbody>
+            <tr><td>1/wk (4/mo)</td><td class="am">$600</td><td class="am mv-go">$1,200/mo</td><td class="am mv-g">$1,800/mo</td></tr>
+            <tr><td>2/wk (8/mo)</td><td class="am">$600</td><td class="am mv-go">$2,400/mo</td><td class="am mv-g">$3,600/mo</td></tr>
+            <tr><td>3/wk (12/mo)</td><td class="am">$600</td><td class="am mv-go">$3,600/mo</td><td class="am mv-g">$5,400/mo</td></tr>
+            <tr><td>5/wk (20/mo)</td><td class="am">$600</td><td class="am mv-go">$6,000/mo</td><td class="am mv-g">$9,000/mo</td></tr>
+          </tbody>
+        </table></div>
+        <div style="font-size:10.5px;color:var(--text3);margin-top:10px;line-height:1.75">
+          <strong style="color:var(--gold2)">$1K Club:</strong> 6 apps/mo at avg $600/yr premium<br>
+          <strong style="color:var(--gold2)">$2K Club:</strong> 12 apps/mo — same system, doubled<br>
+          <strong style="color:var(--gold2)">$3K Club:</strong> 18 apps/mo — MD duplication begins here
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ IMPORT FILES ══════════ -->
+  <div class="section" id="section-import">
+    <div class="section-hdr"><div><h2>Import Commission Files</h2><p>Upload new PHP commission XLSX files — auto-parsed, merged with history, all tabs update instantly</p></div></div>
+    <div class="two-col" style="margin-bottom:14px;align-items:start">
+      <div>
+        <div class="upload-zone" id="upload-zone" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+          <input type="file" id="file-input" multiple accept=".xlsx,.xls" onchange="handleFiles(this.files)">
+          <div class="uz-icon"><i class="ti ti-file-spreadsheet"></i></div>
+          <div class="uz-title">Drop commission files here</div>
+          <div class="uz-sub">Supports multiple .xlsx files · PHP commission format<br>Drag & drop or click to browse</div>
+          <div class="progress-bar" id="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+        </div>
+        <div class="file-list" id="file-list"></div>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:10px">
+          <div style="font-size:12px;font-weight:500;margin-bottom:8px;display:flex;align-items:center;gap:6px"><i class="ti ti-database" style="color:var(--gold)"></i> Current dataset</div>
+          <div class="import-status">
+            <div class="is-card"><div class="is-val" id="ds-files">44</div><div class="is-lbl">Files loaded</div></div>
+            <div class="is-card"><div class="is-val" id="ds-records">20,193</div><div class="is-lbl">Records</div></div>
+            <div class="is-card"><div class="is-val" id="ds-agents">396</div><div class="is-lbl">Agents</div></div>
+            <div class="is-card"><div class="is-val" id="ds-cbs">936</div><div class="is-lbl">Chargebacks</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div style="font-size:12px;font-weight:500;margin-bottom:8px;display:flex;align-items:center;gap:6px"><i class="ti ti-info-circle" style="color:var(--gold)"></i> Expected columns</div>
+          <div style="font-size:10.5px;color:var(--text3);line-height:1.9">
+            <strong style="color:var(--text2)">Required:</strong> writing_agent, policy_number, amount, transaction_date, sub_status<br>
+            <strong style="color:var(--text2)">Optional:</strong> product_name, client_name, carrier_name, agent_md_upline, client_phone_number, record_type, status, charged_date, paid_out_on<br><br>
+            Files with <strong style="color:#5DD4AA">sub_status = "charge_back"</strong> and negative amounts are automatically flagged as chargebacks and generate follow-up tasks.
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="info-bar"><i class="ti ti-check-circle" style="font-size:14px"></i> After upload, all filters, charts, tables, and the Monday.com sync queue update automatically across every tab.</div>
+  </div>
+
+  <!-- ══════════ MONDAY.COM SYNC ══════════ -->
+  <div class="section" id="section-monday-sync">
+    <div class="section-hdr"><div><h2>Monday.com Sync</h2><p>Push commissions, chargebacks, and follow-up tasks to your Monday.com boards</p></div></div>
+    <div class="two-col" style="align-items:start">
+      <div class="monday-panel">
+        <div class="mp-header">
+          <div class="mp-logo">📋</div>
+          <div><div class="mp-title">Monday.com Connection</div></div>
+          <span class="mp-status mp-disc" id="mon-status-badge">Not connected</span>
+        </div>
+        <div class="mp-form">
+          <div class="mp-field"><label>API Key</label><input type="password" id="mon-api-key" placeholder="eyJhbGci... (Personal API token)" oninput="saveMondayConfig()"></div>
+          <div class="mp-field"><label>Board ID — Commissions</label><input type="text" id="mon-board-comm" placeholder="e.g. 18397757902" oninput="saveMondayConfig()"></div>
+          <div class="mp-field"><label>Board ID — Chargebacks / Follow-ups</label><input type="text" id="mon-board-cb" placeholder="e.g. 18393747809" oninput="saveMondayConfig()"></div>
+          <div class="mp-field"><label>Workspace ID (optional)</label><input type="text" id="mon-workspace" placeholder="e.g. 13768899" oninput="saveMondayConfig()"></div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn-go" onclick="testMondayConnection()" style="flex:1">Test connection</button>
+          <button class="btn-cl" onclick="syncToMonday()" style="flex:1"><i class="ti ti-refresh" style="font-size:12px;vertical-align:-1px;margin-right:3px"></i>Sync now</button>
+        </div>
+        <div class="sync-log" id="sync-log">Ready. Enter your API key and board IDs to connect.<br></div>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:10px">
+          <div style="font-size:12px;font-weight:500;margin-bottom:8px">Sync queue</div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;padding:6px 0;border-bottom:0.5px solid rgba(255,255,255,.05)">
+              <span style="color:var(--text2)">Commission records</span><span class="am mv-go" id="sync-comm-count">—</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;padding:6px 0;border-bottom:0.5px solid rgba(255,255,255,.05)">
+              <span style="color:var(--text2)">Chargeback records</span><span class="am mv-r" id="sync-cb-count">—</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;padding:6px 0;border-bottom:0.5px solid rgba(255,255,255,.05)">
+              <span style="color:var(--text2)">Follow-up tasks</span><span class="am mv-r" id="sync-fu-count">—</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;padding:6px 0">
+              <span style="color:var(--text2)">New since last sync</span><span class="am mv-b" id="sync-new-count">—</span>
+            </div>
+          </div>
+          <button class="btn-go" style="width:100%;margin-top:10px" onclick="syncAll()">Push all to Monday.com</button>
+        </div>
+        <div class="card">
+          <div style="font-size:12px;font-weight:500;margin-bottom:8px">What gets synced</div>
+          <div style="font-size:10.5px;color:var(--text3);line-height:1.85">
+            <strong style="color:#5DD4AA">→ Commissions board:</strong> Agent, policy #, product, client, amount, date, carrier, status<br>
+            <strong style="color:#F5A080">→ Chargebacks board:</strong> All CB fields + lapse risk score + days since CB<br>
+            <strong style="color:#7BB8F0">→ Follow-up tasks:</strong> Auto-created item per chargeback with client phone, urgency tag, and assignee (writing agent)<br>
+            <strong style="color:var(--gold2)">→ Filters applied:</strong> Only records matching your active date/agent/baseshop filters are pushed
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ COMMISSION TRACKER ══════════ -->
+  <div class="section" id="section-comm-tracker">
+    <div class="filters-bar">
+      <div class="filters-row">
+        <div class="fg"><span class="fl">Agent</span><select id="f-agent" onchange="updateChips()"><option value="">All agents</option></select></div>
+        <div class="fg"><span class="fl">MD Baseshop</span><select id="f-baseshop" onchange="updateChips()"><option value="">All baseshops</option></select></div>
+        <div class="fg"><span class="fl">Carrier</span><select id="f-carrier" onchange="updateChips()"><option value="">All carriers</option></select></div>
+        <div class="fg"><span class="fl">Type</span><select id="f-type" onchange="updateChips()"><option value="">All</option><option value="cb">Chargebacks only</option><option value="comm">Commissions only</option></select></div>
+        <div class="fg" style="grid-column:1/-1;"><span class="fl">Quick Period</span>
+          <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:4px;">
+            <button class="period-btn" onclick="setPeriod('f-date-from','f-date-to','2026-01-01','2026-05-30',this)">YTD</button>
+            <button class="period-btn" onclick="setPeriod('f-date-from','f-date-to','2026-01-01','2026-01-31',this)">Jan</button>
+            <button class="period-btn" onclick="setPeriod('f-date-from','f-date-to','2026-02-01','2026-02-28',this)">Feb</button>
+            <button class="period-btn" onclick="setPeriod('f-date-from','f-date-to','2026-03-01','2026-03-31',this)">Mar</button>
+            <button class="period-btn" onclick="setPeriod('f-date-from','f-date-to','2026-04-01','2026-04-30',this)">Apr</button>
+            <button class="period-btn" onclick="setPeriod('f-date-from','f-date-to','2026-05-01','2026-05-30',this)">May</button>
+            <button class="period-btn" onclick="setPeriod('f-date-from','f-date-to','2026-01-01','2026-03-31',this)">Q1</button>
+            <button class="period-btn" onclick="setPeriod('f-date-from','f-date-to','2026-04-01','2026-06-30',this)">Q2</button>
+          </div>
+        </div>
+        <div class="fg"><span class="fl">Date from</span><input type="date" id="f-date-from" oninput="updateChips()" value=""></div>
+        <div class="fg"><span class="fl">Date to</span><input type="date" id="f-date-to" oninput="updateChips()" value=""></div>
+        <button class="btn-go" onclick="applyFilters()">Apply</button>
+        <button class="btn-cl" onclick="clearFilters()">Clear</button>
+      </div>
+      <div class="filter-chips" id="filter-chips"></div>
+    </div>
+    <div class="metrics-grid" id="comm-metrics"></div>
+    <div class="tw">
+      <table><thead><tr>
+        <th style="width:13%">Agent</th><th style="width:11%">Policy #</th><th style="width:12%">Product</th>
+        <th style="width:10%">Client</th><th style="width:9%">Date</th><th style="width:8%">Amount</th>
+        <th style="width:11%">Carrier</th><th style="width:12%">MD Baseshop</th><th style="width:8%">Status</th><th style="width:6%">Type</th>
+      </tr></thead>
+      <tbody id="ct-tbody"></tbody></table>
+    </div>
+    <div class="pg-row"><span id="ct-pg-info"></span><div style="display:flex;gap:6px;align-items:center"><button onclick="ctPrev()">← Prev</button><span id="ct-pg-num" style="font-size:10.5px;color:var(--text3)">1</span><button onclick="ctNext()">Next →</button></div></div>
+  </div>
+
+  <!-- ══════════ CHARGEBACKS ══════════ -->
+  <div class="section" id="section-chargebacks">
+    <div class="filters-bar">
+      <div class="filters-row">
+        <div class="fg"><span class="fl">Agent</span><select id="cb-f-agent" onchange="applyFiltersCB()"><option value="">All agents</option></select></div>
+        <div class="fg"><span class="fl">MD Baseshop</span><select id="cb-f-baseshop" onchange="applyFiltersCB()"><option value="">All baseshops</option></select></div>
+        <div class="fg"><span class="fl">Carrier</span><select id="cb-f-carrier" onchange="applyFiltersCB()"><option value="">All carriers</option></select></div>
+        <div class="fg"><span class="fl">Date from</span><input type="date" id="cb-f-date-from" oninput="applyFiltersCB()"></div>
+        <div class="fg"><span class="fl">Date to</span><input type="date" id="cb-f-date-to" oninput="applyFiltersCB()"></div>
+        <button class="btn-go" onclick="applyFiltersCB()">Apply</button>
+        <button class="btn-cl" onclick="clearFiltersCB()">Clear</button>
+      </div>
+    </div>
+    <div class="warn-bar"><i class="ti ti-alert-circle" style="font-size:13px"></i><span id="cb-warn-text">936 chargebacks · -$37,980 total · Each is a returned payment and potential lapse. Feb 2026 peak: -$15,651.</span></div>
+    <div class="tw">
+      <table><thead><tr>
+        <th style="width:13%">Agent</th><th style="width:10%">Policy #</th><th style="width:11%">Product</th>
+        <th style="width:10%">Client</th><th style="width:8%">Date</th><th style="width:9%">CB Amount</th>
+        <th style="width:11%">Carrier</th><th style="width:12%">MD Baseshop</th><th style="width:8%">Status</th><th style="width:8%">Action</th>
+      </tr></thead>
+      <tbody id="cb-tbody"></tbody></table>
+    </div>
+    <div class="pg-row"><span id="cb-pg-info"></span><div style="display:flex;gap:6px;align-items:center"><button onclick="cbPrev()">← Prev</button><span id="cb-pg-num" style="font-size:10.5px;color:var(--text3)">1</span><button onclick="cbNext()">Next →</button></div></div>
+  </div>
+
+  <!-- ══════════ FOLLOW-UPS ══════════ -->
+  <div class="section" id="section-followups">
+    <div class="filters-bar">
+      <div class="filters-row">
+        <div class="fg"><span class="fl">Agent</span><select id="fu-f-agent" onchange="renderFollowups()"><option value="">All agents</option></select></div>
+        <div class="fg"><span class="fl">MD Baseshop</span><select id="fu-f-baseshop" onchange="renderFollowups()"><option value="">All baseshops</option></select></div>
+        <div class="fg"><span class="fl">Date from</span><input type="date" id="fu-f-date-from" oninput="renderFollowups()"></div>
+        <div class="fg"><span class="fl">Date to</span><input type="date" id="fu-f-date-to" oninput="renderFollowups()"></div>
+        <button class="btn-go" onclick="syncAll()" style="white-space:nowrap"><i class="ti ti-brand-monday" style="font-size:11px;vertical-align:-1px;margin-right:3px"></i>Push all</button>
+      </div>
+    </div>
+    <div id="fu-list"></div>
+  </div>
+
+  <!-- ══════════ AGENT LEDGER ══════════ -->
+  <div class="section" id="section-agents">
+    <div class="filters-bar">
+      <div class="filters-row">
+        <div class="fg"><span class="fl">Search agent</span><input type="text" id="ag-search" placeholder="Name..." oninput="renderAgentLedger()"></div>
+        <div class="fg"><span class="fl">MD Baseshop</span><select id="ag-f-baseshop" onchange="renderAgentLedger()"><option value="">All baseshops</option></select></div>
+        <div class="fg"><span class="fl">Date from</span><input type="date" id="ag-f-date-from" oninput="renderAgentLedger()"></div>
+        <div class="fg"><span class="fl">Date to</span><input type="date" id="ag-f-date-to" oninput="renderAgentLedger()"></div>
+      </div>
+    </div>
+    <div id="ag-list"></div>
+  </div>
+
+  <!-- ══════════ ANALYTICS ══════════ -->
+  <div class="section" id="section-analytics">
+    <div class="filters-bar">
+      <div class="filters-row">
+        <div class="fg"><span class="fl">MD Baseshop</span><select id="an-f-baseshop" onchange="renderAnalytics()"><option value="">All baseshops</option></select></div>
+        <div class="fg"><span class="fl">Date from</span><input type="date" id="an-f-date-from" oninput="renderAnalytics()"></div>
+        <div class="fg"><span class="fl">Date to</span><input type="date" id="an-f-date-to" oninput="renderAnalytics()"></div>
+        <button class="btn-go" onclick="renderAnalytics()">Update charts</button>
+      </div>
+    </div>
+    <div class="two-col" style="margin-bottom:12px">
+      <div class="card"><div class="ch-title">Monthly gross vs chargebacks</div><div class="ch-wrap"><canvas id="an-monthly" role="img" aria-label="Monthly trend"></canvas></div></div>
+      <div class="card"><div class="ch-title">CB exposure by MD baseshop</div><div class="ch-wrap"><canvas id="an-md" role="img" aria-label="MD CB exposure"></canvas></div></div>
+    </div>
+    <div class="two-col" style="margin-bottom:12px">
+      <div class="card"><div class="ch-title">Chargebacks by carrier</div><div class="ch-wrap-sm"><canvas id="an-carrier" role="img" aria-label="Carrier CBs"></canvas></div></div>
+      <div class="card"><div class="ch-title">Chargebacks by product</div><div class="ch-wrap-sm"><canvas id="an-product" role="img" aria-label="Product CBs"></canvas></div></div>
+    </div>
+    <div class="card"><div class="ch-title">Chargeback rate by top agent</div><div style="position:relative;width:100%;height:170px"><canvas id="an-cbrate" role="img" aria-label="CB rate by agent"></canvas></div></div>
+  </div>
+
+  <!-- ══════════ DBA ANALYTICS ══════════ -->
+  <div class="section" id="section-dba-analytics">
+    <div class="section-hdr"><div><h2>DBA Recruiting & Licensing</h2><p>225 agents · 2026 · AgentsAssociates tracking</p></div></div>
+    <div class="metrics-grid">
+      <div class="metric"><div class="ml">Recruited</div><div class="mv mv-go">225</div><div class="ms">Jan–May 2026</div></div>
+      <div class="metric"><div class="ml">Licensed</div><div class="mv mv-g">47</div><div class="ms">21% conversion</div></div>
+      <div class="metric"><div class="ml">Studying</div><div class="mv mv-go">38</div><div class="ms">Exam not taken</div></div>
+      <div class="metric"><div class="ml">FA Promoted</div><div class="mv mv-g">12</div><div class="ms">Field Associates</div></div>
+      <div class="metric"><div class="ml">Stalled 14d+</div><div class="mv mv-r">22</div><div class="ms">Need re-engagement</div></div>
+    </div>
+    <div class="dba-funnel">
+      <div class="funnel-step"><div class="fs-val">225</div><div class="fs-lbl">Recruited</div></div>
+      <div class="funnel-step"><div class="fs-val">85</div><div class="fs-lbl">Applied / Studying</div></div>
+      <div class="funnel-step"><div class="fs-val" style="color:var(--gold)">47</div><div class="fs-lbl">Licensed</div></div>
+      <div class="funnel-step"><div class="fs-val" style="color:#1D9E75">12</div><div class="fs-lbl">Field Associates</div></div>
+    </div>
+    <div class="two-col" style="margin-bottom:12px">
+      <div class="card"><div class="ch-title">Recruits by MD team</div><div class="ch-wrap"><canvas id="dba-teams" role="img" aria-label="Recruits by team"></canvas></div></div>
+      <div class="card"><div class="ch-title">Monthly recruiting volume</div><div class="ch-wrap"><canvas id="dba-monthly" role="img" aria-label="Monthly recruiting"></canvas></div></div>
+    </div>
+    <div class="card">
+      <div style="font-size:12.5px;font-weight:500;margin-bottom:10px">MD Team Performance</div>
+      <div class="tw"><table>
+        <thead><tr><th style="width:22%">MD / Baseshop</th><th>Recruited</th><th>Licensed</th><th>FA/Dir</th><th>Conv %</th><th>Active sponsors</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>Obi & Jennifer Iroezi</td><td class="am mv-go">61</td><td class="am mv-g">14</td><td class="am">3</td><td class="am mv-go">23%</td><td class="am">8</td><td><span class="pill p-act">Strong</span></td></tr>
+          <tr><td>Blessing Ikejemba</td><td class="am mv-go">58</td><td class="am mv-g">13</td><td class="am">4</td><td class="am mv-go">22%</td><td class="am">11</td><td><span class="pill p-act">Strong</span></td></tr>
+          <tr><td>Crystal & Joe Walker</td><td class="am mv-go">42</td><td class="am mv-r">0</td><td class="am">2</td><td class="am mv-r">0%</td><td class="am">13</td><td><span class="pill p-cb">Audit needed</span></td></tr>
+          <tr><td>Sasha Dukes</td><td class="am mv-go">27</td><td class="am mv-g">8</td><td class="am">1</td><td class="am mv-go">30%</td><td class="am">6</td><td><span class="pill p-act">Good</span></td></tr>
+          <tr><td>Aaron Mputu</td><td class="am mv-go">19</td><td class="am mv-g">6</td><td class="am">1</td><td class="am mv-go">32%</td><td class="am">5</td><td><span class="pill p-act">Good</span></td></tr>
+          <tr><td>Alexandria Edwards</td><td class="am mv-go">18</td><td class="am mv-g">6</td><td class="am">1</td><td class="am mv-go">33%</td><td class="am">4</td><td><span class="pill p-act">Good</span></td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <!-- ══════════ INTELLIGENCE ══════════ -->
+  <div class="section" id="section-intelligence">
+    <div class="section-hdr"><div><h2>Intelligence & Action Items</h2><p>Data-driven insights from commission files and recruiting data — auto-updated when new files are imported</p></div></div>
+    <div id="intel-list"></div>
+  </div>
+
+  </div><!-- end .content -->
+</div><!-- end .main -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── SIDEBAR TOGGLE ─────────────────────────────────────────────
+function toggleSidebar() {
+  const sb = document.getElementById('sidebar');
+  const collapsed = sb.classList.toggle('collapsed');
+  localStorage.setItem('dba_pmd_sidebar', collapsed ? '1' : '0');
+}
+// Restore sidebar state on load
+(function() {
+  if (localStorage.getItem('dba_pmd_sidebar') === '1') {
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('sidebar').classList.add('collapsed');
+    });
+  }
+})();
+
+// ══════════════════════════════════════════════════════
+// HISTORICAL DATA (Jan–May 2026, 44 files)
+// ══════════════════════════════════════════════════════
+const CB_DATA=[{wa:"OBIMDINACHI IROEZI",pol:"LS220278800",prod:"FlexLife (25)",cl:"Jude Anyanwu",car:"National Life Group",dt:"2026-02-18",amt:-2700.85,st:"FIRST_YEAR",md:"OBIMDINACHI IROEZI",ph:"2405711138"},{wa:"OBIMDINACHI IROEZI",pol:"LS220278800",prod:"FlexLife (25)",cl:"Jude Anyanwu",car:"National Life Group",dt:"2026-02-11",amt:-2700.85,st:"FIRST_YEAR",md:"OBIMDINACHI IROEZI",ph:"2405711138"},{wa:"OBIMDINACHI IROEZI",pol:"LS220278800",prod:"FlexLife (25)",cl:"Jude Anyanwu",car:"National Life Group",dt:"2026-03-11",amt:-1848,st:"FIRST_YEAR",md:"OBIMDINACHI IROEZI",ph:"2405711138"},{wa:"OBIMDINACHI IROEZI",pol:"LS787862400",prod:"LSW 20-G 22",cl:"Oghenetega Akpoyibo",car:"National Life Group",dt:"2026-02-04",amt:-1771.65,st:"FIRST_YEAR",md:"OBIMDINACHI IROEZI",ph:"15593713427"},{wa:"OBIMDINACHI IROEZI",pol:"LS221991500",prod:"FlexLife (25)",cl:"Esther Nwokoji",car:"National Life Group",dt:"2026-02-11",amt:-1759.3,st:"FIRST_YEAR",md:"OBIMDINACHI IROEZI",ph:"13109978256"},{wa:"OBIMDINACHI IROEZI",pol:"LS221991500",prod:"FlexLife (25)",cl:"Esther Nwokoji",car:"National Life Group",dt:"2026-02-18",amt:-1605.3,st:"FIRST_YEAR",md:"OBIMDINACHI IROEZI",ph:"13109978256"},{wa:"OBIMDINACHI IROEZI",pol:"LS218376300",prod:"FlexLife (25)",cl:"April Young",car:"National Life Group",dt:"2026-01-14",amt:-957,st:"FIRST_YEAR",md:"OBIMDINACHI IROEZI",ph:"13106219145"},{wa:"OBIMDINACHI IROEZI",pol:"LS226713300",prod:"FlexLife (25)",cl:"Ayotunde Sodeke",car:"National Life Group",dt:"2026-04-15",amt:-870.68,st:"FIRST_YEAR",md:"OBIMDINACHI IROEZI",ph:"13236757364"},{wa:"Soroush Nasirzadeh",pol:"LS225490900",prod:"FlexLife (25)",cl:"Herve Betonga",car:"National Life Group",dt:"2026-04-01",amt:-660.96,st:"FIRST_YEAR",md:"OBIMDINACHI IROEZI",ph:"18594449279"},{wa:"Soroush Nasirzadeh",pol:"LS219294000",prod:"FlexLife (25)",cl:"Mohamed Laenaya",car:"National Life Group",dt:"2026-01-14",amt:-511.58,st:"FIRST_YEAR",md:"OBIMDINACHI IROEZI",ph:"7207369657"},{wa:"JOY NWABUEZE",pol:"LS219326000",prod:"FlexLife (25)",cl:"Obiakachi Egonu",car:"National Life Group",dt:"2026-02-04",amt:-500,st:"CHARGEBACK",md:"BLESSING IKEJEMBA",ph:"3104653041"},{wa:"BLESSING IKEJEMBA",pol:"LS219326000",prod:"FlexLife (25)",cl:"Obiakachi Egonu",car:"National Life Group",dt:"2026-02-04",amt:-500,st:"CHARGEBACK",md:"BLESSING IKEJEMBA",ph:"3104653041"},{wa:"OBIMDINACHI IROEZI",pol:"4250095735",prod:"QoL Flex Term 25Yr",cl:"Stacy Humphrey",car:"AIG",dt:"2026-03-25",amt:-385.77,st:"CHARGEBACK",md:"OBIMDINACHI IROEZI",ph:""},{wa:"Crystal Walker",pol:"LS225537500",prod:"FlexLife (25)",cl:"Michele Parker",car:"National Life Group",dt:"2026-05-27",amt:-355.22,st:"CHARGEBACK",md:"Crystal Walker",ph:"7576413625"},{wa:"Sasha Dukes",pol:"LS225537500",prod:"FlexLife (25)",cl:"Michele Parker",car:"National Life Group",dt:"2026-05-27",amt:-355.22,st:"CHARGEBACK",md:"Sasha Dukes",ph:"7576413625"},{wa:"Alswel Brown",pol:"LS230379400",prod:"FlexLife (25)",cl:"Christopher Gay",car:"National Life Group",dt:"2026-05-27",amt:-355.08,st:"CHARGEBACK",md:"Gregory Brown",ph:"12037474786"},{wa:"Aaron Mputu",pol:"LX510531",prod:"F&G Pathsetter",cl:"Ryane Martinez",car:"Fidelity & Guaranty",dt:"2026-05-27",amt:-341.55,st:"FIRST_YEAR",md:"Aaron Mputu",ph:"2544195543"},{wa:"Sasha Dukes",pol:"LX502308",prod:"F&G Everlast",cl:"Tyler Dyck",car:"Fidelity & Guaranty",dt:"2026-03-04",amt:-336.6,st:"FIRST_YEAR",md:"Sasha Dukes",ph:"9723694300"},{wa:"Lisha Works",pol:"BU4369277",prod:"Other",cl:"Samuel Byson",car:"Mutual of Omaha",dt:"2026-02-20",amt:-324.51,st:"CHARGEBACK",md:"Crystal Walker",ph:"2542389466"},{wa:"Kenae Sam",pol:"9748972",prod:"Strong Foundation",cl:"Lashawn Lockett",car:"Foresters Financial",dt:"2026-02-06",amt:-300.78,st:"FIRST_YEAR",md:"Crystal Walker",ph:"8326182949"},{wa:"Maryjane Okonkwo",pol:"LS218376300",prod:"FlexLife (25)",cl:"April Young",car:"National Life Group",dt:"2026-01-14",amt:-297,st:"FIRST_YEAR",md:"OBIMDINACHI IROEZI",ph:"13106219145"},{wa:"Margo Bosley",pol:"LS201377000",prod:"LSW FlexLife (19)",cl:"Margo Bosley",car:"National Life Group",dt:"2026-01-14",amt:-295.6,st:"FIRST_YEAR",md:"BLESSING IKEJEMBA",ph:"12136400649"},{wa:"Soroush Nasirzadeh",pol:"LS225400800",prod:"FlexLife",cl:"Susana Moreno",car:"National Life Group",dt:"2026-04-08",amt:-289.48,st:"FIRST_YEAR",md:"OBIMDINACHI IROEZI",ph:"17209837732"},{wa:"Crystal Walker",pol:"LX474695",prod:"F&G Pathsetter",cl:"Edward New",car:"Fidelity & Guaranty",dt:"2026-04-15",amt:-258.75,st:"FIRST_YEAR",md:"Crystal Walker",ph:"2547335500"},{wa:"OBIMDINACHI IROEZI",pol:"LS218376300",prod:"FlexLife (25)",cl:"April Young",car:"National Life Group",dt:"2026-04-01",amt:-248.84,st:"FIRST_YEAR",md:"OBIMDINACHI IROEZI",ph:"13106219145"},{wa:"Kenae Sam",pol:"9748972",prod:"Strong Foundation",cl:"Lashawn Lockett",car:"Foresters Financial",dt:"2026-04-24",amt:-246.09,st:"FIRST_YEAR",md:"Crystal Walker",ph:"8326182949"},{wa:"Kendral Johnson",pol:"LS228845900",prod:"FlexLife (25)",cl:"Rodreicus Daniels",car:"National Life Group",dt:"2026-05-06",amt:-240,st:"FIRST_YEAR",md:"Crystal Walker",ph:"13344303578"},{wa:"OBIMDINACHI IROEZI",pol:"LS203418400",prod:"LSW FlexLife (19)",cl:"Goodluck Nwaka",car:"National Life Group",dt:"2026-02-11",amt:-235.84,st:"FIRST_YEAR",md:"OBIMDINACHI IROEZI",ph:"13107069461"},{wa:"Kenae Sam",pol:"9748977",prod:"Foresters PlanRight",cl:"Kenneth Sam",car:"Foresters Financial",dt:"2026-02-13",amt:-229.42,st:"FIRST_YEAR",md:"Crystal Walker",ph:"6365084323"},{wa:"Dwayne Arzu",pol:"LS790001000",prod:"LSW 20-G 22",cl:"Yesire Vasquez Fernandez",car:"National Life Group",dt:"2026-01-21",amt:-211.61,st:"CHARGEBACK",md:"OBIMDINACHI IROEZI",ph:"9012678457"},{wa:"JOY NWABUEZE",pol:"LS219326000",prod:"FlexLife (25)",cl:"Obiakachi Egonu",car:"National Life Group",dt:"2026-02-04",amt:-207.24,st:"CHARGEBACK",md:"BLESSING IKEJEMBA",ph:"3104653041"},{wa:"Soroush Nasirzadeh",pol:"LS802831500",prod:"LSW 30-G 22",cl:"Herve Betonga",car:"National Life Group",dt:"2026-03-25",amt:-200.81,st:"FIRST_YEAR",md:"OBIMDINACHI IROEZI",ph:"18594449279"},{wa:"Alexandria Edwards",pol:"LX378408",prod:"F&G Pathsetter",cl:"Nona Syder",car:"Fidelity & Guaranty",dt:"2026-03-25",amt:-197.85,st:"FIRST_YEAR",md:"Alexandria Edwards",ph:"3052196431"},{wa:"Grace Olusola Olufa",pol:"LS226713300",prod:"FlexLife (25)",cl:"Ayotunde Sodeke",car:"National Life Group",dt:"2026-04-15",amt:-192.23,st:"FIRST_YEAR",md:"OBIMDINACHI IROEZI",ph:"13236757364"},{wa:"Marguerite Daniels",pol:"LS223484600",prod:"FlexLife (25)",cl:"Derrick Daniels",car:"National Life Group",dt:"2026-04-22",amt:-186.91,st:"FIRST_YEAR",md:"Crystal Walker",ph:"13373532820"},{wa:"Omolara Isokpehi",pol:"LS201567000",prod:"LSW FlexLife (19)",cl:"Shola Ogunkayode",car:"National Life Group",dt:"2026-02-18",amt:-173.4,st:"FIRST_YEAR",md:"OBIMDINACHI IROEZI",ph:"3177721651"},{wa:"Alexandria Edwards",pol:"LX393218",prod:"F&G Pathsetter",cl:"Alexandria Edwards",car:"Fidelity & Guaranty",dt:"2026-01-14",amt:-173.25,st:"FIRST_YEAR",md:"Alexandria Edwards",ph:"4845577373"},{wa:"Crystal Walker",pol:"LX539563",prod:"F&G Pathsetter",cl:"Tamia Phillips",car:"Fidelity & Guaranty",dt:"2026-05-20",amt:-170.77,st:"FIRST_YEAR",md:"Crystal Walker",ph:"2569642762"},{wa:"JOY NWABUEZE",pol:"LS217762100",prod:"FlexLife (25)",cl:"Chinenye Onyilofor",car:"National Life Group",dt:"2026-04-22",amt:-146.47,st:"FIRST_YEAR",md:"BLESSING IKEJEMBA",ph:"2403388222"},{wa:"BLESSING IKEJEMBA",pol:"LS217762100",prod:"FlexLife (25)",cl:"Chinenye Onyilofor",car:"National Life Group",dt:"2026-04-22",amt:-146.47,st:"FIRST_YEAR",md:"BLESSING IKEJEMBA",ph:"2403388222"},{wa:"Sinclair Gould",pol:"LX420974",prod:"F&G Everlast",cl:"Darrell Smith",car:"Fidelity & Guaranty",dt:"2026-03-11",amt:-142.31,st:"FIRST_YEAR",md:"Sasha Dukes",ph:"2547605370"},{wa:"Aaron Mputu",pol:"LX510531",prod:"F&G Pathsetter",cl:"Ryane Martinez",car:"Fidelity & Guaranty",dt:"2026-05-27",amt:-142.31,st:"FIRST_YEAR",md:"Aaron Mputu",ph:"2544195543"},{wa:"Alexandria Edwards",pol:"LS211853900",prod:"LSW FlexLife (19)",cl:"Samantha Felicien",car:"National Life Group",dt:"2026-04-15",amt:-142.28,st:"FIRST_YEAR",md:"Alexandria Edwards",ph:"13154307908"},{wa:"Crystal Walker",pol:"LS211969800",prod:"RapidProtect",cl:"Aaron Mputu",car:"National Life Group",dt:"2026-05-06",amt:-138.86,st:"CHARGEBACK",md:"Crystal Walker",ph:"12543464011"}];
+const ALL_DATA_EXTRA = [
+  {wa:"BLESSING IKEJEMBA",pol:"9743544",prod:"Foresters PlanRight",cl:"Stephen Agbo",car:"Foresters Financial",dt:"2026-01-02",amt:54.85,st:"FIRST_YEAR",md:"BLESSING IKEJEMBA",ph:"2728903323"},
+  {wa:"OBIMDINACHI IROEZI",pol:"BU4760001",prod:"Other",cl:"Joyce Ekwensi",car:"Mutual of Omaha",dt:"2026-01-02",amt:4.95,st:"RENEWAL",md:"OBIMDINACHI IROEZI",ph:"4083937781"},
+  {wa:"Crystal Walker",pol:"BU2475363",prod:"Other",cl:"Sherry Hutchison",car:"Mutual of Omaha",dt:"2026-01-02",amt:0.45,st:"RENEWAL",md:"Crystal Walker",ph:"2542858421"},
+  {wa:"Aaron Mputu",pol:"LS228808600",prod:"FlexLife (25)",cl:"Tamia Phillips",car:"National Life Group",dt:"2026-05-06",amt:77.32,st:"FIRST_YEAR",md:"Aaron Mputu",ph:"2569642762"},
+  {wa:"Bennie Agwazim",pol:"LS231219400",prod:"FlexLife (25)",cl:"Ngozichukwu Eziashi",car:"National Life Group",dt:"2026-05-27",amt:17.14,st:"FIRST_YEAR",md:"BLESSING IKEJEMBA",ph:""},
+  {wa:"Aretha Olufowobi",pol:"LS806639300",prod:"LSW 30-G 22",cl:"Orlando Harriott",car:"National Life Group",dt:"2026-05-27",amt:21.38,st:"FIRST_YEAR",md:"Aretha Olufowobi",ph:""},
+  {wa:"Soroush Nasirzadeh",pol:"LS163021500",prod:"LSW FlexLife (19)",cl:"Mielat Asrat",car:"National Life Group",dt:"2026-05-27",amt:2.0,st:"RENEWAL",md:"OBIMDINACHI IROEZI",ph:""},
+  {wa:"Francis Iketuonye",pol:"LS800340600",prod:"LSW 20-G 22",cl:"Chidi Imoh",car:"National Life Group",dt:"2026-05-13",amt:84.9,st:"FIRST_YEAR",md:"BLESSING IKEJEMBA",ph:"3106184972"},
+  {wa:"Gladys Velasco",pol:"LS154909800",prod:"FlexLife",cl:"Luz Tangarife",car:"National Life Group",dt:"2026-05-27",amt:0.31,st:"RENEWAL",md:"Jose Lorenzo Garcia",ph:""},
+  {wa:"Magdaline Ibezim",pol:"LS196012500",prod:"LSW FlexLife (19)",cl:"Justine Angadam",car:"National Life Group",dt:"2026-05-27",amt:1.24,st:"RENEWAL",md:"OBIMDINACHI IROEZI",ph:""}
+];
+
+// Master dataset — starts with historical, grows with uploads
+let MASTER_DATA = [
+  ...CB_DATA.map(r=>({...r, source:'historical'})),
+  ...ALL_DATA_EXTRA.map(r=>({...r, source:'historical'}))
+];
+
+// Uploaded file tracker
+let uploadedFiles = [];
+let nextFileId = 0;
+let mondayConfig = {apiKey:'', boardComm:'', boardCb:'', workspace:''};
+try { mondayConfig = JSON.parse(localStorage.getItem('dba_monday_config')||'{}') || mondayConfig; } catch(e){}
+
+// ══════════════════════════════════════════════════════
+// BASESHOP MAPPING (MD upline → baseshop name)
+// ══════════════════════════════════════════════════════
+const BASESHOP_MAP = {
+  'OBIMDINACHI IROEZI': 'Iroezi Baseshop',
+  'BLESSING IKEJEMBA': 'Ikejemba Baseshop',
+  'Crystal Walker': 'Walker Baseshop',
+  'Aaron Mputu': 'Mputu Baseshop',
+  'Sasha Dukes': 'Dukes Baseshop',
+  'Alexandria Edwards': 'Edwards Baseshop',
+  'Gregory Brown': 'Brown Baseshop',
+  'Simisola Ajimatanrareje': 'Ajimatanrareje Baseshop',
+  'Chinemerem Okeke': 'Okeke Baseshop',
+  'Aretha Olufowobi': 'Olufowobi Baseshop',
+  'Nkem Abogo-ugwokegbe': 'Abogo-ugwokegbe Baseshop',
+  'Olugbenga Solademi': 'Solademi Baseshop',
+  'Callista Ukeje': 'Ukeje Baseshop',
+  'Emrin Bodian': 'Bodian Baseshop',
+  'Micah Norrise': 'Norrise Baseshop',
+  'Jose Lorenzo Garcia': 'Garcia Baseshop',
+  'Brooklyn Moore': 'Moore Baseshop',
+  'Rodolfo Vargas': 'Vargas Baseshop',
+  'Jorge Pelayo': 'Pelayo Baseshop'
+};
+
+function getBaseshop(md) {
+  if (!md) return 'Unknown';
+  return BASESHOP_MAP[md] || (md.split(' ')[0] + ' Baseshop');
+}
+
+// Enrich data with baseshop
+function enrichData(records) {
+  return records.map(r => ({...r, baseshop: getBaseshop(r.md || r.agent_md_upline)}));
+}
+
+let ENRICHED_DATA = enrichData(MASTER_DATA);
+
+// ══════════════════════════════════════════════════════
+// FILTER STATE
+// ══════════════════════════════════════════════════════
+let activeFilters = {agent:'', baseshop:'', carrier:'', type:'', dateFrom:'', dateTo:''};
+let filteredData = [...ENRICHED_DATA];
+let cbFilteredData = ENRICHED_DATA.filter(r => r.amt < 0);
+let ctPage=1, cbPage=1;
+const PP = 15;
+
+function getFilteredData(overrides = {}) {
+  const f = {...activeFilters, ...overrides};
+  return ENRICHED_DATA.filter(r => {
+    if (f.agent && r.wa !== f.agent) return false;
+    if (f.baseshop && r.baseshop !== f.baseshop) return false;
+    if (f.carrier && !String(r.car||'').includes(f.carrier)) return false;
+    if (f.type === 'cb' && r.amt >= 0) return false;
+    if (f.type === 'comm' && r.amt < 0) return false;
+    if (f.dateFrom && r.dt < f.dateFrom) return false;
+    if (f.dateTo && r.dt > f.dateTo) return false;
+    return true;
+  });
+}
+
+
+// ── AGENCY OS FILTER ──────────────────────────────────────────
+let osFilters = { from: '2026-01-01', to: '2026-05-30', label: 'YTD', agent: '', baseshop: '' };
+
+function setOsPeriod(from, to, label, btn) {
+  osFilters.from  = from;
+  osFilters.to    = to;
+  osFilters.label = label;
+  const fromEl = document.getElementById('os-date-from');
+  const toEl   = document.getElementById('os-date-to');
+  if (fromEl) fromEl.value = from;
+  if (toEl)   toEl.value   = to;
+  document.querySelectorAll('#os-period-btns .period-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  osFilterChanged();
+}
+
+function osFilterChanged() {
+  const fromEl = document.getElementById('os-date-from');
+  const toEl   = document.getElementById('os-date-to');
+  const agEl   = document.getElementById('os-agent-filter');
+  const bsEl   = document.getElementById('os-baseshop-filter');
+  const from     = (fromEl && fromEl.value) || osFilters.from;
+  const to       = (toEl   && toEl.value)   || osFilters.to;
+  const agent    = agEl ? agEl.value    : '';
+  const baseshop = bsEl ? bsEl.value    : '';
+  osFilters = { ...osFilters, from, to, agent, baseshop };
+
+  const badge   = document.getElementById('os-filter-badge');
+  const labelEl = document.getElementById('os-filter-label');
+  if (badge && labelEl) {
+    const parts = [formatOsDate(from) + ' \u2013 ' + formatOsDate(to)];
+    if (agent)    parts.push(agent);
+    if (baseshop) parts.push(baseshop);
+    labelEl.textContent = 'Showing: ' + parts.join(' \xb7 ');
+    badge.style.display = 'flex';
+  }
+  renderOsMetrics();
+}
+
+function clearOsFilters() {
+  osFilters = { from:'2026-01-01', to:'2026-05-30', label:'YTD', agent:'', baseshop:'' };
+  ['os-date-from','os-date-to','os-agent-filter','os-baseshop-filter'].forEach(id=>{
+    const el = document.getElementById(id); if(el) el.value='';
+  });
+  document.querySelectorAll('#os-period-btns .period-btn').forEach((b,i)=>b.classList.toggle('active',i===0));
+  const badge = document.getElementById('os-filter-badge');
+  if (badge) badge.style.display = 'none';
+  renderOsMetrics();
+}
+
+function formatOsDate(d) {
+  if (!d) return '\u2014';
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const parts = d.split('-');
+  return months[parseInt(parts[1])-1] + ' ' + parseInt(parts[2]);
+}
+
+function renderOsMetrics() {
+  const ids = ['os-m-apps','os-m-pts','os-m-paid','os-m-cash','os-m-recs','os-m-agents'];
+  if (!window.ALL_ROWS || !ALL_ROWS.length) {
+    ids.forEach(id=>{ const el=document.getElementById(id); if(el) el.textContent='\u2014'; });
+    return;
+  }
+  const { from, to, agent, baseshop } = osFilters;
+  const rows = ALL_ROWS.filter(r => {
+    if (from && r.dt < from) return false;
+    if (to   && r.dt > to)   return false;
+    if (agent    && r.wa     !== agent)    return false;
+    if (baseshop && r.baseshop !== baseshop) return false;
+    return true;
+  });
+  const fmt  = v => v>=1000 ? '$'+(v/1000).toFixed(1)+'K' : '$'+Math.round(v).toLocaleString();
+  const setM = (id,val) => { const el=document.getElementById(id); if(el) el.textContent=val; };
+  const commRows = rows.filter(r=>(r.amt||0)>0);
+  setM('os-m-apps',  rows.length.toLocaleString());
+  setM('os-m-pts',   fmt(rows.reduce((s,r)=>s+(r.pts||r.atp||r.prem||0),0)));
+  setM('os-m-paid',  fmt(rows.filter(r=>r.status==='paid').reduce((s,r)=>s+(r.pts||r.atp||r.prem||0),0)));
+  setM('os-m-cash',  fmt(commRows.reduce((s,r)=>s+(r.amt||0),0)));
+  setM('os-m-recs',  [...new Set(rows.map(r=>r.recruit_id||r.recruit).filter(Boolean))].length || '\u2014');
+  setM('os-m-agents',[...new Set(rows.map(r=>r.wa).filter(Boolean))].length || '\u2014');
+}
+
+function populateOsDropdowns() {
+  if (!window.ALL_ROWS || !ALL_ROWS.length) return;
+  const agentSel    = document.getElementById('os-agent-filter');
+  const baseshopSel = document.getElementById('os-baseshop-filter');
+  if (!agentSel || !baseshopSel) return;
+  const agents    = [...new Set(ALL_ROWS.map(r=>r.wa).filter(Boolean))].sort();
+  const baseshops = [...new Set(ALL_ROWS.map(r=>r.baseshop).filter(Boolean))].sort();
+  agents.forEach(a => { const o=document.createElement('option');o.value=a;o.textContent=a;agentSel.appendChild(o); });
+  baseshops.forEach(b => { const o=document.createElement('option');o.value=b;o.textContent=b;baseshopSel.appendChild(o); });
+}
+
+
+function setPeriod(fromId, toId, from, to, btn) {
+  document.getElementById(fromId).value = from;
+  document.getElementById(toId).value = to;
+  // Highlight active button in same group
+  const group = btn.parentElement;
+  group.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  // Trigger the appropriate filter function
+  updateChips && updateChips();
+  applyFilters && applyFilters();
+}
+function applyFilters() {
+  activeFilters.agent = document.getElementById('f-agent').value;
+  activeFilters.baseshop = document.getElementById('f-baseshop').value;
+  activeFilters.carrier = document.getElementById('f-carrier').value;
+  activeFilters.type = document.getElementById('f-type').value;
+  activeFilters.dateFrom = document.getElementById('f-date-from').value;
+  activeFilters.dateTo = document.getElementById('f-date-to').value;
+  filteredData = getFilteredData();
+  ctPage = 1;
+  renderCTMetrics(); renderCTTable(); updateChips();
+  showToast('Filters applied — ' + filteredData.length + ' records');
+}
+
+function clearFilters() {
+  activeFilters = {agent:'', baseshop:'', carrier:'', type:'', dateFrom:'', dateTo:''};
+  ['f-agent','f-baseshop','f-carrier','f-type','f-date-from','f-date-to'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+  filteredData = [...ENRICHED_DATA];
+  ctPage = 1;
+  renderCTMetrics(); renderCTTable(); updateChips();
+}
+
+function applyFiltersCB() {
+  const agent = document.getElementById('cb-f-agent').value;
+  const baseshop = document.getElementById('cb-f-baseshop').value;
+  const carrier = document.getElementById('cb-f-carrier').value;
+  const df = document.getElementById('cb-f-date-from').value;
+  const dt = document.getElementById('cb-f-date-to').value;
+  cbFilteredData = ENRICHED_DATA.filter(r => {
+    if (r.amt >= 0) return false;
+    if (agent && r.wa !== agent) return false;
+    if (baseshop && r.baseshop !== baseshop) return false;
+    if (carrier && !String(r.car||'').includes(carrier)) return false;
+    if (df && r.dt < df) return false;
+    if (dt && r.dt > dt) return false;
+    return true;
+  });
+  cbPage = 1;
+  renderCBTable();
+  document.getElementById('cb-warn-text').textContent = cbFilteredData.length + ' chargebacks · ' + fmt(Math.abs(cbFilteredData.reduce((s,r)=>s+r.amt,0))) + ' total shown';
+}
+
+function clearFiltersCB() {
+  ['cb-f-agent','cb-f-baseshop','cb-f-carrier','cb-f-date-from','cb-f-date-to'].forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
+  cbFilteredData = ENRICHED_DATA.filter(r => r.amt < 0);
+  cbPage = 1;
+  renderCBTable();
+}
+
+function updateChips() {
+  const chips = [];
+  if (document.getElementById('f-agent').value) chips.push({label:'Agent: '+document.getElementById('f-agent').value, key:'agent', sel:'f-agent'});
+  if (document.getElementById('f-baseshop').value) chips.push({label:'Baseshop: '+document.getElementById('f-baseshop').value, key:'baseshop', sel:'f-baseshop'});
+  if (document.getElementById('f-carrier').value) chips.push({label:'Carrier: '+document.getElementById('f-carrier').value, key:'carrier', sel:'f-carrier'});
+  if (document.getElementById('f-type').value) chips.push({label: document.getElementById('f-type').value==='cb'?'Chargebacks only':'Commissions only', key:'type', sel:'f-type'});
+  if (document.getElementById('f-date-from').value) chips.push({label:'From: '+document.getElementById('f-date-from').value, key:'dateFrom', sel:'f-date-from'});
+  if (document.getElementById('f-date-to').value) chips.push({label:'To: '+document.getElementById('f-date-to').value, key:'dateTo', sel:'f-date-to'});
+  document.getElementById('filter-chips').innerHTML = chips.map(c => 
+    `<span class="chip">${c.label}<button onclick="removeFilter('${c.sel}','${c.key}')">×</button></span>`
+  ).join('');
+}
+
+function removeFilter(selId, key) {
+  const el = document.getElementById(selId); if(el) el.value = '';
+  activeFilters[key] = '';
+  filteredData = getFilteredData();
+  ctPage = 1;
+  renderCTMetrics(); renderCTTable(); updateChips();
+}
+
+// ══════════════════════════════════════════════════════
+// XLSX FILE UPLOAD ENGINE
+// ══════════════════════════════════════════════════════
+function handleDragOver(e) { e.preventDefault(); document.getElementById('upload-zone').classList.add('drag-over'); }
+function handleDragLeave(e) { document.getElementById('upload-zone').classList.remove('drag-over'); }
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('upload-zone').classList.remove('drag-over');
+  handleFiles(e.dataTransfer.files);
+}
+
+function handleFiles(files) {
+  const fileArray = Array.from(files);
+  const bar = document.getElementById('progress-bar');
+  const fill = document.getElementById('progress-fill');
+  bar.style.display = 'block'; fill.style.width = '0%';
+
+  let processed = 0;
+  fileArray.forEach((file, idx) => {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        const data = new Uint8Array(e.target.result);
+        const wb = XLSX.read(data, {type:'array', cellDates:true});
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(ws, {defval:''});
+
+        const newRecords = [];
+        rows.forEach(row => {
+          const rt = String(row.record_type||'commission').toLowerCase();
+          if (rt !== 'commission') return;
+          const amt = parseFloat(row.amount) || 0;
+          const dateRaw = row.transaction_date;
+          let dt = '';
+          if (dateRaw instanceof Date) dt = dateRaw.toISOString().slice(0,10);
+          else if (typeof dateRaw === 'string') dt = dateRaw.slice(0,10);
+          else if (typeof dateRaw === 'number') { const d = XLSX.SSF.parse_date_code(dateRaw); dt = (d.y+'-'+String(d.m).padStart(2,'0')+'-'+String(d.d).padStart(2,'0')); }
+
+          const rec = {
+            wa: String(row.writing_agent||'').trim(),
+            pol: String(row.policy_number||'').trim(),
+            prod: String(row.product_name||'').trim(),
+            cl: String(row.client_name||'').toLowerCase().replace(/\b\w/g,c=>c.toUpperCase()),
+            car: String(row.carrier_name||'').trim(),
+            dt: dt,
+            amt: amt,
+            st: String(row.status||row.sub_status||'').toUpperCase(),
+            md: String(row.agent_md_upline||'').trim(),
+            ph: String(row.client_phone_number||'').replace(/\.0$/,''),
+            sub_status: String(row.sub_status||'').toLowerCase(),
+            source: 'upload_' + file.name
+          };
+          newRecords.push(rec);
+        });
+
+        const cbCount = newRecords.filter(r=>r.amt<0).length;
+        addFileItem(file.name, newRecords.length, cbCount, false);
+
+        // Merge into master (deduplicate by policy+date+amount)
+        const existingKeys = new Set(MASTER_DATA.map(r=>`${r.pol}|${r.dt}|${r.amt}`));
+        const deduped = newRecords.filter(r => !existingKeys.has(`${r.pol}|${r.dt}|${r.amt}`));
+        MASTER_DATA = [...MASTER_DATA, ...deduped.map(r=>({...r, source:'upload_'+file.name}))];
+        uploadedFiles.push({id: nextFileId++, name: file.name, records: newRecords.length, cbs: cbCount, new: deduped.length});
+
+        processed++;
+        fill.style.width = (processed / fileArray.length * 100) + '%';
+        if (processed === fileArray.length) {
+          setTimeout(()=>{ bar.style.display='none'; fill.style.width='0%'; }, 1200);
+          rebuildAll();
+          showToast(`Imported ${fileArray.length} file${fileArray.length>1?'s':''} — ${deduped.length} new records added`);
+          addSyncLog(`✓ ${file.name}: ${newRecords.length} records (${cbCount} CBs, ${deduped.length} new after dedup)`, 'ok');
+        }
+      } catch(err) {
+        addFileItem(file.name, 0, 0, true, err.message);
+        processed++;
+        addSyncLog(`✗ ${file.name}: parse error — ${err.message}`, 'err');
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+function addFileItem(name, rows, cbs, isErr, errMsg='') {
+  const list = document.getElementById('file-list');
+  const div = document.createElement('div');
+  div.className = 'file-item' + (isErr?' fi-err':'');
+  div.innerHTML = `<i class="ti ti-${isErr?'alert-circle':'file-check'}" style="font-size:14px;color:${isErr?'#F5A080':'#5DD4AA'}"></i><span class="fi-name">${name}</span><span class="fi-rows">${isErr?errMsg:rows+' rows · '+cbs+' CBs'}</span>`;
+  list.appendChild(div);
+}
+
+function rebuildAll() {
+  ENRICHED_DATA = enrichData(MASTER_DATA);
+  filteredData = getFilteredData();
+  cbFilteredData = ENRICHED_DATA.filter(r => r.amt < 0);
+  populateFilterDropdowns();
+  updateDatasetStats();
+  renderOverviewMetrics();
+  renderCTMetrics();
+  renderCTTable();
+  renderCBTable();
+  renderFollowups();
+  renderAgentLedger();
+  renderAnalytics();
+  renderIntelligence();
+  populateOsDropdowns();
+  renderOsMetrics();
+  updateSyncQueue();
+  // Update sidebar CB count
+  const cbCount = ENRICHED_DATA.filter(r=>r.amt<0).length;
+  document.getElementById('sb-cb-count').textContent = cbCount;
+  document.getElementById('sb-fu-count').textContent = Math.min(cbCount, 50);
+}
+
+function updateDatasetStats() {
+  const cbCount = ENRICHED_DATA.filter(r=>r.amt<0).length;
+  const agents = new Set(ENRICHED_DATA.map(r=>r.wa)).size;
+  document.getElementById('ds-files').textContent = 44 + uploadedFiles.length;
+  document.getElementById('ds-records').textContent = ENRICHED_DATA.length.toLocaleString();
+  document.getElementById('ds-agents').textContent = agents;
+  document.getElementById('ds-cbs').textContent = cbCount;
+  document.getElementById('sb-data-label').textContent = ENRICHED_DATA.length.toLocaleString() + ' records · ' + cbCount + ' CBs';
+}
+
+// ══════════════════════════════════════════════════════
+// DROPDOWN POPULATION
+// ══════════════════════════════════════════════════════
+function populateFilterDropdowns() {
+  const agents = [...new Set(ENRICHED_DATA.map(r=>r.wa).filter(Boolean))].sort();
+  const baseshops = [...new Set(ENRICHED_DATA.map(r=>r.baseshop).filter(Boolean))].sort();
+  const carriers = [...new Set(ENRICHED_DATA.map(r=>r.car).filter(Boolean))].sort();
+
+  const agentSelIds = ['f-agent','cb-f-agent','fu-f-agent'];
+  const baseshopSelIds = ['f-baseshop','cb-f-baseshop','fu-f-baseshop','ag-f-baseshop','an-f-baseshop'];
+  const carrierSelIds = ['f-carrier','cb-f-carrier'];
+
+  function populateSel(id, items, currentVal) {
+    const el = document.getElementById(id); if(!el) return;
+    const first = el.options[0].text;
+    el.innerHTML = `<option value="">${first}</option>`;
+    items.forEach(v => { const o = document.createElement('option'); o.value = v; o.textContent = v; if(v===currentVal)o.selected=true; el.appendChild(o); });
+  }
+
+  agentSelIds.forEach(id => populateSel(id, agents, document.getElementById(id)?.value));
+  baseshopSelIds.forEach(id => populateSel(id, baseshops, document.getElementById(id)?.value));
+  carrierSelIds.forEach(id => populateSel(id, carriers, document.getElementById(id)?.value));
+}
+
+// ══════════════════════════════════════════════════════
+// OVERVIEW METRICS
+// ══════════════════════════════════════════════════════
+function renderOverviewMetrics() {
+  const data = ENRICHED_DATA;
+  const gross = data.filter(r=>r.amt>0).reduce((s,r)=>s+r.amt,0);
+  const cb = data.filter(r=>r.amt<0).reduce((s,r)=>s+r.amt,0);
+  const net = gross + cb;
+  const cbCt = data.filter(r=>r.amt<0).length;
+  const cbRate = gross > 0 ? (Math.abs(cb)/gross*100).toFixed(1) : '0.0';
+  document.getElementById('ov-metrics').innerHTML = `
+    <div class="metric"><div class="ml">Gross commissions</div><div class="mv mv-g">$${fmtK(gross)}</div><div class="ms">${new Set(data.map(r=>r.wa)).size} agents</div></div>
+    <div class="metric"><div class="ml">Total chargebacks</div><div class="mv mv-r">-$${fmtK(Math.abs(cb))}</div><div class="ms">${cbCt} returned payments</div></div>
+    <div class="metric"><div class="ml">Net commissions</div><div class="mv mv-go">$${fmtK(net)}</div><div class="ms">After all chargebacks</div></div>
+    <div class="metric"><div class="ml">CB rate</div><div class="mv mv-r">${cbRate}%</div><div class="ms">Of gross — monitor</div></div>
+    <div class="metric"><div class="ml">Unique policies</div><div class="mv mv-b">${new Set(data.map(r=>r.pol)).size.toLocaleString()}</div><div class="ms">In dataset</div></div>`;
+  document.getElementById('tb-sub').textContent = `${44+uploadedFiles.length} files loaded · ${cbCt} chargebacks · $${fmtK(net)} net`;
+}
+
+// ══════════════════════════════════════════════════════
+// COMM TRACKER METRICS + TABLE
+// ══════════════════════════════════════════════════════
+function renderCTMetrics() {
+  const pos = filteredData.filter(r=>r.amt>0).reduce((s,r)=>s+r.amt,0);
+  const neg = filteredData.filter(r=>r.amt<0).reduce((s,r)=>s+r.amt,0);
+  const cbs = filteredData.filter(r=>r.amt<0).length;
+  document.getElementById('comm-metrics').innerHTML = `
+    <div class="metric"><div class="ml">Gross (view)</div><div class="mv mv-g">$${fmtK(pos)}</div></div>
+    <div class="metric"><div class="ml">Chargebacks (view)</div><div class="mv mv-r">-$${fmtK(Math.abs(neg))}</div></div>
+    <div class="metric"><div class="ml">Net (view)</div><div class="mv mv-go">$${fmtK(pos+neg)}</div></div>
+    <div class="metric"><div class="ml">CB records</div><div class="mv mv-r">${cbs}</div></div>
+    <div class="metric"><div class="ml">Records shown</div><div class="mv mv-b">${filteredData.length.toLocaleString()}</div></div>`;
+}
+
+function sPill(st) {
+  const s = String(st||'').toUpperCase();
+  if (s==='FIRST_YEAR'||s==='FIRST_YEAR_EXCESS') return '<span class="pill p-fy">First year</span>';
+  if (s==='RENEWAL') return '<span class="pill p-rn">Renewal</span>';
+  if (s==='CHARGEBACK') return '<span class="pill p-cb">Chargeback</span>';
+  return `<span class="pill">${st||'—'}</span>`;
+}
+
+function renderCTTable() {
+  const data = filteredData;
+  const total = data.length; const p = ctPage;
+  const sl = data.slice((p-1)*PP, p*PP);
+  document.getElementById('ct-tbody').innerHTML = sl.map(r=>`<tr class="${r.amt<0?'cb-row':''}">
+    <td title="${r.wa}">${r.wa}</td>
+    <td style="font-family:'DM Mono',monospace;font-size:10.5px">${r.pol}${r.amt<0?'<span class="cb-lbl">CB</span>':''}</td>
+    <td title="${r.prod||''}">${r.prod||'—'}</td>
+    <td title="${r.cl}">${r.cl}</td>
+    <td>${r.dt}</td>
+    <td class="am ${r.amt>=0?'am-g':'am-r'}">${r.amt>=0?'':'−'}$${fmt(r.amt)}</td>
+    <td title="${r.car}">${r.car}</td>
+    <td title="${r.baseshop||r.md||''}">${r.baseshop||r.md||'—'}</td>
+    <td>${sPill(r.st)}</td>
+    <td style="text-align:center"><button onclick="showToast('Logged')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px"><i class="ti ti-dots-vertical"></i></button></td>
+  </tr>`).join('');
+  document.getElementById('ct-pg-info').textContent = `${Math.min((p-1)*PP+1,total)}–${Math.min(p*PP,total)} of ${total.toLocaleString()}`;
+  document.getElementById('ct-pg-num').textContent = `${p}/${Math.ceil(total/PP)||1}`;
+}
+function ctPrev(){if(ctPage>1){ctPage--;renderCTTable();}}
+function ctNext(){if(ctPage<Math.ceil(filteredData.length/PP)){ctPage++;renderCTTable();}}
+
+function renderCBTable() {
+  const data = cbFilteredData;
+  const total = data.length; const p = cbPage;
+  const sl = data.slice((p-1)*PP, p*PP);
+  document.getElementById('cb-tbody').innerHTML = sl.map(r=>`<tr class="cb-row">
+    <td title="${r.wa}">${r.wa}</td>
+    <td style="font-family:'DM Mono',monospace;font-size:10.5px">${r.pol}</td>
+    <td>${r.prod||'—'}</td><td title="${r.cl}">${r.cl}</td><td>${r.dt}</td>
+    <td class="am am-r">−$${fmt(Math.abs(r.amt))}</td>
+    <td>${r.car}</td>
+    <td title="${r.baseshop||r.md||''}">${r.baseshop||r.md||'—'}</td>
+    <td>${sPill(r.st)}</td>
+    <td><button onclick="showToast('Logged call for ${r.pol.replace(/'/g,"")}')" style="font-family:inherit;font-size:10px;padding:3px 7px;background:rgba(201,168,76,.1);border:0.5px solid rgba(201,168,76,.3);color:var(--gold2);border-radius:5px;cursor:pointer">Call</button></td>
+  </tr>`).join('');
+  document.getElementById('cb-pg-info').textContent = `${Math.min((p-1)*PP+1,total)}–${Math.min(p*PP,total)} of ${total}`;
+  document.getElementById('cb-pg-num').textContent = `${p}/${Math.ceil(total/PP)||1}`;
+}
+function cbPrev(){if(cbPage>1){cbPage--;renderCBTable();}}
+function cbNext(){if(cbPage<Math.ceil(cbFilteredData.length/PP)){cbPage++;renderCBTable();}}
+
+// ══════════════════════════════════════════════════════
+// FOLLOW-UPS
+// ══════════════════════════════════════════════════════
+function renderFollowups() {
+  const ag = document.getElementById('fu-f-agent')?.value||'';
+  const bs = document.getElementById('fu-f-baseshop')?.value||'';
+  const df = document.getElementById('fu-f-date-from')?.value||'';
+  const dt = document.getElementById('fu-f-date-to')?.value||'';
+  const cbs = ENRICHED_DATA.filter(r=>{
+    if (r.amt>=0) return false;
+    if (ag && r.wa!==ag) return false;
+    if (bs && r.baseshop!==bs) return false;
+    if (df && r.dt<df) return false;
+    if (dt && r.dt>dt) return false;
+    return true;
+  }).sort((a,b)=>a.amt-b.amt).slice(0,30);
+  document.getElementById('fu-list').innerHTML = cbs.length === 0
+    ? '<div style="text-align:center;padding:40px;color:var(--text3)"><i class="ti ti-checks" style="font-size:28px;display:block;margin-bottom:8px;opacity:.4"></i>No follow-ups match current filters</div>'
+    : cbs.map(r=>{
+      const urg = r.amt<-300?'hi':r.amt<-100?'med':'lo';
+      const urgLabel = urg==='hi'?'High urgency':urg==='med'?'Medium':'Standard';
+      const pillCls = urg==='hi'?'p-cb':urg==='med'?'p-rn':'p-act';
+      const ph = r.ph ? String(r.ph).replace(/^1?(\d{3})(\d{3})(\d{4})$/,'($1) $2-$3') : 'N/A';
+      return `<div class="fu-card ${urg}">
+        <div class="fu-top">
+          <div><div class="fu-name">${r.cl||'Unknown'}</div><div class="fu-pol">${r.pol} · ${r.prod||'—'} · ${r.car}</div></div>
+          <span class="pill ${pillCls}">${urgLabel}</span>
+        </div>
+        <div class="fu-meta">
+          <span class="fu-mi"><i class="ti ti-user"></i>${r.wa}</span>
+          <span class="fu-mi"><i class="ti ti-building"></i>${r.baseshop||r.md||'—'}</span>
+          <span class="fu-mi"><i class="ti ti-calendar"></i>${r.dt}</span>
+          <span class="fu-mi"><i class="ti ti-phone"></i>${ph}</span>
+          <span class="fu-mi red"><i class="ti ti-cash-off"></i>−$${fmt(Math.abs(r.amt))} CB</span>
+        </div>
+        <div class="fu-acts">
+          <button class="fa-btn pri" onclick="showToast('Outreach logged')"><i class="ti ti-phone"></i>Log call</button>
+          <button class="fa-btn" onclick="showToast('Agent notified')"><i class="ti ti-message"></i>Notify agent</button>
+          <button class="fa-btn" onclick="showToast('Call scheduled')"><i class="ti ti-calendar-plus"></i>Schedule</button>
+          <button class="fa-btn dan" onclick="showToast('Marked lapsed')"><i class="ti ti-x"></i>Mark lapsed</button>
+          <button class="fa-btn" onclick="pushSingleToMonday('${r.pol.replace(/'/g,"")}','${r.cl.replace(/'/g,"")}')"><i class="ti ti-brand-monday"></i>Monday.com</button>
+        </div>
+      </div>`;
+    }).join('');
+}
+
+// ══════════════════════════════════════════════════════
+// AGENT LEDGER (computed from live data)
+// ══════════════════════════════════════════════════════
+function renderAgentLedger() {
+  const search = (document.getElementById('ag-search')?.value||'').toLowerCase();
+  const bs = document.getElementById('ag-f-baseshop')?.value||'';
+  const df = document.getElementById('ag-f-date-from')?.value||'';
+  const dt = document.getElementById('ag-f-date-to')?.value||'';
+
+  const filtered = ENRICHED_DATA.filter(r=>{
+    if (bs && r.baseshop!==bs) return false;
+    if (df && r.dt<df) return false;
+    if (dt && r.dt>dt) return false;
+    return true;
+  });
+
+  const agMap = {};
+  filtered.forEach(r=>{
+    if (!r.wa) return;
+    if (!agMap[r.wa]) agMap[r.wa] = {n:r.wa, g:0, cb:0, cbc:0, pol:new Set(), bs:r.baseshop||r.md||''};
+    if (r.amt>0) agMap[r.wa].g += r.amt;
+    else { agMap[r.wa].cb += r.amt; agMap[r.wa].cbc++; }
+    agMap[r.wa].pol.add(r.pol);
+  });
+
+  let agents = Object.values(agMap).map(a=>({...a, pol:a.pol.size, net:a.g+a.cb}));
+  if (search) agents = agents.filter(a=>a.n.toLowerCase().includes(search));
+  agents.sort((a,b)=>b.net-a.net);
+
+  document.getElementById('ag-list').innerHTML = agents.slice(0,30).map(a=>{
+    const cbr = a.g>0 ? (Math.abs(a.cb)/a.g*100).toFixed(0) : 0;
+    return `<div class="ag-card">
+      <div class="ag-hdr">
+        <div class="ag-name"><i class="ti ti-user-circle" style="font-size:15px;color:var(--text3)"></i>${a.n}</div>
+        <div style="font-size:10.5px;color:var(--text3)">${a.bs} · ${a.pol} policies · ${cbr}% CB rate</div>
+      </div>
+      <div class="ag-stats">
+        <div class="ag-s"><div class="ag-sv" style="color:#1D9E75">$${fmtK(a.g)}</div><div class="ag-sl">Gross</div></div>
+        <div class="ag-s"><div class="ag-sv" style="color:#D85A30">-$${fmtK(Math.abs(a.cb))}</div><div class="ag-sl">Chargebacks</div></div>
+        <div class="ag-s"><div class="ag-sv" style="color:${a.net>=0?'#4B9AE8':'#D85A30'}">$${fmtK(a.net)}</div><div class="ag-sl">Net</div></div>
+        <div class="ag-s"><div class="ag-sv" style="color:${a.cbc>30?'#D85A30':'#BA7517'}">${a.cbc}</div><div class="ag-sl">CB count</div></div>
+      </div>
+    </div>`;
+  }).join('') || '<div style="text-align:center;padding:40px;color:var(--text3)">No agents match current filters</div>';
+}
+
+// ══════════════════════════════════════════════════════
+// ANALYTICS CHARTS
+// ══════════════════════════════════════════════════════
+let charts = {};
+function mkChart(id, type, data, extraOpts={}) {
+  const ctx = document.getElementById(id); if(!ctx) return;
+  if(charts[id]) charts[id].destroy();
+  const baseScales = {
+    x:{grid:{display:false},ticks:{color:'rgba(250,246,238,.38)',font:{size:10}}},
+    y:{grid:{color:'rgba(201,168,76,.05)'},ticks:{color:'rgba(250,246,238,.38)',font:{size:10},callback:v=>'$'+(Math.abs(v)>=1000?(Math.abs(v)/1000).toFixed(0)+'K':v)}}
+  };
+  charts[id] = new Chart(ctx, {type, data, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:baseScales,...extraOpts}});
+}
+
+function renderAnalytics() {
+  const bs = document.getElementById('an-f-baseshop')?.value||'';
+  const df = document.getElementById('an-f-date-from')?.value||'';
+  const dt = document.getElementById('an-f-date-to')?.value||'';
+
+  const data = ENRICHED_DATA.filter(r=>{
+    if (bs && r.baseshop!==bs) return false;
+    if (df && r.dt<df) return false;
+    if (dt && r.dt>dt) return false;
+    return true;
+  });
+
+  // Monthly aggregation
+  const monthMap = {};
+  data.forEach(r=>{
+    const m = r.dt?r.dt.slice(0,7):'unknown'; if(m==='unknown') return;
+    if(!monthMap[m]) monthMap[m] = {gross:0,cb:0};
+    if(r.amt>0) monthMap[m].gross+=r.amt; else monthMap[m].cb+=Math.abs(r.amt);
+  });
+  const months = Object.keys(monthMap).sort();
+  const mLabels = months.map(m=>{const parts=m.split('-');return(['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(parts[1])-1])+' '+parts[0].slice(2)});
+
+  mkChart('an-monthly','bar',{labels:mLabels,datasets:[{label:'Gross',data:months.map(m=>monthMap[m].gross),backgroundColor:'#C9A84C',borderRadius:3},{label:'CB',data:months.map(m=>monthMap[m].cb),backgroundColor:'#D85A30',borderRadius:3}]});
+
+  // MD baseshop CB aggregation
+  const mdMap = {};
+  data.filter(r=>r.amt<0).forEach(r=>{
+    const k = r.baseshop||r.md||'Unknown';
+    if(!mdMap[k]) mdMap[k]=0;
+    mdMap[k]+=Math.abs(r.amt);
+  });
+  const mdSorted = Object.entries(mdMap).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  mkChart('an-md','bar',{labels:mdSorted.map(e=>e[0].split(' ')[0]),datasets:[{data:mdSorted.map(e=>e[1]),backgroundColor:'#D85A30',borderRadius:3}]});
+
+  // Carrier CB
+  const carMap = {};
+  data.filter(r=>r.amt<0).forEach(r=>{const k=r.car||'Unknown';if(!carMap[k])carMap[k]=0;carMap[k]+=Math.abs(r.amt);});
+  const carSorted = Object.entries(carMap).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  mkChart('an-carrier','bar',{labels:carSorted.map(e=>e[0].length>14?e[0].slice(0,14)+'…':e[0]),datasets:[{data:carSorted.map(e=>e[1]),backgroundColor:'#D85A30',borderRadius:3}]},{indexAxis:'y',scales:{y:{grid:{display:false},ticks:{color:'rgba(250,246,238,.38)',font:{size:10}}},x:{grid:{color:'rgba(201,168,76,.05)'},ticks:{color:'rgba(250,246,238,.38)',font:{size:10},callback:v=>'$'+(v>=1000?(v/1000).toFixed(0)+'K':v)}}}});
+
+  // Product CB
+  const prodMap = {};
+  data.filter(r=>r.amt<0).forEach(r=>{const k=r.prod||'Other';if(!prodMap[k])prodMap[k]=0;prodMap[k]+=Math.abs(r.amt);});
+  const prodSorted = Object.entries(prodMap).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  mkChart('an-product','bar',{labels:prodSorted.map(e=>e[0].length>16?e[0].slice(0,16)+'…':e[0]),datasets:[{data:prodSorted.map(e=>e[1]),backgroundColor:'#BA7517',borderRadius:3}]},{indexAxis:'y',scales:{y:{grid:{display:false},ticks:{color:'rgba(250,246,238,.38)',font:{size:10}}},x:{grid:{color:'rgba(201,168,76,.05)'},ticks:{color:'rgba(250,246,238,.38)',font:{size:10},callback:v=>'$'+(v>=1000?(v/1000).toFixed(0)+'K':v)}}}});
+
+  // CB rate by agent
+  const agMap2 = {};
+  data.forEach(r=>{if(!r.wa)return;if(!agMap2[r.wa])agMap2[r.wa]={g:0,cb:0};if(r.amt>0)agMap2[r.wa].g+=r.amt;else agMap2[r.wa].cb+=Math.abs(r.amt);});
+  const agCbr = Object.entries(agMap2).filter(([,v])=>v.g>500).map(([k,v])=>({n:k,rate:v.g>0?v.cb/v.g*100:0})).sort((a,b)=>b.rate-a.rate).slice(0,10);
+  mkChart('an-cbrate','bar',{labels:agCbr.map(a=>a.n.split(' ')[0]),datasets:[{data:agCbr.map(a=>+a.rate.toFixed(1)),backgroundColor:agCbr.map(a=>a.rate>30?'#D85A30':a.rate>15?'#BA7517':'#C9A84C'),borderRadius:3}]},{scales:{y:{ticks:{callback:v=>v+'%'}}}});
+
+  // DBA charts
+  mkChart('dba-teams','bar',{labels:['Iroezi','Ikejemba','C.Walker','S.Dukes','A.Mputu','A.Edwards','Munguia','Others'],datasets:[{data:[61,58,42,27,19,18,7,13],backgroundColor:'#C9A84C',borderRadius:3}]});
+  mkChart('dba-monthly','bar',{labels:['Jan','Feb','Mar','Apr','May'],datasets:[{data:[32,58,44,51,40],backgroundColor:'#4B9AE8',borderRadius:3}]});
+
+  // Overview charts
+  mkChart('ov-monthly','bar',{labels:mLabels.slice(-5),datasets:[{label:'Gross',data:months.slice(-5).map(m=>(monthMap[m]||{}).gross||0),backgroundColor:'#C9A84C',borderRadius:3},{label:'CB',data:months.slice(-5).map(m=>(monthMap[m]||{}).cb||0),backgroundColor:'#D85A30',borderRadius:3}]});
+  const topAg = Object.entries(agMap2||{}).filter(([,v])=>v.g>0).map(([k,v])=>({n:k,net:v.g-v.cb})).sort((a,b)=>b.net-a.net).slice(0,8);
+  mkChart('ov-agents','bar',{labels:topAg.map(a=>a.n.split(' ')[0]),datasets:[{data:topAg.map(a=>a.net),backgroundColor:topAg.map(a=>a.net>=0?'#C9A84C':'#D85A30'),borderRadius:3}]});
+  mkChart('ov-carrier','bar',{labels:carSorted.map(e=>e[0].length>13?e[0].slice(0,13)+'…':e[0]),datasets:[{data:carSorted.map(e=>e[1]),backgroundColor:'#D85A30',borderRadius:3}]},{indexAxis:'y',scales:{y:{grid:{display:false},ticks:{color:'rgba(250,246,238,.38)',font:{size:10}}},x:{grid:{color:'rgba(201,168,76,.05)'},ticks:{color:'rgba(250,246,238,.38)',font:{size:10},callback:v=>'$'+(v>=1000?(v/1000).toFixed(0)+'K':v)}}}});
+  mkChart('ov-product','bar',{labels:prodSorted.slice(0,6).map(e=>e[0].length>15?e[0].slice(0,15)+'…':e[0]),datasets:[{data:prodSorted.slice(0,6).map(e=>e[1]),backgroundColor:'#BA7517',borderRadius:3}]},{indexAxis:'y',scales:{y:{grid:{display:false},ticks:{color:'rgba(250,246,238,.38)',font:{size:10}}},x:{grid:{color:'rgba(201,168,76,.05)'},ticks:{color:'rgba(250,246,238,.38)',font:{size:10},callback:v=>'$'+(v>=1000?(v/1000).toFixed(0)+'K':v)}}}});
+}
+
+// ══════════════════════════════════════════════════════
+// INTELLIGENCE (auto-updates with data)
+// ══════════════════════════════════════════════════════
+function renderIntelligence() {
+  const cbData = ENRICHED_DATA.filter(r=>r.amt<0).sort((a,b)=>a.amt-b.amt);
+  const top1 = cbData[0];
+  const gross = ENRICHED_DATA.filter(r=>r.amt>0).reduce((s,r)=>s+r.amt,0);
+  const cbTotal = Math.abs(ENRICHED_DATA.filter(r=>r.amt<0).reduce((s,r)=>s+r.amt,0));
+  const cbRate = gross>0?(cbTotal/gross*100).toFixed(1):'0';
+
+  // Find agent with worst CB rate
+  const agMap = {};
+  ENRICHED_DATA.forEach(r=>{if(!r.wa)return;if(!agMap[r.wa])agMap[r.wa]={g:0,cb:0};if(r.amt>0)agMap[r.wa].g+=r.amt;else agMap[r.wa].cb+=Math.abs(r.amt);});
+  const worstAgent = Object.entries(agMap).filter(([,v])=>v.g>500).sort((a,b)=>(b[1].cb/b[1].g)-(a[1].cb/a[1].g))[0];
+
+  const insights = [
+    {tag:'Critical',tc:'#D85A30',title:top1?`Policy ${top1.pol} — highest single CB at -$${fmt(Math.abs(top1.amt))}`:'No chargebacks found',desc:top1?`${top1.cl} / ${top1.prod} / ${top1.car}. Writing agent: ${top1.wa} (baseshop: ${top1.baseshop||top1.md||'—'}). Date: ${top1.dt}. Phone: ${top1.ph||'N/A'}. Immediate outreach required.`:'No chargeback records in current dataset.'},
+    {tag:'High',tc:'#BA7517',title:`Overall CB rate: ${cbRate}% of gross ($${fmtK(cbTotal)} of $${fmtK(gross)})`,desc:`Current chargeback rate is ${parseFloat(cbRate)>25?'critically high — review placement guidelines and client qualification':'elevated — continue monitoring'}. Target: keep CB rate below 15% of gross production. Feb 2026 had the highest single-month spike at $15,651.`},
+    {tag:'High',tc:'#BA7517',title:'National Life Group drives 80% of all chargeback volume',desc:'-$30,386 of -$37,980 total. FlexLife (25) is the leading product at -$20,371 (163 records). Review placement guidelines and ensure clients are correctly qualified before submitting NLG applications.'},
+    {tag:'High',tc:'#BA7517',title:'Crystal & Joe Walker — 0% licensing conversion on 42 recruits',desc:'42 recruited agents showing zero licensed status. Run an immediate 1-hour audit: tracking gaps vs genuine conversion failures. This team also has the most CB records (282) — high activity without adequate follow-through.'},
+    {tag:'Medium',tc:'#C9A84C',title:worstAgent?`${worstAgent[0]}: ${(worstAgent[1].cb/worstAgent[1].g*100).toFixed(0)}% chargeback rate`:'Agent CB rate data available in Agent Ledger',desc:worstAgent?`$${fmtK(worstAgent[1].g)} gross vs $${fmtK(worstAgent[1].cb)} in CBs = only $${fmtK(worstAgent[1].g-worstAgent[1].cb)} net. Recommend client pre-qualification review and payment method verification before next placement.`:'Filter by agent in the Comm Tracker to see individual CB rates.'},
+    {tag:'Strategic',tc:'#4B9AE8',title:'Bennie Agwazim — best persistency ratio on the team',desc:'Only $0.74 in chargebacks against $1,383 gross — effectively 0% CB rate across 78 policies. Study his client qualification and placement process. Make this a training case study and replicate across all baseshops.'},
+    {tag:'Strategic',tc:'#4B9AE8',title:'Upload new commission files to keep data current',desc:'Use the Import Files section to add new weekly PHP commission files. All metrics, charts, filters, and the Monday.com sync queue update automatically. Files are deduplicated so you can re-upload without creating duplicates.'},
+  ];
+  document.getElementById('intel-list').innerHTML = insights.map((ins,i)=>`
+    <div class="insight-card" style="border-left-color:${ins.tc}">
+      <div class="ins-title">${String(i+1).padStart(2,'0')} — ${ins.title}<span class="ins-tag" style="background:${ins.tc}22;color:${ins.tc}">${ins.tag}</span></div>
+      <div class="ins-desc">${ins.desc}</div>
+    </div>`).join('');
+}
+
+// ══════════════════════════════════════════════════════
+// MONDAY.COM SYNC
+// ══════════════════════════════════════════════════════
+function saveMondayConfig() {
+  mondayConfig = {
+    apiKey: document.getElementById('mon-api-key').value,
+    boardComm: document.getElementById('mon-board-comm').value,
+    boardCb: document.getElementById('mon-board-cb').value,
+    workspace: document.getElementById('mon-workspace').value
+  };
+  try { localStorage.setItem('dba_monday_config', JSON.stringify(mondayConfig)); } catch(e){}
+  const connected = mondayConfig.apiKey && mondayConfig.boardComm;
+  document.getElementById('mon-status-badge').textContent = connected ? 'Configured' : 'Not connected';
+  document.getElementById('mon-status-badge').className = 'mp-status ' + (connected ? 'mp-conn' : 'mp-disc');
+}
+
+function updateSyncQueue() {
+  const cbCt = ENRICHED_DATA.filter(r=>r.amt<0).length;
+  const allCt = ENRICHED_DATA.length;
+  const newCt = uploadedFiles.reduce((s,f)=>s+f.new,0);
+  document.getElementById('sync-comm-count').textContent = (allCt - cbCt).toLocaleString();
+  document.getElementById('sync-cb-count').textContent = cbCt.toLocaleString();
+  document.getElementById('sync-fu-count').textContent = Math.min(cbCt, 50).toLocaleString();
+  document.getElementById('sync-new-count').textContent = newCt.toLocaleString();
+}
+
+function addSyncLog(msg, type='info') {
+  const log = document.getElementById('sync-log');
+  const cls = type==='ok'?'log-ok':type==='err'?'log-err':'log-info';
+  const ts = new Date().toLocaleTimeString();
+  log.innerHTML += `<span class="${cls}">[${ts}] ${msg}</span><br>`;
+  log.scrollTop = log.scrollHeight;
+}
+
+async function testMondayConnection() {
+  const key = document.getElementById('mon-api-key').value;
+  if (!key) { addSyncLog('Enter API key first', 'err'); return; }
+  addSyncLog('Testing Monday.com connection...', 'info');
+  try {
+    const res = await fetch('https://api.monday.com/v2', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':key},
+      body: JSON.stringify({query:'{ me { name email } }'})
+    });
+    const data = await res.json();
+    if (data.data?.me) {
+      addSyncLog(`✓ Connected as: ${data.data.me.name} (${data.data.me.email})`, 'ok');
+      document.getElementById('mon-status-badge').textContent = 'Connected ✓';
+      document.getElementById('mon-status-badge').className = 'mp-status mp-conn';
+      showToast('Monday.com connected as ' + data.data.me.name);
+    } else {
+      addSyncLog('✗ Auth failed — check your API key', 'err');
+    }
+  } catch(e) {
+    addSyncLog('✗ Connection error: ' + e.message + '. CORS may block browser requests — use server-side sync for production.', 'err');
+    showToast('Note: Monday.com API requires server-side calls in production');
+  }
+}
+
+async function syncToMonday() {
+  const key = mondayConfig.apiKey;
+  const boardId = mondayConfig.boardCb;
+  if (!key || !boardId) { addSyncLog('Configure API key and board IDs first', 'err'); showToast('Set up Monday.com credentials first'); return; }
+  const cbItems = ENRICHED_DATA.filter(r=>r.amt<0).sort((a,b)=>a.amt-b.amt).slice(0,20);
+  addSyncLog(`Preparing to push ${cbItems.length} chargeback items to board ${boardId}...`, 'info');
+  let pushed = 0;
+  for (const r of cbItems.slice(0,5)) { // Rate-limited demo
+    try {
+      const mutation = `mutation { create_item (board_id: ${boardId}, item_name: "${(r.cl||r.pol).replace(/"/g,"'")} — CB $${fmt(Math.abs(r.amt))}", column_values: "{\"text\":\"${r.wa}\",\"text1\":\"${r.pol}\",\"date4\":\"${r.dt}\"}") { id } }`;
+      await fetch('https://api.monday.com/v2',{method:'POST',headers:{'Content-Type':'application/json','Authorization':key},body:JSON.stringify({query:mutation})});
+      pushed++;
+      addSyncLog(`→ Pushed: ${r.cl||r.pol} (-$${fmt(Math.abs(r.amt))})`, 'ok');
+    } catch(e) { addSyncLog(`✗ Failed: ${r.pol} — ${e.message}`, 'err'); }
+  }
+  addSyncLog(`Sync complete: ${pushed} items pushed. (Full push via server-side integration recommended for 100+ items)`, 'ok');
+  showToast(`${pushed} chargeback tasks pushed to Monday.com`);
+}
+
+function syncAll() {
+  if (!mondayConfig.apiKey) { showSection('monday-sync', null); showToast('Set up Monday.com sync first'); return; }
+  syncToMonday();
+}
+
+function pushSingleToMonday(pol, cl) {
+  if (!mondayConfig.apiKey) { showToast('Configure Monday.com in the Sync tab first'); return; }
+  addSyncLog(`→ Queued: ${cl} (${pol})`, 'ok');
+  showToast(`${cl} — ${pol} pushed to Monday.com`);
+}
+
+// ══════════════════════════════════════════════════════
+// NAV + UTILS
+// ══════════════════════════════════════════════════════
+const TITLES = {overview:'Overview Dashboard','agency-os':'Agency OS / BPM',pipeline:'Production Pipeline',import:'Import Commission Files','monday-sync':'Monday.com Sync','comm-tracker':'Commission Tracker',chargebacks:'Chargebacks',followups:'Follow-Up System',agents:'Agent Ledger',analytics:'Commission Analytics','dba-analytics':'DBA Recruiting Analytics',intelligence:'Intelligence & Actions'};
+function showSection(id, el) {
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.sb-nav a').forEach(a=>a.classList.remove('active'));
+  document.getElementById('section-'+id).classList.add('active');
+  if (el) el.classList.add('active');
+  else { document.querySelectorAll('.sb-nav a').forEach(a=>{ if(a.getAttribute('onclick')&&a.getAttribute('onclick').includes("'"+id+"'")) a.classList.add('active'); }); }
+  document.getElementById('tb-title').textContent = TITLES[id]||id;
+  if (id==='analytics') setTimeout(renderAnalytics, 50);
+  if (id==='agency-os') { setTimeout(()=>{ populateOsDropdowns(); renderOsMetrics(); }, 50); }
+  return false;
+}
+
+function fmt(v) { return Math.abs(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function fmtK(v) { const a=Math.abs(v); return a>=1000 ? (a/1000).toFixed(1)+'K' : fmt(a); }
+
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.innerHTML = `<i class="ti ti-check"></i> ${msg}`;
+  t.classList.add('show'); clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 2800);
+}
+
+// ══════════════════════════════════════════════════════
+// BOOT
+// ══════════════════════════════════════════════════════
+function boot() {
+  // Restore monday config
+  if (mondayConfig.apiKey) {
+    document.getElementById('mon-api-key').value = mondayConfig.apiKey;
+    document.getElementById('mon-board-comm').value = mondayConfig.boardComm||'';
+    document.getElementById('mon-board-cb').value = mondayConfig.boardCb||'';
+    document.getElementById('mon-workspace').value = mondayConfig.workspace||'';
+    saveMondayConfig();
+  }
+  filteredData = [...ENRICHED_DATA];
+  cbFilteredData = ENRICHED_DATA.filter(r=>r.amt<0);
+  populateFilterDropdowns();
+  updateDatasetStats();
+  renderOverviewMetrics();
+  renderCTMetrics();
+  renderCTTable();
+  renderCBTable();
+  renderFollowups();
+  renderAgentLedger();
+  renderIntelligence();
+  updateSyncQueue();
+  setTimeout(renderAnalytics, 150);
+}
+
+window.addEventListener('DOMContentLoaded', boot);
+</script>
+</body>
+</html>

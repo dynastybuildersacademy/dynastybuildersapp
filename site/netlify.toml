@@ -1,0 +1,48 @@
+# Dynasty Builders Academy — Netlify Configuration
+
+[build]
+  publish   = "."
+  functions = "netlify/functions"
+
+[functions]
+  node_bundler = "esbuild"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    Cache-Control = "no-cache, no-store, must-revalidate"
+
+[[headers]]
+  for = "/auth.js"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate, max-age=0"
+
+[[headers]]
+  for = "/.netlify/functions/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Methods = "POST, OPTIONS"
+    Access-Control-Allow-Headers = "Content-Type, Authorization"
+
+# Public pages
+[[redirects]]
+  from   = "/lights-out-2026"
+  to     = "/lights-out.html"
+  status = 200
+  force  = true
+
+# Monday.com API proxy — MUST be before /* catch-all
+[[redirects]]
+  from   = "/api/monday"
+  to     = "/.netlify/functions/monday"
+  status = 200
+  force  = true
+
+# SPA fallback — must be last, force=false so real files are served
+[[redirects]]
+  from   = "/*"
+  to     = "/index.html"
+  status = 200
+  force  = false

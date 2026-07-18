@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>June Incentive Tracker · Dynasty Builders</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,400&family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="auth.js?v=20260713"></script>
+<style>
+:root{
+  --navy:#0A1628;--navy2:#0F1E38;--navy3:#132240;--navy4:#1A2E50;
+  --gold:#C9A84C;--gold2:#E8C97A;--gold-dim:rgba(201,168,76,0.12);
+  --green:#27AE60;--green2:#2DCA73;--green-dim:rgba(39,174,96,0.1);
+  --blue:#3498DB;--purple:#9B59B6;--orange:#E67E22;--red:#E05252;
+  --slate:#6B7C93;--cream:#FAF6EE;--border:rgba(201,168,76,0.2);
+  --bs:rgba(255,255,255,0.06);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);min-height:100vh;}
+.bg{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 70% 50% at 10% 20%,rgba(201,168,76,.07),transparent 55%),
+  radial-gradient(ellipse 50% 70% at 90% 80%,rgba(155,89,182,.04),transparent 60%),
+  linear-gradient(160deg,#0A1628,#0E1C35 50%,#0A1628);}
+.bgrid{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:linear-gradient(rgba(201,168,76,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(201,168,76,.03) 1px,transparent 1px);
+  background-size:60px 60px;}
+.page{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:24px 18px 72px;}
+
+/* HEADER */
+.hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:12px;}
+.hdr-left{display:flex;align-items:center;gap:14px;}
+.shield{font-size:2rem;}
+.hdr-title{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700;color:var(--gold2);}
+.hdr-sub{font-size:12px;color:var(--slate);font-family:'DM Mono',monospace;margin-top:2px;}
+.hdr-right{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:8px 16px;border-radius:3px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:.05em;cursor:pointer;border:none;text-decoration:none;transition:all .15s;}
+.btn-gold{background:var(--gold);color:var(--navy);}
+.btn-gold:hover{opacity:.87;}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--gold);}
+.btn-outline:hover{background:var(--gold-dim);}
+.btn-ghost{background:transparent;border:1px solid var(--bs);color:rgba(255,255,255,.4);}
+.btn-ghost:hover{border-color:var(--border);color:var(--gold);}
+.btn-blue{background:rgba(52,152,219,.15);border:1px solid rgba(52,152,219,.35);color:#5DADE2;}.btn-blue:hover{background:rgba(52,152,219,.25);}
+.btn-green{background:rgba(39,174,96,.15);border:1px solid rgba(39,174,96,.35);color:var(--green2);}
+.btn-red{background:rgba(224,82,82,.12);border:1px solid rgba(224,82,82,.25);color:var(--red);}
+
+/* INCENTIVE LEGEND */
+.legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:24px;}
+.leg{border-radius:4px;padding:14px 16px;border:1px solid;position:relative;overflow:hidden;}
+.leg::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.leg-A::before{background:linear-gradient(90deg,transparent,var(--green2),transparent);}
+.leg-B::before{background:linear-gradient(90deg,transparent,var(--gold),transparent);}
+.leg-C::before{background:linear-gradient(90deg,transparent,var(--purple),transparent);}
+.leg-P::before{background:linear-gradient(90deg,transparent,var(--blue),transparent);}
+.leg-A{background:rgba(39,174,96,.06);border-color:rgba(39,174,96,.3);}
+.leg-B{background:rgba(201,168,76,.06);border-color:rgba(201,168,76,.3);}
+.leg-C{background:rgba(155,89,182,.06);border-color:rgba(155,89,182,.3);}
+.leg-P{background:rgba(52,152,219,.06);border-color:rgba(52,152,219,.3);}
+.leg-icon{font-size:1.5rem;margin-bottom:6px;}
+.leg-name{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px;}
+.leg-A .leg-name{color:var(--green2);}
+.leg-B .leg-name{color:var(--gold);}
+.leg-C .leg-name{color:#BB8FCE;}
+.leg-P .leg-name{color:var(--blue);}
+.leg-req{font-size:11px;color:var(--slate);line-height:1.6;}
+.leg-req strong{color:var(--cream);}
+.leg-deadline{font-size:10px;font-family:'DM Mono',monospace;margin-top:6px;padding:3px 8px;border-radius:2px;display:inline-block;}
+.leg-A .leg-deadline{background:rgba(39,174,96,.1);color:var(--green2);}
+.leg-B .leg-deadline{background:rgba(201,168,76,.1);color:var(--gold);}
+.leg-C .leg-deadline{background:rgba(155,89,182,.1);color:#BB8FCE;}
+.leg-P .leg-deadline{background:rgba(52,152,219,.1);color:var(--blue);}
+
+/* AGENT TABLE */
+.tbl-card{background:var(--navy3);border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:24px;}
+.tbl-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);}
+.tbl-title{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.08em;}
+.tbl-meta{font-size:11px;color:var(--slate);font-family:'DM Mono',monospace;}
+.tbl-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;}
+th{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--slate);padding:10px 14px;text-align:left;border-bottom:1px solid var(--border);background:rgba(255,255,255,.02);white-space:nowrap;}
+th.c{text-align:center;}
+td{padding:10px 14px;border-bottom:1px solid rgba(201,168,76,.05);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(201,168,76,.03);}
+tr.dirty td{background:rgba(201,168,76,.04)!important;}
+
+/* AGENT CELL */
+.ag-name{font-size:13px;font-weight:600;color:var(--cream);}
+.ag-role{font-size:10px;color:var(--slate);font-family:'Barlow Condensed',sans-serif;margin-top:1px;text-transform:uppercase;letter-spacing:.05em;}
+
+/* INCENTIVE CHECKBOXES */
+.inc-boxes{display:flex;gap:6px;justify-content:center;}
+.inc-pill{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid;transition:all .15s;user-select:none;font-family:'Barlow Condensed',sans-serif;}
+.inc-pill.off{background:transparent;opacity:.35;}
+.inc-pill.A{border-color:var(--green2);color:var(--green2);}
+.inc-pill.A.on{background:rgba(39,174,96,.2);}
+.inc-pill.B{border-color:var(--gold);color:var(--gold);}
+.inc-pill.B.on{background:rgba(201,168,76,.2);}
+.inc-pill.C{border-color:#BB8FCE;color:#BB8FCE;}
+.inc-pill.C.on{background:rgba(155,89,182,.2);}
+.inc-pill.P{border-color:var(--blue);color:var(--blue);}
+.inc-pill.P.on{background:rgba(52,152,219,.2);}
+
+/* NUMBER INPUTS */
+.num-inp{width:60px;background:var(--navy);border:1px solid rgba(255,255,255,.08);color:var(--cream);font-family:'DM Mono',monospace;font-size:13px;font-weight:700;padding:7px 8px;border-radius:3px;text-align:center;outline:none;transition:border-color .15s;}
+.num-inp:focus{border-color:var(--gold);}
+.num-inp.sp{width:80px;}
+
+/* PROGRESS MINI BAR */
+.prog-mini{width:70px;height:5px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;display:inline-block;vertical-align:middle;margin-left:4px;}
+.prog-mini-fill{height:100%;border-radius:2px;transition:width .3s;}
+
+/* STATUS BADGE */
+.status-badge{font-size:10px;font-family:'Barlow Condensed',sans-serif;font-weight:700;padding:3px 8px;border-radius:2px;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;}
+.s-green{background:rgba(39,174,96,.15);color:var(--green2);border:1px solid rgba(39,174,96,.3);}
+.s-gold{background:rgba(201,168,76,.15);color:var(--gold);border:1px solid rgba(201,168,76,.3);}
+.s-orange{background:rgba(230,126,34,.12);color:var(--orange);border:1px solid rgba(230,126,34,.25);}
+.s-blue{background:rgba(52,152,219,.12);color:var(--blue);border:1px solid rgba(52,152,219,.25);}
+.s-slate{background:rgba(107,124,147,.1);color:var(--slate);border:1px solid rgba(107,124,147,.2);}
+
+/* SAVE BAR */
+.save-bar{position:sticky;bottom:0;z-index:50;background:rgba(10,22,40,.95);border-top:1px solid var(--border);padding:12px 18px;display:none;align-items:center;justify-content:space-between;gap:12px;backdrop-filter:blur(8px);}
+.save-bar.show{display:flex;}
+.save-msg{font-size:12px;color:var(--slate);}
+.save-msg strong{color:var(--gold2);}
+
+/* LEADERBOARD */
+.lb-section{margin-bottom:28px;}
+.lb-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;}
+.lb-card{background:var(--navy3);border:1px solid var(--border);border-radius:4px;overflow:hidden;}
+.lb-card-hdr{padding:10px 14px;border-bottom:1px solid var(--border);font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;}
+.lb-card-hdr.A{color:var(--green2);}
+.lb-card-hdr.B{color:var(--gold);}
+.lb-card-hdr.C{color:#BB8FCE;}
+.lb-row{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid rgba(255,255,255,.03);}
+.lb-row:last-child{border-bottom:none;}
+.lb-rank{font-family:'DM Mono',monospace;font-size:11px;color:var(--slate);width:18px;text-align:right;flex-shrink:0;}
+.lb-rk1{color:var(--gold);font-weight:700;}
+.lb-rk2{color:#C0C0C0;font-weight:700;}
+.lb-rk3{color:#CD7F32;font-weight:700;}
+.lb-name{font-size:13px;font-weight:600;flex:1;}
+.lb-val{font-family:'DM Mono',monospace;font-size:12px;color:var(--gold2);font-weight:700;}
+.lb-bar-wrap{width:60px;height:4px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;}
+.lb-bar-fill{height:100%;border-radius:2px;}
+
+/* TOAST */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--navy4);border:1px solid var(--border);color:var(--cream);font-size:12px;padding:10px 20px;border-radius:4px;opacity:0;transition:all .3s;pointer-events:none;z-index:999;white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* SUMMARY TILES */
+.sum-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:22px;}
+.sum-tile{background:var(--navy3);border:1px solid var(--border);border-radius:4px;padding:14px;text-align:center;}
+.sum-val{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:700;line-height:1;}
+.sum-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:var(--slate);margin-top:5px;font-family:'Barlow Condensed',sans-serif;font-weight:600;}
+</style>
+</head>
+<body>
+<div class="bg"></div><div class="bgrid"></div>
+<div class="page">
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-left">
+    <div class="shield">🏆</div>
+    <div>
+      <div class="hdr-title">June 2026 Incentive Tracker</div>
+      <div class="hdr-sub">// Dynasty Builders Academy · All Agents · Live Progress</div>
+    </div>
+  </div>
+  <div class="hdr-right">
+    <button class="btn btn-gold" onclick="saveAllToMonday()">💾 Save to Monday.com</button>
+    <button class="btn btn-outline" onclick="loadFromMonday()">↻ Reload</button>
+    <button class="btn btn-blue" onclick="autoSyncFromCallLog()" title="Pull recruits and points from Call Log board automatically">⚡ Auto-Sync Stats</button>
+    <a href="incentives.html" class="btn btn-ghost">Incentives →</a>
+    <a href="hub.html" class="btn btn-ghost">← Hub</a>
+  </div>
+</div>
+
+<!-- INCENTIVE LEGEND -->
+<div class="legend">
+  <div class="leg leg-A">
+    <div class="leg-icon">⚡</div>
+    <div class="leg-name">A — Fast Track Associate</div>
+    <div class="leg-req"><strong>1</strong> personal recruit + <strong>1</strong> submitted app → immediate promotion to Associate (40%)</div>
+    <div class="leg-deadline">⏰ June 1–7 only</div>
+  </div>
+  <div class="leg leg-B">
+    <div class="leg-icon">👑</div>
+    <div class="leg-name">B — Marketing Director</div>
+    <div class="leg-req"><strong>25</strong> team recruits · <strong>25</strong> team apps · <strong>$25K</strong> paid pts<br>Checkpoints Jun 10 &amp; Jun 20 · Final Sep 2026</div>
+    <div class="leg-deadline">⏰ June–September 2026</div>
+  </div>
+  <div class="leg leg-C">
+    <div class="leg-icon">⌚</div>
+    <div class="leg-name">C — Rolex Raffle</div>
+    <div class="leg-req"><strong>1–3</strong> personal recruits by Jun 3 = <strong>1–3 raffle tickets</strong> for a Rolex watch</div>
+    <div class="leg-deadline">⏰ By June 3 only</div>
+  </div>
+  <div class="leg leg-P">
+    <div class="leg-icon">📈</div>
+    <div class="leg-name">P — Regular Production</div>
+    <div class="leg-req">Not running for a specific incentive — tracking standard monthly production numbers</div>
+    <div class="leg-deadline">📅 Monthly</div>
+  </div>
+</div>
+
+<!-- SUMMARY TILES -->
+<div class="sum-row" id="sum-row">
+  <div class="sum-tile"><div class="sum-val" id="s-running-A" style="color:var(--green2)">—</div><div class="sum-lbl">Running A (Fast Track)</div></div>
+  <div class="sum-tile"><div class="sum-val" id="s-running-B" style="color:var(--gold)">—</div><div class="sum-lbl">Running B (MD Promo)</div></div>
+  <div class="sum-tile"><div class="sum-val" id="s-running-C" style="color:#BB8FCE">—</div><div class="sum-lbl">Running C (Rolex)</div></div>
+  <div class="sum-tile"><div class="sum-val" id="s-raffle-tickets" style="color:#BB8FCE">—</div><div class="sum-lbl">Total Raffle Tickets</div></div>
+  <div class="sum-tile"><div class="sum-val" id="s-qual-A" style="color:var(--green2)">—</div><div class="sum-lbl">Qualified A</div></div>
+  <div class="sum-tile"><div class="sum-val" id="s-team-recs" style="color:var(--gold)">—</div><div class="sum-lbl">Team Recruits (MD)</div></div>
+</div>
+
+<!-- AGENT PROGRESS TABLE -->
+<div class="tbl-card">
+  <div class="tbl-hdr">
+    <div class="tbl-title">📋 Agent Progress — June 2026</div>
+    <div class="tbl-meta" id="last-saved">Not yet saved</div>
+  </div>
+  <div class="tbl-wrap">
+    <table id="agent-table">
+      <thead>
+        <tr>
+          <th>Agent</th>
+          <th class="c">Incentives Running</th>
+          <th class="c" title="Personal Recruits">Pers. Recruits</th>
+          <th class="c" title="Personal Submitted Apps">Pers. Apps</th>
+          <th class="c" title="Personal Submitted Points">Pers. Sub Pts</th>
+          <th class="c" title="Personal Paid Points">Pers. Paid Pts</th>
+          <th class="c" title="Rolex Raffle Tickets (auto-calc from recruits ≤3 by Jun 3)">Raffle Tickets</th>
+          <th class="c">Status</th>
+          <th class="c">Notes</th>
+        </tr>
+      </thead>
+      <tbody id="agent-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- MINI LEADERBOARDS -->
+<div class="lb-section">
+  <div style="font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.09em;margin-bottom:12px;">Live Incentive Leaderboards</div>
+  <div class="lb-grid">
+    <div class="lb-card">
+      <div class="lb-card-hdr A">⚡ A — Fast Track Associates</div>
+      <div id="lb-A"></div>
+    </div>
+    <div class="lb-card">
+      <div class="lb-card-hdr B">👑 B — MD Promotion Recruits</div>
+      <div id="lb-B"></div>
+    </div>
+    <div class="lb-card">
+      <div class="lb-card-hdr C">⌚ C — Rolex Raffle Tickets</div>
+      <div id="lb-C"></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /page -->
+
+<!-- SAVE BAR -->
+<div class="save-bar" id="save-bar">
+  <div class="save-msg"><strong id="dirty-count">0</strong> agents have unsaved changes</div>
+  <div style="display:flex;gap:8px;">
+    <button class="btn btn-ghost" onclick="discardChanges()">Discard</button>
+    <button class="btn btn-gold" onclick="saveAllToMonday()">Save All to Monday.com</button>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+AUTH.require('incentive-tracker.html');
+const session = AUTH.getSession();
+
+// ── INCENTIVE DEFINITIONS ──────────────────────────────────────
+const INCENTIVES = [
+  { id:'A', label:'A', title:'Fast Track Associate', color:'var(--green2)' },
+  { id:'B', label:'B', title:'Marketing Director Promo', color:'var(--gold)' },
+  { id:'C', label:'C', title:'Rolex Raffle', color:'#BB8FCE' },
+  { id:'P', label:'P', title:'Regular Production', color:'var(--blue)' },
+];
+
+// ── AGENT ROSTER (from auth.js AGENTS) ─────────────────────────
+const ROSTER = AGENTS.map(a => ({
+  id:   a.id,
+  name: a.name,
+  role: a.role
+}));
+
+// ── STATE ─────────────────────────────────────────────────────
+// agentData[agentId] = { incentives:Set, recruits:0, apps:0, sp:0, pp:0, notes:'' }
+let agentData = {};
+let dirtyIds  = new Set();
+
+const STORE_KEY   = 'dba_june_incentive_tracker';
+const MONDAY_BOARD_KEY = 'dba_incentive_board_id';
+
+function defaultData(id) {
+  return { incentives: new Set(), recruits:0, apps:0, sp:0, pp:0, notes:'' };
+}
+
+function getRaffleTickets(recruits) {
+  // 1-3 recruits by Jun 3 = 1-3 tickets. We track recruits entered; display tickets = min(recruits,3)
+  return Math.min(Math.max(0, recruits), 3);
+}
+
+function getStatus(d) {
+  const inc = d.incentives;
+  if (inc.has('A')) {
+    if (d.recruits >= 1 && d.apps >= 1) return { cls:'s-green', label:'✅ A Qualified' };
+    if (d.recruits > 0 || d.apps > 0)  return { cls:'s-orange', label:'A In Progress' };
+  }
+  if (inc.has('B')) {
+    if (d.recruits >= 5)  return { cls:'s-gold',   label:'B On Track' };
+    if (d.recruits > 0)   return { cls:'s-orange',  label:'B Started' };
+  }
+  if (inc.has('C')) {
+    if (d.recruits >= 1)  return { cls:'s-blue',    label:`C: ${getRaffleTickets(d.recruits)} ticket${getRaffleTickets(d.recruits)!==1?'s':''}` };
+  }
+  if (inc.has('P'))       return { cls:'s-slate',   label:'Production' };
+  return                         { cls:'s-slate',   label:'Not Set' };
+}
+
+// ── RENDER TABLE ──────────────────────────────────────────────
+// ── AUTO-SYNC STATS FROM CALL LOG BOARD ──────────────────────
+// Reads each agent's recruits, submitted pts, paid pts from the
+// Call Log board (18411252612) and populates the incentive tracker.
+async function autoSyncFromCallLog() {
+  if (!AUTH.getMondayKey()) { toast('No Monday.com API key'); return; }
+  toast('Pulling stats from Call Log…');
+
+  const CALL_LOG_BOARD = TEAM.monday.boardCallLog; // 18411252612
+  let allItems = [], cursor = null;
+  try {
+    do {
+      const curArg = cursor ? `,cursor:"${cursor}"` : '';
+      const res = await mondayQuery(`{
+        boards(ids:${CALL_LOG_BOARD}) {
+          items_page(limit:100${curArg}) {
+            cursor
+            items { id name column_values { id text } }
+          }
+        }
+      }`);
+      const page = res?.data?.boards?.[0]?.items_page;
+      if (!page) break;
+      allItems = allItems.concat(page.items||[]);
+      cursor = page.cursor||null;
+    } while (cursor);
+  } catch(e) { toast('Failed: '+e.message); return; }
+
+  // Aggregate per agent
+  const agentTotals = {}; // agentId → {recruits, sp, pp}
+  allItems.forEach(item => {
+    const get = (...kws) => item.column_values.find(c=>kws.some(k=>(c.title||'').toLowerCase().includes(k)))?.text||'';
+    const agId = get('agent id','agent_id','agentid');
+    if (!agId) return;
+    if (!agentTotals[agId]) agentTotals[agId] = {recruits:0, apps:0, sp:0, pp:0};
+    agentTotals[agId].recruits += parseInt(get('recruits','recruit'))||0;
+    agentTotals[agId].sp       += parseFloat(get('submitted points','sub points'))||0;
+    agentTotals[agId].pp       += parseFloat(get('paid points','personal paid'))||0;
+  });
+
+  // Also pull from Recruiting Pipeline for recruit count
+  let recruitItems = [], rcursor = null;
+  try {
+    do {
+      const curArg = rcursor ? `,cursor:"${rcursor}"` : '';
+      const res = await mondayQuery(`{
+        boards(ids:${TEAM.monday.boardRecruits}) {
+          items_page(limit:100${curArg}) {
+            cursor
+            items { id name column_values { id text } }
+          }
+        }
+      }`);
+      const page = res?.data?.boards?.[0]?.items_page;
+      if (!page) break;
+      recruitItems = recruitItems.concat(page.items||[]);
+      rcursor = page.cursor||null;
+    } while (rcursor);
+  } catch(e){}
+
+  // Count recruits per referring agent from Recruiting Pipeline
+  recruitItems.forEach(item => {
+    const get = (...kws) => item.column_values.find(c=>kws.some(k=>(c.title||'').toLowerCase().includes(k)))?.text||'';
+    const refAgent = get('referring agent','agent id','agent_id','referred');
+    if (!refAgent) return;
+    if (!agentTotals[refAgent]) agentTotals[refAgent] = {recruits:0, apps:0, sp:0, pp:0};
+    agentTotals[refAgent].apps++;
+  });
+
+  // Apply to agentData
+  let updated = 0;
+  ROSTER.forEach(agent => {
+    const totals = agentTotals[agent.id];
+    if (!totals) return;
+    if (!agentData[agent.id]) agentData[agent.id] = defaultData(agent.id);
+    const d = agentData[agent.id];
+    // Only update if board has higher values (don't overwrite manual entries)
+    if (totals.recruits > d.recruits) { d.recruits = totals.recruits; updated++; }
+    if (totals.sp > d.sp) d.sp = Math.round(totals.sp);
+    if (totals.pp > d.pp) d.pp = Math.round(totals.pp);
+    if (totals.apps > d.apps) d.apps = totals.apps;
+  });
+
+  dirtyIds = new Set(ROSTER.map(a=>a.id));
+  persistLocal();
+  renderTable();
+  document.getElementById('save-bar').classList.add('show');
+  document.getElementById('dirty-count').textContent = updated;
+  toast(`✅ Synced stats for ${updated} agents from Monday.com`);
+}
+
+function renderTable() {
+  const tbody = document.getElementById('agent-tbody');
+  tbody.innerHTML = ROSTER.map(agent => {
+    const d   = agentData[agent.id] || defaultData(agent.id);
+    const st  = getStatus(d);
+    const inc = d.incentives;
+    const tickets = getRaffleTickets(d.recruits);
+    const isDirty = dirtyIds.has(agent.id);
+    const roleLabel = getRoleLabel(agent.role);
+
+    return `<tr id="row-${agent.id}" class="${isDirty?'dirty':''}">
+      <td>
+        <div class="ag-name">${agent.name}</div>
+        <div class="ag-role">${roleLabel}</div>
+      </td>
+      <td>
+        <div class="inc-boxes">
+          ${INCENTIVES.map(inc => `
+            <div class="inc-pill ${inc.id} ${d.incentives.has(inc.id)?'on':'off'}"
+              onclick="toggleIncentive('${agent.id}','${inc.id}')"
+              title="${inc.title}">${inc.label}</div>
+          `).join('')}
+        </div>
+      </td>
+      <td style="text-align:center;">
+        <input type="number" class="num-inp" min="0" max="99" value="${d.recruits}"
+          oninput="updateField('${agent.id}','recruits',this.value)"
+          style="border-color:${d.recruits>0?'rgba(39,174,96,.3)':''}">
+        <div class="prog-mini"><div class="prog-mini-fill" style="width:${Math.min(100,d.recruits*20)}%;background:var(--green2);"></div></div>
+      </td>
+      <td style="text-align:center;">
+        <input type="number" class="num-inp" min="0" max="99" value="${d.apps}"
+          oninput="updateField('${agent.id}','apps',this.value)"
+          style="border-color:${d.apps>0?'rgba(201,168,76,.3)':''}">
+      </td>
+      <td style="text-align:center;">
+        <input type="number" class="num-inp sp" min="0" step="500" value="${d.sp||''}" placeholder="0"
+          oninput="updateField('${agent.id}','sp',this.value)">
+      </td>
+      <td style="text-align:center;">
+        <input type="number" class="num-inp sp" min="0" step="500" value="${d.pp||''}" placeholder="0"
+          oninput="updateField('${agent.id}','pp',this.value)">
+      </td>
+      <td style="text-align:center;">
+        <span style="font-family:'DM Mono',monospace;font-size:15px;font-weight:700;color:${tickets>0?'#BB8FCE':'var(--slate)'};">${tickets > 0 ? '🎟️ '+tickets : '—'}</span>
+      </td>
+      <td style="text-align:center;">
+        <span class="status-badge ${st.cls}">${st.label}</span>
+      </td>
+      <td>
+        <input type="text" placeholder="Notes…" value="${d.notes||''}"
+          oninput="updateField('${agent.id}','notes',this.value)"
+          style="background:transparent;border:1px solid rgba(255,255,255,.07);color:var(--slate);font-size:12px;padding:6px 10px;border-radius:3px;width:120px;outline:none;">
+      </td>
+    </tr>`;
+  }).join('');
+  renderLeaderboards();
+  updateSummary();
+}
+
+function toggleIncentive(agentId, incId) {
+  if (!agentData[agentId]) agentData[agentId] = defaultData(agentId);
+  const d = agentData[agentId];
+  if (d.incentives.has(incId)) d.incentives.delete(incId);
+  else d.incentives.add(incId);
+  markDirty(agentId);
+  renderTable();
+}
+
+function updateField(agentId, field, value) {
+  if (!agentData[agentId]) agentData[agentId] = defaultData(agentId);
+  agentData[agentId][field] = field === 'notes' ? value : (parseInt(value)||0);
+  markDirty(agentId);
+  updateSummary();
+  renderLeaderboards();
+  // Update status badge live
+  const st = getStatus(agentData[agentId]);
+  const badge = document.querySelector(`#row-${agentId} .status-badge`);
+  if (badge) { badge.className = 'status-badge '+st.cls; badge.textContent = st.label; }
+  // Update raffle tickets live
+  const ticketCell = document.querySelector(`#row-${agentId} td:nth-child(7) span`);
+  if (ticketCell) {
+    const tickets = getRaffleTickets(agentData[agentId].recruits);
+    ticketCell.style.color = tickets > 0 ? '#BB8FCE' : 'var(--slate)';
+    ticketCell.textContent = tickets > 0 ? '🎟️ '+tickets : '—';
+  }
+}
+
+function markDirty(agentId) {
+  dirtyIds.add(agentId);
+  const row = document.getElementById('row-'+agentId);
+  if (row) row.classList.add('dirty');
+  document.getElementById('dirty-count').textContent = dirtyIds.size;
+  document.getElementById('save-bar').classList.add('show');
+  persistLocal();
+}
+
+// ── SUMMARY TILES ─────────────────────────────────────────────
+function updateSummary() {
+  const all = ROSTER.map(a => agentData[a.id] || defaultData(a.id));
+  document.getElementById('s-running-A').textContent  = all.filter(d=>d.incentives.has('A')).length;
+  document.getElementById('s-running-B').textContent  = all.filter(d=>d.incentives.has('B')).length;
+  document.getElementById('s-running-C').textContent  = all.filter(d=>d.incentives.has('C')).length;
+  document.getElementById('s-raffle-tickets').textContent = all.reduce((s,d)=>s+getRaffleTickets(d.recruits),0);
+  document.getElementById('s-qual-A').textContent     = all.filter(d=>d.incentives.has('A')&&d.recruits>=1&&d.apps>=1).length;
+  document.getElementById('s-team-recs').textContent  = all.filter(d=>d.incentives.has('B')).reduce((s,d)=>s+d.recruits,0);
+}
+
+// ── LEADERBOARDS ──────────────────────────────────────────────
+function renderLeaderboards() {
+  const mkRows = (arr, valFn, color) => {
+    if (!arr.length) return `<div style="padding:14px;font-size:12px;color:var(--slate);text-align:center;">No data yet</div>`;
+    const max = Math.max(...arr.map(r=>r.val)) || 1;
+    return arr.map((r,i) => {
+      const rkCls = i===0?'lb-rk1':i===1?'lb-rk2':i===2?'lb-rk3':'';
+      const pct   = Math.round((r.val/max)*100);
+      return `<div class="lb-row">
+        <div class="lb-rank ${rkCls}">${i+1}</div>
+        <div class="lb-name">${r.name}</div>
+        <div class="lb-bar-wrap"><div class="lb-bar-fill" style="width:${pct}%;background:${color};"></div></div>
+        <div class="lb-val">${r.val}</div>
+      </div>`;
+    }).join('');
+  };
+
+  const A = ROSTER.filter(a=>(agentData[a.id]?.incentives||new Set()).has('A'))
+    .map(a=>({name:a.name,val:(agentData[a.id]?.recruits||0)+(agentData[a.id]?.apps||0)}))
+    .sort((a,b)=>b.val-a.val).slice(0,6);
+  const B = ROSTER.filter(a=>(agentData[a.id]?.incentives||new Set()).has('B'))
+    .map(a=>({name:a.name,val:agentData[a.id]?.recruits||0}))
+    .sort((a,b)=>b.val-a.val).slice(0,6);
+  const C = ROSTER.filter(a=>(agentData[a.id]?.incentives||new Set()).has('C'))
+    .map(a=>({name:a.name,val:getRaffleTickets(agentData[a.id]?.recruits||0)}))
+    .filter(r=>r.val>0).sort((a,b)=>b.val-a.val);
+
+  document.getElementById('lb-A').innerHTML = mkRows(A,'val','var(--green2)');
+  document.getElementById('lb-B').innerHTML = mkRows(B,'val','var(--gold)');
+  document.getElementById('lb-C').innerHTML = mkRows(C,'val','#BB8FCE');
+}
+
+// ── PERSIST LOCAL ─────────────────────────────────────────────
+function persistLocal() {
+  const data = {};
+  ROSTER.forEach(a => {
+    if (agentData[a.id]) {
+      const d = agentData[a.id];
+      data[a.id] = { incentives:[...d.incentives], recruits:d.recruits, apps:d.apps, sp:d.sp, pp:d.pp, notes:d.notes };
+    }
+  });
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch(e){}
+}
+
+function loadLocal() {
+  try {
+    const saved = localStorage.getItem(STORE_KEY);
+    if (!saved) return false;
+    const data = JSON.parse(saved);
+    ROSTER.forEach(a => {
+      if (data[a.id]) {
+        const d = data[a.id];
+        agentData[a.id] = { incentives: new Set(d.incentives||[]), recruits:d.recruits||0, apps:d.apps||0, sp:d.sp||0, pp:d.pp||0, notes:d.notes||'' };
+      }
+    });
+    return true;
+  } catch(e){ return false; }
+}
+
+function discardChanges() {
+  dirtyIds.clear();
+  document.getElementById('save-bar').classList.remove('show');
+  renderTable();
+}
+
+// ── MONDAY.COM INTEGRATION ────────────────────────────────────
+const INCENTIVE_BOARD_ID_DEFAULT = '18416041047'; // June 2026 Incentives — static, admin-created
+
+function getBoardId() {
+  return localStorage.getItem(MONDAY_BOARD_KEY) || INCENTIVE_BOARD_ID_DEFAULT;
+}
+
+async function ensureIncentiveBoard() {
+  // Check if we already have a dedicated board
+  if (localStorage.getItem(MONDAY_BOARD_KEY)) return localStorage.getItem(MONDAY_BOARD_KEY);
+
+  // Try to create one
+  toast('Creating June Incentive board in Monday.com…');
+  try {
+    const res = await mondayQuery(`mutation {
+      create_board(board_name: "DBA — June 2026 Incentives", board_kind: public) { id name }
+    }`);
+    const boardId = res?.data?.create_board?.id;
+    if (!boardId) throw new Error('Board creation failed');
+
+    // Create columns
+    const cols = [
+      { title:'Agent ID',         type:'text'    },
+      { title:'Incentives',       type:'text'    },
+      { title:'Personal Recruits',type:'numbers' },
+      { title:'Personal Apps',    type:'numbers' },
+      { title:'Submitted Points', type:'numbers' },
+      { title:'Paid Points',      type:'numbers' },
+      { title:'Raffle Tickets',   type:'numbers' },
+      { title:'Notes',            type:'long_text'},
+      { title:'Last Updated',     type:'date'    },
+    ];
+    for (const col of cols) {
+      await mondayQuery(`mutation { create_column(board_id:${boardId}, title:"${col.title}", column_type:${col.type}) { id } }`).catch(()=>{});
+    }
+    localStorage.setItem(MONDAY_BOARD_KEY, boardId);
+    toast('✅ Incentive board created: ' + boardId);
+    return boardId;
+  } catch(e) {
+    toast('⚠ Could not create board — using Recruiting Pipeline fallback');
+    return INCENTIVE_BOARD_ID_DEFAULT;
+  }
+}
+
+async function saveAllToMonday() {
+  if (!AUTH.getMondayKey()) { toast('No Monday.com API key configured'); return; }
+  toast('Saving to Monday.com…');
+  const boardId = await ensureIncentiveBoard();
+
+  // Fetch existing items to update vs create
+  let existingItems = {};
+  try {
+    const res = await mondayQuery(`{ boards(ids:${boardId}) { items_page(limit:50) { items { id name column_values { id text } } } } }`);
+    const items = res?.data?.boards?.[0]?.items_page?.items || [];
+    items.forEach(item => { existingItems[item.name] = item.id; });
+  } catch(e) {}
+
+  // Resolve columns
+  let colMap = {};
+  try {
+    const res = await mondayQuery(`{ boards(ids:${boardId}) { columns { id title type } } }`);
+    const cols = res?.data?.boards?.[0]?.columns || [];
+    const find = (...kws) => cols.find(c => kws.some(k => (c.title||'').toLowerCase().includes(k)))?.id || null;
+    colMap = {
+      agentId:  find('agent id'),
+      incentives:find('incentive'),
+      recruits:  find('recruit'),
+      apps:      find('personal app','apps'),
+      sp:        find('submitted'),
+      pp:        find('paid points'),
+      tickets:   find('raffle','ticket'),
+      notes:     find('notes'),
+      updated:   find('updated','date'),
+    };
+  } catch(e) {}
+
+  let saved = 0, errors = 0;
+  const today = new Date().toISOString().slice(0,10);
+
+  for (const agent of ROSTER) {
+    const d = agentData[agent.id];
+    if (!d) continue;
+    const tickets   = getRaffleTickets(d.recruits);
+    const incStr    = [...d.incentives].join(',') || 'P';
+    const itemName  = `${agent.name} — June 2026`;
+
+    const cv = {};
+    if (colMap.agentId)   cv[colMap.agentId]    = agent.id;
+    if (colMap.incentives)cv[colMap.incentives]  = incStr;
+    if (colMap.recruits)  cv[colMap.recruits]    = d.recruits;
+    if (colMap.apps)      cv[colMap.apps]        = d.apps;
+    if (colMap.sp)        cv[colMap.sp]          = d.sp || 0;
+    if (colMap.pp)        cv[colMap.pp]          = d.pp || 0;
+    if (colMap.tickets)   cv[colMap.tickets]     = tickets;
+    if (colMap.notes)     cv[colMap.notes]       = d.notes || '';
+    if (colMap.updated)   cv[colMap.updated]     = { date: today };
+
+    try {
+      if (existingItems[itemName]) {
+        // Update existing
+        await mondayQuery(`mutation { change_multiple_column_values(board_id:${boardId}, item_id:${existingItems[itemName]}, column_values:${JSON.stringify(JSON.stringify(cv))}) { id } }`);
+      } else {
+        // Create new
+        await mondayQuery(`mutation { create_item(board_id:${boardId}, item_name:"${itemName}", column_values:${JSON.stringify(JSON.stringify(cv))}) { id } }`);
+      }
+      saved++;
+    } catch(e) { errors++; }
+  }
+
+  dirtyIds.clear();
+  document.getElementById('save-bar').classList.remove('show');
+  document.querySelectorAll('tr.dirty').forEach(r => r.classList.remove('dirty'));
+  const ts = new Date().toLocaleTimeString();
+  document.getElementById('last-saved').textContent = `Saved ${saved} agents · ${ts}${errors?' · ⚠ '+errors+' errors':''}`;
+  toast(`✅ Saved ${saved} agents to Monday.com`);
+  persistLocal();
+}
+
+async function loadFromMonday() {
+  if (!AUTH.getMondayKey()) { toast('No API key — loading from local cache'); return; }
+  const boardId = getBoardId();
+  toast('Loading from Monday.com…');
+  try {
+    const res = await mondayQuery(`{ boards(ids:${boardId}) { items_page(limit:50) { items { id name column_values { id text } } } } }`);
+    const items = res?.data?.boards?.[0]?.items_page?.items || [];
+    items.forEach(item => {
+      // Match by agent name
+      const agent = ROSTER.find(a => item.name.startsWith(a.name));
+      if (!agent) return;
+      if (!agentData[agent.id]) agentData[agent.id] = defaultData(agent.id);
+      const get = (kws) => item.column_values.find(c => kws.some(k=>(c.title||'').toLowerCase().includes(k)))?.text || '';
+      const d = agentData[agent.id];
+      const incStr = get(['incentive']);
+      d.incentives = new Set(incStr ? incStr.split(',').map(s=>s.trim()).filter(Boolean) : []);
+      d.recruits   = parseInt(get(['recruit']))||0;
+      d.apps       = parseInt(get(['personal app','apps']))||0;
+      d.sp         = parseInt(get(['submitted']))||0;
+      d.pp         = parseInt(get(['paid points']))||0;
+      d.notes      = get(['notes']);
+    });
+    dirtyIds.clear();
+    document.getElementById('save-bar').classList.remove('show');
+    renderTable();
+    toast('✅ Loaded from Monday.com');
+  } catch(e) {
+    toast('Could not load: ' + e.message);
+  }
+}
+
+// ── TOAST ─────────────────────────────────────────────────────
+let toastTimer;
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 3000);
+}
+
+// ── INIT ──────────────────────────────────────────────────────
+ROSTER.forEach(a => { agentData[a.id] = defaultData(a.id); });
+loadLocal();
+renderTable();
+</script>
+</body>
+</html>

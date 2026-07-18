@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DBA — Create BOM Attendance Board</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="auth.js?v=20260713"></script>
+<style>
+:root{--navy:#0A1628;--navy-mid:#112040;--gold:#C9A84C;--gold-light:#E8C97A;
+  --cream:#FAF6EE;--success:#27AE60;--danger:#C0392B;--slate:#6B7C93;
+  --warn:#E67E22;--border:rgba(201,168,76,0.22);}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);min-height:100vh;padding:28px 22px;}
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;}
+h1{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:var(--gold);}
+.back{font-size:12px;color:var(--gold);text-decoration:none;border:1px solid var(--border);padding:7px 14px;border-radius:3px;}
+.card{background:var(--navy-mid);border:1px solid var(--border);border-radius:6px;padding:24px;max-width:680px;margin:0 auto;}
+.card-title{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.1em;margin-bottom:16px;}
+p{font-size:13px;color:var(--slate);line-height:1.7;margin-bottom:16px;}
+.col-list{display:flex;flex-direction:column;gap:6px;margin-bottom:20px;}
+.col-row{display:flex;align-items:center;gap:10px;background:var(--navy);border:1px solid var(--border);border-radius:3px;padding:9px 14px;font-size:12px;}
+.col-name{font-family:'DM Mono',monospace;color:var(--gold-light);min-width:180px;}
+.col-type{font-size:11px;color:var(--slate);}
+.btn{display:inline-block;padding:11px 24px;border-radius:3px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:.06em;cursor:pointer;border:none;transition:all .2s;}
+.btn-gold{background:var(--gold);color:var(--navy);}
+.btn-gold:hover{opacity:.87;}
+.btn-gold:disabled{opacity:.45;cursor:not-allowed;}
+.log{background:var(--navy);border:1px solid var(--border);border-radius:3px;padding:14px;font-family:'DM Mono',monospace;font-size:11px;line-height:1.8;margin-top:16px;min-height:80px;white-space:pre-wrap;display:none;}
+.log.show{display:block;}
+.ok{color:var(--success);}
+.err{color:var(--danger);}
+.warn{color:var(--warn);}
+.result-box{background:rgba(39,174,96,.08);border:1px solid rgba(39,174,96,.3);border-radius:4px;padding:16px;margin-top:16px;display:none;}
+.result-box.show{display:block;}
+.bid{font-family:'DM Mono',monospace;font-size:18px;color:var(--success);font-weight:700;}
+.already-box{background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.3);border-radius:4px;padding:16px;margin-bottom:16px;}
+</style>
+</head>
+<body>
+<script>AUTH.require('create-bom-board.html');</script>
+
+<div class="header">
+  <h1>📅 Create BOM Attendance Board</h1>
+  <a href="monday-setup.html" class="back">← Board Setup</a>
+</div>
+
+<div class="card">
+  <div id="already-created" class="already-box" style="display:none;">
+    <div style="font-weight:700;color:var(--gold);margin-bottom:6px;">Board Already Created</div>
+    <div style="font-size:12px;color:var(--slate);">Board ID: <span id="existing-bid" style="font-family:'DM Mono',monospace;color:var(--gold-light);"></span></div>
+    <div style="font-size:12px;color:var(--slate);margin-top:6px;">The BOM Attendance board already exists in your browser. Click below to recreate it if needed.</div>
+  </div>
+
+  <div class="card-title">What This Creates</div>
+  <p>Creates a dedicated <strong style="color:var(--cream)">DBA — BOM Attendance</strong> board in Monday.com to track which agents attended each Tuesday and Saturday Business Opportunity Meeting, with guest counts per session.</p>
+
+  <div class="card-title" style="margin-top:4px;">Columns</div>
+  <div class="col-list">
+    <div class="col-row"><span class="col-name">Agent ID</span><span class="col-type">Text — DBA agent ID</span></div>
+    <div class="col-row"><span class="col-name">Agent Name</span><span class="col-type">Text — Agent display name</span></div>
+    <div class="col-row"><span class="col-name">BOM Date</span><span class="col-type">Date — Date of the meeting</span></div>
+    <div class="col-row"><span class="col-name">BOM Day</span><span class="col-type">Text — Tuesday or Saturday</span></div>
+    <div class="col-row"><span class="col-name">BOM Type</span><span class="col-type">Text — BOM (standard label)</span></div>
+    <div class="col-row"><span class="col-name">Guests</span><span class="col-type">Numbers — Personal guests invited</span></div>
+    <div class="col-row"><span class="col-name">Confirmed</span><span class="col-type">Numbers — Guests confirmed</span></div>
+    <div class="col-row"><span class="col-name">Showed</span><span class="col-type">Numbers — Guests who attended</span></div>
+    <div class="col-row"><span class="col-name">Week</span><span class="col-type">Text — ISO week e.g. 2026-W22</span></div>
+  </div>
+
+  <button class="btn btn-gold" id="create-btn" onclick="createBoard()">Create BOM Attendance Board →</button>
+
+  <div class="log" id="log"></div>
+
+  <div class="result-box" id="result-box">
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:var(--success);text-transform:uppercase;letter-spacing:.09em;margin-bottom:8px;">✅ Board Created Successfully</div>
+    <div style="font-size:12px;color:var(--slate);margin-bottom:6px;">Board ID saved automatically:</div>
+    <div class="bid" id="result-bid">—</div>
+    <div style="font-size:12px;color:var(--slate);margin-top:10px;">Update <code style="color:var(--gold-light)">auth.js</code> → <code style="color:var(--gold-light)">boardBOMAttend</code> to make it permanent:</div>
+    <div style="font-family:'DM Mono',monospace;font-size:12px;background:var(--navy);border:1px solid var(--border);padding:10px 14px;border-radius:3px;color:var(--gold-light);margin-top:6px;" id="result-auth">—</div>
+    <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;">
+      <a href="bom.html" class="btn btn-gold" style="text-decoration:none;font-size:12px;padding:9px 18px;">Open BOM Tracker →</a>
+      <a href="agent-dashboard.html" class="btn" style="background:transparent;border:1px solid var(--border);color:var(--slate);text-decoration:none;font-size:12px;padding:9px 18px;">Agent Dashboard →</a>
+      <a href="hub.html" class="btn" style="background:transparent;border:1px solid var(--border);color:var(--slate);text-decoration:none;font-size:12px;padding:9px 18px;">← Hub</a>
+    </div>
+  </div>
+</div>
+
+<script>
+const ATTEND_KEY = 'dba_bom_attend_board';
+
+// Show if already created
+(function checkExisting() {
+  const existing = localStorage.getItem(ATTEND_KEY);
+  if (existing) {
+    document.getElementById('already-created').style.display = 'block';
+    document.getElementById('existing-bid').textContent = existing;
+  }
+})();
+
+async function createBoard() {
+  const btn = document.getElementById('create-btn');
+  const log = document.getElementById('log');
+  btn.disabled = true;
+  btn.textContent = 'Creating…';
+  log.className = 'log show';
+  log.textContent = '';
+
+  function write(msg, cls='') {
+    log.innerHTML += `<span class="${cls}">${msg}</span>\n`;
+  }
+
+  try {
+    write('Connecting to Monday.com API…');
+
+    // 1. Create board
+    write('Creating board "DBA — BOM Attendance"…');
+    const createRes = await mondayQuery(`mutation {
+      create_board(
+        board_name: "DBA — BOM Attendance",
+        board_kind: public
+      ) { id name }
+    }`);
+    const boardId = createRes?.data?.create_board?.id;
+    if (!boardId) throw new Error('Board creation failed — ' + JSON.stringify(createRes?.errors || createRes));
+    write(`✓ Board created — ID: ${boardId}`, 'ok');
+
+    // 2. Create columns
+    const COLUMNS = [
+      { title:'Agent ID',   type:'text'    },
+      { title:'Agent Name', type:'text'    },
+      { title:'BOM Date',   type:'date'    },
+      { title:'BOM Day',    type:'text'    },
+      { title:'BOM Type',   type:'text'    },
+      { title:'Guests',     type:'numbers' },
+      { title:'Confirmed',  type:'numbers' },
+      { title:'Showed',     type:'numbers' },
+      { title:'Week',       type:'text'    },
+    ];
+
+    for (const col of COLUMNS) {
+      write(`  Adding column: ${col.title}…`);
+      try {
+        const res = await mondayQuery(`mutation {
+          create_column(
+            board_id: ${boardId},
+            title: "${col.title}",
+            column_type: ${col.type}
+          ) { id title }
+        }`);
+        const colId = res?.data?.create_column?.id;
+        write(`    ✓ ${col.title} → ${colId}`, 'ok');
+      } catch(e) {
+        write(`    ⚠ ${col.title} skipped: ${e.message}`, 'warn');
+      }
+    }
+
+    // 3. Save to localStorage
+    localStorage.setItem(ATTEND_KEY, boardId);
+    write(`\n✓ Board ID saved to browser: ${boardId}`, 'ok');
+    write('✓ bom.html will now write attendance records to this board', 'ok');
+    write('\n🎉 BOM Attendance board is ready.', 'ok');
+    write('\n── PERMANENT FIX ──────────────────────────────────────', 'warn');
+    write(`To hard-code this into auth.js so all devices use it:`, 'warn');
+    write(`  Replace: boardBOMAttend: ""`, 'warn');
+    write(`  With:    boardBOMAttend: "${boardId}"`, 'warn');
+    write('Then redeploy the site ZIP.', 'warn');
+
+    document.getElementById('result-bid').textContent = boardId;
+    document.getElementById('result-auth').textContent = `boardBOMAttend: "${boardId}"`;
+    document.getElementById('result-box').classList.add('show');
+    document.getElementById('already-created').style.display = 'block';
+    document.getElementById('existing-bid').textContent = boardId;
+
+  } catch(e) {
+    write(`\n✗ Error: ${e.message}`, 'err');
+    btn.disabled = false;
+    btn.textContent = 'Retry →';
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dynasty Builders Academy — Financial Needs Survey</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0A1628;--navy-mid:#112040;--navy-light:#1A3158;
+  --gold:#C9A84C;--gold-light:#E8C97A;--gold-pale:#F5E8C0;
+  --cream:#FAF6EE;--success:#27AE60;--warn:#E67E22;--danger:#C0392B;
+  --slate:#6B7C93;--border:rgba(201,168,76,0.22);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--cream);min-height:100vh;}
+
+/* ── LAYOUT ── */
+.wrap{max-width:680px;margin:0 auto;padding:32px 20px 80px;}
+
+/* ── HEADER ── */
+.logo-row{display:flex;align-items:center;gap:12px;margin-bottom:36px;}
+.shield{width:36px;height:42px;background:linear-gradient(160deg,var(--gold) 0%,#7a5c14 100%);clip-path:polygon(50% 0%,100% 18%,100% 65%,50% 100%,0% 65%,0% 18%);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+.logo-row h1{font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--gold);font-weight:700;}
+.logo-row p{font-size:11px;color:var(--slate);text-transform:uppercase;letter-spacing:0.08em;}
+
+/* ── PROGRESS ── */
+.progress-wrap{margin-bottom:28px;}
+.progress-label{display:flex;justify-content:space-between;font-size:11px;color:var(--slate);margin-bottom:6px;letter-spacing:0.06em;text-transform:uppercase;}
+.progress-bar{height:4px;background:rgba(201,168,76,0.15);border-radius:2px;overflow:hidden;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--gold) 0%,var(--gold-light) 100%);border-radius:2px;transition:width 0.5s ease;}
+
+/* ── STEP PANEL ── */
+.step{display:none;animation:fadeIn 0.35s ease;}
+.step.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+
+.step-number{font-size:11px;color:var(--gold);letter-spacing:0.12em;text-transform:uppercase;font-family:'DM Mono',monospace;margin-bottom:8px;}
+.step h2{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:700;line-height:1.2;margin-bottom:8px;}
+.step .sub{font-size:14px;color:var(--slate);margin-bottom:24px;line-height:1.6;}
+
+/* ── PROFESSION GRID ── */
+.prof-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:12px;margin-bottom:28px;}
+.prof-card{
+  border:1.5px solid var(--border);border-radius:6px;padding:18px 14px;
+  cursor:pointer;text-align:center;transition:all 0.2s;background:var(--navy-mid);
+}
+.prof-card:hover{border-color:var(--gold);background:rgba(201,168,76,0.07);}
+.prof-card.selected{border-color:var(--gold);background:rgba(201,168,76,0.12);box-shadow:0 0 0 1px var(--gold);}
+.prof-card .icon{font-size:28px;margin-bottom:8px;}
+.prof-card .lbl{font-size:13px;font-weight:600;color:var(--cream);}
+.prof-card .sublbl{font-size:10px;color:var(--slate);margin-top:2px;}
+
+/* ── FORM ELEMENTS ── */
+.field{margin-bottom:18px;}
+label{display:block;font-size:12px;font-weight:600;color:var(--gold-pale);letter-spacing:0.07em;text-transform:uppercase;margin-bottom:7px;}
+input,select,textarea{
+  width:100%;background:var(--navy-mid);border:1px solid var(--border);
+  color:var(--cream);font-family:'DM Sans',sans-serif;font-size:14px;
+  padding:12px 14px;border-radius:4px;transition:border-color 0.2s;
+}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--gold);}
+textarea{resize:vertical;min-height:80px;}
+select option{background:var(--navy-mid);}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media(max-width:480px){.field-row{grid-template-columns:1fr;}}
+
+/* ── OPTIONS (radio/check style) ── */
+.options{display:flex;flex-direction:column;gap:8px;margin-bottom:18px;}
+.opt-label{
+  display:flex;align-items:center;gap:12px;padding:13px 16px;
+  border:1.5px solid var(--border);border-radius:4px;cursor:pointer;
+  transition:all 0.18s;background:var(--navy-mid);
+}
+.opt-label:hover{border-color:var(--gold);}
+.opt-label input{width:auto;background:transparent;border:none;padding:0;accent-color:var(--gold);width:16px;height:16px;flex-shrink:0;}
+.opt-label span{font-size:14px;}
+.opt-label.selected{border-color:var(--gold);background:rgba(201,168,76,0.09);}
+.options-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px;}
+@media(max-width:500px){.options-grid{grid-template-columns:1fr;}}
+
+/* ── RANGE SLIDER ── */
+.range-wrap{margin-bottom:18px;}
+input[type=range]{
+  -webkit-appearance:none;appearance:none;width:100%;height:6px;
+  background:rgba(201,168,76,0.2);border-radius:3px;outline:none;padding:0;border:none;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:20px;height:20px;border-radius:50%;
+  background:var(--gold);cursor:pointer;border:2px solid var(--navy);
+}
+.range-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--slate);margin-top:6px;}
+.range-val{text-align:center;font-family:'DM Mono',monospace;font-size:18px;color:var(--gold-light);font-weight:500;margin:8px 0;}
+
+/* ── SECTION DIVIDER ── */
+.section-title{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--gold-light);margin:28px 0 14px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+
+/* ── NAV BUTTONS ── */
+.btn-row{display:flex;gap:12px;margin-top:28px;}
+.btn{padding:14px 28px;border-radius:4px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s;border:none;}
+.btn-primary{background:linear-gradient(135deg,var(--gold) 0%,#a07020 100%);color:var(--navy);flex:1;}
+.btn-primary:hover{opacity:0.88;}
+.btn-secondary{background:transparent;color:var(--slate);border:1px solid var(--border);}
+.btn-secondary:hover{color:var(--cream);border-color:var(--cream);}
+
+/* ── CONTEXT BADGE ── */
+.context-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.3);border-radius:20px;padding:5px 14px;font-size:12px;color:var(--gold-light);margin-bottom:20px;}
+
+/* ── THANK YOU ── */
+.thankyou{text-align:center;padding:40px 20px;}
+.thankyou .check{font-size:56px;margin-bottom:18px;}
+.thankyou h2{font-family:'Cormorant Garamond',serif;font-size:32px;color:var(--gold);margin-bottom:10px;}
+.thankyou p{color:var(--slate);font-size:15px;line-height:1.6;max-width:420px;margin:0 auto 28px;}
+</style>
+<script src="auth.js?v=20260713"></script>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="logo-row">
+    <div class="shield">👑</div>
+    <div>
+      <h1>Financial Needs Survey</h1>
+      <p>Dynasty Builders Academy · Confidential</p>
+    </div>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-label">
+      <span id="step-label">Step 1 of 5</span>
+      <span id="pct-label">0%</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+  </div>
+
+  <!-- ══ STEP 0: SELECT PROFILE ══ -->
+  <div class="step active" id="step-0">
+    <div class="step-number">Step 01</div>
+    <h2>What best describes you?</h2>
+    <div class="sub">We'll customize this survey to your specific situation so we can provide the most relevant financial guidance.</div>
+    <div class="prof-grid" id="prof-grid">
+      <div class="prof-card" data-profile="healthcare" onclick="selectProfile(this)">
+        <div class="icon">🩺</div>
+        <div class="lbl">Healthcare</div>
+        <div class="sublbl">Doctor · Nurse · Provider</div>
+      </div>
+      <div class="prof-card" data-profile="business" onclick="selectProfile(this)">
+        <div class="icon">💼</div>
+        <div class="lbl">Business Owner</div>
+        <div class="sublbl">Self-employed · Entrepreneur</div>
+      </div>
+      <div class="prof-card" data-profile="tech" onclick="selectProfile(this)">
+        <div class="icon">💻</div>
+        <div class="lbl">Tech / Engineering</div>
+        <div class="sublbl">Engineer · IT · Developer</div>
+      </div>
+      <div class="prof-card" data-profile="family" onclick="selectProfile(this)">
+        <div class="icon">👨‍👩‍👧</div>
+        <div class="lbl">Family with Children</div>
+        <div class="sublbl">Parents · Growing household</div>
+      </div>
+      <div class="prof-card" data-profile="senior" onclick="selectProfile(this)">
+        <div class="icon">🌿</div>
+        <div class="lbl">Senior / Retiree</div>
+        <div class="sublbl">Retired · Near retirement</div>
+      </div>
+      <div class="prof-card" data-profile="general" onclick="selectProfile(this)">
+        <div class="icon">👤</div>
+        <div class="lbl">Other</div>
+        <div class="sublbl">General inquiry</div>
+      </div>
+    </div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="nextStep()" id="btn-profile-next" disabled>Continue →</button></div>
+  </div>
+
+  <!-- ══ STEP 1: PERSONAL INFO ══ -->
+  <div class="step" id="step-1">
+    <div class="step-number">Step 02</div>
+    <h2>Personal Information</h2>
+    <div class="sub">All information is confidential and used only to prepare your financial analysis.</div>
+    <div id="profile-context-badge" class="context-badge"></div>
+    <div class="field-row">
+      <div class="field"><label>First Name *</label><input type="text" id="f-first" placeholder="First name"></div>
+      <div class="field"><label>Last Name *</label><input type="text" id="f-last" placeholder="Last name"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Phone *</label><input type="tel" id="f-phone" placeholder="(555) 555-5555"></div>
+      <div class="field"><label>Email</label><input type="email" id="f-email" placeholder="email@example.com"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Date of Birth</label><input type="date" id="f-dob"></div>
+      <div class="field"><label>Marital Status</label>
+        <select id="f-marital">
+          <option value="">Select…</option>
+          <option>Single</option><option>Married</option>
+          <option>Domestic Partner</option><option>Divorced</option><option>Widowed</option>
+        </select>
+      </div>
+    </div>
+    <div class="field"><label>Number of Dependents</label>
+      <select id="f-deps">
+        <option value="0">None</option><option value="1">1</option>
+        <option value="2">2</option><option value="3">3</option><option value="4+">4 or more</option>
+      </select>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="prevStep()">← Back</button>
+      <button class="btn btn-primary" onclick="nextStep()">Continue →</button>
+    </div>
+  </div>
+
+  <!-- ══ STEP 2: PROFILE-SPECIFIC QUESTIONS ══ -->
+  <div class="step" id="step-2">
+    <div class="step-number">Step 03</div>
+    <div id="step2-content"><!-- Populated by JS --></div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="prevStep()">← Back</button>
+      <button class="btn btn-primary" onclick="nextStep()">Continue →</button>
+    </div>
+  </div>
+
+  <!-- ══ STEP 3: FINANCIAL PICTURE ══ -->
+  <div class="step" id="step-3">
+    <div class="step-number">Step 04</div>
+    <h2>Your Financial Picture</h2>
+    <div class="sub">Help us understand your current situation so we can make the most relevant recommendations.</div>
+
+    <div class="section-title">Current Coverage</div>
+    <div class="field"><label>Do you currently have life insurance?</label>
+      <div class="options">
+        <label class="opt-label"><input type="radio" name="has-ins" value="yes" onchange="toggleInsFields(true)"><span>Yes — I have existing coverage</span></label>
+        <label class="opt-label"><input type="radio" name="has-ins" value="no" onchange="toggleInsFields(false)"><span>No — I have no coverage currently</span></label>
+        <label class="opt-label"><input type="radio" name="has-ins" value="unsure" onchange="toggleInsFields(false)"><span>Unsure — I need to review</span></label>
+      </div>
+    </div>
+    <div id="ins-fields" style="display:none;">
+      <div class="field-row">
+        <div class="field"><label>Current Carrier</label><input type="text" id="f-carrier" placeholder="e.g. MetLife, Prudential"></div>
+        <div class="field"><label>Coverage Amount</label>
+          <select id="f-coverage">
+            <option>Under $50,000</option><option>$50K–$100K</option><option>$100K–$250K</option>
+            <option>$250K–$500K</option><option>$500K–$1M</option><option>Over $1M</option>
+          </select>
+        </div>
+      </div>
+      <div class="field"><label>Policy Type</label>
+        <select id="f-ptype">
+          <option>Term Life</option><option>Whole Life</option><option>Universal Life</option>
+          <option>Group / Employer</option><option>Not Sure</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="section-title">Income & Budget</div>
+    <div class="field"><label>Annual Household Income</label>
+      <select id="f-income">
+        <option>Under $40,000</option><option>$40K–$60K</option><option>$60K–$100K</option>
+        <option>$100K–$150K</option><option>$150K–$250K</option><option>Over $250K</option>
+      </select>
+    </div>
+    <div class="range-wrap field">
+      <label>Comfortable Monthly Budget for Financial Protection</label>
+      <div class="range-val" id="budget-display">$150/mo</div>
+      <input type="range" min="50" max="1000" step="25" value="150" id="f-budget" oninput="updateBudget(this.value)">
+      <div class="range-labels"><span>$50</span><span>$500</span><span>$1,000+</span></div>
+    </div>
+
+    <div class="section-title">Primary Goals</div>
+    <div class="sub" style="margin-bottom:14px;">Select all that apply</div>
+    <div class="options-grid" id="goals-grid">
+      <label class="opt-label"><input type="checkbox" value="income_replacement"><span>💰 Income Replacement</span></label>
+      <label class="opt-label"><input type="checkbox" value="debt_payoff"><span>🏠 Mortgage / Debt Payoff</span></label>
+      <label class="opt-label"><input type="checkbox" value="education"><span>🎓 Children's Education</span></label>
+      <label class="opt-label"><input type="checkbox" value="retirement"><span>📈 Retirement Income</span></label>
+      <label class="opt-label"><input type="checkbox" value="living_benefits"><span>🏥 Living Benefits / Critical Illness</span></label>
+      <label class="opt-label"><input type="checkbox" value="legacy"><span>🌿 Legacy / Estate Planning</span></label>
+      <label class="opt-label"><input type="checkbox" value="business_protection"><span>🔐 Business Continuity</span></label>
+      <label class="opt-label"><input type="checkbox" value="tax_free"><span>📊 Tax-Free Accumulation</span></label>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="prevStep()">← Back</button>
+      <button class="btn btn-primary" onclick="nextStep()">Continue →</button>
+    </div>
+  </div>
+
+  <!-- ══ STEP 4: HEALTH & REFERRAL ══ -->
+  <div class="step" id="step-4">
+    <div class="step-number">Step 05</div>
+    <h2>Health & Final Details</h2>
+    <div class="sub">These questions help us find the best underwriting options available to you.</div>
+
+    <div class="section-title">Health Screening</div>
+    <div class="field"><label>Overall Health Status</label>
+      <div class="options">
+        <label class="opt-label"><input type="radio" name="health" value="excellent"><span>Excellent — No significant health issues</span></label>
+        <label class="opt-label"><input type="radio" name="health" value="good"><span>Good — Minor conditions, well-managed</span></label>
+        <label class="opt-label"><input type="radio" name="health" value="fair"><span>Fair — Some ongoing conditions</span></label>
+        <label class="opt-label"><input type="radio" name="health" value="challenging"><span>Challenging — Significant health history</span></label>
+      </div>
+    </div>
+    <div class="field"><label>Tobacco Use in Last 12 Months?</label>
+      <div class="options">
+        <label class="opt-label"><input type="radio" name="tobacco" value="no"><span>No — Non-smoker / Non-tobacco user</span></label>
+        <label class="opt-label"><input type="radio" name="tobacco" value="yes"><span>Yes — Current tobacco user</span></label>
+      </div>
+    </div>
+
+    <div class="section-title">Referral</div>
+    <div class="field">
+      <label>Who do you know who might also benefit from this conversation?</label>
+      <textarea id="f-referral" placeholder="Name(s) and how to reach them — even one name helps a family get protected!"></textarea>
+    </div>
+    <div class="field"><label>How did you hear about us?</label>
+      <select id="f-source">
+        <option>Referred by a friend/family</option><option>Social Media</option>
+        <option>Agent Outreach</option><option>Business Event</option><option>Online Search</option><option>Other</option>
+      </select>
+    </div>
+    <div class="field"><label>Best Time to Follow Up</label>
+      <select id="f-timing">
+        <option>Morning (8am–12pm)</option><option>Midday (12pm–3pm)</option>
+        <option>Afternoon (3pm–6pm)</option><option>Evening (6pm–8pm)</option>
+      </select>
+    </div>
+    <div class="field"><label>Additional Notes for Your Agent</label>
+      <textarea id="f-notes" placeholder="Anything specific you'd like to discuss or any questions you have?"></textarea>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="prevStep()">← Back</button>
+      <button class="btn btn-primary" onclick="submitSurvey()">Submit Survey ✓</button>
+    </div>
+  </div>
+
+  <!-- ══ THANK YOU ══ -->
+  <div class="step" id="step-done">
+    <div class="thankyou">
+      <div class="check">✅</div>
+      <h2>Thank You!</h2>
+      <p id="thankyou-agent-msg">Your financial survey has been received. Your Dynasty Builders agent will review your information and follow up at your preferred time.</p>
+      <p style="margin-top:16px;">We look forward to helping you protect what matters most.</p>
+      <div style="margin-top:28px;padding:20px;background:var(--navy-mid);border:1px solid var(--border);border-radius:6px;text-align:left;">
+        <div style="font-size:12px;color:var(--slate);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;">Your Summary</div>
+        <div id="summary-output" style="font-size:14px;line-height:1.8;"></div>
+      </div>
+      <div style="margin-top:20px;font-size:13px;color:var(--slate);">Questions? Call <strong style="color:var(--gold)">310-995-6507</strong> or visit <strong style="color:var(--gold)">agent.yourdynastybuilder.com</strong></div>
+    </div>
+  </div>
+
+</div><!-- /wrap -->
+
+<script>
+// ─── STATE ───────────────────────────────────────────────────
+let currentStep = 0;
+const totalSteps = 5;
+let selectedProfile = '';
+const MAKE_HOOK = ''; // Set active Make.com webhook URL
+
+// ─── REFERRING AGENT (from ?agent= URL param) ────────────────
+const _surveyParams  = new URLSearchParams(location.search);
+const _agentId       = _surveyParams.get('agent') || '';
+const _agentDisplay  = _agentId ? decodeURIComponent(_agentId) : '';
+
+// Show agent badge in header if survey was shared via agent link
+if (_agentDisplay) {
+  document.addEventListener('DOMContentLoaded', () => {
+    const sub = document.querySelector('.logo-row p');
+    if (sub) sub.innerHTML = `Dynasty Builders Academy &nbsp;&middot;&nbsp; Referred by: <strong style="color:var(--gold)">${_agentDisplay}</strong>`;
+  });
+}
+
+// ─── PROFILE CONFIGS ─────────────────────────────────────────
+const PROFILES = {
+  healthcare: {
+    label: '🩺 Healthcare Professional',
+    step2Title: 'Your Healthcare Practice & Finances',
+    step2Sub: 'Healthcare professionals have unique financial planning needs — disability income, malpractice exposure, and significant student debt.',
+    questions: [
+      { id:'hc-specialty', label:'Specialty / Role', type:'select',
+        options:['Physician (MD/DO)','Surgeon','Dentist','Nurse Practitioner','PA','RN','Nurse','Therapist','Pharmacist','Hospital Admin','Other'] },
+      { id:'hc-employed', label:'Employment Status', type:'radio',
+        options:['Employed by Hospital/Practice','Private Practice Owner','Locum Tenens','Independent Contractor'] },
+      { id:'hc-student-debt', label:'Do you have medical/professional school student loans?', type:'radio',
+        options:['Yes — over $100K','Yes — under $100K','No — fully paid','No — still in school'] },
+      { id:'hc-disability', label:'Do you have disability income insurance?', type:'radio',
+        options:['Yes — employer-provided','Yes — own individual policy','No — I have a gap here','Not sure'] },
+      { id:'hc-malpractice', label:'Primary concern around malpractice or liability?', type:'radio',
+        options:['Asset protection','Income continuity if unable to work','Both','Not a current concern'] }
+    ]
+  },
+  business: {
+    label: '💼 Business Owner',
+    step2Title: 'Your Business & Personal Protection',
+    step2Sub: 'Business owners face double exposure — personal and business finances often intertwine. Let\'s map out the full picture.',
+    questions: [
+      { id:'biz-type', label:'Type of Business', type:'select',
+        options:['Sole Proprietorship','LLC','S-Corp','C-Corp','Partnership','Franchise','Side Business / 1099'] },
+      { id:'biz-employees', label:'Number of Employees', type:'select',
+        options:['Just me','2–5','6–20','21–50','51+'] },
+      { id:'biz-revenue', label:'Annual Business Revenue', type:'select',
+        options:['Under $100K','$100K–$250K','$250K–$500K','$500K–$1M','Over $1M'] },
+      { id:'biz-key-person', label:'Do you have Key Person or Buy-Sell Agreement coverage?', type:'radio',
+        options:['Yes — fully covered','Partially covered','No — this is a gap','What is that?'] },
+      { id:'biz-exit', label:'Do you have a business exit or succession plan?', type:'radio',
+        options:['Yes — documented plan','Informally planned','No plan yet','Not applicable'] }
+    ]
+  },
+  tech: {
+    label: '💻 Tech / Engineering Professional',
+    step2Title: 'Your Tech Career & Financial Strategy',
+    step2Sub: 'Tech professionals often have high income with complex benefits like stock options and RSUs — let\'s make sure the rest of your financial plan keeps up.',
+    questions: [
+      { id:'tech-role', label:'Current Role', type:'select',
+        options:['Software Engineer','Systems/Network Engineer','IT Manager','Data Scientist/Analyst','Product Manager','DevOps/SRE','CTO/VP Engineering','Cybersecurity','Independent Contractor/Freelance','Other'] },
+      { id:'tech-employed', label:'Employment Type', type:'radio',
+        options:['Full-time employee (W-2)','Independent contractor (1099)','Both','Business owner'] },
+      { id:'tech-equity', label:'Do you have stock options, RSUs, or equity compensation?', type:'radio',
+        options:['Yes — significant equity','Yes — small amount','No equity','Not sure what I have'] },
+      { id:'tech-401k', label:'Are you maximizing your 401(k) or retirement contributions?', type:'radio',
+        options:['Yes — maxing out','Partially contributing','No — not currently','I don\'t have a plan'] },
+      { id:'tech-concern', label:'Primary financial concern', type:'radio',
+        options:['Tax-efficient wealth building','Income protection if I can\'t work','Family protection / life insurance','Retirement planning'] }
+    ]
+  },
+  family: {
+    label: '👨‍👩‍👧 Family with Children',
+    step2Title: 'Protecting Your Family\'s Future',
+    step2Sub: 'With children depending on you, the stakes are high. Let\'s build a complete picture of your family\'s protection needs.',
+    questions: [
+      { id:'fam-ages', label:'Ages of Children', type:'select',
+        options:['All under 5','Mix of young (under 10)','Mix including teens','Teens / young adults','College-age or older'] },
+      { id:'fam-income', label:'Household Income Source', type:'radio',
+        options:['Dual income household','Single income — primary earner','Single income — one spouse stays home','Single parent'] },
+      { id:'fam-mortgage', label:'Do you have a mortgage?', type:'radio',
+        options:['Yes — and it\'s our biggest concern','Yes — manageable','Renting','No mortgage'] },
+      { id:'fam-college', label:'Are you saving for college?', type:'radio',
+        options:['Yes — 529 or similar','Informally saving','Not yet — need to start','Children won\'t need it'] },
+      { id:'fam-protection-gap', label:'If one parent couldn\'t work, how long could your family manage financially?', type:'radio',
+        options:['Less than 3 months','3–6 months','6–12 months','Over a year'] }
+    ]
+  },
+  senior: {
+    label: '🌿 Senior / Retiree',
+    step2Title: 'Your Retirement & Legacy Planning',
+    step2Sub: 'Whether you\'re approaching retirement or already there, your priorities shift toward income, healthcare, and leaving a legacy.',
+    questions: [
+      { id:'sen-status', label:'Retirement Status', type:'radio',
+        options:['Fully retired','Semi-retired / Part-time work','Within 5 years of retirement','Still 5–10 years away'] },
+      { id:'sen-income', label:'Primary Retirement Income Source(s)', type:'select',
+        options:['Social Security only','Pension + Social Security','401(k)/IRA withdrawals','Investment portfolio','Mix of above','Still building'] },
+      { id:'sen-concern', label:'Greatest Financial Concern in Retirement', type:'radio',
+        options:['Outliving my money','Healthcare / Long-term care costs','Leaving an inheritance','Funeral / final expense costs','Protecting my spouse'] },
+      { id:'sen-ltc', label:'Do you have Long-Term Care or chronic illness coverage?', type:'radio',
+        options:['Yes — standalone LTC policy','Yes — rider on life policy','No — this is a concern','Medicare will cover it (note: it mostly doesn\'t)'] },
+      { id:'sen-annuity', label:'Interest in guaranteed lifetime income (annuity)?', type:'radio',
+        options:['Very interested','Somewhat interested','I already have one','Not interested'] }
+    ]
+  },
+  general: {
+    label: '👤 General Inquiry',
+    step2Title: 'A Little More About You',
+    step2Sub: 'Help us understand your situation so we can tailor our conversation.',
+    questions: [
+      { id:'gen-occupation', label:'Occupation / Industry', type:'text', placeholder:'e.g. Teacher, Accountant, Sales Professional' },
+      { id:'gen-employed', label:'Employment Status', type:'radio',
+        options:['Employed full-time','Self-employed','Part-time / Gig work','Retired','Student'] },
+      { id:'gen-concern', label:'Primary Financial Concern Right Now', type:'radio',
+        options:['Protecting my family if I die','Protecting my income if I can\'t work','Building tax-free savings','Planning for retirement','Leaving a legacy'] },
+      { id:'gen-timeline', label:'How soon are you looking to take action?', type:'radio',
+        options:['Immediately — let\'s move','Within 30 days','Within 3 months','Just exploring options'] }
+    ]
+  }
+};
+
+// ─── PROFILE SELECTION ───────────────────────────────────────
+function selectProfile(card) {
+  document.querySelectorAll('.prof-card').forEach(c => c.classList.remove('selected'));
+  card.classList.add('selected');
+  selectedProfile = card.dataset.profile;
+  document.getElementById('btn-profile-next').disabled = false;
+}
+
+// ─── BUILD STEP 2 ────────────────────────────────────────────
+function buildStep2() {
+  const cfg = PROFILES[selectedProfile] || PROFILES.general;
+  const badge = document.getElementById('profile-context-badge');
+  badge.textContent = cfg.label;
+
+  let html = `<h2>${cfg.step2Title}</h2><div class="sub">${cfg.step2Sub}</div>`;
+  cfg.questions.forEach(q => {
+    html += `<div class="field"><label>${q.label}</label>`;
+    if (q.type === 'select') {
+      html += `<select id="${q.id}"><option value="">Select…</option>`;
+      q.options.forEach(o => html += `<option>${o}</option>`);
+      html += `</select>`;
+    } else if (q.type === 'radio') {
+      html += `<div class="options">`;
+      q.options.forEach((o,i) => html += `<label class="opt-label"><input type="radio" name="${q.id}" value="${i}"><span>${o}</span></label>`);
+      html += `</div>`;
+    } else if (q.type === 'text') {
+      html += `<input type="text" id="${q.id}" placeholder="${q.placeholder||''}">`;
+    }
+    html += `</div>`;
+  });
+  document.getElementById('step2-content').innerHTML = html;
+  // style radio highlights
+  document.querySelectorAll('.opt-label input[type=radio]').forEach(r => {
+    r.addEventListener('change', () => {
+      document.querySelectorAll(`.opt-label input[name="${r.name}"]`).forEach(s =>
+        s.closest('.opt-label').classList.remove('selected'));
+      r.closest('.opt-label').classList.add('selected');
+    });
+  });
+}
+
+// ─── NAVIGATION ──────────────────────────────────────────────
+let stepHistory = [0];
+
+function nextStep() {
+  const cur = stepHistory[stepHistory.length - 1];
+  let next = cur + 1;
+  if (cur === 0 && !selectedProfile) return;
+  if (next === 2) buildStep2();
+  showStep(next);
+  stepHistory.push(next);
+}
+
+function prevStep() {
+  if (stepHistory.length <= 1) return;
+  stepHistory.pop();
+  showStep(stepHistory[stepHistory.length - 1]);
+}
+
+function showStep(n) {
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  document.getElementById('step-' + n)?.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+  updateProgress(n);
+}
+
+function updateProgress(n) {
+  const pct = Math.round((n / (totalSteps - 1)) * 100);
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('pct-label').textContent = pct + '%';
+  document.getElementById('step-label').textContent = n < totalSteps - 1
+    ? `Step ${n + 1} of ${totalSteps - 1}`
+    : 'Complete';
+}
+
+// ─── HELPERS ─────────────────────────────────────────────────
+function toggleInsFields(show) {
+  document.getElementById('ins-fields').style.display = show ? 'block' : 'none';
+}
+function updateBudget(val) {
+  document.getElementById('budget-display').textContent = `$${parseInt(val).toLocaleString()}/mo`;
+}
+
+// ─── SUBMIT ──────────────────────────────────────────────────
+function collectData() {
+  const goals = [];
+  document.querySelectorAll('#goals-grid input:checked').forEach(c => goals.push(c.value));
+  return {
+    profile: selectedProfile,
+    profileLabel: (PROFILES[selectedProfile]||PROFILES.general).label,
+    firstName: document.getElementById('f-first')?.value || '',
+    lastName: document.getElementById('f-last')?.value || '',
+    phone: document.getElementById('f-phone')?.value || '',
+    email: document.getElementById('f-email')?.value || '',
+    dob: document.getElementById('f-dob')?.value || '',
+    marital: document.getElementById('f-marital')?.value || '',
+    dependents: document.getElementById('f-deps')?.value || '0',
+    income: document.getElementById('f-income')?.value || '',
+    budget: document.getElementById('f-budget')?.value || '150',
+    goals: goals.join(', '),
+    health: document.querySelector('input[name="health"]:checked')?.value || '',
+    tobacco: document.querySelector('input[name="tobacco"]:checked')?.value || '',
+    referral: document.getElementById('f-referral')?.value || '',
+    source: document.getElementById('f-source')?.value || '',
+    timing: document.getElementById('f-timing')?.value || '',
+    notes: document.getElementById('f-notes')?.value || '',
+    agentRef: _agentId || '',
+    submittedAt: new Date().toISOString()
+  };
+}
+
+async function submitSurvey() {
+  const data = collectData();
+
+  // Show thank you — set agent name dynamically (can't use template literals in static HTML)
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  document.getElementById('step-done').classList.add('active');
+  const agentNote = _agentDisplay ? ` Your agent <strong>${_agentDisplay}</strong> will` : ' Your Dynasty Builders agent will';
+  document.getElementById('thankyou-agent-msg').innerHTML =
+    `Your financial survey has been received.${agentNote} review your information and follow up at your preferred time.`;
+  document.getElementById('summary-output').innerHTML = `
+    <strong style="color:var(--gold)">Name:</strong> ${data.firstName} ${data.lastName}<br>
+    <strong style="color:var(--gold)">Profile:</strong> ${data.profileLabel}<br>
+    <strong style="color:var(--gold)">Phone:</strong> ${data.phone}<br>
+    <strong style="color:var(--gold)">Email:</strong> ${data.email}<br>
+    <strong style="color:var(--gold)">Monthly Budget:</strong> $${parseInt(data.budget).toLocaleString()}/mo<br>
+    <strong style="color:var(--gold)">Primary Goals:</strong> ${data.goals || 'Not specified'}<br>
+    <strong style="color:var(--gold)">Best Follow-Up Time:</strong> ${data.timing}`;
+  document.getElementById('progress-fill').style.width = '100%';
+
+  // Write to Monday.com — dedicated Financial Surveys board (created via create-survey-board.html)
+  // Falls back to Recruiting Pipeline board (18409897469) if no dedicated board exists yet
+  if (AUTH.getMondayKey()) {
+    const today = new Date().toISOString().slice(0,10);
+
+    // Get board ID — prefer dedicated survey board, fall back to recruiting pipeline
+    // Board ID: localStorage override (set by create-survey-board.html) → auth.js default
+    const surveyBoardId = localStorage.getItem('dba_survey_board_id') || TEAM.monday.boardSurveys;
+
+    // Rich item name — readable in Monday even without column mapping
+    const itemName = `${data.firstName} ${data.lastName} \u2014 ${data.profileLabel} \u00b7 ${data.phone} \u00b7 Ref: ${data.agentRef || _agentId || 'direct'}`;
+
+    // Get column IDs — use saved map from board creation, or auto-discover
+    let colIds = {};
+    try {
+      const saved = localStorage.getItem('dba_survey_col_ids');
+      if (saved) {
+        colIds = JSON.parse(saved);
+      } else {
+        // Auto-discover from whichever board we're using
+        const boardRes = await mondayQuery(`{ boards(ids: ${surveyBoardId}) { columns { id title type } } }`);
+        const cols = boardRes?.data?.boards?.[0]?.columns || [];
+        const find = (...kws) => cols.find(c => kws.some(k => c.title.toLowerCase().includes(k.toLowerCase())))?.id || null;
+        colIds = {
+          first_name:      find('first name', 'first_name', 'firstname'),
+          last_name:       find('last name', 'last_name', 'lastname'),
+          phone:           find('phone'),
+          email:           find('email'),
+          profile:         find('profile', 'type', 'category'),
+          budget:          find('budget', 'premium'),
+          goals:           find('goals', 'interest'),
+          referring_agent: find('referring agent', 'agent', 'referred'),
+          source:          find('source'),
+          survey_date:     find('survey date', 'date'),
+          best_time:       find('best time', 'timing', 'follow'),
+          health:          find('health'),
+          tobacco:         find('tobacco'),
+          notes:           find('notes'),
+        };
+        localStorage.setItem('dba_survey_col_ids', JSON.stringify(colIds));
+      }
+    } catch(e) {
+      console.warn('Survey: could not resolve column IDs:', e.message);
+    }
+
+    // Build column values — only include columns that were found
+    const cv = {};
+    if (colIds.first_name)      cv[colIds.first_name]      = data.firstName;
+    if (colIds.last_name)        cv[colIds.last_name]        = data.lastName;
+    if (colIds.phone)            cv[colIds.phone]            = { phone: data.phone.replace(/\D/g,''), countryShortName: 'US' };
+    if (colIds.email)            cv[colIds.email]            = { email: data.email, text: data.email };
+    if (colIds.profile)          cv[colIds.profile]          = data.profileLabel;
+    if (colIds.budget)           cv[colIds.budget]           = parseInt(data.budget) || 0;
+    if (colIds.goals)            cv[colIds.goals]            = data.goals || '';
+    if (colIds.referring_agent)  cv[colIds.referring_agent]  = data.agentRef || _agentId || '';
+    if (colIds.source)           cv[colIds.source]           = 'Financial Survey';
+    if (colIds.survey_date)      cv[colIds.survey_date]      = { date: today };
+    if (colIds.best_time)        cv[colIds.best_time]        = data.timing || '';
+    if (colIds.health)           cv[colIds.health]           = data.health || '';
+    if (colIds.tobacco)          cv[colIds.tobacco]          = data.tobacco || '';
+    if (colIds.notes)            cv[colIds.notes]            = data.notes || '';
+
+    const q = `mutation {
+      create_item(
+        board_id: ${surveyBoardId},
+        item_name: "${itemName.replace(/"/g,"'")}",
+        column_values: ${JSON.stringify(JSON.stringify(cv))}
+      ) { id }
+    }`;
+    mondayQuery(q).catch(e => console.warn('Survey Monday write failed:', e.message));
+  }
+
+  // Fire to Make.com (non-blocking)
+  if (MAKE_HOOK) {
+    fetch(MAKE_HOOK, {
+      method: 'POST',
+      mode:   'no-cors',
+      body:   JSON.stringify(data)
+    }).catch(()=>{});
+  }
+
+  // Save to localStorage as backup
+  try {
+    const saved = JSON.parse(localStorage.getItem('dba_surveys')||'[]');
+    saved.push(data);
+    localStorage.setItem('dba_surveys', JSON.stringify(saved));
+  } catch(e) {}
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Free Guide — 5 Things Nobody Tells You About Financial Services</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<!-- ══════════════════════════════════════════ -->
+<!-- FACEBOOK PIXEL — paste your Pixel ID below -->
+<!-- ══════════════════════════════════════════ -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+
+const FB_PIXEL_ID = 'YOUR_PIXEL_ID_HERE'; // ← paste your Facebook Pixel ID
+fbq('init', FB_PIXEL_ID);
+fbq('track', 'PageView');
+</script>
+<noscript>
+<img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=YOUR_PIXEL_ID_HERE&ev=PageView&noscript=1"/>
+</noscript>
+<!-- END FACEBOOK PIXEL -->
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --navy:#0A1628;--navy-mid:#132240;--navy-light:#1E3460;
+  --gold:#C9A84C;--gold-light:#E8C97A;--gold-dim:rgba(201,168,76,0.14);
+  --green:#2DCA73;--green-dim:rgba(45,202,115,0.12);
+  --red:#E05252;--cream:#FDF8F0;
+  --white:#fff;--border:rgba(201,168,76,0.22);--bs:rgba(255,255,255,0.07);
+}
+body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--white);min-height:100vh;}
+.bg{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 80% 60% at 15% 20%,rgba(201,168,76,.07),transparent 60%),
+  radial-gradient(ellipse 60% 80% at 85% 80%,rgba(201,168,76,.05),transparent 60%),
+  linear-gradient(160deg,#0A1628,#0E1C35 50%,#0A1628);}
+.gbg{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:linear-gradient(rgba(201,168,76,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(201,168,76,.04) 1px,transparent 1px);
+  background-size:60px 60px;}
+.page{position:relative;z-index:1;}
+
+/* HEADER */
+header{padding:20px 5vw;border-bottom:1px solid var(--bs);text-align:center;}
+.logo{font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700;letter-spacing:.1em;color:var(--gold);text-transform:uppercase;}
+.logo span{color:rgba(255,255,255,.4);}
+
+/* HERO SPLIT */
+.split{display:grid;grid-template-columns:1fr 1fr;max-width:1040px;margin:0 auto;padding:48px 5vw 60px;gap:48px;align-items:center;}
+
+/* LEFT — COPY */
+.copy-side{}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;background:var(--gold-dim);border:1px solid var(--border);color:var(--gold-light);font-size:.62rem;letter-spacing:.22em;font-weight:600;text-transform:uppercase;padding:6px 18px;border-radius:2px;margin-bottom:22px;}
+.dot{width:5px;height:5px;border-radius:50%;background:var(--gold);animation:blink 2s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+.copy-side h1{font-family:'Playfair Display',serif;font-size:clamp(2rem,4.5vw,3.4rem);font-weight:900;line-height:1.08;margin-bottom:18px;}
+.copy-side h1 em{font-style:italic;color:var(--gold);}
+.copy-side p{font-size:.95rem;color:rgba(255,255,255,.55);line-height:1.78;margin-bottom:24px;max-width:440px;}
+.copy-side p strong{color:rgba(255,255,255,.85);}
+
+/* BULLETS */
+.bullets{display:flex;flex-direction:column;gap:11px;margin-bottom:28px;}
+.bul{display:flex;align-items:flex-start;gap:12px;font-size:.88rem;color:rgba(255,255,255,.7);line-height:1.5;}
+.bul-num{width:24px;height:24px;border-radius:50%;background:var(--gold);color:var(--navy);font-size:.7rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+
+/* PDF MOCKUP */
+.pdf-wrap{position:relative;display:flex;justify-content:center;align-items:center;}
+.pdf-shadow{width:220px;height:285px;background:var(--navy-mid);border-radius:4px;box-shadow:8px 8px 0 rgba(201,168,76,.15),16px 16px 0 rgba(201,168,76,.07);position:absolute;top:18px;left:50%;transform:translateX(-40%);}
+.pdf-card{width:220px;height:285px;background:var(--navy-mid);border:1px solid var(--border);border-radius:4px;position:relative;z-index:1;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.5);}
+.pdf-top{height:5px;background:linear-gradient(90deg,transparent,var(--gold),transparent);}
+.pdf-body{padding:20px 16px;}
+.pdf-eyebrow{font-size:.52rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;font-weight:600;}
+.pdf-title{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:900;color:var(--white);line-height:1.2;margin-bottom:6px;}
+.pdf-title em{font-style:italic;color:var(--gold);}
+.pdf-sub{font-size:.65rem;color:rgba(255,255,255,.4);line-height:1.5;margin-bottom:12px;}
+.pdf-pills{display:flex;flex-direction:column;gap:5px;}
+.pdf-pill{font-size:.6rem;color:rgba(255,255,255,.55);padding:4px 8px;background:rgba(201,168,76,.07);border:1px solid rgba(201,168,76,.15);border-radius:2px;line-height:1.3;}
+.pdf-footer{position:absolute;bottom:0;left:0;right:0;padding:10px 16px;background:var(--gold);text-align:center;}
+.pdf-footer-text{font-size:.6rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--navy);}
+.pdf-pages{display:flex;justify-content:center;gap:4px;margin-top:4px;}
+.pdf-page{width:28px;height:36px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:1px;}
+.pdf-dl-badge{position:absolute;top:-14px;right:-14px;width:52px;height:52px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;flex-direction:column;z-index:2;box-shadow:0 4px 12px rgba(0,0,0,.3);}
+.pdf-dl-badge span:first-child{font-size:1rem;}
+.pdf-dl-badge span:last-child{font-size:.5rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--navy);}
+
+/* FORM CARD */
+.form-card{background:var(--navy-mid);border:1px solid var(--border);border-radius:4px;padding:clamp(22px,4vw,40px);position:relative;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.4);max-width:480px;margin:0 auto;}
+.form-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,var(--gold),transparent);}
+.form-title{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:var(--white);margin-bottom:6px;}
+.form-sub{font-size:.82rem;color:rgba(255,255,255,.45);margin-bottom:20px;line-height:1.6;}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:.63rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(201,168,76,.7);font-weight:600;margin-bottom:6px;}
+.field input{width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(201,168,76,.18);border-radius:3px;color:var(--white);font-family:'DM Sans',sans-serif;font-size:.92rem;font-weight:300;padding:12px 14px;outline:none;transition:border-color .2s,background .2s;}
+.field input:focus{border-color:var(--gold);background:rgba(201,168,76,.05);}
+.field input::placeholder{color:rgba(255,255,255,.15);}
+.err{font-size:.68rem;color:var(--red);margin-top:4px;display:none;}
+.err.show{display:block;}
+
+/* SMS OPT-IN */
+.sms-opt{display:flex;align-items:flex-start;gap:10px;margin:6px 0 16px;cursor:pointer;}
+.sms-opt input[type=checkbox]{width:16px;height:16px;accent-color:var(--gold);margin-top:3px;flex-shrink:0;cursor:pointer;}
+.sms-opt-label{font-size:.74rem;color:rgba(255,255,255,.45);line-height:1.55;}
+.sms-opt-label strong{color:rgba(255,255,255,.7);}
+
+/* SUBMIT */
+.sbtn{display:block;width:100%;background:linear-gradient(135deg,#8B6F2E,var(--gold),var(--gold-light));color:var(--navy);font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;border:none;border-radius:3px;padding:16px;cursor:pointer;transition:opacity .2s,transform .15s;margin-bottom:12px;}
+.sbtn:hover{opacity:.9;transform:translateY(-1px);}
+.sbtn:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+.form-note{font-size:.65rem;color:rgba(255,255,255,.18);text-align:center;line-height:1.5;}
+.spin{display:none;width:16px;height:16px;border:2px solid rgba(0,0,0,.15);border-top-color:#000;border-radius:50%;animation:sp .7s linear infinite;margin:0 auto;}
+@keyframes sp{to{transform:rotate(360deg);}}
+
+/* TRUST STRIP */
+.trust{max-width:1040px;margin:0 auto;padding:0 5vw 48px;display:flex;justify-content:center;align-items:center;gap:32px;flex-wrap:wrap;border-top:1px solid var(--bs);padding-top:32px;}
+.trust-item{display:flex;align-items:center;gap:8px;font-size:.75rem;color:rgba(255,255,255,.35);}
+.trust-item span:first-child{font-size:1.1rem;}
+
+/* SOCIAL PROOF */
+.proof{max-width:700px;margin:0 auto;padding:0 5vw 56px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+.proof-card{background:rgba(255,255,255,.03);border:1px solid var(--bs);border-radius:3px;padding:18px 16px;text-align:center;}
+.proof-num{font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;color:var(--gold);line-height:1;}
+.proof-label{font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.3);margin-top:4px;}
+
+/* SUCCESS */
+.success-state{display:none;text-align:center;padding:32px 16px;}
+.success-icon{font-size:2.5rem;margin-bottom:16px;}
+.success-title{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:var(--white);margin-bottom:10px;}
+.success-sub{font-size:.86rem;color:rgba(255,255,255,.5);line-height:1.75;margin-bottom:20px;}
+.dl-btn{display:inline-flex;align-items:center;gap:8px;background:var(--gold);color:var(--navy);font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;border:none;border-radius:3px;padding:14px 24px;cursor:pointer;text-decoration:none;margin-bottom:10px;transition:opacity .2s;}
+.dl-btn:hover{opacity:.88;}
+.redirect-note{font-size:.72rem;color:rgba(255,255,255,.3);margin-top:8px;}
+.countdown{font-weight:700;color:var(--gold-light);}
+
+footer{border-top:1px solid var(--bs);padding:24px 5vw;text-align:center;}
+footer p{font-size:.67rem;color:rgba(255,255,255,.18);line-height:1.6;}
+footer strong{color:rgba(255,255,255,.32);}
+
+@media(max-width:700px){.split{grid-template-columns:1fr;}.pdf-wrap{margin-bottom:32px;}.proof{grid-template-columns:1fr 1fr 1fr;gap:10px;}.trust{gap:16px;}}
+</style>
+</head>
+<body>
+<div class="bg"></div><div class="gbg"></div>
+<div class="page">
+
+<header>
+  <div class="logo">Dynasty Builders <span>Academy</span></div>
+  <a href="hub.html" style="font-size:.65rem;color:rgba(255,255,255,.3);text-decoration:none;border:1px solid rgba(255,255,255,.1);padding:6px 12px;border-radius:3px;letter-spacing:.07em;" onmouseover="this.style.color='#C9A84C';this.style.borderColor='rgba(201,168,76,.3)'" onmouseout="this.style.color='rgba(255,255,255,.3)';this.style.borderColor='rgba(255,255,255,.1)'">← Hub</a>
+</header>
+
+<div class="split">
+
+  <!-- LEFT: COPY -->
+  <div class="copy-side">
+    <div class="eyebrow"><span class="dot"></span>Free Download · No Credit Card</div>
+    <h1>5 Things Nobody<br>Tells You About a<br>Career in <em>Financial<br>Services</em></h1>
+    <p>The honest truth — good and challenging — about building a real income in the life insurance and financial services industry. <strong>7 pages. Free. Instant download.</strong></p>
+
+    <div class="bullets">
+      <div class="bul"><div class="bul-num">1</div><span>How the license actually works (it's easier than you think)</span></div>
+      <div class="bul"><div class="bul-num">2</div><span>What residual income really means for your future</span></div>
+      <div class="bul"><div class="bul-num">3</div><span>Why you don't have to be a "sales person" to succeed</span></div>
+      <div class="bul"><div class="bul-num">4</div><span>The realistic timeline to six figures</span></div>
+      <div class="bul"><div class="bul-num">5</div><span>Why most agents quit — and exactly how to avoid it</span></div>
+    </div>
+  </div>
+
+  <!-- RIGHT: PDF MOCKUP + FORM -->
+  <div>
+    <!-- PDF VISUAL -->
+    <div class="pdf-wrap" style="margin-bottom:32px;">
+      <div class="pdf-shadow"></div>
+      <div class="pdf-card">
+        <div class="pdf-top"></div>
+        <div class="pdf-body">
+          <div class="pdf-eyebrow">Dynasty Builders Academy · Free Guide</div>
+          <div class="pdf-title">5 Things Nobody<br>Tells You About a<br>Career in <em>Financial Services</em></div>
+          <div class="pdf-sub">The honest truth about building real income in life insurance &amp; financial services.</div>
+          <div class="pdf-pills">
+            <div class="pdf-pill">✓ The license is easier than you think</div>
+            <div class="pdf-pill">✓ Residual income is real — and life-changing</div>
+            <div class="pdf-pill">✓ You don't need to be a "sales person"</div>
+            <div class="pdf-pill">✓ The real timeline to six figures</div>
+            <div class="pdf-pill">✓ Why agents quit &amp; how to avoid it</div>
+          </div>
+        </div>
+        <div class="pdf-footer">
+          <div class="pdf-footer-text">Obi &amp; Jen Iroezi · Dynasty Builders Academy</div>
+        </div>
+        <div class="pdf-dl-badge"><span>📄</span><span>FREE</span></div>
+      </div>
+    </div>
+
+    <!-- FORM -->
+    <div class="form-card" id="form-card">
+
+      <div id="form-body">
+        <div class="form-title">Get the Free Guide</div>
+        <p class="form-sub">Enter your info to instantly download the PDF — then watch our 5-minute opportunity video.</p>
+
+        <div class="field">
+          <label>First Name *</label>
+          <input type="text" id="fn" placeholder="First name" autocomplete="given-name">
+          <div class="err" id="e-fn">Required.</div>
+        </div>
+        <div class="field">
+          <label>Email Address *</label>
+          <input type="email" id="em" placeholder="you@example.com" autocomplete="email">
+          <div class="err" id="e-em">Please enter a valid email.</div>
+        </div>
+        <div class="field">
+          <label>Phone Number <span style="color:rgba(255,255,255,.2);font-size:.85em;">(optional)</span></label>
+          <input type="tel" id="ph" placeholder="(555) 000-0000" autocomplete="tel" oninput="fmtPh(this)">
+        </div>
+
+        <!-- SMS OPT-IN -->
+        <label class="sms-opt">
+          <input type="checkbox" id="sms-opt" checked>
+          <span class="sms-opt-label"><strong>Yes — text me weekly tips</strong> on building a career in financial services. I can unsubscribe anytime. Message &amp; data rates may apply.</span>
+        </label>
+
+        <button type="button" class="sbtn" id="sbtn" onclick="submit()">
+          <span id="btntxt">Download Free Guide →</span>
+          <div class="spin" id="spin"></div>
+        </button>
+        <p class="form-note">We respect your privacy. No spam, ever. Unsubscribe anytime.</p>
+      </div>
+
+      <!-- SUCCESS -->
+      <div class="success-state" id="succ">
+        <div class="success-icon">🎉</div>
+        <div class="success-title">Your Guide is Ready!</div>
+        <p class="success-sub">Click below to download your free PDF — then watch our 5-minute opportunity video to see everything in action.</p>
+        <a class="dl-btn" id="dl-btn" href="DBA-Lead-Magnet.pdf" download="5-Things-Financial-Services-DBA.pdf">
+          📄 Download Free Guide
+        </a>
+        <br>
+        <p class="redirect-note">Redirecting you to the opportunity video in <span class="countdown" id="cdown">5</span>s...</p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- PROOF STRIP -->
+<div class="proof">
+  <div class="proof-card"><div class="proof-num">19</div><div class="proof-label">Active Agents</div></div>
+  <div class="proof-card"><div class="proof-num">100%</div><div class="proof-label">Commission Based</div></div>
+  <div class="proof-card"><div class="proof-num">$0</div><div class="proof-label">Experience Needed</div></div>
+</div>
+
+<!-- TRUST STRIP -->
+<div class="trust">
+  <div class="trust-item"><span>🔒</span><span>Your info is private &amp; never shared</span></div>
+  <div class="trust-item"><span>📄</span><span>7-page PDF · Instant download</span></div>
+  <div class="trust-item"><span>💸</span><span>100% free · No credit card</span></div>
+  <div class="trust-item"><span>📱</span><span>Unsubscribe from texts anytime</span></div>
+</div>
+
+<footer>
+  <p><strong>Dynasty Builders Academy</strong> · Obi &amp; Jen Iroezi<br>
+  (310) 995-6507 · agent.yourdynastybuilder.com<br>
+  <span style="font-size:.6rem;">By submitting this form you agree to receive email and/or SMS communications from Dynasty Builders Academy. You may unsubscribe at any time.</span></p>
+</footer>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+// CONFIG
+// ══════════════════════════════════════════════
+const MONDAY_KEY    = 'eyJhbGciOiJIUzI1NiJ9.eyJ0aWQiOjY1Nzg0OTc3NSwiYWFpIjoxMSwidWlkIjo2MTY2MDI5NCwiaWFkIjoiMjAyNi0wNS0xM1QwOTo0OTowNy4wMDBaIiwicGVyIjoibWU6d3JpdGUiLCJhY3RpZCI6MjM3NjI1MTMsInJnbiI6InVzZTEifQ.eCbOAEJTC3mcsit4IjVWOw3r2wyQBYL4lN5Qmnok0r0';           // ← Monday API key
+const MONDAY_BID    = 18409897469;            // ← Monday Board ID
+const MAKE_HOOK = 'https://hook.us2.make.com/nz6mnwny2k9bnk3m52d3u7hl9mfthbqx';   // ← paste Make.com webhook URL (Scenario 2 — Free Guide)
+const TWILIO_FUNC   = '';           // ← Twilio Function URL for SMS opt-in
+                                    //   (see setup instructions below)
+const VIDEO_URL     = 'index.html'; // ← Opportunity video page
+
+// Agent tracking from URL
+const params    = new URLSearchParams(window.location.search);
+const agentId   = params.get('agent') || '';
+const agentName = params.get('name')  || '';
+const utmSrc    = params.get('utm_source')   || 'lead_magnet';
+const utmMed    = params.get('utm_medium')   || '';
+const utmCamp   = params.get('utm_campaign') || '';
+
+// ══════════════════════════════════════════════
+// PHONE FORMAT
+// ══════════════════════════════════════════════
+function fmtPh(el) {
+  let v = el.value.replace(/\D/g,'').slice(0,10);
+  if(v.length>=7) v='('+v.slice(0,3)+') '+v.slice(3,6)+'-'+v.slice(6);
+  else if(v.length>=4) v='('+v.slice(0,3)+') '+v.slice(3);
+  el.value = v;
+}
+
+// ══════════════════════════════════════════════
+// VALIDATE
+// ══════════════════════════════════════════════
+function validate() {
+  let ok = true;
+  document.getElementById('e-fn').classList.remove('show');
+  document.getElementById('e-em').classList.remove('show');
+  if (!document.getElementById('fn').value.trim())         { document.getElementById('e-fn').classList.add('show'); ok=false; }
+  const em = document.getElementById('em').value.trim();
+  if (!em || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em))      { document.getElementById('e-em').classList.add('show'); ok=false; }
+  return ok;
+}
+
+// ══════════════════════════════════════════════
+// SUBMIT
+// ══════════════════════════════════════════════
+function submit() {
+  if (!validate()) return;
+
+  const btn  = document.getElementById('sbtn');
+  const txt  = document.getElementById('btntxt');
+  const spin = document.getElementById('spin');
+  btn.disabled=true; txt.style.display='none'; spin.style.display='block';
+
+  const fn      = document.getElementById('fn').value.trim();
+  const em      = document.getElementById('em').value.trim();
+  const ph      = document.getElementById('ph').value.trim();
+  const smsOpt  = document.getElementById('sms-opt').checked && ph.length > 9;
+  const ts      = new Date().toISOString();
+
+  const entry = {
+    event:        'lead_magnet_download',
+    fname:        fn,
+    email:        em,
+    phone:        ph || '',
+    sms_opted_in: smsOpt,
+    agentId:      agentId || 'direct',
+    agentName:    agentName || '',
+    utmSource:    utmSrc,
+    utmMedium:    utmMed,
+    utmCampaign:  utmCamp,
+    source:       'lead_magnet',
+    timestamp:    ts,
+  };
+
+  // 1. Facebook Pixel — LeadMagnet event
+  if (typeof fbq !== 'undefined') {
+    fbq('track', 'Lead', { content_name: '5 Things Nobody Tells You', content_category: 'Lead Magnet' });
+    fbq('trackCustom', 'LeadMagnetDownload', { fname: fn, source: utmSrc });
+  }
+
+  // 2. localStorage
+  try {
+    const leads = JSON.parse(localStorage.getItem('ea_leads') || '[]');
+    leads.push(entry);
+    localStorage.setItem('ea_leads', JSON.stringify(leads));
+  } catch(e) {}
+
+  // 3. Zapier — triggers email drip sequence
+  if (MAKE_HOOK) {
+    fetch(MAKE_HOOK, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(entry),
+      mode: 'no-cors'
+    }).catch(e => console.warn('[Zapier]', e));
+  }
+
+  // 4. SMS opt-in via Twilio Function
+  if (smsOpt && TWILIO_FUNC) {
+    fetch(TWILIO_FUNC, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone: ph.replace(/\D/g,''), name: fn, source: 'lead_magnet' }),
+      mode: 'no-cors'
+    }).catch(e => console.warn('[Twilio]', e));
+  }
+
+  // 5. Monday.com
+  if (MONDAY_KEY && MONDAY_BID) logMonday(entry);
+
+  // Show success after brief delay
+  setTimeout(() => {
+    btn.disabled=false; txt.style.display='block'; spin.style.display='none';
+    showSuccess(fn);
+  }, 600);
+}
+
+// ══════════════════════════════════════════════
+// SUCCESS + COUNTDOWN REDIRECT
+// ══════════════════════════════════════════════
+function showSuccess(fn) {
+  document.getElementById('form-body').style.display = 'none';
+  document.getElementById('succ').style.display = 'block';
+
+  // Facebook Pixel — download conversion
+  if (typeof fbq !== 'undefined') {
+    fbq('track', 'CompleteRegistration', { content_name: 'Lead Magnet' });
+  }
+
+  // Build video URL with agent tracking preserved
+  let videoHref = VIDEO_URL;
+  const vParams = new URLSearchParams();
+  if (agentId)   vParams.set('agent', agentId);
+  if (agentName) vParams.set('name', agentName);
+  vParams.set('utm_source', 'lead_magnet');
+  vParams.set('utm_medium', 'pdf');
+  if (videoHref.includes('?')) videoHref += '&' + vParams;
+  else if (vParams.toString()) videoHref += '?' + vParams;
+
+  // Countdown redirect
+  let secs = 7;
+  const cd = document.getElementById('cdown');
+  const timer = setInterval(() => {
+    secs--;
+    cd.textContent = secs;
+    if (secs <= 0) {
+      clearInterval(timer);
+      window.location.href = videoHref;
+    }
+  }, 1000);
+}
+
+// ══════════════════════════════════════════════
+// MONDAY.COM LOGGING
+// ══════════════════════════════════════════════
+function logMonday(entry) {
+  const cols = {
+    text_mm2nfjex:  entry.fname,
+    email_mm2nc6fk: { email: entry.email, text: entry.email },
+    phone_mm2nvnf0: entry.phone ? { phone: entry.phone.replace(/\D/g,''), countryShortName:'US' } : undefined,
+    text_mm2n6fhg:  entry.agentId,
+    text_mm2n9fqk:  entry.agentName || 'direct',
+    text_mm2njyrh:  'Lead Magnet Download',
+    date_mm2nev7c:  { date: entry.timestamp.slice(0,10) },
+    long_text_mm2np70p: { text: `Source: Lead Magnet PDF\nUTM: ${entry.utmSource}\nSMS Opt-in: ${entry.sms_opted_in}\nAgent: ${entry.agentName||'direct'}` },
+  };
+  // Remove undefined
+  Object.keys(cols).forEach(k => cols[k] === undefined && delete cols[k]);
+  const name = `${entry.fname} — Lead Magnet Download`;
+  const q = `mutation{create_item(board_id:${MONDAY_BID},item_name:"${name.replace(/"/g,'\\"')}",column_values:${JSON.stringify(JSON.stringify(cols))}){id}}`;
+  fetch('https://api.monday.com/v2',{method:'POST',headers:{'Content-Type':'application/json','Authorization':MONDAY_KEY,'API-Version':'2024-01'},body:JSON.stringify({query:q})})
+  .then(r=>r.json()).then(d=>console.log('[Monday] Lead magnet logged:',d?.data?.create_item?.id))
+  .catch(e=>console.warn('[Monday]',e));
+}
+</script>
+</body>
+</html>

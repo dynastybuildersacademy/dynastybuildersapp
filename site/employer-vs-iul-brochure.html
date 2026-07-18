@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your Employer Plan vs. Permanent Life Insurance — Dynasty Builders</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Barlow:wght@300;400;500;600&family=Barlow+Condensed:wght@600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#080E1C;--navy2:#0D1627;--navy3:#111E35;--navy4:#162440;
+  --gold:#C9A84C;--gold2:#E8C97A;--gold3:#F5E4A0;--gold-dim:rgba(201,168,76,.12);
+  --cream:#FAF6EE;--paper:#F7F3EB;
+  --green:#1A7A4A;--green2:#22A05E;
+  --red:#8B1A1A;--red2:#B52222;
+  --slate:#5A6880;--muted:#8090A8;
+  --border:rgba(201,168,76,.2);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'Barlow',sans-serif;background:var(--paper);color:#1A1A1A;line-height:1.6;}
+
+/* ── COVER ── */
+.cover{min-height:100vh;background:var(--navy);color:var(--cream);display:flex;flex-direction:column;position:relative;overflow:hidden;}
+.cover::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(45deg,rgba(201,168,76,.02) 0,rgba(201,168,76,.02) 1px,transparent 1px,transparent 60px);}
+.cover-inner{position:relative;z-index:1;flex:1;display:flex;flex-direction:column;padding:48px 56px;max-width:960px;margin:0 auto;width:100%;}
+.cover-tag{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);border:1px solid rgba(201,168,76,.3);display:inline-block;padding:5px 12px;border-radius:2px;margin-bottom:36px;}
+.cover-eyebrow{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:14px;}
+.cover-title{font-family:'Playfair Display',serif;font-size:clamp(2.4rem,6vw,4.5rem);font-weight:900;line-height:1.05;margin-bottom:10px;}
+.cover-title em{color:var(--gold2);font-style:italic;}
+.cover-vs{font-family:'Playfair Display',serif;font-size:clamp(3rem,8vw,7rem);font-weight:900;color:var(--gold);line-height:1;margin:10px 0;letter-spacing:-.02em;}
+.cover-sub{font-size:1rem;color:var(--muted);max-width:560px;margin-top:20px;line-height:1.7;}
+.cover-divider{width:80px;height:2px;background:linear-gradient(90deg,var(--gold),transparent);margin:28px 0;}
+.cover-products{display:flex;gap:24px;flex-wrap:wrap;margin-top:auto;padding-top:40px;}
+.cover-product{background:rgba(255,255,255,.04);border:1px solid rgba(201,168,76,.2);border-radius:4px;padding:16px 22px;}
+.cp-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);margin-bottom:4px;}
+.cp-name{font-size:14px;font-weight:600;color:var(--cream);}
+.cover-footer{background:rgba(0,0,0,.3);border-top:1px solid rgba(201,168,76,.12);padding:16px 56px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;max-width:none;}
+.cover-footer-brand{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);}
+.cover-footer-cta a{font-size:12px;color:var(--muted);text-decoration:none;border:1px solid rgba(201,168,76,.2);padding:5px 14px;border-radius:2px;transition:.15s;}
+.cover-footer-cta a:hover{color:var(--gold);border-color:rgba(201,168,76,.5);}
+
+/* ── BODY CONTENT ── */
+.content{max-width:960px;margin:0 auto;padding:56px 32px 80px;}
+
+/* SECTION HEADS */
+.sec-tag{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;}
+.sec-title{font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;line-height:1.2;color:var(--navy);margin-bottom:6px;}
+.sec-rule{width:48px;height:2px;background:var(--gold);margin:14px 0 24px;}
+
+/* INTRO BOX */
+.intro-box{background:var(--navy);color:var(--cream);border-radius:6px;padding:32px 36px;margin-bottom:48px;position:relative;overflow:hidden;}
+.intro-box::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--gold),var(--gold2),transparent);}
+.intro-box p{font-size:1rem;line-height:1.8;color:rgba(250,246,238,.75);}
+.intro-box strong{color:var(--gold2);}
+
+/* COMPARISON TABLE */
+.comp-table{width:100%;border-collapse:collapse;margin-bottom:48px;border-radius:6px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.08);}
+.comp-table thead th{background:var(--navy);color:var(--cream);padding:18px 20px;text-align:left;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;}
+.comp-table thead th:first-child{width:200px;color:var(--gold);}
+.comp-table thead th.employer{background:var(--navy3);border-left:2px solid rgba(201,168,76,.15);}
+.comp-table thead th.iul{background:#162040;border-left:2px solid var(--gold);}
+.comp-table thead .product-sub{font-size:10px;font-weight:400;color:var(--muted);font-family:'Barlow',sans-serif;letter-spacing:0;text-transform:none;margin-top:3px;}
+.comp-table tbody tr{border-bottom:1px solid #E8E4DC;}
+.comp-table tbody tr:last-child{border-bottom:none;}
+.comp-table tbody tr:hover td{background:#F4EFE5;}
+.comp-table tbody td{padding:16px 20px;font-size:13px;vertical-align:top;line-height:1.6;}
+.comp-table tbody td:first-child{background:#F7F3EB;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--slate);width:200px;}
+.comp-table tbody td.employer{background:#FDFCF9;border-left:2px solid rgba(201,168,76,.1);}
+.comp-table tbody td.iul{background:#F5F2FF;border-left:2px solid var(--gold);background:linear-gradient(90deg,rgba(201,168,76,.04),transparent 40%);}
+.badge-no{display:inline-block;background:#FEE;color:var(--red2);font-size:10px;font-weight:700;padding:2px 7px;border-radius:2px;font-family:'Barlow Condensed',sans-serif;letter-spacing:.05em;text-transform:uppercase;}
+.badge-yes{display:inline-block;background:#E6F4ED;color:var(--green);font-size:10px;font-weight:700;padding:2px 7px;border-radius:2px;font-family:'Barlow Condensed',sans-serif;letter-spacing:.05em;text-transform:uppercase;}
+.badge-limited{display:inline-block;background:#FFF8E6;color:#8B6000;font-size:10px;font-weight:700;padding:2px 7px;border-radius:2px;font-family:'Barlow Condensed',sans-serif;letter-spacing:.05em;text-transform:uppercase;}
+
+/* SCENARIO CARDS */
+.scenario-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:48px;}
+@media(max-width:600px){.scenario-grid{grid-template-columns:1fr;}}
+.scenario-card{border-radius:6px;padding:24px;border:1px solid;}
+.scenario-keep{background:#FAFAF8;border-color:#D0C8B0;}
+.scenario-consider{background:var(--navy);color:var(--cream);border-color:var(--gold);}
+.sc-icon{font-size:1.8rem;margin-bottom:12px;}
+.sc-head{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;margin-bottom:10px;}
+.scenario-keep .sc-head{color:var(--navy);}
+.scenario-consider .sc-head{color:var(--gold2);}
+.sc-list{list-style:none;padding:0;}
+.sc-list li{font-size:13px;padding:5px 0;border-bottom:1px solid;}
+.sc-list li:last-child{border-bottom:none;}
+.scenario-keep .sc-list li{border-color:rgba(0,0,0,.06);color:#3A3A3A;}
+.scenario-consider .sc-list li{border-color:rgba(255,255,255,.08);color:rgba(250,246,238,.7);}
+.sc-list li::before{content:'→ ';color:var(--gold);}
+
+/* PRODUCTS DEEP DIVE */
+.product-cards{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:48px;}
+@media(max-width:640px){.product-cards{grid-template-columns:1fr;}}
+.product-card{border-radius:6px;overflow:hidden;border:1px solid #D8D0C0;}
+.pc-header{padding:18px 22px;background:var(--navy2);color:var(--cream);}
+.pc-header.employer-h{background:#1A2035;}
+.pc-header.iul-h{background:linear-gradient(135deg,#1A2035,#0D1627);border-bottom:2px solid var(--gold);}
+.pc-tag{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);margin-bottom:4px;}
+.pc-name{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--cream);margin-bottom:2px;}
+.pc-sub{font-size:11px;color:var(--muted);font-family:'Barlow',sans-serif;}
+.pc-body{padding:20px 22px;background:#FDFCFA;}
+.pc-row{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid #EEE9DF;font-size:13px;}
+.pc-row:last-child{border-bottom:none;}
+.pc-row-label{font-weight:600;min-width:120px;color:#444;}
+.pc-row-val{color:#3A3A3A;flex:1;line-height:1.5;}
+
+/* VISUAL CASH VALUE COMPARISON */
+.cash-visual{background:var(--navy);color:var(--cream);border-radius:6px;padding:32px 36px;margin-bottom:48px;}
+.cash-visual-title{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;color:var(--gold2);margin-bottom:6px;}
+.cash-visual-sub{font-size:13px;color:var(--muted);margin-bottom:28px;}
+.cv-bars{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
+@media(max-width:560px){.cv-bars{grid-template-columns:1fr;}}
+.cv-col-title{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-bottom:14px;}
+.cv-employer .cv-col-title{color:var(--muted);}
+.cv-iul .cv-col-title{color:var(--gold);}
+.cv-year{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.cv-year-label{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);width:36px;flex-shrink:0;}
+.cv-bar-track{flex:1;height:16px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;}
+.cv-bar-fill{height:100%;border-radius:2px;transition:width .5s;}
+.cv-bar-employer{background:#3A3A5A;}
+.cv-bar-iul{background:linear-gradient(90deg,var(--gold),var(--gold2));}
+.cv-year-val{font-family:'DM Mono',monospace;font-size:11px;width:70px;text-align:right;}
+
+/* CTA SECTION */
+.cta-section{background:linear-gradient(135deg,var(--navy),var(--navy4));color:var(--cream);border-radius:6px;padding:40px;text-align:center;border:1px solid rgba(201,168,76,.25);position:relative;overflow:hidden;}
+.cta-section::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(45deg,rgba(201,168,76,.02) 0,rgba(201,168,76,.02) 1px,transparent 1px,transparent 40px);}
+.cta-inner{position:relative;z-index:1;}
+.cta-title{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:700;color:var(--gold2);margin-bottom:8px;}
+.cta-sub{font-size:14px;color:rgba(250,246,238,.6);margin-bottom:24px;max-width:480px;margin-left:auto;margin-right:auto;}
+.cta-btn{display:inline-block;background:var(--gold);color:var(--navy);font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:14px 36px;border-radius:3px;text-decoration:none;transition:opacity .15s;}
+.cta-btn:hover{opacity:.87;}
+
+/* DISCLAIMER */
+.disclaimer{font-size:11px;color:var(--muted);line-height:1.6;border-top:1px solid #DDD8CC;padding-top:24px;margin-top:48px;}
+
+/* PRINT */
+@media print{
+  .cover-footer-cta,.cta-section{display:none;}
+  body{background:white;}
+  .cover{min-height:auto;page-break-after:always;}
+}
+@media(max-width:640px){
+  .content{padding:32px 18px 60px;}
+  .cover-inner{padding:32px 20px;}
+  .cover-footer{padding:14px 20px;}
+}
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="cover">
+  <div class="cover-inner">
+    <div class="cover-tag">Financial Education Series · Dynasty Builders Academy</div>
+    <div class="cover-eyebrow">Understanding Your Options</div>
+    <h1 class="cover-title">Your Employer Plan</h1>
+    <div class="cover-vs">vs.</div>
+    <h2 class="cover-title">Permanent <em>IUL</em></h2>
+    <p class="cover-sub">What your HR department never explained — the critical difference between group term life insurance and a cash-value building Index Universal Life policy.</p>
+    <div class="cover-divider"></div>
+    <div class="cover-products">
+      <div class="cover-product">
+        <div class="cp-label">Employer / Union Plan</div>
+        <div class="cp-name">Group Term Life Insurance</div>
+      </div>
+      <div class="cover-product" style="border-color:rgba(201,168,76,.5);background:rgba(201,168,76,.08);">
+        <div class="cp-label">IUL Option</div>
+        <div class="cp-name">Corebridge Value+ Protector · NLG FlexLife</div>
+      </div>
+    </div>
+  </div>
+  <div class="cover-footer">
+    <div class="cover-footer-brand">Dynasty Builders Academy · Life Changers</div>
+    <div class="cover-footer-cta"><a href="employer-vs-iul-survey.html">Take the 2-Minute Quiz →</a></div>
+  </div>
+</div>
+
+<!-- BODY -->
+<div class="content">
+
+  <!-- INTRO -->
+  <div class="intro-box">
+    <p>Most working Americans have <strong>group life insurance through their employer or union</strong> — and most assume it's enough. But here's the truth: group term provides only <strong>temporary, income-replacement coverage</strong> with zero accumulation. The moment you leave your job, retire, or the union renegotiates, that coverage can disappear. An IUL gives you something entirely different: <strong>permanent protection + a tax-advantaged savings engine</strong> that grows with the market and never drops below zero.</p>
+  </div>
+
+  <!-- SECTION 1: COMPARISON TABLE -->
+  <div class="sec-tag">Section 1 of 4</div>
+  <h2 class="sec-title">Side-by-Side Comparison</h2>
+  <div class="sec-rule"></div>
+
+  <table class="comp-table">
+    <thead>
+      <tr>
+        <th>Feature</th>
+        <th class="employer">
+          Employer / Union Plan<br>
+          <div class="product-sub">Group Term Life Insurance (Prudential, MetLife, Hartford)</div>
+        </th>
+        <th class="iul">
+          Permanent IUL<br>
+          <div class="product-sub">Corebridge Value+ Protector III · NLG FlexLife IUL</div>
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Plan Type</td>
+        <td class="employer">Group Term Life — pure death benefit only. No savings component.</td>
+        <td class="iul">Index Universal Life (IUL) — permanent coverage + tax-advantaged cash value growth.</td>
+      </tr>
+      <tr>
+        <td>Coverage Duration</td>
+        <td class="employer"><span class="badge-limited">Temporary</span><br>Ends when you leave your job, retire, or the union renegotiates. Can expire as early as age 65–70.</td>
+        <td class="iul"><span class="badge-yes">Lifetime</span><br>Coverage is permanent for life — you own the policy outright regardless of employment status.</td>
+      </tr>
+      <tr>
+        <td>Cash Value</td>
+        <td class="employer"><span class="badge-no">None</span><br>Premiums pay for pure protection only. Zero accumulation, zero return.</td>
+        <td class="iul"><span class="badge-yes">Yes — Indexed Growth</span><br>Cash value grows based on S&P 500 or other index performance. Floor of 0% protects against market losses. Capped upside (typically 10–14%).</td>
+      </tr>
+      <tr>
+        <td>Premiums</td>
+        <td class="employer">Low, negotiated group rates. Can increase at contract renewal. Often a payroll deduction you don't notice.</td>
+        <td class="iul">Higher — reflects permanent coverage + cash accumulation. Flexible; you can adjust premium within policy limits.</td>
+      </tr>
+      <tr>
+        <td>Living Benefits</td>
+        <td class="employer"><span class="badge-limited">Limited</span><br>Some unions include basic AD&D and terminal illness accelerated benefit. Strike premium waivers (union-specific).</td>
+        <td class="iul"><span class="badge-yes">Comprehensive</span><br>Corebridge includes Quality of Life riders for chronic illness, critical illness, terminal illness. NLG FlexLife includes Accelerated Access for long-term care costs.</td>
+      </tr>
+      <tr>
+        <td>Tax Advantages</td>
+        <td class="employer">Death benefit is tax-free to beneficiaries. No living tax advantages.</td>
+        <td class="iul">Cash value grows tax-deferred. Policy loans are tax-free. Death benefit is income-tax-free. Can be used as a tax-advantaged supplement to retirement.</td>
+      </tr>
+      <tr>
+        <td>Medical Exam</td>
+        <td class="employer"><span class="badge-yes">No Exam Required</span><br>Guaranteed issue for new employees in open enrollment. No medical underwriting.</td>
+        <td class="iul">Simplified or full underwriting depending on coverage amount. Healthier = lower cost-of-insurance within the IUL.</td>
+      </tr>
+      <tr>
+        <td>Portability</td>
+        <td class="employer"><span class="badge-no">Not Portable</span><br>Coverage is tied to your employer. Conversion options exist but are expensive and limited.</td>
+        <td class="iul"><span class="badge-yes">Fully Portable</span><br>You own the policy. Change jobs, retire, start a business — the policy goes with you.</td>
+      </tr>
+      <tr>
+        <td>Retirement Income</td>
+        <td class="employer"><span class="badge-no">None</span><br>Provides no retirement income stream. Zero supplemental retirement value.</td>
+        <td class="iul"><span class="badge-yes">Tax-Free Supplemental Income</span><br>Policy loans against cash value can create tax-free retirement income. A powerful supplement to a 401(k) or IRA.</td>
+      </tr>
+      <tr>
+        <td>Ownership &amp; Control</td>
+        <td class="employer">Your employer controls the policy. They can change carriers, reduce coverage, or cancel the benefit at any time.</td>
+        <td class="iul">You own the policy outright. You name beneficiaries, control premium payments, and choose indexed strategies.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- SECTION 2: CASH VALUE VISUAL -->
+  <div class="sec-tag">Section 2 of 4</div>
+  <h2 class="sec-title">The Cash Value Gap</h2>
+  <div class="sec-rule"></div>
+
+  <div class="cash-visual">
+    <div class="cash-visual-title">Projected Cash Value Over Time</div>
+    <div class="cash-visual-sub">Illustrative example — $200/mo premium · Starting age 35 · Based on moderate IUL illustration at 6% average indexed return</div>
+    <div class="cv-bars">
+      <div class="cv-employer">
+        <div class="cv-col-title">Group Term Life</div>
+        <div class="cv-year"><div class="cv-year-label">Yr 5</div><div class="cv-bar-track"><div class="cv-bar-fill cv-bar-employer" style="width:2%;"></div></div><div class="cv-year-val" style="color:#555;">$0</div></div>
+        <div class="cv-year"><div class="cv-year-label">Yr 10</div><div class="cv-bar-track"><div class="cv-bar-fill cv-bar-employer" style="width:2%;"></div></div><div class="cv-year-val" style="color:#555;">$0</div></div>
+        <div class="cv-year"><div class="cv-year-label">Yr 15</div><div class="cv-bar-track"><div class="cv-bar-fill cv-bar-employer" style="width:2%;"></div></div><div class="cv-year-val" style="color:#555;">$0</div></div>
+        <div class="cv-year"><div class="cv-year-label">Yr 20</div><div class="cv-bar-track"><div class="cv-bar-fill cv-bar-employer" style="width:2%;"></div></div><div class="cv-year-val" style="color:#555;">$0</div></div>
+        <div class="cv-year"><div class="cv-year-label">Yr 25</div><div class="cv-bar-track"><div class="cv-bar-fill cv-bar-employer" style="width:2%;"></div></div><div class="cv-year-val" style="color:#555;">$0</div></div>
+      </div>
+      <div class="cv-iul">
+        <div class="cv-col-title">IUL (Corebridge / NLG)</div>
+        <div class="cv-year"><div class="cv-year-label">Yr 5</div><div class="cv-bar-track"><div class="cv-bar-fill cv-bar-iul" style="width:18%;"></div></div><div class="cv-year-val" style="color:var(--gold2);">~$9K</div></div>
+        <div class="cv-year"><div class="cv-year-label">Yr 10</div><div class="cv-bar-track"><div class="cv-bar-fill cv-bar-iul" style="width:40%;"></div></div><div class="cv-year-val" style="color:var(--gold2);">~$28K</div></div>
+        <div class="cv-year"><div class="cv-year-label">Yr 15</div><div class="cv-bar-track"><div class="cv-bar-fill cv-bar-iul" style="width:62%;"></div></div><div class="cv-year-val" style="color:var(--gold2);">~$58K</div></div>
+        <div class="cv-year"><div class="cv-year-label">Yr 20</div><div class="cv-bar-track"><div class="cv-bar-fill cv-bar-iul" style="width:82%;"></div></div><div class="cv-year-val" style="color:var(--gold2);">~$102K</div></div>
+        <div class="cv-year"><div class="cv-year-label">Yr 25</div><div class="cv-bar-track"><div class="cv-bar-fill cv-bar-iul" style="width:100%;"></div></div><div class="cv-year-val" style="color:var(--gold2);">~$168K</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 3: PRODUCT PROFILES -->
+  <div class="sec-tag">Section 3 of 4</div>
+  <h2 class="sec-title">IUL Product Profiles</h2>
+  <div class="sec-rule"></div>
+  <p style="font-size:13px;color:#555;margin-bottom:24px;">Two of the most widely used IUL options available through independent agents today:</p>
+
+  <div class="product-cards">
+    <div class="product-card">
+      <div class="pc-header iul-h">
+        <div class="pc-tag">Indexed Universal Life</div>
+        <div class="pc-name">Corebridge Value+ Protector III</div>
+        <div class="pc-sub">Formerly AIG · Quality of Life focus</div>
+      </div>
+      <div class="pc-body">
+        <div class="pc-row"><div class="pc-row-label">Index Options</div><div class="pc-row-val">S&P 500 1-Year PTP, Monthly Average, and others</div></div>
+        <div class="pc-row"><div class="pc-row-label">Floor / Cap</div><div class="pc-row-val">0% floor (no market loss) · Caps typically 10–12% annually</div></div>
+        <div class="pc-row"><div class="pc-row-label">Living Benefits</div><div class="pc-row-val">Quality of Life riders: chronic, critical, and terminal illness. Accelerated death benefit for long-term care.</div></div>
+        <div class="pc-row"><div class="pc-row-label">Target Market</div><div class="pc-row-val">Ages 30–55 seeking permanent protection + cash accumulation with LTC coverage</div></div>
+        <div class="pc-row"><div class="pc-row-label">Key Strength</div><div class="pc-row-val">Strong living benefits package; competitive indexed crediting strategies</div></div>
+      </div>
+    </div>
+    <div class="product-card">
+      <div class="pc-header iul-h">
+        <div class="pc-tag">Indexed Universal Life</div>
+        <div class="pc-name">NLG FlexLife IUL</div>
+        <div class="pc-sub">National Life Group · Income & Legacy focus</div>
+      </div>
+      <div class="pc-body">
+        <div class="pc-row"><div class="pc-row-label">Index Options</div><div class="pc-row-val">S&P 500, Nasdaq 100, Multi-Index strategies with Volatility Control</div></div>
+        <div class="pc-row"><div class="pc-row-label">Floor / Cap</div><div class="pc-row-val">0% floor · Competitive caps with participation rate strategies available</div></div>
+        <div class="pc-row"><div class="pc-row-label">Living Benefits</div><div class="pc-row-val">LifeStages Living Benefits: chronic illness, critical illness, terminal illness — included at no additional premium</div></div>
+        <div class="pc-row"><div class="pc-row-label">Target Market</div><div class="pc-row-val">Ages 30–60 seeking income supplementation, legacy planning, and long-term care protection</div></div>
+        <div class="pc-row"><div class="pc-row-label">Key Strength</div><div class="pc-row-val">No-cost living benefits; strong income illustration; excellent agent support from National Life</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 4: DECISION GUIDE -->
+  <div class="sec-tag">Section 4 of 4</div>
+  <h2 class="sec-title">Which Is Right for You?</h2>
+  <div class="sec-rule"></div>
+
+  <div class="scenario-grid">
+    <div class="scenario-card scenario-keep">
+      <div class="sc-icon">🏢</div>
+      <div class="sc-head">Keep Your Employer Plan If…</div>
+      <ul class="sc-list">
+        <li>You need maximum coverage at minimum cost</li>
+        <li>You have no medical history and guaranteed issue matters</li>
+        <li>You want union-specific perks like strike premium waivers</li>
+        <li>You're in your 20s and building emergency savings first</li>
+        <li>Your employer covers 100% of the premium cost</li>
+      </ul>
+    </div>
+    <div class="scenario-card scenario-consider">
+      <div class="sc-icon">💡</div>
+      <div class="sc-head">Upgrade to an IUL If…</div>
+      <ul class="sc-list">
+        <li>You want coverage that follows you regardless of job</li>
+        <li>You want tax-free supplemental retirement income</li>
+        <li>You're worried about long-term care or chronic illness costs</li>
+        <li>You want to leave a tax-free legacy for your family</li>
+        <li>Your employer coverage ends at retirement — right when you need it most</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-section">
+    <div class="cta-inner">
+      <div class="cta-title">Not Sure Which Path Fits?</div>
+      <div class="cta-sub">Take our 2-minute financial profile quiz. We'll show you exactly how an IUL stacks up against your current coverage — with real numbers for your age and budget.</div>
+      <a href="employer-vs-iul-survey.html" class="cta-btn">Start My Free Review →</a>
+    </div>
+  </div>
+
+  <div class="disclaimer">
+    <strong>Disclaimer:</strong> This brochure is intended for educational purposes only and does not constitute financial, tax, or legal advice. Life insurance product features, costs, and availability vary by state and underwriting. Cash value illustrations are hypothetical and not guaranteed. Consult a licensed insurance professional before making coverage decisions. Dynasty Builders Academy agents are licensed life insurance agents authorized to offer these products in their licensed states.
+  </div>
+
+</div><!-- /content -->
+</body>
+</html>

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Financial World Cup — Dynasty Builders Academy</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=Barlow:wght@300;400;500;600&family=Barlow+Condensed:wght@600;700;800&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
+<script src="auth.js?v=20260713"></script>
+<style>
+:root{
+  --pitch-dk:#0B3D24; --pitch:#1B5E3A; --pitch-lt:#2D8C5B;
+  --blue:#0B2545; --sky:#1976D2;
+  --gold:#FFC72C; --gold2:#FFE17D;
+  --red:#E63946;
+  --cream:#FFFFFF; --slate:#B7D8C5;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Barlow',sans-serif;background:var(--pitch-dk);color:var(--cream);min-height:100vh;}
+
+/* BG pitch stripes */
+.bg{position:fixed;inset:0;z-index:0;pointer-events:none;}
+.bg .stripe{position:absolute;left:0;right:0;height:60px;background:var(--pitch);}
+
+.wrap{position:relative;z-index:1;max-width:680px;margin:0 auto;padding:0 20px 80px;}
+
+/* HEADER */
+.hero{background:var(--blue);padding:40px 24px 32px;text-align:center;position:relative;overflow:hidden;border-bottom:4px solid var(--gold);}
+.hero::before{content:'';position:absolute;top:-40%;left:50%;transform:translateX(-50%);width:300px;height:300px;border:1.5px solid rgba(255,255,255,.08);border-radius:50%;}
+.hero-inner{position:relative;z-index:1;}
+.hero-tag{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:800;letter-spacing:.25em;text-transform:uppercase;color:var(--gold);margin-bottom:14px;}
+.hero h1{font-family:'Playfair Display',serif;font-weight:900;font-size:clamp(2.2rem,7vw,3.4rem);line-height:1.1;margin-bottom:8px;}
+.hero h1 .gold{color:var(--gold);}
+.hero-sub{font-size:14px;color:#A8C4E0;max-width:480px;margin:0 auto 18px;line-height:1.6;}
+.flag-pills{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+.flag-pill{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:800;letter-spacing:.06em;color:white;padding:6px 18px;border-radius:20px;}
+.flag-pill.usa{background:var(--red);}
+.flag-pill.mex{background:var(--pitch-lt);}
+.flag-pill.can{background:var(--red);}
+
+/* CONTENT */
+.content{padding:32px 0;}
+.section-title{font-family:'Playfair Display',serif;font-weight:800;font-size:1.5rem;color:var(--gold2);margin-bottom:6px;text-align:center;}
+.section-sub{font-size:13px;color:var(--slate);text-align:center;max-width:480px;margin:0 auto 24px;line-height:1.6;}
+
+/* TIP CARDS */
+.tips-grid{display:flex;flex-direction:column;gap:12px;margin-bottom:36px;}
+.tip-card{background:var(--blue);border-left:4px solid var(--gold);border-radius:8px;padding:16px 20px;display:flex;gap:14px;align-items:flex-start;}
+.tip-num{width:32px;height:32px;border-radius:50%;background:white;color:var(--blue);font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.tip-card h3{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);margin-bottom:4px;}
+.tip-card p{font-size:13px;color:#E8F0EC;line-height:1.6;}
+
+/* STAT BANNER */
+.stat-banner{background:linear-gradient(135deg,var(--blue),#16335c);border:1px solid rgba(255,200,44,.3);border-radius:10px;padding:24px;text-align:center;margin-bottom:36px;}
+.stat-banner .big{font-family:'DM Mono',monospace;font-size:2.2rem;color:var(--gold);font-weight:500;margin-bottom:6px;}
+.stat-banner p{font-size:13px;color:#CFE8DC;line-height:1.6;max-width:420px;margin:0 auto;}
+
+/* CTA BUTTONS */
+.cta-grid{display:flex;flex-direction:column;gap:14px;}
+.cta-card{display:flex;align-items:center;gap:16px;background:var(--blue);border:1px solid rgba(255,200,44,.25);border-radius:10px;padding:20px;text-decoration:none;transition:all .15s;}
+.cta-card:hover{border-color:var(--gold);transform:translateY(-2px);}
+.cta-icon{width:52px;height:52px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0;}
+.cta-icon.quiz{background:linear-gradient(135deg,var(--sky),#0B2545);}
+.cta-icon.flyer{background:linear-gradient(135deg,var(--gold),#E6AC00);}
+.cta-text{flex:1;}
+.cta-text .label{font-family:'Barlow Condensed',sans-serif;font-size:9px;font-weight:800;letter-spacing:.15em;text-transform:uppercase;color:var(--gold2);margin-bottom:3px;}
+.cta-text h3{font-size:1.05rem;font-weight:700;color:white;margin-bottom:4px;}
+.cta-text p{font-size:12px;color:var(--slate);line-height:1.5;}
+.cta-arrow{font-size:1.4rem;color:var(--gold);flex-shrink:0;}
+
+/* FOOTER */
+.footer{text-align:center;padding:32px 20px;border-top:1px solid rgba(255,255,255,.08);margin-top:20px;}
+.footer p{font-family:'Playfair Display',serif;font-style:italic;font-size:1rem;color:var(--gold2);}
+.footer .tag{font-size:10px;color:var(--slate);text-transform:uppercase;letter-spacing:.15em;margin-top:8px;font-family:'Barlow Condensed',sans-serif;font-weight:700;}
+.back-link{display:inline-block;margin:20px auto 0;font-size:12px;color:var(--slate);text-decoration:none;text-align:center;}
+.back-link:hover{color:var(--gold);}
+.back-wrap{text-align:center;}
+</style>
+</head>
+<body>
+<div class="bg" id="bg"></div>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-tag">2026 FIFA World Cup &middot; Financial Literacy Series</div>
+    <h1>The Financial <span class="gold">World Cup</span></h1>
+    <p class="hero-sub">The World Cup is coming to Los Angeles and cities across North America. Use the excitement to talk about something just as important: your financial game plan.</p>
+    <div class="flag-pills">
+      <div class="flag-pill usa">USA</div>
+      <div class="flag-pill mex">MEXICO</div>
+      <div class="flag-pill can">CANADA</div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="content">
+
+    <div class="section-title">Championship Money Lessons</div>
+    <div class="section-sub">Every World Cup team has a strategy. Here's how the same principles apply to building your financial future.</div>
+
+    <div class="tips-grid">
+      <div class="tip-card">
+        <div class="tip-num">1</div>
+        <div>
+          <h3>Build Your Bench</h3>
+          <p>A World Cup roster has 26 players, but only 11 start. Champions build depth. Your finances need the same: savings, insurance, and a backup plan for when life throws a curveball.</p>
+        </div>
+      </div>
+      <div class="tip-card">
+        <div class="tip-num">2</div>
+        <div>
+          <h3>Play the Long Game</h3>
+          <p>Teams train for years before the tournament. Tax-advantaged life insurance builds cash value the same way &mdash; slow, steady, and compounding toward a bigger payoff down the road.</p>
+        </div>
+      </div>
+      <div class="tip-card">
+        <div class="tip-num">3</div>
+        <div>
+          <h3>Protect Your Team</h3>
+          <p>A strong defense wins championships. A properly structured life insurance policy is your family's defense line &mdash; making sure they're covered no matter what happens.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="stat-banner">
+      <div class="big">$40M+</div>
+      <p>That's what the 2026 World Cup champion takes home in prize money. Championship-level planning pays off &mdash; on the pitch and in your portfolio.</p>
+    </div>
+
+    <div class="section-title">Take the Challenge</div>
+    <div class="section-sub">Two ways to get started &mdash; test your World Cup knowledge or grab a flyer to share.</div>
+
+    <div class="cta-grid">
+      <a href="world-cup-survey.html" class="cta-card" id="quiz-link">
+        <div class="cta-icon quiz">&#9917;</div>
+        <div class="cta-text">
+          <div class="label">10 Questions &middot; 2 Minutes</div>
+          <h3>Take the Financial World Cup Quiz</h3>
+          <p>Trivia about the 2026 World Cup mixed with quick questions about your financial game plan. Get a personalized result at the end.</p>
+        </div>
+        <div class="cta-arrow">&rarr;</div>
+      </a>
+
+      <a href="#" class="cta-card" id="flyer-link" onclick="downloadFlyer(event)">
+        <div class="cta-icon flyer">&#127942;</div>
+        <div class="cta-text">
+          <div class="label">Print &amp; Share</div>
+          <h3>Download the World Cup Flyer</h3>
+          <p>A 4&times;5" print-ready flyer with financial tips, QR codes to the quiz and your agent info &mdash; perfect for handing out at watch parties.</p>
+        </div>
+        <div class="cta-arrow">&darr;</div>
+      </a>
+    </div>
+
+  </div>
+
+  <div class="back-wrap">
+    <a href="hub.html" class="back-link">&larr; Back to Hub</a>
+  </div>
+</div>
+
+<div class="footer">
+  <p>"Making Dreams Come True, One Policy at a Time."</p>
+  <div class="tag">Dynasty Builders Academy</div>
+</div>
+
+<script>
+// Pitch stripe background
+const bg = document.getElementById('bg');
+for (let i = 0; i < 30; i++) {
+  if (i % 2 === 0) {
+    const stripe = document.createElement('div');
+    stripe.className = 'stripe';
+    stripe.style.top = (i * 60) + 'px';
+    bg.appendChild(stripe);
+  }
+}
+
+// Pass agent param through to quiz link
+const params = new URLSearchParams(location.search);
+const agentId = params.get('agent') || '';
+if (agentId) {
+  document.getElementById('quiz-link').href = 'world-cup-survey.html?agent=' + encodeURIComponent(agentId);
+}
+
+// Flyer download — links to per-agent flyer if available, else generic
+function downloadFlyer(e) {
+  e.preventDefault();
+  const id = agentId || '';
+  // Per-agent flyers are named World_Cup_Flyer_<agentId>.pdf; fallback to generic
+  const url = id ? `flyers/World_Cup_Flyer_${id}.pdf` : 'flyers/World_Cup_Flyer_4x5.pdf';
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = '';
+  a.target = '_blank';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent Dashboard · Dynasty Builders</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700&family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="auth.js?v=20260713"></script>
+<style>
+:root{
+  --navy:#0A1628;--navy2:#0F1E38;--navy3:#132240;--navy4:#1A2E50;
+  --gold:#C9A84C;--gold2:#E8C97A;--gold-dim:rgba(201,168,76,.12);
+  --green:#27AE60;--green2:#2DCA73;--green-dim:rgba(39,174,96,.1);
+  --blue:#3498DB;--blue2:#5DADE2;--purple:#9B59B6;--orange:#E67E22;--red:#E05252;
+  --slate:#6B7C93;--cream:#FAF6EE;--border:rgba(201,168,76,.2);--bs:rgba(255,255,255,.06);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);min-height:100vh;}
+.bg{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 60% 50% at 20% 15%,rgba(201,168,76,.06),transparent 55%),
+  radial-gradient(ellipse 50% 60% at 80% 85%,rgba(52,152,219,.05),transparent 55%),
+  linear-gradient(160deg,#0A1628,#0E1C35 50%,#0A1628);}
+.page{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:24px 18px 72px;}
+
+/* HEADER */
+.hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;}
+.hl{display:flex;align-items:center;gap:14px;}
+.hdr-title{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:700;color:var(--gold2);}
+.hdr-sub{font-size:12px;color:var(--slate);font-family:'DM Mono',monospace;margin-top:2px;}
+.hr{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:8px 16px;border-radius:3px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:.05em;cursor:pointer;border:none;transition:all .15s;text-decoration:none;}
+.btn-gold{background:var(--gold);color:var(--navy);}
+.btn-gold:hover{opacity:.87;}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--gold);}
+.btn-outline:hover{background:var(--gold-dim);}
+.btn-ghost{background:transparent;border:1px solid var(--bs);color:rgba(255,255,255,.4);}
+.btn-ghost:hover{border-color:var(--border);color:var(--gold);}
+.btn-blue{background:rgba(52,152,219,.15);border:1px solid rgba(52,152,219,.35);color:var(--blue2);}
+.btn-sm{padding:5px 11px;font-size:11px;}
+
+/* AGENT SELECTOR */
+.agent-picker{display:flex;gap:10px;align-items:center;margin-bottom:22px;flex-wrap:wrap;}
+.agent-picker select{background:var(--navy3);border:1px solid var(--border);color:var(--cream);font-size:14px;font-weight:600;padding:10px 14px;border-radius:4px;outline:none;cursor:pointer;min-width:220px;}
+.agent-picker select option{background:var(--navy3);}
+.load-btn{background:var(--gold);color:var(--navy);font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:.06em;padding:10px 22px;border-radius:4px;border:none;cursor:pointer;transition:opacity .15s;}
+.load-btn:hover{opacity:.87;}
+
+/* AGENT HEADER CARD */
+.agent-hdr-card{background:var(--navy3);border:1px solid var(--border);border-radius:6px;padding:20px 24px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;position:relative;overflow:hidden;}
+.agent-hdr-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,var(--gold),transparent);}
+.ag-identity{display:flex;align-items:center;gap:16px;}
+.ag-avatar{width:52px;height:52px;border-radius:50%;background:var(--gold-dim);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;}
+.ag-name{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:var(--gold2);}
+.ag-role{font-size:12px;color:var(--slate);margin-top:2px;}
+.ag-id{font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.3);margin-top:3px;}
+.ag-meta{display:flex;gap:20px;flex-wrap:wrap;}
+.ag-meta-item{text-align:center;}
+.ag-meta-val{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:700;color:var(--gold2);line-height:1;}
+.ag-meta-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--slate);margin-top:3px;font-family:'Barlow Condensed',sans-serif;font-weight:600;}
+
+/* SECTION GRID */
+.section-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;}
+@media(max-width:680px){.section-grid{grid-template-columns:1fr;}}
+.section-card{background:var(--navy3);border:1px solid var(--border);border-radius:4px;overflow:hidden;}
+.sc-hdr{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;border-bottom:1px solid var(--border);}
+.sc-title{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;}
+.sc-body{padding:14px 16px;}
+
+/* STAT ROW */
+.stat-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04);}
+.stat-row:last-child{border-bottom:none;}
+.stat-lbl{font-size:12px;color:var(--slate);}
+.stat-val{font-family:'DM Mono',monospace;font-size:13px;font-weight:700;color:var(--cream);}
+.stat-bar-wrap{width:80px;height:4px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;display:inline-block;vertical-align:middle;margin-left:8px;}
+.stat-bar-fill{height:100%;border-radius:2px;}
+
+/* ATTENDANCE GRID */
+.attend-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:6px;}
+.attend-week{background:var(--navy2);border:1px solid var(--bs);border-radius:3px;padding:7px 8px;text-align:center;}
+.attend-week-label{font-size:9px;color:var(--slate);font-family:'DM Mono',monospace;margin-bottom:6px;}
+.attend-days{display:flex;gap:4px;justify-content:center;}
+.attend-dot{width:14px;height:14px;border-radius:50%;font-size:8px;display:flex;align-items:center;justify-content:center;font-weight:700;}
+.dot-present{background:var(--green2);color:var(--navy);}
+.dot-absent{background:rgba(255,255,255,.1);color:var(--slate);}
+.dot-label{font-size:8px;color:var(--slate);display:block;margin-top:2px;}
+
+/* STAGE BADGE */
+.stage-badge{font-size:10px;font-family:'Barlow Condensed',sans-serif;font-weight:700;padding:3px 9px;border-radius:2px;text-transform:uppercase;letter-spacing:.05em;}
+
+/* INCENTIVE PILLS */
+.inc-pill-sm{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:3px;font-size:10px;font-weight:700;border:1px solid;font-family:'Barlow Condensed',sans-serif;}
+
+/* PERFORMANCE CHART */
+.perf-bars{display:flex;flex-direction:column;gap:8px;}
+.perf-bar-row{display:flex;align-items:center;gap:8px;}
+.perf-bar-lbl{font-size:11px;color:var(--slate);width:120px;flex-shrink:0;}
+.perf-bar-track{flex:1;height:8px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;}
+.perf-bar-fill{height:100%;border-radius:2px;transition:width .4s;}
+.perf-bar-val{font-family:'DM Mono',monospace;font-size:11px;color:var(--gold2);width:70px;text-align:right;flex-shrink:0;}
+
+/* LOADING / EMPTY */
+.loading-state{text-align:center;padding:40px;color:var(--slate);font-size:13px;}
+.spinner{display:inline-block;width:20px;height:20px;border:2px solid rgba(201,168,76,.2);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;margin-bottom:10px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.empty-state{text-align:center;padding:28px;color:var(--slate);font-size:13px;}
+
+/* TIMELINE */
+.timeline-item{display:flex;gap:12px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.04);}
+.timeline-item:last-child{border-bottom:none;}
+.tl-dot{width:8px;height:8px;border-radius:50%;margin-top:4px;flex-shrink:0;}
+.tl-content{flex:1;}
+.tl-text{font-size:12px;color:var(--cream);}
+.tl-date{font-size:10px;color:var(--slate);font-family:'DM Mono',monospace;margin-top:2px;}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--navy4);border:1px solid var(--border);border-radius:4px;padding:10px 18px;font-size:13px;transform:translateY(60px);opacity:0;transition:all .3s;z-index:999;color:var(--gold2);white-space:nowrap;}
+.toast.show{transform:translateY(0);opacity:1;}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="page">
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hl">
+    <div style="font-size:2rem;">📊</div>
+    <div>
+      <div class="hdr-title">Agent Dashboard</div>
+      <div class="hdr-sub">// Unified view — activity · licensing · BOM · incentives · performance</div>
+    </div>
+  </div>
+  <div class="hr">
+    <button class="btn btn-gold" onclick="loadDashboard()" id="load-btn">Load Dashboard</button>
+    <a href="agents.html" class="btn btn-ghost">Roster →</a>
+    <a href="hub.html" class="btn btn-ghost">← Hub</a>
+  </div>
+</div>
+
+<!-- AGENT SELECTOR -->
+<div class="agent-picker">
+  <select id="agent-select" onchange="onAgentChange()">
+    <option value="">Select an agent…</option>
+  </select>
+  <button class="load-btn" onclick="loadDashboard()">Load →</button>
+  <div style="font-size:11px;color:var(--slate);" id="last-loaded-label"></div>
+</div>
+
+<!-- AGENT HEADER -->
+<div class="agent-hdr-card" id="agent-hdr" style="display:none;">
+  <div class="ag-identity">
+    <div class="ag-avatar" id="ag-avatar">👤</div>
+    <div>
+      <div class="ag-name" id="ag-name">—</div>
+      <div class="ag-role" id="ag-role">—</div>
+      <div class="ag-id" id="ag-id">—</div>
+    </div>
+  </div>
+  <div class="ag-meta" id="ag-meta-row"></div>
+</div>
+
+<!-- DASHBOARD LOADING STATE -->
+<div id="dash-loading" style="display:none;">
+  <div class="loading-state"><div class="spinner"></div><br>Loading agent data from Monday.com…</div>
+</div>
+
+<!-- DASHBOARD CONTENT -->
+<div id="dash-content" style="display:none;">
+
+  <!-- ROW 1: Activity + Licensing -->
+  <div class="section-grid">
+    <!-- Activity (Call Log) -->
+    <div class="section-card">
+      <div class="sc-hdr">
+        <div class="sc-title" style="color:var(--blue2);">📞 Activity — This Period</div>
+        <div style="font-size:10px;color:var(--slate);font-family:'DM Mono',monospace;" id="activity-sessions">0 sessions</div>
+      </div>
+      <div class="sc-body">
+        <div class="perf-bars" id="activity-bars"></div>
+      </div>
+    </div>
+
+    <!-- Licensing -->
+    <div class="section-card">
+      <div class="sc-hdr">
+        <div class="sc-title" style="color:var(--purple);">📜 Licensing Journey</div>
+        <span class="stage-badge" id="license-stage-badge" style="background:rgba(155,89,182,.15);color:#BB8FCE;border:1px solid rgba(155,89,182,.25);">—</span>
+      </div>
+      <div class="sc-body" id="licensing-body">
+        <div class="empty-state">No licensing record found</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 2: BOM Attendance + Incentives -->
+  <div class="section-grid">
+    <!-- BOM Attendance -->
+    <div class="section-card">
+      <div class="sc-hdr">
+        <div class="sc-title" style="color:var(--orange);">📅 BOM Attendance</div>
+        <div style="font-size:10px;color:var(--slate);" id="bom-summary-label">—</div>
+      </div>
+      <div class="sc-body">
+        <div id="bom-attend-grid">
+          <div class="empty-state">No attendance records</div>
+        </div>
+        <div class="stat-row" style="margin-top:10px;">
+          <div class="stat-lbl">Tuesday BOMs</div>
+          <div class="stat-val" id="bom-tue-count">—</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-lbl">Saturday BOMs</div>
+          <div class="stat-val" id="bom-sat-count">—</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-lbl">Total Guests Brought</div>
+          <div class="stat-val" id="bom-guests-total">—</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-lbl">Avg. Guests per BOM</div>
+          <div class="stat-val" id="bom-avg-guests">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Incentives -->
+    <div class="section-card">
+      <div class="sc-hdr">
+        <div class="sc-title" style="color:var(--green2);">🏆 June Incentives</div>
+        <div id="inc-pills" style="display:flex;gap:4px;"></div>
+      </div>
+      <div class="sc-body" id="incentives-body">
+        <div class="empty-state">No incentive record found</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 3: Performance + Timeline -->
+  <div class="section-grid">
+    <!-- Performance -->
+    <div class="section-card">
+      <div class="sc-hdr">
+        <div class="sc-title" style="color:var(--gold);">💰 Production (PHP Bamboo YTD)</div>
+      </div>
+      <div class="sc-body" id="performance-body">
+        <div class="empty-state">No PHP Bamboo data found for this agent.<br><br>Upload leaderboard files in <a href="performance.html" style="color:var(--gold);">Performance Leaderboards</a>.</div>
+      </div>
+    </div>
+
+    <!-- Activity Timeline -->
+    <div class="section-card">
+      <div class="sc-hdr">
+        <div class="sc-title" style="color:var(--blue2);">🕐 Recent Activity</div>
+        <div style="font-size:10px;color:var(--slate);" id="timeline-count">Last 10 sessions</div>
+      </div>
+      <div class="sc-body" style="padding:0;">
+        <div id="activity-timeline" style="padding:8px 16px;"></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /dash-content -->
+</div><!-- /page -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+AUTH.require('agent-dashboard.html');
+const session = AUTH.getSession();
+
+// ── POPULATE AGENT SELECTOR ───────────────────────────────────
+const sel = document.getElementById('agent-select');
+const isAdmin = session.level >= 60;
+const visibleAgents = isAdmin ? AGENTS : [AGENTS.find(a=>a.id===session.agentId)].filter(Boolean);
+visibleAgents.forEach(a => {
+  const o = document.createElement('option');
+  o.value = a.id;
+  o.textContent = a.name + ' — ' + getRoleLabel(a.role);
+  if (a.id === session.agentId) o.selected = true;
+  sel.appendChild(o);
+});
+
+function onAgentChange() {
+  document.getElementById('dash-content').style.display = 'none';
+  document.getElementById('agent-hdr').style.display = 'none';
+}
+
+// ── LOAD DASHBOARD ────────────────────────────────────────────
+async function loadDashboard() {
+  const agentId = document.getElementById('agent-select').value;
+  if (!agentId) { toast('Select an agent first'); return; }
+  const agent = AGENTS.find(a=>a.id===agentId);
+  if (!agent) return;
+
+  document.getElementById('dash-loading').style.display = 'block';
+  document.getElementById('dash-content').style.display = 'none';
+  document.getElementById('agent-hdr').style.display = 'none';
+
+  try {
+    // Fetch all boards in parallel
+    const [actData, licData, bomData, incData] = await Promise.all([
+      fetchCallLog(agentId, agent.name),
+      fetchLicensing(agentId, agent.name),
+      fetchBOMAttendance(agentId, agent.name),
+      fetchIncentives(agentId),
+    ]);
+    const perfData = fetchPerformance(agentId, agent.name);
+
+    renderAgentHeader(agent, actData, licData);
+    renderActivity(actData);
+    renderLicensing(licData, agent);
+    renderBOMAttendance(bomData);
+    renderIncentives(incData, agent);
+    renderPerformance(perfData, agent);
+    renderTimeline(actData);
+
+    document.getElementById('dash-loading').style.display = 'none';
+    document.getElementById('dash-content').style.display = 'block';
+    document.getElementById('agent-hdr').style.display = 'flex';
+    document.getElementById('last-loaded-label').textContent = 'Loaded ' + new Date().toLocaleTimeString();
+  } catch(e) {
+    document.getElementById('dash-loading').style.display = 'none';
+    toast('Error loading dashboard: ' + e.message);
+    console.error(e);
+  }
+}
+
+// ── FETCH: CALL LOG ───────────────────────────────────────────
+async function fetchCallLog(agentId, agentName) {
+  const board = TEAM.monday.boardCallLog;
+  let items = [], cursor = null;
+  try {
+    do {
+      const ca = cursor ? `,cursor:"${cursor}"` : '';
+      const r = await mondayQuery(`{boards(ids:${board}){items_page(limit:100${ca}){cursor items{id name created_at column_values{id text}}}}}`);
+      const page = r?.data?.boards?.[0]?.items_page;
+      if (!page) break;
+      items = items.concat(page.items||[]);
+      cursor = page.cursor||null;
+    } while (cursor);
+  } catch(e){}
+
+  const myName = agentName.toLowerCase();
+  return items.filter(item => {
+    const agCol = item.column_values.find(c=>(c.title||'').toLowerCase().includes('agent id'));
+    if (agCol?.text) return agCol.text.toLowerCase() === agentId.toLowerCase();
+    return item.name.toLowerCase().includes(myName);
+  }).map(item => {
+    const get = (...kws) => item.column_values.find(c=>kws.some(k=>(c.title||'').toLowerCase().includes(k)))?.text||'';
+    return {
+      date:    get('date','session'),
+      calls:   parseInt(get('calls'))||0,
+      contacts:parseInt(get('contacts'))||0,
+      appts:   parseInt(get('appointments','appts'))||0,
+      shows:   parseInt(get('shows'))||0,
+      recruits:parseInt(get('recruits'))||0,
+      ri:      parseInt(get('recruiting interview','r.i.'))||0,
+      ft:      parseInt(get('ft appt','f.t.'))||0,
+      gi:      parseInt(get('guests invited'))||0,
+      ga:      parseInt(get('guests attended'))||0,
+      points:  parseFloat(get('points','atp'))||0,
+      sp:      parseFloat(get('submitted points'))||0,
+      pp:      parseFloat(get('paid points'))||0,
+      name:    item.name,
+      createdAt: item.created_at,
+    };
+  }).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+}
+
+// ── FETCH: LICENSING ──────────────────────────────────────────
+async function fetchLicensing(agentId, agentName) {
+  const board = localStorage.getItem('dba_licensing_board_id');
+  if (!board) return null;
+  try {
+    const r = await mondayQuery(`{boards(ids:${board}){items_page(limit:50){items{id name column_values{id text}}}}}`);
+    const items = r?.data?.boards?.[0]?.items_page?.items||[];
+    const mine = items.find(item => {
+      const agCol = item.column_values.find(c=>(c.title||'').toLowerCase().includes('agent id'));
+      return agCol?.text?.toLowerCase() === agentId.toLowerCase() || item.name.toLowerCase().includes(agentName.toLowerCase());
+    });
+    if (!mine) return null;
+    const get = (...kws) => mine.column_values.find(c=>kws.some(k=>(c.title||'').toLowerCase().includes(k)))?.text||'';
+    return {
+      stage:       get('stage'),
+      studyStart:  get('study start'),
+      examDate:    get('exam date'),
+      examPassed:  get('exam passed'),
+      licenseDate: get('license date'),
+      licenseNum:  get('license number','license num'),
+      states:      get('states'),
+      apptDate:    get('appt'),
+      notes:       get('notes'),
+      days:        parseInt(get('days'))||0,
+    };
+  } catch(e){ return null; }
+}
+
+// ── FETCH: BOM ATTENDANCE ─────────────────────────────────────
+async function fetchBOMAttendance(agentId, agentName) {
+  const board = localStorage.getItem('dba_bom_attend_board');
+  if (!board) return [];
+  try {
+    const r = await mondayQuery(`{boards(ids:${board}){items_page(limit:100){items{id name column_values{id text}}}}}`);
+    const items = r?.data?.boards?.[0]?.items_page?.items||[];
+    return items.filter(item => {
+      const agCol = item.column_values.find(c=>(c.title||'').toLowerCase().includes('agent id'));
+      return agCol?.text?.toLowerCase() === agentId.toLowerCase() || item.name.toLowerCase().includes(agentName.toLowerCase().split(' ')[0]);
+    }).map(item => {
+      const get = (...kws) => item.column_values.find(c=>kws.some(k=>(c.title||'').toLowerCase().includes(k)))?.text||'';
+      return {
+        date:      get('bom date','date'),
+        day:       get('bom day','day'),
+        type:      get('bom type','type'),
+        guests:    parseInt(get('guests'))||0,
+        confirmed: parseInt(get('confirmed'))||0,
+        showed:    parseInt(get('showed'))||0,
+        week:      get('week'),
+      };
+    }).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  } catch(e){ return []; }
+}
+
+// ── FETCH: INCENTIVES ─────────────────────────────────────────
+async function fetchIncentives(agentId) {
+  const board = localStorage.getItem('dba_incentive_board_id');
+  if (!board) return null;
+  try {
+    const r = await mondayQuery(`{boards(ids:${board}){items_page(limit:50){items{id name column_values{id text}}}}}`);
+    const items = r?.data?.boards?.[0]?.items_page?.items||[];
+    const mine = items.find(item => {
+      const agCol = item.column_values.find(c=>(c.title||'').toLowerCase().includes('agent id'));
+      return agCol?.text?.toLowerCase() === agentId.toLowerCase() || item.name.includes(agentId);
+    });
+    if (!mine) return null;
+    const get = (...kws) => mine.column_values.find(c=>kws.some(k=>(c.title||'').toLowerCase().includes(k)))?.text||'';
+    return {
+      incentives: (get('incentive')||'').split(',').map(s=>s.trim()).filter(Boolean),
+      recruits:   parseInt(get('recruit'))||0,
+      apps:       parseInt(get('personal app','apps'))||0,
+      sp:         parseInt(get('submitted'))||0,
+      pp:         parseInt(get('paid points'))||0,
+      tickets:    parseInt(get('ticket'))||0,
+      notes:      get('notes'),
+    };
+  } catch(e){ return null; }
+}
+
+// ── FETCH: PERFORMANCE (from embedded LB data) ────────────────
+function fetchPerformance(agentId, agentName) {
+  try {
+    // Check localStorage for imported data first
+    const saved = localStorage.getItem('dba_lb_data');
+    const data = saved ? JSON.parse(saved) : (typeof LB_ALL !== 'undefined' ? LB_ALL : null);
+    if (!data) return null;
+    const myName = agentName.toLowerCase();
+    const results = {};
+    Object.entries(data).forEach(([cat, rows]) => {
+      if (!Array.isArray(rows)) return;
+      const row = rows.find(r => (r.name||'').toLowerCase().includes(myName) || (r.php_code||'') === (AGENTS.find(a=>a.id===agentId)?.phpId||'NONE'));
+      if (row) results[cat] = { rank: row.rank, total: row.total, reward: row.reward_type };
+    });
+    return Object.keys(results).length ? results : null;
+  } catch(e){ return null; }
+}
+
+// ── RENDER: AGENT HEADER ──────────────────────────────────────
+function renderAgentHeader(agent, actData, licData) {
+  document.getElementById('ag-avatar').textContent = agent.name.charAt(0).toUpperCase();
+  document.getElementById('ag-name').textContent = agent.name;
+  document.getElementById('ag-role').textContent = getRoleLabel(agent.role) + ' · PHP #' + (agent.phpId||'—');
+  document.getElementById('ag-id').textContent = agent.id + ' · ' + (agent.phone||'No phone') + ' · Enrolled: ' + (agent.enrollmentDate||'—');
+
+  const totalCalls    = actData.reduce((s,r)=>s+r.calls,0);
+  const totalRecruits = actData.reduce((s,r)=>s+r.recruits,0);
+  const totalSP       = actData.reduce((s,r)=>s+r.sp,0);
+  const fmt = v => v >= 1000 ? '$'+(v/1000).toFixed(1)+'K' : v > 0 ? '$'+Math.round(v).toLocaleString() : '—';
+
+  document.getElementById('ag-meta-row').innerHTML = [
+    { val: actData.length,     lbl: 'Sessions' },
+    { val: totalCalls,         lbl: 'Total Calls' },
+    { val: totalRecruits,      lbl: 'Recruits' },
+    { val: fmt(totalSP),       lbl: 'Sub Points' },
+    { val: licData?.stage || 'N/A', lbl: 'Lic. Stage' },
+  ].map(m => `<div class="ag-meta-item"><div class="ag-meta-val">${m.val}</div><div class="ag-meta-lbl">${m.lbl}</div></div>`).join('');
+}
+
+// ── RENDER: ACTIVITY ──────────────────────────────────────────
+function renderActivity(actData) {
+  document.getElementById('activity-sessions').textContent = actData.length + ' sessions';
+  if (!actData.length) {
+    document.getElementById('activity-bars').innerHTML = '<div class="empty-state">No Call Log data found</div>';
+    return;
+  }
+  const totals = {
+    'Calls':         actData.reduce((s,r)=>s+r.calls,0),
+    'Contacts':      actData.reduce((s,r)=>s+r.contacts,0),
+    'Appointments':  actData.reduce((s,r)=>s+r.appts,0),
+    'Shows':         actData.reduce((s,r)=>s+r.shows,0),
+    'Recruits':      actData.reduce((s,r)=>s+r.recruits,0),
+    'R.I.':          actData.reduce((s,r)=>s+r.ri,0),
+    'FT Appts':      actData.reduce((s,r)=>s+r.ft,0),
+    'Guests Invited':actData.reduce((s,r)=>s+r.gi,0),
+    'Guests Attended':actData.reduce((s,r)=>s+r.ga,0),
+  };
+  const COLORS = { 'Calls':'var(--blue2)','Contacts':'var(--blue2)','Appointments':'var(--gold)','Shows':'var(--gold)','Recruits':'var(--green2)','R.I.':'var(--gold)','FT Appts':'var(--gold)','Guests Invited':'#BB8FCE','Guests Attended':'#BB8FCE' };
+  const max = Math.max(...Object.values(totals), 1);
+  document.getElementById('activity-bars').innerHTML = Object.entries(totals)
+    .filter(([,v])=>v>0)
+    .map(([lbl,val]) => `
+      <div class="perf-bar-row">
+        <div class="perf-bar-lbl">${lbl}</div>
+        <div class="perf-bar-track"><div class="perf-bar-fill" style="width:${Math.round(val/max*100)}%;background:${COLORS[lbl]||'var(--gold)'};"></div></div>
+        <div class="perf-bar-val">${val}</div>
+      </div>`).join('') || '<div class="empty-state">No activity data</div>';
+}
+
+// ── RENDER: LICENSING ─────────────────────────────────────────
+function renderLicensing(licData, agent) {
+  const STAGE_COLORS = { not_started:'#6B7C93',studying:'#3498DB',exam_scheduled:'#E67E22',exam_passed:'#9B59B6',license_pending:'#F39C12',licensed:'#27AE60',appointed:'#C9A84C' };
+  const STAGE_LABELS = { not_started:'Not Started',studying:'Studying',exam_scheduled:'Exam Scheduled',exam_passed:'Exam Passed',license_pending:'License Pending',licensed:'Licensed',appointed:'Appointed' };
+
+  // Use agent's license states from auth.js as fallback
+  const hasLicense = (agent.licenseStates||[]).length > 0;
+  const stageFromAgent = hasLicense ? 'appointed' : 'not_started';
+  const stage = licData?.stage?.toLowerCase().replace(/\s+/g,'_') || stageFromAgent;
+  const stageColor = STAGE_COLORS[stage] || '#6B7C93';
+  const stageLabel = licData?.stage || STAGE_LABELS[stage] || 'Not Started';
+
+  document.getElementById('license-stage-badge').textContent = stageLabel;
+  document.getElementById('license-stage-badge').style.background = stageColor + '22';
+  document.getElementById('license-stage-badge').style.color = stageColor;
+  document.getElementById('license-stage-badge').style.border = `1px solid ${stageColor}44`;
+
+  if (!licData && !hasLicense) {
+    document.getElementById('licensing-body').innerHTML = `<div class="empty-state">No licensing record. <a href="licensing.html" style="color:var(--gold);">Open Licensing Tracker →</a></div>`;
+    return;
+  }
+
+  const fields = licData ? [
+    { lbl:'Study Start',   val: licData.studyStart || '—' },
+    { lbl:'Exam Scheduled',val: licData.examDate   || '—' },
+    { lbl:'Exam Passed',   val: licData.examPassed || '—' },
+    { lbl:'License Issued',val: licData.licenseDate|| '—' },
+    { lbl:'License #',     val: licData.licenseNum || '—' },
+    { lbl:'States',        val: licData.states     || (agent.licenseStates||[]).join(', ') || '—' },
+    { lbl:'Carrier Appt',  val: licData.apptDate   || '—' },
+  ] : [
+    { lbl:'License States', val: (agent.licenseStates||[]).join(', ') || '—' },
+    { lbl:'Status', val: 'Active — from auth.js' },
+  ];
+  document.getElementById('licensing-body').innerHTML = fields.map(f=>`
+    <div class="stat-row"><div class="stat-lbl">${f.lbl}</div><div class="stat-val">${f.val}</div></div>`).join('') +
+    (licData?.notes ? `<div style="font-size:11px;color:var(--slate);margin-top:8px;font-style:italic;">${licData.notes}</div>` : '');
+}
+
+// ── RENDER: BOM ATTENDANCE ────────────────────────────────────
+function renderBOMAttendance(bomData) {
+  const tue = bomData.filter(b=>(b.day||'').toLowerCase().includes('tue'));
+  const sat = bomData.filter(b=>(b.day||'').toLowerCase().includes('sat'));
+  const totalGuests = bomData.reduce((s,b)=>s+b.guests,0);
+  const avgGuests   = bomData.length ? (totalGuests/bomData.length).toFixed(1) : '0';
+
+  document.getElementById('bom-tue-count').textContent = tue.length + ' attended';
+  document.getElementById('bom-sat-count').textContent = sat.length + ' attended';
+  document.getElementById('bom-guests-total').textContent = totalGuests;
+  document.getElementById('bom-avg-guests').textContent = avgGuests + ' avg';
+  document.getElementById('bom-summary-label').textContent = bomData.length + ' total BOMs';
+
+  if (!bomData.length) {
+    document.getElementById('bom-attend-grid').innerHTML = `<div class="empty-state">No attendance records.<br><a href="bom.html" style="color:var(--gold);">Open BOM Tracker →</a></div>`;
+    return;
+  }
+
+  // Group by week
+  const byWeek = {};
+  bomData.forEach(b => {
+    const wk = b.week || b.date?.slice(0,7) || 'Unknown';
+    if (!byWeek[wk]) byWeek[wk] = { tue: false, sat: false, guestsTue: 0, guestsSat: 0 };
+    if ((b.day||'').toLowerCase().includes('tue')) { byWeek[wk].tue = true; byWeek[wk].guestsTue = b.guests; }
+    if ((b.day||'').toLowerCase().includes('sat')) { byWeek[wk].sat = true; byWeek[wk].guestsSat = b.guests; }
+  });
+
+  const weeks = Object.entries(byWeek).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,12);
+  document.getElementById('bom-attend-grid').innerHTML = `<div class="attend-grid">${weeks.map(([wk, data]) => `
+    <div class="attend-week">
+      <div class="attend-week-label">${wk}</div>
+      <div class="attend-days">
+        <div>
+          <div class="attend-dot ${data.tue?'dot-present':'dot-absent'}">${data.tue?(data.guestsTue||'✓'):'—'}</div>
+          <span class="dot-label">Tue</span>
+        </div>
+        <div>
+          <div class="attend-dot ${data.sat?'dot-present':'dot-absent'}">${data.sat?(data.guestsSat||'✓'):'—'}</div>
+          <span class="dot-label">Sat</span>
+        </div>
+      </div>
+    </div>`).join('')}</div>`;
+}
+
+// ── RENDER: INCENTIVES ────────────────────────────────────────
+function renderIncentives(incData, agent) {
+  const INC_DEFS = {
+    A: { label:'Fast Track', color:'var(--green2)', goal_rec:1, goal_apps:1 },
+    B: { label:'MD Promo',   color:'var(--gold)',   goal_rec:25,goal_apps:25 },
+    C: { label:'Rolex Raffle',color:'#BB8FCE',      goal_rec:3 },
+    P: { label:'Production', color:'var(--blue2)' },
+  };
+
+  if (!incData) {
+    document.getElementById('incentives-body').innerHTML = `<div class="empty-state">No incentive record.<br><a href="incentive-tracker.html" style="color:var(--gold);">Open Incentive Tracker →</a></div>`;
+    document.getElementById('inc-pills').innerHTML = '';
+    return;
+  }
+
+  document.getElementById('inc-pills').innerHTML = (incData.incentives||[]).map(id => {
+    const def = INC_DEFS[id]||{};
+    return `<span class="inc-pill-sm" style="border-color:${def.color};color:${def.color};background:${def.color}22;">${id}</span>`;
+  }).join('');
+
+  const rows = [
+    { lbl:'Personal Recruits',  val: incData.recruits },
+    { lbl:'Personal Apps',      val: incData.apps },
+    { lbl:'Submitted Points',   val: incData.sp ? '$'+incData.sp.toLocaleString() : '—' },
+    { lbl:'Paid Points',        val: incData.pp ? '$'+incData.pp.toLocaleString() : '—' },
+    { lbl:'Raffle Tickets',     val: incData.tickets > 0 ? '🎟️ '+incData.tickets : '—' },
+  ];
+
+  let qualHTML = '';
+  if (incData.incentives.includes('A')) {
+    const qualA = incData.recruits >= 1 && incData.apps >= 1;
+    qualHTML += `<div style="margin-top:8px;padding:7px 10px;border-radius:3px;font-size:11px;font-weight:600;background:${qualA?'rgba(39,174,96,.12)':'rgba(201,168,76,.06)'};border:1px solid ${qualA?'rgba(39,174,96,.3)':'var(--border)'};">
+      ${qualA ? '✅ Fast Track Qualified!' : `⚡ A: Need ${1-incData.recruits>0?1-incData.recruits+' more recruit':'recruits ✓'}${incData.apps<1?' + 1 app':' + apps ✓'}`}
+    </div>`;
+  }
+
+  document.getElementById('incentives-body').innerHTML =
+    rows.map(r=>`<div class="stat-row"><div class="stat-lbl">${r.lbl}</div><div class="stat-val">${r.val||'—'}</div></div>`).join('') + qualHTML +
+    (incData.notes ? `<div style="font-size:11px;color:var(--slate);margin-top:8px;font-style:italic;">${incData.notes}</div>` : '');
+}
+
+// ── RENDER: PERFORMANCE ───────────────────────────────────────
+function renderPerformance(perfData, agent) {
+  if (!perfData) {
+    document.getElementById('performance-body').innerHTML = `<div class="empty-state">No PHP Bamboo data found for ${agent.name}.<br>Upload leaderboard Excel files in <a href="performance.html" style="color:var(--gold);">Performance</a>.</div>`;
+    return;
+  }
+  const CAT_LABELS = { cashflow:'Cashflow ($)', submitted_points:'Submitted Points ($)', paid_points:'Paid Points ($)', recruits:'Recruits', submitted_apps:'Submitted Apps', paid_apps:'Paid Apps', licensed_agents:'Licensed Agents' };
+  const vals = Object.entries(perfData).map(([cat, data]) => ({
+    lbl: CAT_LABELS[cat] || cat,
+    rank: data.rank,
+    total: data.total,
+    reward: data.reward,
+  }));
+  const maxVal = Math.max(...vals.map(v=>v.total), 1);
+  document.getElementById('performance-body').innerHTML = vals.map(v => `
+    <div class="perf-bar-row">
+      <div class="perf-bar-lbl">${v.lbl}</div>
+      <div class="perf-bar-track"><div class="perf-bar-fill" style="width:${Math.round(v.total/maxVal*100)}%;background:var(--gold);"></div></div>
+      <div class="perf-bar-val" style="text-align:right;">
+        ${typeof v.total === 'number' && v.total > 100 ? '$'+v.total.toLocaleString('en-US',{maximumFractionDigits:0}) : v.total}
+        <span style="font-size:9px;color:var(--slate);"> #${v.rank}</span>
+      </div>
+    </div>`).join('');
+}
+
+// ── RENDER: TIMELINE ──────────────────────────────────────────
+function renderTimeline(actData) {
+  const recent = actData.slice(0,10);
+  document.getElementById('timeline-count').textContent = 'Last '+recent.length+' sessions';
+  if (!recent.length) {
+    document.getElementById('activity-timeline').innerHTML = '<div class="empty-state">No sessions recorded</div>';
+    return;
+  }
+  document.getElementById('activity-timeline').innerHTML = recent.map(r => `
+    <div class="timeline-item">
+      <div class="tl-dot" style="background:${r.recruits>0?'var(--green2)':r.calls>0?'var(--blue2)':'var(--slate)'};"></div>
+      <div class="tl-content">
+        <div class="tl-text">${r.calls}C / ${r.contacts}K / ${r.appts}A / ${r.shows}S${r.recruits>0?' · <strong style="color:var(--green2);">'+r.recruits+' recruit(s)</strong>':''}${r.sp>0?' · <span style="color:var(--gold);">$'+r.sp.toLocaleString()+' SP</span>':''}</div>
+        <div class="tl-date">${r.date||r.createdAt?.slice(0,10)||'—'} · ${r.name}</div>
+      </div>
+    </div>`).join('');
+}
+
+// ── TOAST ─────────────────────────────────────────────────────
+let tt;
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),3000);}
+
+// ── AUTO-LOAD for non-admin (show own dashboard immediately) ──
+if (!isAdmin && session.agentId) {
+  document.getElementById('agent-select').value = session.agentId;
+  loadDashboard();
+}
+</script>
+</body>
+</html>
