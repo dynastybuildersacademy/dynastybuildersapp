@@ -96,6 +96,11 @@ input[type=text],input[type=tel],input[type=number],select{background:var(--navy
 input:focus,select:focus{outline:none;border-color:var(--gold);}
 .btn-sm{padding:9px 16px;border-radius:3px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.05em;cursor:pointer;border:none;white-space:nowrap;}
 .btn-gold{background:var(--gold);color:var(--navy);}
+.btn-outline{background:transparent;border:1.5px dashed var(--border);color:var(--gold-light);}
+.btn-outline:hover{border-color:var(--gold);background:rgba(201,168,76,0.08);}
+.quick-dial-input{background:var(--navy);border:1px solid var(--border);color:var(--cream);font-family:'Barlow',sans-serif;font-size:13px;padding:10px 12px;border-radius:3px;outline:none;}
+.quick-dial-input:focus{border-color:var(--gold);}
+.streak-badge{font-size:11px;color:var(--gold-light);font-family:'Barlow Condensed',sans-serif;font-weight:600;}
 .prospect-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(201,168,76,0.07);}
 .prospect-row:last-child{border:none;}
 .prospect-name{font-weight:600;font-size:13px;flex:1;}
@@ -136,6 +141,17 @@ input:focus,select:focus{outline:none;border-color:var(--gold);}
       <div class="agent-meta" id="session-date"></div>
     </div>
     <div class="session-badge" id="session-status">● Session Active</div>
+  </div>
+
+  <!-- QUICK DIAL — one tap dials and logs at the same time -->
+  <div class="card" id="quick-dial-card">
+    <div class="card-title">📞 Quick Dial</div>
+    <div style="font-size:12px;color:var(--slate);margin-bottom:10px;">Dial any number — tapping Call logs it the same moment, no second step.</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <input type="tel" id="quick-dial-number" class="quick-dial-input" placeholder="Phone number (optional)" style="flex:1;min-width:180px;" onkeydown="if(event.key==='Enter')quickCallAndLog();">
+      <button class="btn-sm btn-gold" onclick="quickCallAndLog()">📞 Call &amp; Log</button>
+      <button class="btn-sm btn-outline" onclick="quickLogOnly()">+ Already dialed — log it</button>
+    </div>
   </div>
 
   <!-- ACTIVITY COUNTERS (calls, contacts, appts, shows, recruits) -->
@@ -256,6 +272,15 @@ input:focus,select:focus{outline:none;border-color:var(--gold);}
     <div class="ws"><div class="ws-val" id="w-appts">0</div><div class="ws-label">Appts</div></div>
     <div class="ws"><div class="ws-val" id="w-recruits">0</div><div class="ws-label">Recruits</div></div>
     <div class="ws"><div class="ws-val" id="w-pts">$0</div><div class="ws-label">Session ATP</div></div>
+  </div>
+
+  <!-- CALL ACTIVITY — LAST 7 DAYS -->
+  <div class="card" id="call-history-card">
+    <div class="card-title">
+      <span>📊 Call Activity — Last 7 Days</span>
+      <span id="call-streak-badge" class="streak-badge"></span>
+    </div>
+    <div id="call-history-chart" style="display:flex;align-items:flex-end;gap:8px;height:90px;padding-top:8px;"></div>
   </div>
 
   <!-- PROSPECT PIPELINE -->
@@ -381,6 +406,7 @@ renderCounters();
 renderPolicies();
 renderProspects();
 updateWeekly();
+renderCallHistory();
 
 // ── RENDER ACTIVITY COUNTERS ──────────────────────────────────
 function renderCounters() {
@@ -547,6 +573,7 @@ function updateWeekly() {
   document.getElementById('w-appts').textContent    = counts.appts;
   document.getElementById('w-recruits').textContent = counts.recruits;
   document.getElementById('w-pts').textContent      = '$' + total.toLocaleString();
+  renderCallHistory();
 }
 
 // ── PROSPECTS ─────────────────────────────────────────────────
@@ -667,6 +694,86 @@ function logCall(id) {
   toast(`📞 Call logged for ${p.name}`);
 }
 
+// One tap: dials the prospect AND logs the call in the same action.
+function callAndLog(id) {
+  const p = prospects.find(x => x.id === id);
+  if (!p) return;
+  if (p.phone) window.location.href = 'tel:' + p.phone;
+  logCall(id);
+}
+
+// ── QUICK DIAL (ad hoc numbers not in the pipeline) ────────────
+function quickCallAndLog() {
+  const inp = document.getElementById('quick-dial-number');
+  const phone = (inp?.value || '').trim();
+  if (phone) window.location.href = 'tel:' + phone;
+  adjust('calls', 1);
+  toast(phone ? `📞 Call logged — ${phone}` : '📞 Call logged');
+  if (inp) inp.value = '';
+}
+
+function quickLogOnly() {
+  adjust('calls', 1);
+  toast('📞 Call logged');
+}
+
+// ── CALL ACTIVITY HISTORY (last 7 days) & STREAK ───────────────
+// Reads from the existing per-day localStorage snapshots — no new storage needed.
+function getDayCalls(dateStr) {
+  const todayStr = new Date().toISOString().slice(0,10);
+  if (dateStr === todayStr) return counts.calls || 0;
+  try {
+    const raw = JSON.parse(localStorage.getItem(`dba_tracker_${agentId}_${dateStr}`) || 'null');
+    return raw?.counts?.calls || 0;
+  } catch { return 0; }
+}
+
+function getCallHistory(days) {
+  const hist = [];
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const dateStr = d.toISOString().slice(0,10);
+    hist.push({ dateStr, calls: getDayCalls(dateStr), label: d.toLocaleDateString('en-US',{weekday:'short'}) });
+  }
+  return hist;
+}
+
+function getCallStreak() {
+  let streak = 0;
+  let d = new Date();
+  const todayStr = d.toISOString().slice(0,10);
+  if (getDayCalls(todayStr) === 0) d.setDate(d.getDate() - 1);
+  while (true) {
+    const dateStr = d.toISOString().slice(0,10);
+    if (getDayCalls(dateStr) <= 0) break;
+    streak++;
+    d.setDate(d.getDate() - 1);
+  }
+  return streak;
+}
+
+function renderCallHistory() {
+  const el = document.getElementById('call-history-chart');
+  if (!el) return;
+  const hist = getCallHistory(7);
+  const max = Math.max(1, ...hist.map(h => h.calls));
+  const todayStr = new Date().toISOString().slice(0,10);
+  el.innerHTML = hist.map(h => {
+    const isToday = h.dateStr === todayStr;
+    const barH = Math.max(4, Math.round((h.calls / max) * 64));
+    return `
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;">
+        <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--slate);margin-bottom:4px;">${h.calls > 0 ? h.calls : ''}</div>
+        <div style="width:100%;max-width:30px;height:${barH}px;background:${isToday ? 'var(--gold)' : 'var(--navy-light)'};border-radius:4px;transition:height .3s;"></div>
+        <div style="font-size:10px;color:var(--slate);margin-top:6px;">${h.label}</div>
+      </div>`;
+  }).join('');
+  const streak = getCallStreak();
+  const badge = document.getElementById('call-streak-badge');
+  if (badge) badge.innerHTML = streak > 0 ? `🔥 ${streak} day streak` : '';
+}
+
 function deleteProspect(id) {
   prospects = prospects.filter(x => x.id !== id);
   saveTodayData();
@@ -685,13 +792,13 @@ function renderProspects() {
     <div class="prospect-row">
       <div style="flex:1;">
         <div class="prospect-name">${p.name}</div>
-        ${p.phone ? `<div class="prospect-phone"><a href="tel:${p.phone}" style="color:var(--gold-light);text-decoration:none;">${p.phone}</a></div>` : ''}
+        ${p.phone ? `<div class="prospect-phone">${p.phone}</div>` : ''}
         ${p.lastCall ? `<div style="font-size:10px;color:var(--slate);">Last call: ${p.lastCall}</div>` : ''}
       </div>
       <select class="status-select" onchange="updateStatus(${p.id},this.value)">
         ${STATUS_CYCLE.map(s => `<option ${s===p.status?'selected':''}>${s}</option>`).join('')}
       </select>
-      <button class="log-call-btn" onclick="logCall(${p.id})">📞 Log Call</button>
+      <button class="log-call-btn" onclick="callAndLog(${p.id})">📞 ${p.phone ? 'Call &amp; Log' : 'Log Call'}</button>
       <button class="del-btn"      onclick="deleteProspect(${p.id})">✕</button>
     </div>`).join('');
 }

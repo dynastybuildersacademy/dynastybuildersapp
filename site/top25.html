@@ -488,7 +488,7 @@ const ITEM_FRAGMENT = `
   group { id title }
   column_values {
     id text
-    ... on PhoneValue     { phone countryShortName }
+    ... on PhoneValue     { phone }
     ... on StatusValue    { label }
     ... on DateValue      { date }
     ... on CheckboxValue  { checked }

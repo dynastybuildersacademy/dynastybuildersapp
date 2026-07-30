@@ -497,12 +497,12 @@ async function saveToMonday() {
 
   if (!name) { alert("Please enter a client name before saving."); return; }
 
-  // Same pattern as the rest of the AOS: each agent connects their own
-  // Monday.com key once (Hub -> Monday Sync), stored in localStorage.
-  // Never hardcode a token in auth.js -- that's what tripped the secrets scan.
-  if (!AUTH.getMondayKey()) {
+  // Get Monday.com token from auth.js
+  let token = "";
+  try { token = typeof MONDAY_TOKEN !== 'undefined' ? MONDAY_TOKEN : (window.MONDAY_TOKEN || ""); } catch(e) {}
+  if (!token) {
     status.className = "save-status error";
-    status.textContent = "⚠️ Connect your Monday.com API key first (Hub → Monday Sync).";
+    status.textContent = "⚠️ Monday.com token not found in auth.js. Please add MONDAY_TOKEN.";
     return;
   }
 
@@ -537,14 +537,24 @@ async function saveToMonday() {
   };
 
   try {
-    const data = await mondayQuery(query, variables);
+    const res = await fetch("https://api.monday.com/v2", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": token,
+        "API-Version": "2024-01"
+      },
+      body: JSON.stringify({ query, variables })
+    });
+    const data = await res.json();
+    if (data.errors) throw new Error(data.errors[0].message);
     const item = data.data?.create_item;
     status.className = "save-status success";
     status.textContent = `✅ Saved! "${item?.name}" added to Living Promise Pre-Qualifications board.`;
     btn.textContent = "✓ Saved";
   } catch (err) {
     status.className = "save-status error";
-    status.textContent = "❌ Error: " + (err.message || err);
+    status.textContent = "❌ Error: " + err.message;
     btn.disabled = false;
   }
 }
