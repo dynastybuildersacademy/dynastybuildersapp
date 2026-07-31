@@ -694,13 +694,13 @@ const VALUE_HEADER_HINTS = {
 const NAME_HEADER_HINTS = ['name','agent','producer'];
 
 // Categories where values are dollar amounts — displayed with $ formatting.
-// recruits are whole numbers.
-const DOLLAR_CATS = new Set(['producers','paidpoints','cashflow']);
+// Only cash flow is a dollar amount; recruits, producers, and paid points are counts/points.
+const DOLLAR_CATS = new Set(['cashflow']);
 
 // Format a numeric value for display on slides.
 function fmtCatValue(cat, numeric) {
-  if (cat === 'recruits') return String(Math.round(numeric));
-  return '$' + Math.round(numeric).toLocaleString('en-US');
+  if (DOLLAR_CATS.has(cat)) return '$' + Math.round(numeric).toLocaleString('en-US');
+  return Math.round(numeric).toLocaleString('en-US');
 }
 
 // Auto-detect category from filename
@@ -776,8 +776,11 @@ async function handleMultiFiles(fileList) {
         const nameCol = headers[lower.findIndex(h => NAME_HEADER_HINTS.some(k => h.includes(k)))] || headers[0];
         const detectedCat = detectCatFromFilename(file.name);
 
-        // Values are always in the 10th column (index 9) per PHP Bamboo export format.
-        const valueCol = headers[9] || headers.find(h => h !== nameCol);
+        // Prefer an exact "Total" header (the real metric column in these exports);
+        // fall back to the 10th column (index 9), which is where PHP Bamboo exports
+        // have historically put it, in case a file has an unnamed or oddly-cased header.
+        const totalIdx = lower.findIndex(h => h.trim() === 'total');
+        const valueCol = (totalIdx > -1 ? headers[totalIdx] : null) || headers[9] || headers.find(h => h !== nameCol);
 
         if (!valueCol) { resolve({ file, error:'No value column found — file has fewer than 10 columns' }); return; }
 

@@ -128,7 +128,7 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);p
 </div>
 
 <div class="cat-grid" id="cat-grid"></div>
-<div class="viewer-note" id="viewer-note" style="display:none;">Viewing only — sign in as an MD or above to edit this month's standings.</div>
+<div class="viewer-note" id="viewer-note" style="display:none;">Viewing only — sign in as an MD or above to upload this month's standings.</div>
 
 <script>
 const session = AUTH.getSession();
@@ -186,12 +186,17 @@ const VALUE_HEADER_HINTS = {
   recruits:   ['recruit','new agent','licensed agent','license'],
 };
 const NAME_HEADER_HINTS = ['name','agent','producer'];
-const DOLLAR_CATS = new Set(['producers','paidpoints','cashflow']);
+const DOLLAR_CATS = new Set(['cashflow']);
 const MAX_UPLOAD_ENTRIES = 100;
 
+// Columns that are numeric but never the actual metric — must never be picked
+// as the value column (this is what caused agents to be ranked by their
+// spreadsheet "Rank" column instead of their real performance number).
+const EXCLUDE_VALUE_COLS = ['rank','phone','code','id','level','reward','cft','watch'];
+
 function fmtCatValue(cat, numeric) {
-  if (cat === 'recruits') return String(Math.round(numeric));
-  return '$' + Math.round(numeric).toLocaleString('en-US');
+  if (DOLLAR_CATS.has(cat)) return '$' + Math.round(numeric).toLocaleString('en-US');
+  return Math.round(numeric).toLocaleString('en-US');
 }
 
 function detectCatFromFilename(name) {
@@ -203,9 +208,16 @@ function detectCatFromFilename(name) {
   return null;
 }
 
-// Pick the best value column: prefer a header matching the detected category's
-// hints, otherwise fall back to whichever non-name column is numeric most often.
+// Pick the best value column. Priority:
+//  1) An exact "Total" header — the standard metric column in these leaderboard exports.
+//  2) A header matching the detected category's hints.
+//  3) Whichever remaining non-name, non-excluded column is numeric most often.
+// Rank/PHP Code/CFT Level/Reward columns are excluded so they're never mistaken
+// for the real performance number.
 function pickValueColumn(headers, lowerHeaders, nameCol, rows, cat) {
+  const totalIdx = lowerHeaders.findIndex(h => h.trim() === 'total');
+  if (totalIdx > -1) return headers[totalIdx];
+
   if (cat && VALUE_HEADER_HINTS[cat]) {
     const idx = lowerHeaders.findIndex(h => VALUE_HEADER_HINTS[cat].some(k => h.includes(k)));
     if (idx > -1 && headers[idx] !== nameCol) return headers[idx];
@@ -213,6 +225,7 @@ function pickValueColumn(headers, lowerHeaders, nameCol, rows, cat) {
   let best = null, bestScore = -1;
   headers.forEach(h => {
     if (h === nameCol) return;
+    if (EXCLUDE_VALUE_COLS.some(k => h.toLowerCase().includes(k))) return;
     const numericCount = rows.filter(r => {
       const v = String(r[h] ?? '').replace(/[^0-9.\-]/g,'');
       return v && !isNaN(parseFloat(v));
@@ -325,33 +338,6 @@ function confirmMultiUpload() {
   render();
 }
 
-function addRow(catKey) {
-  const mo = ensureMonth(currentMonthKey);
-  mo[catKey].push({ name:'', value:'' });
-  saveData(data);
-  render();
-}
-function updateRow(catKey, idx, field, val) {
-  const mo = ensureMonth(currentMonthKey);
-  mo[catKey][idx][field] = val;
-  saveData(data);
-}
-function deleteRow(catKey, idx) {
-  const mo = ensureMonth(currentMonthKey);
-  mo[catKey].splice(idx, 1);
-  saveData(data);
-  render();
-}
-function moveRow(catKey, idx, dir) {
-  const mo = ensureMonth(currentMonthKey);
-  const list = mo[catKey];
-  const j = idx + dir;
-  if (j < 0 || j >= list.length) return;
-  [list[idx], list[j]] = [list[j], list[idx]];
-  saveData(data);
-  render();
-}
-
 function render() {
   document.getElementById('month-text').textContent = monthLabel(currentMonthKey);
   document.getElementById('viewer-note').style.display = isAdmin ? 'none' : 'block';
@@ -359,31 +345,17 @@ function render() {
   const mo = ensureMonth(currentMonthKey);
   const grid = document.getElementById('cat-grid');
 
+  // Read-only for everyone — the only way to change standings is an Excel
+  // upload (admin-only, via the button in the top nav), which replaces a
+  // category's list wholesale. No manual add/edit/reorder.
   grid.innerHTML = CATEGORIES.map(cat => {
     const list = mo[cat.key] || [];
-    let rowsHtml;
-
-    if (isAdmin) {
-      rowsHtml = list.map((entry, idx) => `
-        <div class="lb-row">
-          <div class="lb-rank ${RANK_EMOJI[idx+1]?'medal':''}">${RANK_EMOJI[idx+1] || (idx+1)}</div>
-          <input class="lb-input-name" type="text" placeholder="Agent name" value="${escapeAttr(entry.name)}"
-                 onchange="updateRow('${cat.key}',${idx},'name',this.value)">
-          <input class="lb-input-value" type="text" placeholder="Value" value="${escapeAttr(entry.value)}"
-                 onchange="updateRow('${cat.key}',${idx},'value',this.value)">
-          <div class="lb-del" title="Move up" onclick="moveRow('${cat.key}',${idx},-1)">↑</div>
-          <div class="lb-del" title="Move down" onclick="moveRow('${cat.key}',${idx},1)">↓</div>
-          <div class="lb-del" title="Remove" onclick="deleteRow('${cat.key}',${idx})">✕</div>
-        </div>`).join('');
-      rowsHtml += `<button class="add-row-btn" onclick="addRow('${cat.key}')">+ Add Entry</button>`;
-    } else {
-      rowsHtml = list.length ? list.map((entry, idx) => `
-        <div class="lb-row">
-          <div class="lb-rank ${RANK_EMOJI[idx+1]?'medal':''}">${RANK_EMOJI[idx+1] || (idx+1)}</div>
-          <div class="lb-name">${escapeHtml(entry.name) || '—'}</div>
-          <div class="lb-value">${escapeHtml(entry.value)}${entry.value?' '+cat.unit:''}</div>
-        </div>`).join('') : `<div class="empty-cat">No standings entered for this month yet.</div>`;
-    }
+    const rowsHtml = list.length ? list.map((entry, idx) => `
+      <div class="lb-row">
+        <div class="lb-rank ${RANK_EMOJI[idx+1]?'medal':''}">${RANK_EMOJI[idx+1] || (idx+1)}</div>
+        <div class="lb-name">${escapeHtml(entry.name) || '—'}</div>
+        <div class="lb-value">${escapeHtml(entry.value)}${entry.value?' '+cat.unit:''}</div>
+      </div>`).join('') : `<div class="empty-cat">No standings uploaded for this month yet.</div>`;
 
     return `
       <div class="cat-card">
@@ -397,7 +369,6 @@ function render() {
 function escapeHtml(s) {
   return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
-function escapeAttr(s) { return escapeHtml(s).replace(/"/g,'&quot;'); }
 
 render();
 </script>
