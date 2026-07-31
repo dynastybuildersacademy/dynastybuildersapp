@@ -476,12 +476,13 @@ h1.hero-title em{font-style:italic;color:var(--gold2);}
 }
 </style>
 <script>
-// Lightweight Monday proxy for brochure lead capture (no auth required)
+// Lightweight Monday proxy for brochure lead capture (no auth required).
+// The Netlify function holds the real Monday.com key server-side (MONDAY_API_KEY env var) —
+// nothing secret is sent from the browser.
 async function mondayQuery(q) {
-  const key = 'eyJhbGciOiJIUzI1NiJ9.eyJ0aWQiOjY2MjM5OTg4MSwiYWFpIjoxMSwidWlkIjo2MTY2MDI5NCwiaWFkIjoiMjAyNi0wNS0yNFQyMjowOToxMy4wMDBaIiwicGVyIjoibWU6d3JpdGUiLCJhY3RpZCI6MjM3NjI1MTMsInJnbiI6InVzZTEifQ.zEOdw4BTAst6wS2ljocwwG3yfpEJykR9_MIgueOKVEE';
   try {
     const r = await fetch('/.netlify/functions/monday', {
-      method:'POST', headers:{'Content-Type':'application/json','Authorization':key},
+      method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({query: q})
     });
     return r.json();

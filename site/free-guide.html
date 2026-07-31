@@ -275,7 +275,6 @@ footer strong{color:rgba(255,255,255,.32);}
 // ══════════════════════════════════════════════
 // CONFIG
 // ══════════════════════════════════════════════
-const MONDAY_KEY    = 'eyJhbGciOiJIUzI1NiJ9.eyJ0aWQiOjY1Nzg0OTc3NSwiYWFpIjoxMSwidWlkIjo2MTY2MDI5NCwiaWFkIjoiMjAyNi0wNS0xM1QwOTo0OTowNy4wMDBaIiwicGVyIjoibWU6d3JpdGUiLCJhY3RpZCI6MjM3NjI1MTMsInJnbiI6InVzZTEifQ.eCbOAEJTC3mcsit4IjVWOw3r2wyQBYL4lN5Qmnok0r0';           // ← Monday API key
 const MONDAY_BID    = 18409897469;            // ← Monday Board ID
 const MAKE_HOOK = 'https://hook.us2.make.com/nz6mnwny2k9bnk3m52d3u7hl9mfthbqx';   // ← paste Make.com webhook URL (Scenario 2 — Free Guide)
 const TWILIO_FUNC   = '';           // ← Twilio Function URL for SMS opt-in
@@ -379,7 +378,7 @@ function submit() {
   }
 
   // 5. Monday.com
-  if (MONDAY_KEY && MONDAY_BID) logMonday(entry);
+  if (MONDAY_BID) logMonday(entry);
 
   // Show success after brief delay
   setTimeout(() => {
@@ -441,7 +440,7 @@ function logMonday(entry) {
   Object.keys(cols).forEach(k => cols[k] === undefined && delete cols[k]);
   const name = `${entry.fname} — Lead Magnet Download`;
   const q = `mutation{create_item(board_id:${MONDAY_BID},item_name:"${name.replace(/"/g,'\\"')}",column_values:${JSON.stringify(JSON.stringify(cols))}){id}}`;
-  fetch('https://api.monday.com/v2',{method:'POST',headers:{'Content-Type':'application/json','Authorization':MONDAY_KEY,'API-Version':'2024-01'},body:JSON.stringify({query:q})})
+  fetch('/.netlify/functions/monday',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:q})})
   .then(r=>r.json()).then(d=>console.log('[Monday] Lead magnet logged:',d?.data?.create_item?.id))
   .catch(e=>console.warn('[Monday]',e));
 }
