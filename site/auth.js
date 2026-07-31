@@ -1778,6 +1778,7 @@ const PAGE_ACCESS = {
   "portal.html":                0,
   "survey.html":                0,
   "leaderboard.html":           0,
+  "leaderboard-monthly.html":   0,
   "training.html":              0,
   "incentives.html":            0,
   "incentive-tracker.html":     0,
@@ -1787,23 +1788,23 @@ const PAGE_ACCESS = {
   "performance.html":           0,
   "promotions.html":            0,
   "recognitions.html":          0,
-  "bom.html":                   0,   // All agents can track BOM guests
-  "analytics.html":             0,   // All agents can see lead analytics
-  "lead-dashboard.html":        0,
+  "bom.html":                   -1,   // All agents can track BOM guests
+  "analytics.html":             60,   // All agents can see lead analytics
+  "lead-dashboard.html":        60,
   "marketing.html":             0,   // All agents can access marketing tools
   "income-calculator.html":     0,
-  "opportunity.html":           0,
-  "client.html":                0,
-  "recruit.html":               0,
-  "free-guide.html":            0,
+  "opportunity.html":           -1,
+  "client.html":                -1,
+  "recruit.html":               -1,
+  "free-guide.html":            -1,
   "brochure.html":              -1,   // Public client page
   "employer-vs-iul-brochure.html": -1,  // Public client page
-  "employer-vs-iul-survey.html":   0,
-  "world-cup-survey.html":      0,
-  "world-cup.html":             0,
-  "schedule-1on1.html":         0,
-  "register-zoom.html":         0,
-  "register-inperson.html":     0,
+  "employer-vs-iul-survey.html":   -1,
+  "world-cup-survey.html":      -1,
+  "world-cup.html":             -1,
+  "schedule-1on1.html":         -1,
+  "register-zoom.html":         -1,
+  "register-inperson.html":     -1,
   "index.html":                 0,
   // ── Field Associate+ (level 30) ───────────────────────────
   "drip-campaign.html":         0,  // FA+ can run drip campaigns
