@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Monthly Leaderboard · DBA</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&family=Playfair+Display:wght@700;800;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="auth.js?v=20260713"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{--navy:#0A1628;--navy2:#0F1E38;--navy3:#132240;--navy4:#1A2E50;
+  --gold:#C9A84C;--gold2:#E8C97A;--gold-dim:rgba(201,168,76,.12);
+  --green:#2DCA73;--red:#E05252;--blue:#5DADE2;--orange:#E67E22;--purple:#9B59B6;
+  --slate:#6B7C93;--cream:#FAF6EE;--border:rgba(201,168,76,.2);}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{min-height:100%;}
+body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);padding-bottom:60px;}
+
+/* TOP NAV */
+.topnav{display:flex;justify-content:space-between;align-items:center;padding:10px 20px;border-bottom:1px solid var(--border);background:var(--navy2);flex-wrap:wrap;gap:10px;position:sticky;top:0;z-index:100;}
+.topnav-left{display:flex;align-items:center;gap:10px;}
+.topnav-left .shield{width:26px;height:26px;border-radius:6px;background:linear-gradient(135deg,var(--gold),var(--gold2));display:flex;align-items:center;justify-content:center;font-size:13px;}
+.topnav-left .label{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:var(--cream);text-transform:uppercase;letter-spacing:.06em;}
+.topnav a{font-size:11px;color:var(--gold);text-decoration:none;border:1px solid var(--border);padding:5px 12px;border-radius:3px;transition:border-color .15s;}
+.topnav a:hover{border-color:var(--gold);}
+.topnav-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+
+.month-pill{display:flex;align-items:center;gap:10px;font-family:'DM Mono',monospace;font-size:12px;color:var(--gold2);background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:20px;padding:5px 8px 5px 14px;}
+.month-pill button{background:none;border:none;color:var(--gold);cursor:pointer;font-size:15px;padding:2px 8px;border-radius:50%;line-height:1;}
+.month-pill button:hover{background:rgba(201,168,76,.15);}
+
+.page-head{text-align:center;padding:26px 20px 10px;}
+.page-eyebrow{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:800;letter-spacing:.25em;text-transform:uppercase;color:var(--gold);margin-bottom:6px;}
+.page-title{font-family:'Playfair Display',serif;font-weight:800;font-size:clamp(1.6rem,4vw,2.4rem);color:var(--cream);}
+.page-sub{font-size:13px;color:var(--slate);max-width:560px;margin:8px auto 0;line-height:1.6;}
+
+/* CATEGORY GRID */
+.cat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:18px;max-width:1180px;margin:20px auto;padding:0 20px;}
+.cat-card{background:var(--navy3);border:1px solid var(--border);border-radius:12px;padding:18px;}
+.cat-card-hdr{display:flex;align-items:center;gap:10px;margin-bottom:4px;}
+.cat-icon{font-size:1.3rem;}
+.cat-title{font-family:'Barlow Condensed',sans-serif;font-size:1.05rem;font-weight:800;color:var(--cream);text-transform:uppercase;letter-spacing:.03em;}
+.cat-unit{font-family:'DM Mono',monospace;font-size:10px;color:var(--slate);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px;}
+
+.lb-row{display:flex;align-items:center;gap:10px;padding:8px 4px;border-bottom:1px solid rgba(255,255,255,.05);}
+.lb-row:last-of-type{border-bottom:none;}
+.lb-rank{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:14px;color:var(--slate);width:28px;text-align:center;flex-shrink:0;}
+.lb-rank.medal{font-size:17px;}
+.lb-name{flex:1;font-size:13px;color:var(--cream);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.lb-value{font-family:'DM Mono',monospace;font-size:12.5px;color:var(--gold2);white-space:nowrap;}
+.lb-del{color:var(--slate);cursor:pointer;font-size:14px;padding:2px 6px;flex-shrink:0;}
+.lb-del:hover{color:var(--red);}
+
+.lb-row input{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:4px;color:var(--cream);font-family:'Barlow',sans-serif;font-size:13px;padding:6px 8px;outline:none;}
+.lb-row input:focus{border-color:var(--gold);}
+.lb-row .lb-input-name{flex:1;min-width:0;}
+.lb-row .lb-input-value{width:100px;font-family:'DM Mono',monospace;font-size:12px;}
+
+.empty-cat{font-size:12px;color:var(--slate);padding:18px 4px;text-align:center;}
+.add-row-btn{width:100%;margin-top:10px;background:none;border:1.5px dashed var(--border);color:var(--gold);border-radius:6px;padding:9px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;}
+.add-row-btn:hover{border-color:var(--gold);background:rgba(201,168,76,.06);}
+
+.viewer-note{max-width:1180px;margin:0 auto;padding:0 20px;font-size:11px;color:var(--slate);text-align:center;}
+
+/* UPLOAD BUTTON + MODAL */
+.upload-btn{background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.3);color:var(--gold);border-radius:3px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;padding:7px 14px;}
+.upload-btn:hover{border-color:var(--gold);}
+
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;align-items:center;justify-content:center;padding:20px;}
+.modal-bg.open{display:flex;}
+.modal{background:var(--navy2);border:1px solid var(--border);border-radius:12px;padding:22px;max-width:640px;width:100%;max-height:86vh;overflow-y:auto;}
+.modal h3{font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;font-weight:800;color:var(--cream);margin-bottom:10px;}
+.modal p{font-size:12px;color:var(--slate);line-height:1.6;margin-bottom:10px;}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;}
+.btn{border-radius:5px;padding:9px 16px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12.5px;cursor:pointer;border:none;}
+.btn-gold{background:var(--gold);color:var(--navy);}
+.btn-gold:disabled{opacity:.4;cursor:not-allowed;}
+.btn-cancel{background:none;border:1px solid var(--border);color:var(--slate);}
+.file-input-wrap{border:1.5px dashed var(--border);border-radius:8px;padding:18px;text-align:center;margin-bottom:14px;}
+.file-input-wrap input[type=file]{color:var(--cream);font-size:12px;}
+.file-card{padding:10px 14px;border-radius:6px;background:rgba(255,255,255,.04);border:1px solid var(--border);margin-bottom:8px;}
+.file-card-hdr{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:6px;}
+.file-card-hdr strong{font-size:13px;color:var(--cream);word-break:break-all;}
+.file-card select{background:var(--navy);border:1px solid var(--border);color:var(--cream);font-size:11px;padding:3px 7px;border-radius:3px;outline:none;flex-shrink:0;}
+.file-meta{font-size:11px;color:var(--slate);margin-top:3px;}
+.upload-warn{padding:8px 12px;border-radius:6px;background:rgba(224,82,82,.1);margin-bottom:8px;font-size:12px;}
+</style>
+</head>
+<body>
+
+<div class="topnav">
+  <div class="topnav-left">
+    <div class="shield">🏆</div>
+    <div class="label">Monthly Leaderboard</div>
+  </div>
+  <div class="topnav-right">
+    <div class="month-pill">
+      <button onclick="changeMonth(-1)">‹</button>
+      <span id="month-text">Loading...</span>
+      <button onclick="changeMonth(1)">›</button>
+    </div>
+    <span id="admin-upload-btn" style="display:none;"><button class="upload-btn" onclick="openUploadModal()">📂 Upload Excel</button></span>
+    <a href="recognitions.html">← Thankful Thursday</a>
+    <a href="hub.html">← Hub</a>
+  </div>
+</div>
+
+<!-- UPLOAD MODAL -->
+<div class="modal-bg" id="upload-modal">
+  <div class="modal">
+    <h3>📂 Upload This Month's Standings</h3>
+    <p>Upload one file per category (recruits, producers, paid points, cash flow). Each upload <strong style="color:var(--cream);">replaces</strong> that category's list for the month shown — <span id="upload-month-label"></span>. We'll try to guess the category from the filename and the name/value columns from the headers; you can fix either before applying.</p>
+    <div class="file-input-wrap">
+      <input type="file" id="multi-file-input" multiple accept=".xlsx,.xls,.csv" onchange="handleMultiFiles(this.files)">
+    </div>
+    <div id="multi-file-list"></div>
+    <div class="modal-actions">
+      <button class="btn btn-cancel" onclick="closeUploadModal()">Close</button>
+      <button class="btn btn-gold" id="upload-confirm-btn" onclick="confirmMultiUpload()" disabled>Apply to This Month</button>
+    </div>
+  </div>
+</div>
+
+<div class="page-head">
+  <div class="page-eyebrow">Month-to-Date Standings</div>
+  <div class="page-title">This Month's Leaderboard</div>
+  <div class="page-sub">Entered separately from the weekly Thankful Thursday recognition data — one running standing per category for the whole month.</div>
+</div>
+
+<div class="cat-grid" id="cat-grid"></div>
+<div class="viewer-note" id="viewer-note" style="display:none;">Viewing only — sign in as an MD or above to edit this month's standings.</div>
+
+<script>
+const session = AUTH.getSession();
+const isAdmin = session && session.level >= 60;
+const STORAGE_KEY = 'dba_thankful_thursday_monthly';
+
+if (isAdmin) {
+  document.getElementById('admin-upload-btn').style.display = 'inline';
+}
+
+const CATEGORIES = [
+  { key:'recruits',   title:'Top Personal Recruits',      unit:'recruits',   icon:'🤝' },
+  { key:'producers',  title:'Top Personal Producers',     unit:'sub pts',    icon:'🏆' },
+  { key:'paidpoints', title:'Top Personal Paid Points',   unit:'paid pts',   icon:'⚡' },
+  { key:'cashflow',   title:'Top Cash Flow',              unit:'comma check', icon:'💰' },
+];
+const RANK_EMOJI = { 1:'🥇', 2:'🥈', 3:'🥉' };
+
+function monthKey(d) { return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0'); }
+function monthLabel(key) {
+  const [y,m] = key.split('-').map(Number);
+  return new Date(y, m-1, 1).toLocaleDateString('en-US', { month:'long', year:'numeric' });
+}
+
+let currentMonthKey = monthKey(new Date());
+
+function loadData() {
+  try { const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : { months:{} }; }
+  catch(e) { return { months:{} }; }
+}
+function saveData(d) { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); }
+
+let data = loadData();
+
+function ensureMonth(key) {
+  if (!data.months[key]) {
+    data.months[key] = { recruits:[], producers:[], paidpoints:[], cashflow:[] };
+    saveData(data);
+  }
+  return data.months[key];
+}
+
+function changeMonth(delta) {
+  const [y,m] = currentMonthKey.split('-').map(Number);
+  const d = new Date(y, m-1+delta, 1);
+  currentMonthKey = monthKey(d);
+  render();
+}
+
+// ── EXCEL UPLOAD ─────────────────────────────────────────────
+const VALUE_HEADER_HINTS = {
+  producers:  ['sub point','submitted point','atp','premium','points'],
+  paidpoints: ['paid point','paid atp','paid pts'],
+  cashflow:   ['comma check','cash flow','cashflow','check','income','$'],
+  recruits:   ['recruit','new agent','licensed agent','license'],
+};
+const NAME_HEADER_HINTS = ['name','agent','producer'];
+const DOLLAR_CATS = new Set(['producers','paidpoints','cashflow']);
+const MAX_UPLOAD_ENTRIES = 100;
+
+function fmtCatValue(cat, numeric) {
+  if (cat === 'recruits') return String(Math.round(numeric));
+  return '$' + Math.round(numeric).toLocaleString('en-US');
+}
+
+function detectCatFromFilename(name) {
+  const n = name.toLowerCase();
+  if (n.includes('recruit')) return 'recruits';
+  if (n.includes('paid')) return 'paidpoints';
+  if (n.includes('cash') || n.includes('comma') || n.includes('income')) return 'cashflow';
+  if (n.includes('sub') || n.includes('point') || n.includes('produc')) return 'producers';
+  return null;
+}
+
+// Pick the best value column: prefer a header matching the detected category's
+// hints, otherwise fall back to whichever non-name column is numeric most often.
+function pickValueColumn(headers, lowerHeaders, nameCol, rows, cat) {
+  if (cat && VALUE_HEADER_HINTS[cat]) {
+    const idx = lowerHeaders.findIndex(h => VALUE_HEADER_HINTS[cat].some(k => h.includes(k)));
+    if (idx > -1 && headers[idx] !== nameCol) return headers[idx];
+  }
+  let best = null, bestScore = -1;
+  headers.forEach(h => {
+    if (h === nameCol) return;
+    const numericCount = rows.filter(r => {
+      const v = String(r[h] ?? '').replace(/[^0-9.\-]/g,'');
+      return v && !isNaN(parseFloat(v));
+    }).length;
+    if (numericCount > bestScore) { bestScore = numericCount; best = h; }
+  });
+  return best;
+}
+
+let multiFileParsed = []; // [{ cat, entries:[{name,rawVal,numeric}], filename, nameCol, valueCol }]
+
+function openUploadModal() {
+  multiFileParsed = [];
+  document.getElementById('multi-file-input').value = '';
+  document.getElementById('multi-file-list').innerHTML = '';
+  document.getElementById('upload-confirm-btn').disabled = true;
+  document.getElementById('upload-month-label').textContent = monthLabel(currentMonthKey);
+  document.getElementById('upload-modal').classList.add('open');
+}
+function closeUploadModal() { document.getElementById('upload-modal').classList.remove('open'); }
+
+async function handleMultiFiles(fileList) {
+  if (!fileList || !fileList.length) return;
+  if (!window.XLSX) { alert('Excel library failed to load — check your connection and try again.'); return; }
+
+  const listEl = document.getElementById('multi-file-list');
+  listEl.innerHTML = '<div style="font-size:11px;color:var(--slate);margin-bottom:8px;">Processing files…</div>';
+
+  const promises = Array.from(fileList).map(file => new Promise(resolve => {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const wb = XLSX.read(new Uint8Array(ev.target.result), { type:'array' });
+        const sheet = wb.Sheets[wb.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(sheet, { defval:'' });
+        if (!rows.length) { resolve({ file, error:'Empty file' }); return; }
+
+        const headers = Object.keys(rows[0]);
+        const lower = headers.map(h => h.toLowerCase());
+        const nameCol = headers[lower.findIndex(h => NAME_HEADER_HINTS.some(k => h.includes(k)))] || headers[0];
+        const detectedCat = detectCatFromFilename(file.name);
+        const valueCol = pickValueColumn(headers, lower, nameCol, rows, detectedCat);
+
+        if (!valueCol) { resolve({ file, error:'Could not find a value column in this file' }); return; }
+
+        const entries = rows.map(r => {
+          const name = String(r[nameCol]||'').trim();
+          const rawVal = String(r[valueCol]||'').trim();
+          const numeric = parseFloat(rawVal.replace(/[^0-9.\-]/g,'')) || 0;
+          return { name, rawVal, numeric };
+        }).filter(r => r.name);
+
+        if (!entries.length) { resolve({ file, error:'No named rows found' }); return; }
+
+        entries.sort((a,b) => b.numeric - a.numeric);
+        const top = entries.slice(0, MAX_UPLOAD_ENTRIES);
+
+        resolve({ file, cat: detectedCat, entries: top, nameCol, valueCol });
+      } catch(err) { resolve({ file, error: err.message }); }
+    };
+    reader.readAsArrayBuffer(file);
+  }));
+
+  const results = await Promise.all(promises);
+  multiFileParsed = [];
+  let html = '';
+
+  results.forEach(r => {
+    if (r.error) {
+      html += `<div class="upload-warn">⚠ <strong>${escapeHtml(r.file.name)}</strong> — ${escapeHtml(r.error)}</div>`;
+      return;
+    }
+    const catObj = CATEGORIES.find(c => c.key === r.cat);
+    const catColor = r.cat ? 'var(--green)' : 'var(--orange)';
+    html += `<div class="file-card">
+      <div class="file-card-hdr">
+        <strong>${escapeHtml(r.file.name)}</strong>
+        <select data-idx="${multiFileParsed.length}" onchange="updateFileCat(this)">
+          <option value="">— assign category —</option>
+          ${CATEGORIES.map(c => `<option value="${c.key}" ${c.key===r.cat?'selected':''}>${c.icon} ${escapeHtml(c.title)}</option>`).join('')}
+        </select>
+      </div>
+      <div class="file-meta" style="color:${catColor};">${r.cat ? '✓ ' + escapeHtml(catObj.title) : '⚠ Category not detected — please assign above'}</div>
+      <div class="file-meta">Cols: <em>${escapeHtml(r.nameCol)}</em> → <em>${escapeHtml(r.valueCol)}</em> · ${r.entries.length} entries · 🥇 ${escapeHtml(r.entries[0]?.name || '—')} (${r.entries[0] ? fmtCatValue(r.cat, r.entries[0].numeric) : '—'})</div>
+    </div>`;
+    multiFileParsed.push({ cat: r.cat, entries: r.entries, filename: r.file.name });
+  });
+
+  listEl.innerHTML = html;
+  document.getElementById('upload-confirm-btn').disabled = !multiFileParsed.some(f => f.cat);
+}
+
+function updateFileCat(sel) {
+  const idx = parseInt(sel.dataset.idx);
+  if (multiFileParsed[idx]) multiFileParsed[idx].cat = sel.value || null;
+  document.getElementById('upload-confirm-btn').disabled = !multiFileParsed.some(f => f.cat);
+}
+
+function confirmMultiUpload() {
+  const mo = ensureMonth(currentMonthKey);
+  let count = 0;
+  multiFileParsed.forEach(f => {
+    if (!f.cat || !f.entries.length) return;
+    mo[f.cat] = f.entries.map(r => ({ name: r.name, value: fmtCatValue(f.cat, r.numeric) }));
+    count++;
+  });
+  if (!count) { alert('No categories assigned — nothing to apply.'); return; }
+  saveData(data);
+  closeUploadModal();
+  render();
+}
+
+function addRow(catKey) {
+  const mo = ensureMonth(currentMonthKey);
+  mo[catKey].push({ name:'', value:'' });
+  saveData(data);
+  render();
+}
+function updateRow(catKey, idx, field, val) {
+  const mo = ensureMonth(currentMonthKey);
+  mo[catKey][idx][field] = val;
+  saveData(data);
+}
+function deleteRow(catKey, idx) {
+  const mo = ensureMonth(currentMonthKey);
+  mo[catKey].splice(idx, 1);
+  saveData(data);
+  render();
+}
+function moveRow(catKey, idx, dir) {
+  const mo = ensureMonth(currentMonthKey);
+  const list = mo[catKey];
+  const j = idx + dir;
+  if (j < 0 || j >= list.length) return;
+  [list[idx], list[j]] = [list[j], list[idx]];
+  saveData(data);
+  render();
+}
+
+function render() {
+  document.getElementById('month-text').textContent = monthLabel(currentMonthKey);
+  document.getElementById('viewer-note').style.display = isAdmin ? 'none' : 'block';
+
+  const mo = ensureMonth(currentMonthKey);
+  const grid = document.getElementById('cat-grid');
+
+  grid.innerHTML = CATEGORIES.map(cat => {
+    const list = mo[cat.key] || [];
+    let rowsHtml;
+
+    if (isAdmin) {
+      rowsHtml = list.map((entry, idx) => `
+        <div class="lb-row">
+          <div class="lb-rank ${RANK_EMOJI[idx+1]?'medal':''}">${RANK_EMOJI[idx+1] || (idx+1)}</div>
+          <input class="lb-input-name" type="text" placeholder="Agent name" value="${escapeAttr(entry.name)}"
+                 onchange="updateRow('${cat.key}',${idx},'name',this.value)">
+          <input class="lb-input-value" type="text" placeholder="Value" value="${escapeAttr(entry.value)}"
+                 onchange="updateRow('${cat.key}',${idx},'value',this.value)">
+          <div class="lb-del" title="Move up" onclick="moveRow('${cat.key}',${idx},-1)">↑</div>
+          <div class="lb-del" title="Move down" onclick="moveRow('${cat.key}',${idx},1)">↓</div>
+          <div class="lb-del" title="Remove" onclick="deleteRow('${cat.key}',${idx})">✕</div>
+        </div>`).join('');
+      rowsHtml += `<button class="add-row-btn" onclick="addRow('${cat.key}')">+ Add Entry</button>`;
+    } else {
+      rowsHtml = list.length ? list.map((entry, idx) => `
+        <div class="lb-row">
+          <div class="lb-rank ${RANK_EMOJI[idx+1]?'medal':''}">${RANK_EMOJI[idx+1] || (idx+1)}</div>
+          <div class="lb-name">${escapeHtml(entry.name) || '—'}</div>
+          <div class="lb-value">${escapeHtml(entry.value)}${entry.value?' '+cat.unit:''}</div>
+        </div>`).join('') : `<div class="empty-cat">No standings entered for this month yet.</div>`;
+    }
+
+    return `
+      <div class="cat-card">
+        <div class="cat-card-hdr"><span class="cat-icon">${cat.icon}</span><span class="cat-title">${cat.title}</span></div>
+        <div class="cat-unit">${cat.unit}</div>
+        ${rowsHtml}
+      </div>`;
+  }).join('');
+}
+
+function escapeHtml(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function escapeAttr(s) { return escapeHtml(s).replace(/"/g,'&quot;'); }
+
+render();
+</script>
+
+</body>
+</html>
