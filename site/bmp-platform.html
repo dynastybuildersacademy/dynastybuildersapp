@@ -2101,11 +2101,20 @@ setInterval(()=>{if(allPolicies.length&&document.querySelector('#pane-production
 // We skip the input entirely and connect directly.
 window.addEventListener('load', function bmpAutoConnect() {
   try {
-    const orgKey = AUTH.getMondayKey();
-    if (!orgKey) { console.warn('[BMP] getMondayKey() returned empty'); return; }
-    // Hide the manual key UI — agents never need it
+    // Try every possible source for the org key
+    let orgKey = '';
+    try { orgKey = AUTH.getMondayKey(); } catch(e) {}
+    if (!orgKey) { try { orgKey = MONDAY_ORG_KEY; } catch(e) {} }
+    if (!orgKey) { try { orgKey = AUTH.MONDAY_KEY_DEFAULT; } catch(e) {} }
+    if (!orgKey) { try { orgKey = localStorage.getItem('dba_monday_key') || ''; } catch(e) {} }
+
+    if (!orgKey) {
+      console.warn('[BMP] No org key found in any source');
+      return;
+    }
+    // Hide manual key UI
     document.querySelectorAll('.key-row, .auth-row').forEach(el => el.style.display = 'none');
-    // Set mondayKey directly and connect — bypass the input field entirely
+    // Connect directly — no input field needed
     mondayKey = orgKey;
     finishConnect('key');
   } catch(e) {

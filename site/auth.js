@@ -1,7 +1,7 @@
 // ============================================================
 //  Dynasty Builders Academy — auth.js  v2.1
 //  Single source of truth: TEAM, ROLES, AGENTS, session mgmt
-//  Load via <script src="auth.js?v=20260712"></script> on every page
+//  Load via <script src="auth.js"></script> on every page
 //  All exports are global (no module syntax for Netlify compat)
 // ============================================================
 
@@ -9,10 +9,10 @@
 const TEAM = {
   name:    "Dynasty Builders Academy",
   brand:   "DBA",
-  website: "https://agent.yourdynastybuilder.com",
+  website: "https://agent.dynastybuildersapp.com",
   tagline: "Making Dreams Come True, One Policy at a Time",
   phone:   "310-995-6507",
-  email:   "info@yourdynastybuilder.com",
+  email:   "info@dynastybuildersapp.com",
   colors:  { primary: "#0A1628", accent: "#C9A84C" },
   monday: {
     boardRecruits:   "18409897469",  // Recruiting Pipeline — prospects considering the business
@@ -182,26 +182,37 @@ const PHP_PROMO_REQS = {
 };
 
 // ── 3. AGENTS ─────────────────────────────────────────────────
+// ── ORG MONDAY API KEY ────────────────────────────────────────────────────────
+// Standalone constant — accessible everywhere, even before AUTH object is ready
+const MONDAY_ORG_KEY = 'eyJhbGciOiJIUzI1NiJ9.eyJ0aWQiOjY1Nzg0OTc3NSwiYWFpIjoxMSwidWlkIjo2MTY2MDI5NCwiaWFkIjoiMjAyNi0wNS0xM1QwOTo0OTowNy4wMDBaIiwicGVyIjoibWU6d3JpdGUiLCJhY3RpZCI6MjM3NjI1MTMsInJnbiI6InVzZTEifQ.eCbOAEJTC3mcsit4IjVWOw3r2wyQBYL4lN5Qmnok0r0';
+// ── AGENTS ROSTER ─────────────────────────────────────────────────────────────
+// To assign an agent their personal Top 25 board:
+//   1. Create their board in Monday.com (duplicate board 18419015866 as template)
+//   2. Copy the board ID from the Monday.com URL (/boards/XXXXXXXXXX)
+//   3. Add or update: top25BoardId: "XXXXXXXXXX" in their entry below
+//   4. Deploy — the agent will load their board automatically on next login
+//   Agents without a top25BoardId fall back to the template board (18419015866)
+// ─────────────────────────────────────────────────────────────────────────────
 const AGENTS = [
   {
     id: "dba000", name: "DBA Super Admin",
     pin: "0000", role: "super_admin",
     phpId: "", phone: "",
-    email: "admin@yourdynastybuilder.com",
+    email: "admin@dynastybuildersapp.com",
     licenseStates: [], enrollmentDate: "2022-01-01", uplineId: null
   },
   {
     id: "obi001", name: "Obi Iroezi",
     pin: "1111", role: "admin",
     phpId: "10146", phone: "310-995-6507",
-    email: "obi@yourdynastybuilder.com",
+    email: "obi@dynastybuildersapp.com",
     licenseStates: ["CA","TX"], enrollmentDate: "2022-01-01", top25BoardId: "7030392283", uplineId: null
   },
   {
     id: "jen001", name: "Jen Iroezi",
     pin: "2222", role: "agency_builder",
     phpId: "10147", phone: "310-995-6508",
-    email: "jen@yourdynastybuilder.com",
+    email: "jen@dynastybuildersapp.com",
     licenseStates: ["CA"], enrollmentDate: "2022-01-01", top25BoardId: "8052087599", uplineId: "obi001"
   },
   {
@@ -239,7 +250,7 @@ const AGENTS = [
   },
   {
     id: "joymoj126", name: "Joy Mojokwu",
-    pin: "2327", role: "trainee",
+    pin: "1111", role: "trainee",
     phpId: "1412126", phone: "9096822392",
     email: "mokogwuj@gmail.com",
     licenseStates: [], enrollmentDate: "2026-06-07",
@@ -247,7 +258,7 @@ const AGENTS = [
   },
   {
     id: "franwa448", name: "Francis Nwadiba",
-    pin: "9001", role: "trainee",
+    pin: "1111", role: "trainee",
     phpId: "1411448", phone: "4244452758",
     email: "meetfarco2020@gmail.com",
     licenseStates: [], enrollmentDate: "2026-06-06",
@@ -263,7 +274,7 @@ const AGENTS = [
   },
   {
     id: "marrod050", name: "Marcela Rodriguez",
-    pin: "5415", role: "trainee",
+    pin: "1111", role: "trainee",
     phpId: "1411050", phone: "3236749258",
     email: "marcyrodriguez808@gmail.com",
     licenseStates: [], enrollmentDate: "2026-06-04",
@@ -1655,7 +1666,7 @@ const AGENTS = [
   },
   {
     id: "rosanu417", name: "Rose Anuarita", phpId: "", pin: "1111",
-    role: "admin", level: 100,
+    role: "director", level: 40,
     phone: "", email: "",
     top25BoardId: "18417943185", licenseStates: [], enrollmentDate: "",
     uplineId: "obi001"
@@ -1687,98 +1698,17 @@ const AGENTS = [
     phone: "", email: "",
     top25BoardId: "18397351108", licenseStates: [], enrollmentDate: "",
     uplineId: "obi001"
-  },
-{
-    id: "regofo333", name: "Regina Ofoedu", phpId: "1409333", pin: "6949",
-    role: "trainee", level: 10,
-    phone: "3236217520", email: "ofoeduoby@gmail.com",
-    top25BoardId: "", licenseStates: [], enrollmentDate: "2026-06-01",
-    uplineId: "jacaba757"
-  },
-  {
-    id: "twianu136", name: "Twishmye Anuarita", phpId: "1409136", pin: "2569",
-    role: "associate", level: 20,
-    phone: "6022993207", email: "shimyerose123@gmail.com",
-    top25BoardId: "", licenseStates: [], enrollmentDate: "2026-06-01",
-    uplineId: "britmal001"
-  },
-  {
-    id: "maumye341", name: "Maureen Myers", phpId: "1414341", pin: "0540",
-    role: "trainee", level: 10,
-    phone: "2135451057", email: "cosmasabanobi088@gmail.com",
-    top25BoardId: "", licenseStates: [], enrollmentDate: "2026-06-11",
-    uplineId: "regofo333"
-  },
-  {
-    id: "yurnak867", name: "Yuri Nakatani", phpId: "1414867", pin: "7665",
-    role: "trainee", level: 10,
-    phone: "4244439421", email: "yurinakatani02@gmail.com",
-    top25BoardId: "", licenseStates: [], enrollmentDate: "2026-06-14",
-    uplineId: "britmal001"
-  },
-  {
-    id: "jlywhi483", name: "JLynn Whitaker", phpId: "1415483", pin: "1544",
-    role: "trainee", level: 10,
-    phone: "3104133995", email: "whitakerjlynn@gmail.com",
-    top25BoardId: "", licenseStates: [], enrollmentDate: "2026-06-17",
-    uplineId: "tortsa743"
-  },
-  {
-    id: "anarey760", name: "Ana Reyes", phpId: "1416760", pin: "6025",
-    role: "trainee", level: 10,
-    phone: "3109386281", email: "annaestrada437@yahoo.com",
-    top25BoardId: "", licenseStates: [], enrollmentDate: "2026-06-20",
-    uplineId: "britmal001"
-  },
-  {
-    id: "chiony786", name: "Chidera Onyekwere", phpId: "1416786", pin: "2413",
-    role: "trainee", level: 10,
-    phone: "3102133833", email: "chideraonyekwere129@gmail.com",
-    top25BoardId: "", licenseStates: [], enrollmentDate: "2026-06-20",
-    uplineId: "goonwa076"
-  },
-  {
-    id: "nnendu300", name: "Nneka Ndukwe", phpId: "1417300", pin: "7616",
-    role: "trainee", level: 10,
-    phone: "5626206937", email: "ekanvene@yahoo.com",
-    top25BoardId: "", licenseStates: [], enrollmentDate: "2026-06-23",
-    uplineId: "jacaba757"
-  },
-  {
-    id: "deigar894", name: "Deisy Garcia", phpId: "1417894", pin: "4108",
-    role: "admin", level: 100,
-    phone: "2133175067", email: "deisygarcia1713@gmail.com",
-    top25BoardId: "", licenseStates: [], enrollmentDate: "2026-06-27",
-    uplineId: "obi001"
-  },
-  {
-    id: "morsin895", name: "Morgan Singleton", phpId: "1417895", pin: "6185",
-    role: "trainee", level: 10,
-    phone: "3109456493", email: "msingleton1333@gmail.com",
-    top25BoardId: "", licenseStates: [], enrollmentDate: "2026-06-27",
-    uplineId: "tortsa743"
-  },
-  {
-    id: "pauuvi582", name: "Paulina Uvidia", phpId: "1418582", pin: "1102",
-    role: "trainee", level: 10,
-    phone: "3238095958", email: "puvidia@gmail.com",
-    top25BoardId: "", licenseStates: [], enrollmentDate: "2026-06-30",
-    uplineId: "danjho261"
-  },
+  }
 ];
 
 // ── 4. PAGE ACCESS LEVELS ─────────────────────────────────────
 const PAGE_ACCESS = {
-  // ── Public pages (no login required) ──────────────────────
-  "lights-out.html":            -1,  // Public event page
-  "lights-out-2026":            -1,  // Public URL alias
-  "flyer-maker.html":           0,   // All agents
+  // ── All agents (level 0) ──────────────────────────────────
   "hub.html":                   0,
   "tracker.html":               0,
   "portal.html":                0,
   "survey.html":                0,
   "leaderboard.html":           0,
-  "leaderboard-monthly.html":   0,
   "training.html":              0,
   "incentives.html":            0,
   "incentive-tracker.html":     0,
@@ -1788,23 +1718,23 @@ const PAGE_ACCESS = {
   "performance.html":           0,
   "promotions.html":            0,
   "recognitions.html":          0,
-  "bom.html":                   -1,   // All agents can track BOM guests
-  "analytics.html":             60,   // All agents can see lead analytics
-  "lead-dashboard.html":        60,
+  "bom.html":                   0,   // All agents can track BOM guests
+  "analytics.html":             0,   // All agents can see lead analytics
+  "lead-dashboard.html":        0,
   "marketing.html":             0,   // All agents can access marketing tools
   "income-calculator.html":     0,
-  "opportunity.html":           -1,
-  "client.html":                -1,
-  "recruit.html":               -1,
-  "free-guide.html":            -1,
-  "brochure.html":              -1,   // Public client page
-  "employer-vs-iul-brochure.html": -1,  // Public client page
-  "employer-vs-iul-survey.html":   -1,
-  "world-cup-survey.html":      -1,
-  "world-cup.html":             -1,
-  "schedule-1on1.html":         -1,
-  "register-zoom.html":         -1,
-  "register-inperson.html":     -1,
+  "opportunity.html":           0,
+  "client.html":                0,
+  "recruit.html":               0,
+  "free-guide.html":            0,
+  "brochure.html":              0,
+  "employer-vs-iul-brochure.html": 0,
+  "employer-vs-iul-survey.html":   0,
+  "world-cup-survey.html":      0,
+  "world-cup.html":             0,
+  "schedule-1on1.html":         0,
+  "register-zoom.html":         0,
+  "register-inperson.html":     0,
   "index.html":                 0,
   // ── Field Associate+ (level 30) ───────────────────────────
   "drip-campaign.html":         0,  // FA+ can run drip campaigns
@@ -1848,7 +1778,7 @@ const NAV_ITEMS = [
   { icon:"🔄", label:"Monday Sync",        href:"monday-sync.html",  minLevel:60 },
   { icon:"🗄️", label:"Board Setup",        href:"monday-setup.html", minLevel:60 },
   { section: "Admin" },
-  { icon:"&#10133;", label:"Add Agent", href:"agents.html", minLevel:60 }
+  { icon:"➕", label:"Add Agent",           href:"agents.html",       minLevel:60 }
 ];
 
 // ── 6. SESSION MANAGEMENT ─────────────────────────────────────
@@ -1860,9 +1790,7 @@ const AUTH = {
   // This key is used by all agents automatically on every device.
   // To rotate: replace the value below and redeploy.
   // Agents can still override with their own key via Board Setup.
-  MONDAY_KEY_DEFAULT:  '',  // Set via Netlify env var MONDAY_API_KEY
-  OPENAI_KEY_DEFAULT:  '',  // Set via Netlify env var OPENAI_API_KEY
-  OPENAI_KEY_DEFAULT:  '',  // Set via Netlify env var OPENAI_API_KEY
+  MONDAY_KEY_DEFAULT:  'eyJhbGciOiJIUzI1NiJ9.eyJ0aWQiOjY1Nzg0OTc3NSwiYWFpIjoxMSwidWlkIjo2MTY2MDI5NCwiaWFkIjoiMjAyNi0wNS0xM1QwOTo0OTowNy4wMDBaIiwicGVyIjoibWU6d3JpdGUiLCJhY3RpZCI6MjM3NjI1MTMsInJnbiI6InVzZTEifQ.eCbOAEJTC3mcsit4IjVWOw3r2wyQBYL4lN5Qmnok0r0',
   ANTHROPIC_KEY_STORAGE:"dba_anthropic_key",
 
   login(agentId, pin) {
@@ -1920,10 +1848,9 @@ const AUTH = {
   },
 
   require(page) {
-    const required = PAGE_ACCESS[page] ?? 0;
-    if (required < 0) return true;  // Public page — no login needed
     const s = AUTH.getSession();
     if (!s) { window.location.href = 'index.html'; return false; }
+    const required = PAGE_ACCESS[page] ?? 0;
     if (s.level < required) { window.location.href = 'hub.html'; return false; }
     return true;
   },
@@ -1939,28 +1866,12 @@ const AUTH = {
       // 1. Agent-specific key stored via Board Setup (takes priority)
       const stored = localStorage.getItem(AUTH.MONDAY_KEY_STORAGE);
       if (stored && stored.length > 10) return stored;
-      // 2. Built-in org key — works for every agent on every device automatically
-      return AUTH.MONDAY_KEY_DEFAULT || '';
-    } catch { return AUTH.MONDAY_KEY_DEFAULT || ''; }
+    } catch {}
+    // 2. Built-in org key — standalone constant always accessible
+    return MONDAY_ORG_KEY || AUTH.MONDAY_KEY_DEFAULT || '';
   },
-  getOpenAIKey()     {
-    try {
-      const stored = localStorage.getItem('dba_openai_key');
-      if (stored && stored.length > 10) return stored;
-      return AUTH.OPENAI_KEY_DEFAULT || '';
-    } catch { return AUTH.OPENAI_KEY_DEFAULT || ''; }
-  },
-  saveOpenAIKey(k)   { try { localStorage.setItem('dba_openai_key', k); } catch {} },
   saveAnthropicKey(k){ try { localStorage.setItem(AUTH.ANTHROPIC_KEY_STORAGE, k); } catch {} },
-  getAnthropicKey()  { try { return localStorage.getItem(AUTH.ANTHROPIC_KEY_STORAGE) || ''; } catch { return ''; } },
-  getOpenAIKey()     {
-    try {
-      const stored = localStorage.getItem('dba_openai_key');
-      if (stored && stored.length > 10) return stored;
-      return AUTH.OPENAI_KEY_DEFAULT || '';
-    } catch { return AUTH.OPENAI_KEY_DEFAULT || ''; }
-  },
-  saveOpenAIKey(k)   { try { localStorage.setItem('dba_openai_key', k); } catch {} },
+  getAnthropicKey()  { try { return localStorage.getItem(AUTH.ANTHROPIC_KEY_STORAGE) || ''; } catch { return ''; } }
 };
 
 // ── 7. HELPER FUNCTIONS ───────────────────────────────────────
@@ -2047,64 +1958,44 @@ function buildSidebar(activePage) {
 // Monday.com proxy endpoint — Netlify Function handles the server-side request
 // to avoid CORS. Falls back to direct call for local dev (localhost).
 const MONDAY_PROXY = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-  ? 'https://api.monday.com/v2'
-  : '/api/monday';
-
-const MONDAY_PROXY_DIRECT = '/.netlify/functions/monday';
-const MONDAY_API_DIRECT   = 'https://api.monday.com/v2';
+  ? 'https://api.monday.com/v2'          // direct in local dev
+  : '/api/monday';                        // Netlify Function in production
 
 async function mondayQuery(query, variables = {}) {
   const key = AUTH.getMondayKey();
-  if (!key) throw new Error('No Monday.com API key found');
-
-  const headers = { 'Content-Type': 'application/json', 'Authorization': key };
-  const body    = JSON.stringify({ query, variables });
-
-  // Try proxy → direct function → Monday API directly (CORS allowed on Monday's end)
-  const urls = MONDAY_PROXY.startsWith('http')
-    ? [MONDAY_PROXY]
-    : [MONDAY_PROXY, MONDAY_PROXY_DIRECT, MONDAY_API_DIRECT];
-
-  let lastErr = null;
-  for (const url of urls) {
-    try {
-      const res = await fetch(url, { method: 'POST', headers, body });
-      if (!res.ok) {
-        const txt = await res.text().catch(() => '');
-        lastErr = new Error(`HTTP ${res.status} from ${url}: ${txt.slice(0, 100)}`);
-        console.warn(lastErr.message);
-        continue;
-      }
-      const data = await res.json();
-      if (data?.errors?.length) throw new Error(data.errors[0].message);
-      return data;
-    } catch (e) {
-      lastErr = e;
-      if (url === urls[urls.length - 1]) break;
-      console.warn(`mondayQuery: ${url} failed (${e.message || 'network error'}), trying next...`);
+  if (!key) return null;
+  try {
+    const isProxy = MONDAY_PROXY.startsWith('/');
+    const res = await fetch(MONDAY_PROXY, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...(isProxy ? {} : { 'Authorization': key }) },
+      body: JSON.stringify(isProxy ? { query, variables, apiKey: key } : { query, variables })
+    });
+    if (!res.ok) {
+      console.warn('Monday.com proxy error:', res.status, res.statusText);
+      return null;
     }
+    return res.json();
+  } catch (e) {
+    console.warn('Monday.com query failed:', e);
+    return null;
   }
-  console.warn('Monday.com query failed:', lastErr?.message || lastErr);
-  throw lastErr || new Error('All endpoints failed');
 }
 
 // ── 10. ANTHROPIC CHAT ────────────────────────────────────────
-const AI_PROXY = '/api/ai';
-
 async function askAI(messages, systemPrompt) {
   try {
-    const res = await fetch(AI_PROXY, {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
+        model: 'claude-sonnet-4-20250514',
         max_tokens: 1000,
         system: systemPrompt || 'You are a PHP Agency business coach for Dynasty Builders Academy. Be encouraging and action-oriented.',
         messages
       })
     });
     const data = await res.json();
-    if (data.error) { console.warn('AI error:', data.error.message); return ''; }
     return data?.content?.[0]?.text || '';
   } catch (e) {
     console.warn('AI query failed:', e);
@@ -2163,32 +2054,3 @@ const JUNE_MD_PROMO = {
   uzoama613: { recruits:1, apps:0.0, subPts:0.00, paidPts:0.00 },
   }
 };
-
-// ── SITE VERSION STAMP ────────────────────────────────────────
-const DBA_VERSION = {
-  date: '2026-07-13',
-  time: '09:00',
-  label: 'v2026.07.13'
-};
-
-(function injectVersionStamp() {
-  function inject() {
-    if (document.getElementById('dba-version-stamp')) return;
-    const stamp = document.createElement('div');
-    stamp.id = 'dba-version-stamp';
-    stamp.title = `DBA Portal ${DBA_VERSION.label} — Built ${DBA_VERSION.date} ${DBA_VERSION.time}`;
-    stamp.style.cssText = [
-      'position:fixed','bottom:10px','right:14px','z-index:9999',
-      'font-family:"DM Mono",monospace','font-size:10px',
-      'color:rgba(201,168,76,0.45)','letter-spacing:.06em',
-      'pointer-events:none','user-select:none','line-height:1'
-    ].join(';');
-    stamp.textContent = `DBA ${DBA_VERSION.label} · ${DBA_VERSION.date} ${DBA_VERSION.time}`;
-    document.body.appendChild(stamp);
-  }
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', inject);
-  } else {
-    inject();
-  }
-})();
