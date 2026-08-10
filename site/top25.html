@@ -432,7 +432,7 @@ document.getElementById('agent-sub').textContent = `${session?.name||'Agent'} ·
 function updateConnChip(){
   const chip=document.getElementById('connChip');
   if(AUTH.getMondayKey()){chip.className='conn-chip ok';chip.textContent='⬡ Connected';}
-  else{chip.className='conn-chip no';chip.textContent='⬡ Not connected';}
+  else{chip.className='conn-chip no';chip.textContent='⬡ Connect API Key';chip.style.cursor='pointer';chip.onclick=()=>showNoKey();}
 }
 updateConnChip();
 
@@ -489,7 +489,7 @@ let boardGroups = [];
 
 // ── LOAD ──────────────────────────────────────────────────────
 async function loadProspects(){
-  if(!AUTH.getMondayKey()){showNoKey();return;}
+  // Key always available via MONDAY_KEY_DEFAULT in auth.js
   document.getElementById('cards-container').innerHTML=`<div class="state-box"><div class="ico"><span class="spinner"></span></div><div class="s-title">Loading…</div><p>Fetching your prospects from Monday.com</p></div>`;
   document.getElementById('refresh-btn').textContent='↻ Loading…';
   const activeBoardId = await resolveAgentBoardId();
@@ -906,7 +906,7 @@ async function saveLog(){
   const notes=document.getElementById('modal-notes').value.trim();
   const duration=document.getElementById('modal-duration').value;
   const followup=document.getElementById('modal-followup').value;
-  if(!AUTH.getMondayKey()){toast('⚠ Connect Monday.com first');return;}
+  if(!AUTH.getMondayKey()){toast('⚠ No API key — contact your MD');return;}
   const updates={};
   // Column IDs from board 7030392283
   if(callLog)    updates['dup__of_contact_method_mkmqyxkj'] = {label:callLog};
@@ -964,8 +964,28 @@ function promptSetBoard(){
 
 // ── NO KEY STATE ──────────────────────────────────────────────
 function showNoKey(){
-  document.getElementById('cards-container').innerHTML=`<div class="state-box"><div class="ico">🔑</div><div class="s-title">Connect Monday.com</div><p>An API key is required to load your prospects.<br><br><a href="monday-setup.html" style="color:var(--accent);">Go to Board Setup →</a></p></div>`;
-  document.getElementById('count-pill').textContent='No key';
+  // Agents always have the org key via MONDAY_KEY_DEFAULT in auth.js.
+  // This only appears if auth.js itself is misconfigured.
+  document.getElementById('cards-container').innerHTML=`
+    <div class="state-box">
+      <div class="ico">⚠️</div>
+      <div class="s-title">Configuration Error</div>
+      <p>The organization API key could not be loaded.<br><br>
+      Please contact your Managing Director or<br>
+      <a href="monday-setup.html" style="color:var(--accent);">go to Board Setup →</a></p>
+    </div>`;
+  document.getElementById('count-pill').textContent='Error';
+}
+
+function saveInlineKey(){
+  const input = document.getElementById('inline-api-key');
+  if (!input) return;
+  const key = input.value.trim();
+  if (!key || key.length < 20) { input.style.borderColor='var(--danger)'; return; }
+  try { AUTH.saveMonday && AUTH.saveMonday(key); } catch(e) {}
+  try { localStorage.setItem(AUTH.MONDAY_KEY_STORAGE || 'dba_monday_key', key); } catch(e) {}
+  toast('✓ API key saved — loading your prospects…');
+  setTimeout(() => loadProspects(), 400);
 }
 
 // ── TOAST ─────────────────────────────────────────────────────
