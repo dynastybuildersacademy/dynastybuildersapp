@@ -1,0 +1,1909 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Monday.com Board Sync</title>
+<script src="auth.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0a0a0f; --surface: #111118; --surface2: #1a1a24; --border: #2a2a3a;
+    --accent: #6c63ff; --accent2: #ff6584; --accent3: #43e8b0;
+    --text: #e8e8f0; --muted: #6b6b80;
+    --success: #43e8b0; --error: #ff6584; --warn: #ffd166;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'Syne', sans-serif; min-height: 100vh; overflow-x: hidden; }
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background-image: linear-gradient(rgba(108,99,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(108,99,255,.04) 1px,transparent 1px);
+    background-size: 40px 40px; pointer-events: none; z-index: 0;
+  }
+  .glow { position: fixed; width: 600px; height: 600px; border-radius: 50%; filter: blur(120px); pointer-events: none; z-index: 0; opacity: .15; }
+  .glow-1 { background: var(--accent); top: -200px; left: -100px; }
+  .glow-2 { background: var(--accent2); bottom: -200px; right: -100px; }
+  .container { position: relative; z-index: 1; max-width: 960px; margin: 0 auto; padding: 48px 24px; }
+  header { margin-bottom: 48px; display: flex; align-items: flex-start; gap: 20px; }
+  .logo-mark { width: 52px; height: 52px; background: linear-gradient(135deg,var(--accent),var(--accent2)); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; box-shadow: 0 0 30px rgba(108,99,255,.4); }
+  h1 { font-size: 32px; font-weight: 800; letter-spacing: -.5px; line-height: 1.1; }
+  h1 span { color: var(--accent); }
+  .subtitle { color: var(--muted); font-size: 14px; margin-top: 4px; font-family: 'JetBrains Mono',monospace; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 28px; margin-bottom: 20px; }
+  .card-title { font-size: 13px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .card-title::before { content: ''; display: inline-block; width: 3px; height: 14px; background: var(--accent); border-radius: 2px; }
+  .field { margin-bottom: 16px; }
+  label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; font-family: 'JetBrains Mono',monospace; }
+  input[type="text"],input[type="number"],input[type="password"],select {
+    width: 100%; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 14px; color: var(--text);
+    font-family: 'JetBrains Mono',monospace; font-size: 14px; outline: none; transition: border-color .2s;
+  }
+  input:focus,select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(108,99,255,.15); }
+  input:disabled,select:disabled { opacity: .5; cursor: not-allowed; }
+  select { cursor: pointer; appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b6b80' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px;
+  }
+  select option { background: #1a1a24; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  @media (max-width: 640px) { .row2,.row3 { grid-template-columns: 1fr; } }
+  .hint { font-size: 12px; color: var(--muted); font-family: 'JetBrains Mono',monospace; margin-top: 4px; }
+
+  /* Key */
+  .key-input-row { display: flex; gap: 10px; align-items: flex-start; }
+  .key-input-row input { flex: 1; }
+  .key-status { display: flex; align-items: center; gap: 8px; margin-top: 10px; min-height: 20px; }
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; font-family: 'JetBrains Mono',monospace; }
+  .pill.ok  { background: rgba(67,232,176,.12); color: var(--accent3); border: 1px solid rgba(67,232,176,.3); }
+  .pill.err { background: rgba(255,101,132,.12); color: var(--error);   border: 1px solid rgba(255,101,132,.3); }
+  .pill.info{ background: rgba(108,99,255,.12);  color: var(--accent);  border: 1px solid rgba(108,99,255,.3); }
+  .eye-btn { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 13px; cursor: pointer; color: var(--muted); font-size: 15px; transition: border-color .2s; flex-shrink: 0; }
+  .eye-btn:hover { border-color: var(--accent); color: var(--text); }
+
+  /* Search-dropdown */
+  .search-wrap { position: relative; }
+  .search-wrap .icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 14px; color: var(--muted); pointer-events: none; z-index: 1; }
+  .search-input {
+    width: 100%; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px 8px 0 0; padding: 10px 14px 10px 36px; color: var(--text);
+    font-family: 'JetBrains Mono',monospace; font-size: 14px; outline: none; transition: border-color .2s;
+    border-bottom: 1px solid transparent;
+  }
+  .search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(108,99,255,.15); }
+  .dropdown-list {
+    display: none; background: var(--surface2); border: 1px solid var(--border); border-radius: 0 0 8px 8px;
+    max-height: 240px; overflow-y: auto; border-top: 1px solid var(--border);
+  }
+  .dropdown-list::-webkit-scrollbar { width: 4px; }
+  .dropdown-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  .drop-item {
+    padding: 9px 14px; cursor: pointer; display: flex; align-items: center; gap: 10px;
+    border-bottom: 1px solid rgba(42,42,58,.5); transition: background .15s;
+    font-family: 'JetBrains Mono',monospace; font-size: 13px;
+  }
+  .drop-item:last-child { border-bottom: none; }
+  .drop-item:hover { background: rgba(108,99,255,.08); }
+  .drop-item.selected { background: rgba(108,99,255,.15); color: var(--accent); }
+  .drop-item.action { color: var(--accent3); font-weight: 700; border-top: 1px solid var(--border); }
+  .drop-item.action:hover { background: rgba(67,232,176,.08); }
+  .drop-item.disabled { color: var(--muted); pointer-events: none; font-style: italic; }
+  .badge-sm { font-size: 10px; color: var(--muted); background: var(--surface); padding: 2px 6px; border-radius: 4px; flex-shrink: 0; }
+  .badge-ws { font-size: 10px; color: var(--muted); background: rgba(108,99,255,.1); padding: 2px 6px; border-radius: 4px; flex-shrink: 0; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .badge-type { font-size: 10px; color: var(--warn); background: rgba(255,209,102,.08); padding: 2px 6px; border-radius: 4px; flex-shrink: 0; }
+
+  .selected-chip {
+    background: rgba(108,99,255,.1); border: 1px solid rgba(108,99,255,.3);
+    border-radius: 8px; padding: 10px 14px; font-family: 'JetBrains Mono',monospace;
+    font-size: 13px; color: var(--accent); display: flex; align-items: center; gap: 8px;
+    cursor: pointer; transition: background .2s;
+  }
+  .selected-chip:hover { background: rgba(108,99,255,.18); }
+  .selected-chip .chg { margin-left: auto; font-size: 11px; color: var(--muted); }
+
+  /* Sub-panel */
+  .sub-panel { background: rgba(67,232,176,.04); border: 1px solid rgba(67,232,176,.2); border-radius: 12px; padding: 20px; margin-top: 12px; }
+  .sub-panel-title { font-size: 13px; font-weight: 700; color: var(--accent3); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+
+  /* Group color dots */
+  .color-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+  /* Column mapping */
+  .mapping-header { display: grid; grid-template-columns: 1fr 28px 1fr 28px; gap: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--border); margin-bottom: 10px; }
+  .mapping-header span { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; font-family: 'JetBrains Mono',monospace; }
+  .mapping-row { display: grid; grid-template-columns: 1fr 28px 1fr 28px; gap: 8px; margin-bottom: 8px; align-items: center; }
+  .map-label { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 8px 12px; font-size: 13px; font-family: 'JetBrains Mono',monospace; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .map-arrow { color: var(--accent); text-align: center; font-size: 16px; }
+  .map-select { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 8px 12px; color: var(--text); font-family: 'JetBrains Mono',monospace; font-size: 13px; outline: none; cursor: pointer; appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236b6b80' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px;
+  }
+  .map-select:focus { border-color: var(--accent); }
+  .map-clear { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 16px; padding: 4px; border-radius: 4px; transition: color .15s; }
+  .map-clear:hover { color: var(--error); }
+
+  /* Columns loading state */
+  .cols-loading { display: flex; align-items: center; gap: 10px; padding: 14px; color: var(--muted); font-family: 'JetBrains Mono',monospace; font-size: 13px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; }
+
+  /* Dropzone */
+  .dropzone { border: 2px dashed var(--border); border-radius: 12px; padding: 40px 24px; text-align: center; cursor: pointer; transition: all .2s; background: var(--surface2); position: relative; }
+  .dropzone:hover,.dropzone.over { border-color: var(--accent); background: rgba(108,99,255,.05); }
+  .dropzone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .dz-icon { font-size: 40px; margin-bottom: 12px; }
+  .dz-text { font-size: 15px; font-weight: 600; }
+  .dz-hint { font-size: 12px; color: var(--muted); margin-top: 6px; font-family: 'JetBrains Mono',monospace; }
+  .file-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(67,232,176,.1); border: 1px solid var(--accent3); border-radius: 6px; padding: 6px 12px; font-size: 13px; color: var(--accent3); font-family: 'JetBrains Mono',monospace; margin-top: 8px; }
+
+  /* Table */
+  .table-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid var(--border); margin-top: 12px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; font-family: 'JetBrains Mono',monospace; min-width: 500px; }
+  thead th { background: var(--surface2); padding: 10px 14px; text-align: left; color: var(--accent); font-weight: 600; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  tbody td { padding: 9px 14px; border-bottom: 1px solid rgba(42,42,58,.6); max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover td { background: rgba(108,99,255,.04); }
+
+  /* Toggle */
+  .toggle-group { display: flex; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; width: fit-content; }
+  .tgl { padding: 8px 18px; font-size: 13px; font-family: 'Syne',sans-serif; font-weight: 600; background: transparent; border: none; color: var(--muted); cursor: pointer; transition: all .2s; }
+  .tgl.active { background: var(--accent); color: #fff; }
+
+  /* Buttons */
+  .btn { display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg,var(--accent),#8b5cf6); border: none; border-radius: 10px; padding: 13px 28px; font-family: 'Syne',sans-serif; font-size: 15px; font-weight: 700; color: #fff; cursor: pointer; transition: all .2s; box-shadow: 0 4px 20px rgba(108,99,255,.3); }
+  .btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 28px rgba(108,99,255,.45); }
+  .btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+  .btn-sm { padding: 8px 16px; font-size: 13px; border-radius: 7px; }
+  .btn-green { background: linear-gradient(135deg,#43e8b0,#06b6d4); box-shadow: 0 4px 20px rgba(67,232,176,.25); }
+  .btn-green:hover:not(:disabled) { box-shadow: 0 6px 28px rgba(67,232,176,.4); }
+  .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--muted); box-shadow: none; }
+  .btn-ghost:hover:not(:disabled) { border-color: var(--accent); color: var(--text); box-shadow: none; transform: none; }
+
+  /* Progress / log */
+  .log-wrap { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 16px; max-height: 300px; overflow-y: auto; font-family: 'JetBrains Mono',monospace; font-size: 12px; line-height: 1.7; margin-top: 12px; }
+  .log-line { display: flex; gap: 10px; }
+  .log-time { color: var(--muted); flex-shrink: 0; }
+  .log-ok { color: var(--success); } .log-err { color: var(--error); } .log-info { color: var(--accent); } .log-warn { color: var(--warn); }
+  .prog-wrap { background: var(--surface2); border-radius: 6px; overflow: hidden; height: 6px; margin-top: 12px; }
+  .prog-bar { height: 100%; background: linear-gradient(90deg,var(--accent),var(--accent3)); border-radius: 6px; transition: width .3s; width: 0%; }
+  .summary-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 12px; }
+  .badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; font-family: 'JetBrains Mono',monospace; }
+  .badge-ok  { background: rgba(67,232,176,.12); color: var(--accent3); border: 1px solid rgba(67,232,176,.3); }
+  .badge-err { background: rgba(255,101,132,.12); color: var(--error);   border: 1px solid rgba(255,101,132,.3); }
+  .badge-skip{ background: rgba(107,107,128,.15); color: var(--muted);   border: 1px solid var(--border); }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,.3); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; }
+  .spinner-sm { width: 13px; height: 13px; border-width: 2px; border-color: rgba(108,99,255,.3); border-top-color: var(--accent); animation: spin .7s linear infinite; display: inline-block; border-radius: 50%; }
+  .hidden { display: none !important; }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+  .empty-state { text-align: center; padding: 20px; color: var(--muted); font-family: 'JetBrains Mono',monospace; font-size: 13px; }
+  .mt8 { margin-top: 8px; }
+  .section-gap { margin-top: 24px; }
+
+  /* ── Filters ── */
+  .filter-row { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-bottom: 10px; }
+  .filter-cells { display: flex; gap: 10px; align-items: flex-start; flex-wrap: wrap; }
+  .fsel { flex: 1; min-width: 140px; background: var(--surface); border: 1px solid var(--border); border-radius: 7px; padding: 8px 12px; color: var(--text); font-family: 'JetBrains Mono',monospace; font-size: 13px; outline: none; cursor: pointer; appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236b6b80' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px; }
+  .fsel:focus { border-color: var(--accent); }
+  .fvals { display: flex; gap: 8px; flex: 2; min-width: 200px; align-items: center; flex-wrap: wrap; }
+  .fval { flex: 1; min-width: 110px; background: var(--surface); border: 1px solid var(--border); border-radius: 7px; padding: 8px 12px; color: var(--text); font-family: 'JetBrains Mono',monospace; font-size: 13px; outline: none; }
+  .fval:focus { border-color: var(--accent); }
+  .fval-between-sep { color: var(--muted); font-size: 12px; white-space: nowrap; font-family: 'JetBrains Mono',monospace; }
+  .filter-preview { font-size: 11px; color: var(--accent3); font-family: 'JetBrains Mono',monospace; margin-top: 8px; min-height: 16px; }
+  .logic-row { display: flex; align-items: center; gap: 8px; margin: 10px 0; padding: 0 4px; }
+  .logic-btn { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 5px 14px; font-family: 'Syne',sans-serif; font-size: 12px; font-weight: 700; color: var(--muted); cursor: pointer; transition: all .15s; }
+  .logic-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .filter-match-badge { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; font-family: 'JetBrains Mono',monospace; }
+  .fmb-ok  { background: rgba(67,232,176,.12); color: var(--accent3); border: 1px solid rgba(67,232,176,.3); }
+  .fmb-no  { background: rgba(255,101,132,.12); color: var(--error);   border: 1px solid rgba(255,101,132,.3); }
+
+  /* ── Auth tabs ── */
+  .auth-tabs { display: flex; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; width: 100%; }
+  .auth-tab { flex: 1; padding: 10px 16px; font-size: 14px; font-family: 'Syne',sans-serif; font-weight: 600; background: transparent; border: none; color: var(--muted); cursor: pointer; transition: all .2s; }
+  .auth-tab.active { background: var(--accent); color: #fff; }
+  .auth-tab:not(.active):hover { background: rgba(108,99,255,.08); color: var(--text); }
+
+  /* ── OAuth panel ── */
+  .oauth-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 28px 24px; margin-top: 16px; text-align: center; }
+  .oauth-logo { font-size: 36px; margin-bottom: 10px; background: linear-gradient(135deg,var(--accent),var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .oauth-title { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
+  .oauth-sub { font-size: 13px; color: var(--muted); font-family: 'JetBrains Mono',monospace; line-height: 1.6; max-width: 420px; margin: 0 auto; }
+  .oauth-divider { font-size: 12px; color: var(--muted); font-family: 'JetBrains Mono',monospace; margin: 16px 0 10px; display: flex; align-items: center; gap: 10px; }
+  .oauth-divider::before, .oauth-divider::after { content:''; flex:1; height:1px; background: var(--border); }
+
+  /* ── Connected user chip ── */
+  .user-chip { display: flex; align-items: center; gap: 12px; background: rgba(67,232,176,.06); border: 1px solid rgba(67,232,176,.25); border-radius: 10px; padding: 12px 16px; margin-top: 12px; }
+  .user-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg,var(--accent),var(--accent2)); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+  .user-info { flex: 1; text-align: left; }
+  .user-name { font-size: 14px; font-weight: 700; }
+  .user-email { font-size: 12px; color: var(--muted); font-family: 'JetBrains Mono',monospace; }
+</style>
+</head>
+<body>
+<div class="glow glow-1"></div>
+<div class="glow glow-2"></div>
+
+<div class="container">
+  <header>
+    <div class="logo-mark">⬡</div>
+    <div>
+      <h1>Monday.com <span>Board Sync</span></h1>
+      <div class="subtitle">// CSV & Excel → monday.com board updater</div>
+    </div>
+  </header>
+
+  <!-- 00 Connect -->
+  <div class="card" id="connectCard">
+    <div class="card-title">00 — Connect to Monday.com</div>
+
+    <!-- Auth method tabs -->
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tabKey" onclick="switchAuthTab('key')">🔑 API Key</button>
+      <button class="auth-tab" id="tabOauth" onclick="switchAuthTab('oauth')">🔐 Sign in with Monday</button>
+    </div>
+
+    <!-- API Key panel -->
+    <div id="panelKey">
+      <div class="field" style="margin-top:16px;">
+        <label>Monday.com API Key</label>
+        <div class="key-input-row">
+          <input type="password" id="mondayApiKey" placeholder="eyJhbGciOiJIUzI1NiJ9…" autocomplete="off">
+          <button class="eye-btn" onclick="toggleKeyVis()" title="Show / hide">👁</button>
+          <button class="btn btn-sm btn-green" id="connectBtn" onclick="connectWithKey()">Connect</button>
+        </div>
+        <div class="hint">Profile → Developers → API v2 token · Stored in memory only.</div>
+      </div>
+    </div>
+
+    <!-- OAuth panel -->
+    <div id="panelOauth" class="hidden">
+      <div class="oauth-box">
+        <div class="oauth-logo">⬡</div>
+        <div class="oauth-title">Sign in with your Monday.com account</div>
+        <div class="oauth-sub">You'll be redirected to Monday.com to authorise this tool, then brought back automatically.</div>
+
+        <div class="field" style="margin-top:16px;text-align:left;">
+          <label>OAuth Client ID <span style="color:var(--error)">*</span></label>
+          <input type="text" id="oauthClientId" placeholder="your_app_client_id" autocomplete="off">
+          <div class="hint">Create a Monday app at <a href="https://monday.com/developers/apps" target="_blank" style="color:var(--accent)">monday.com/developers/apps</a> → OAuth scopes: boards:read, boards:write, workspaces:read</div>
+        </div>
+
+        <div class="field">
+          <label>Redirect URI</label>
+          <input type="text" id="oauthRedirectUri" value="" readonly style="font-size:11px;color:var(--muted);">
+          <div class="hint">Paste this exact URI into your Monday app's OAuth redirect list.</div>
+        </div>
+
+        <button class="btn btn-green" id="oauthBtn" onclick="startOAuth()" style="width:100%;justify-content:center;margin-top:8px;">
+          🔐 Authorise with Monday.com
+        </button>
+
+        <div class="oauth-divider">or paste an existing access token</div>
+        <div class="key-input-row">
+          <input type="password" id="oauthManualToken" placeholder="Paste OAuth access token…" autocomplete="off">
+          <button class="eye-btn" onclick="toggleOAuthTokenVis()">👁</button>
+          <button class="btn btn-sm btn-green" onclick="connectWithOAuthToken()">Use Token</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="key-status" id="keyStatus"></div>
+  </div>
+
+  <!-- 01 Board -->
+  <div class="card hidden" id="boardCard">
+    <div class="card-title">01 — Select Board</div>
+    <!-- DBA Quick Boards -->
+    <div style="margin-bottom:16px;">
+      <div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;opacity:.7;">DBA Quick Boards</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;">
+        <button onclick="quickBoard('18409897469','Recruiting Pipeline')" style="padding:6px 12px;border-radius:3px;font-size:11px;font-weight:700;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.25);color:var(--accent);cursor:pointer;font-family:'JetBrains Mono',monospace;">Recruiting Pipeline</button>
+        <button onclick="quickBoard('18397757902','Policy Applications')" style="padding:6px 12px;border-radius:3px;font-size:11px;font-weight:700;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.25);color:var(--accent);cursor:pointer;font-family:'JetBrains Mono',monospace;">Policy Applications</button>
+        <button onclick="quickBoard('18411252612','Call Production Log')" style="padding:6px 12px;border-radius:3px;font-size:11px;font-weight:700;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.25);color:var(--accent);cursor:pointer;font-family:'JetBrains Mono',monospace;">Call Production Log</button>
+        <button onclick="quickBoard('18411962317','Events')" style="padding:6px 12px;border-radius:3px;font-size:11px;font-weight:700;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.25);color:var(--accent);cursor:pointer;font-family:'JetBrains Mono',monospace;">Events</button>
+        <button id="survey-quick-btn" onclick="quickBoard(getSurveyBoardId(),'Financial Surveys')" style="padding:6px 12px;border-radius:3px;font-size:11px;font-weight:700;background:rgba(39,174,96,.1);border:1px solid rgba(39,174,96,.25);color:#2DCA73;cursor:pointer;font-family:'JetBrains Mono',monospace;">Financial Surveys</button>
+      </div>
+    </div>
+    <div class="field" id="boardSelectorSection">
+      <label>Board</label>
+      <div class="search-wrap" id="boardSearchWrap">
+        <span class="icon">🔍</span>
+        <input class="search-input" id="boardSearchInput" placeholder="Search boards by name…"
+          oninput="filterBoards(this.value)" onfocus="openBoardDrop()" autocomplete="off">
+        <div class="dropdown-list" id="boardList"></div>
+      </div>
+      <div class="selected-chip hidden" id="boardChip" onclick="reopenBoardSelector()">
+        <span id="boardChipName"></span>
+        <span class="badge-sm" id="boardChipId"></span>
+        <span class="chg">✎ change</span>
+      </div>
+    </div>
+
+    <!-- Create board panel -->
+    <div class="sub-panel hidden" id="createBoardPanel">
+      <div class="sub-panel-title">✦ Create New Board</div>
+      <div class="row2">
+        <div class="field"><label>Board Name</label><input type="text" id="newBoardName" placeholder="e.g. Q3 Sales Leads"></div>
+        <div class="field"><label>Workspace</label><select id="newBoardWorkspace"><option value="">— select —</option></select></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Visibility</label>
+          <select id="newBoardKind"><option value="public">Public</option><option value="private">Private</option><option value="share">Shareable</option></select>
+        </div>
+        <div class="field"><label>Description (optional)</label><input type="text" id="newBoardDesc" placeholder="Brief description…"></div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;margin-top:4px;">
+        <button class="btn btn-green btn-sm" onclick="createNewBoard()">⚡ Create Board</button>
+        <button class="btn btn-ghost btn-sm" onclick="cancelCreateBoard()">Cancel</button>
+        <span class="hint" id="createBoardStatus"></span>
+      </div>
+    </div>
+
+    <!-- Group selector (appears after board is chosen) -->
+    <div class="hidden" id="groupSection">
+      <hr class="divider">
+      <div class="field">
+        <label>Group</label>
+        <div class="search-wrap" id="groupSearchWrap">
+          <span class="icon">📂</span>
+          <input class="search-input" id="groupSearchInput" placeholder="Search groups…"
+            oninput="filterGroups(this.value)" onfocus="openGroupDrop()" autocomplete="off">
+          <div class="dropdown-list" id="groupList"></div>
+        </div>
+        <div class="selected-chip hidden" id="groupChip" onclick="reopenGroupSelector()">
+          <span class="color-dot" id="groupChipDot"></span>
+          <span id="groupChipName"></span>
+          <span class="chg">✎ change</span>
+        </div>
+      </div>
+
+      <!-- Create group panel -->
+      <div class="sub-panel hidden" id="createGroupPanel">
+        <div class="sub-panel-title">✦ Create New Group</div>
+        <div class="row2">
+          <div class="field"><label>Group Name</label><input type="text" id="newGroupName" placeholder="e.g. Imported Leads"></div>
+          <div class="field"><label>Color</label>
+            <select id="newGroupColor">
+              <option value="#037f4c">🟢 Green</option><option value="#00c875">🟩 Mint</option>
+              <option value="#9cd326">🟡 Lime</option><option value="#cab641">🟨 Yellow</option>
+              <option value="#ffcb00">⭐ Gold</option><option value="#784bd1">🟣 Purple</option>
+              <option value="#a25ddc">💜 Violet</option><option value="#0086c0">🔵 Blue</option>
+              <option value="#579bfc">💙 Sky</option><option value="#66ccff">🩵 Cyan</option>
+              <option value="#ff642e">🟠 Orange</option><option value="#ff7575">🔴 Red</option>
+              <option value="#df2f4a">❤️ Crimson</option><option value="#ff5ac4">🩷 Pink</option>
+              <option value="#7f5347">🟤 Brown</option><option value="#808080">⬜ Gray</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;margin-top:4px;">
+          <button class="btn btn-green btn-sm" onclick="createNewGroup()">⚡ Create Group</button>
+          <button class="btn btn-ghost btn-sm" onclick="cancelCreateGroup()">Cancel</button>
+          <span class="hint" id="createGroupStatus"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sync mode + name col (after group chosen) -->
+    <div class="hidden" id="syncConfigSection">
+      <hr class="divider">
+      <div class="row2">
+        <div class="field">
+          <label>Item Name — Column(s)</label>
+          <select id="nameCol1" onchange="updateNamePreview()"><option value="">— pick primary column —</option></select>
+          <div class="hint" style="margin-top:6px;">Optionally combine with a second column:</div>
+          <div style="display:flex;gap:8px;margin-top:6px;align-items:center;">
+            <select id="nameCol2" onchange="updateNamePreview()" style="flex:1"><option value="">— none —</option></select>
+            <input type="text" id="nameSep" value=" " placeholder="sep" style="width:52px;text-align:center;" oninput="updateNamePreview()" title="Separator between columns">
+          </div>
+          <div class="hint" id="namePreview" style="margin-top:6px;color:var(--accent3)"></div>
+        </div>
+        <div class="field">
+          <label>Sync Mode</label>
+          <div class="toggle-group" style="margin-top:2px;">
+            <button class="tgl active" onclick="setMode('update',this)">✏️ Update existing</button>
+            <button class="tgl" onclick="setMode('create',this)">➕ Create new</button>
+            <button class="tgl" onclick="setMode('upsert',this)">⚡ Update + Create</button>
+          </div>
+          <div class="hint" style="margin-top:8px;" id="modeHint">Rows will be matched to existing board items by the column below.</div>
+        </div>
+      </div>
+      <div class="field" id="matchColField">
+        <label>Match existing items by this spreadsheet column</label>
+        <select id="matchCol"><option value="">— pick match column —</option></select>
+        <div class="hint">Each row is matched to a board item whose name or column text equals this value (case-insensitive)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 02 Upload -->
+  <div class="card hidden" id="uploadCard">
+    <div class="card-title">02 — Upload Spreadsheet</div>
+    <div class="dropzone" id="dropzone">
+      <input type="file" id="fileInput" accept=".csv,.xlsx,.xls" onchange="handleFile(this.files[0])">
+      <div class="dz-icon">📂</div>
+      <div class="dz-text">Drop your file here or click to browse</div>
+      <div class="dz-hint">Supports .csv · .xlsx · .xls</div>
+    </div>
+    <div id="fileInfo" class="hidden" style="margin-top:12px;"></div>
+    <div id="previewWrap" class="hidden section-gap">
+      <div class="card-title" style="margin-bottom:8px;">Preview (first 5 rows)</div>
+      <div class="table-wrap" id="previewTable"></div>
+      <div class="hint mt8" id="rowCount"></div>
+    </div>
+  </div>
+
+  <!-- 02b Filters -->
+  <div class="card hidden" id="filterCard">
+    <div class="card-title">02b — Filter Rows <span style="font-size:11px;font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0;margin-left:8px;">Only matching rows will be synced</span></div>
+
+    <!-- Filter 1 -->
+    <div class="filter-row" id="filter1Row">
+      <div class="filter-cells">
+        <select id="f1Col" onchange="onFilterColChange(1)" class="fsel"><option value="">— column —</option></select>
+        <select id="f1Op"  onchange="onFilterOpChange(1)"  class="fsel"><option value="">— condition —</option></select>
+        <div id="f1Vals" class="fvals"></div>
+      </div>
+      <div class="filter-preview" id="f1Preview"></div>
+    </div>
+
+    <!-- Logic connector -->
+    <div id="logicRow" class="logic-row hidden">
+      <button class="logic-btn active" id="logicAnd" onclick="setLogic('AND',this)">AND</button>
+      <button class="logic-btn"        id="logicOr"  onclick="setLogic('OR',this)">OR</button>
+      <span class="hint" style="margin-left:8px;" id="logicHint">Both conditions must be true</span>
+    </div>
+
+    <!-- Filter 2 -->
+    <div class="filter-row hidden" id="filter2Row">
+      <div class="filter-cells">
+        <select id="f2Col" onchange="onFilterColChange(2)" class="fsel"><option value="">— column —</option></select>
+        <select id="f2Op"  onchange="onFilterOpChange(2)"  class="fsel"><option value="">— condition —</option></select>
+        <div id="f2Vals" class="fvals"></div>
+      </div>
+      <div class="filter-preview" id="f2Preview"></div>
+    </div>
+
+    <!-- Add / remove second filter -->
+    <div style="display:flex;gap:10px;margin-top:12px;align-items:center;">
+      <button class="btn btn-sm btn-ghost" id="addFilter2Btn" onclick="toggleFilter2()">＋ Add second condition</button>
+      <button class="btn btn-sm btn-ghost" onclick="clearFilters()" style="color:var(--error);border-color:rgba(255,101,132,.3);">✕ Clear filters</button>
+      <span class="hint" id="filterSummary"></span>
+    </div>
+  </div>
+
+  <!-- 03 Column Mapping -->
+  <div class="card hidden" id="mappingCard">
+    <div class="card-title">03 — Column Mapping</div>
+    <div id="colsLoadingState" class="cols-loading">
+      <span class="spinner-sm"></span> Loading board columns…
+    </div>
+    <div id="mappingBody" class="hidden">
+      <div class="hint" style="margin-bottom:12px;">
+        Map each spreadsheet column to a board column. Use the dropdown — column IDs are pulled live from your board.
+      </div>
+      <div class="mapping-header">
+        <span>Spreadsheet Column</span><span></span><span>Board Column</span><span></span>
+      </div>
+      <div id="mappingRows"></div>
+    </div>
+  </div>
+
+  <!-- 04 Run -->
+  <div class="card hidden" id="runCard">
+    <div class="card-title">04 — Sync to Monday.com</div>
+    <div class="row2" style="margin-bottom:16px;">
+      <div class="field">
+        <label>Delay between rows (ms)</label>
+        <input type="number" id="batchDelay" value="300" min="100" max="3000">
+        <div class="hint">Avoid rate limits — 300ms recommended</div>
+      </div>
+      <div class="field">
+        <label>Max rows to sync</label>
+        <input type="number" id="maxRows" value="100" min="1" max="2000">
+        <div class="hint">Limit sync for large files</div>
+      </div>
+    </div>
+    <button class="btn" id="syncBtn" onclick="startSync()">⚡ Start Sync</button>
+    <button class="btn btn-sm btn-ghost" style="margin-left:10px;" onclick="resetAll()">↺ Reset</button>
+  </div>
+
+  <!-- Progress -->
+  <div class="card hidden" id="progressCard">
+    <div class="card-title">Sync Progress</div>
+    <div class="summary-row" id="summaryBadges"></div>
+    <div class="prog-wrap"><div class="prog-bar" id="progressBar"></div></div>
+    <div class="log-wrap" id="logWrap"></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════
+let mondayKey   = '';
+let boardsData  = [];   // [{id,name,workspaceName}]
+let groupsData  = [];   // [{id,title,color}]
+let columnsData = [];   // [{id,title,type}]
+let workspacesData = [];
+
+let selectedBoardId   = null;
+let selectedBoardName = null;
+let selectedGroupId   = null;
+let selectedGroupName = null;
+
+let parsedRows = [];
+let headers    = [];
+let syncMode   = 'update';
+let okCount=0, errCount=0, skipCount=0;
+
+// Column types that are read-only / auto-generated — skip from mapping options
+const SKIP_TYPES = new Set(['name','auto_number','creation_log','last_updated','formula','item_id','subtasks','board_relation','mirror','button','integration','item_assignees']);
+
+// Color hex → css
+const GROUP_COLORS = { '#037f4c':'#037f4c','#00c875':'#00c875','#9cd326':'#9cd326','#cab641':'#cab641','#ffcb00':'#ffcb00','#784bd1':'#784bd1','#a25ddc':'#a25ddc','#0086c0':'#0086c0','#579bfc':'#579bfc','#66ccff':'#66ccff','#ff642e':'#ff642e','#ff7575':'#ff7575','#df2f4a':'#df2f4a','#ff5ac4':'#ff5ac4','#7f5347':'#7f5347','#808080':'#808080' };
+
+// ═══════════════════════════════════════════════════
+// API KEY / CONNECT
+// ═══════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════
+// AUTH — API KEY + OAUTH
+// ═══════════════════════════════════════════════════
+let authMethod = 'key'; // 'key' | 'oauth'
+let oauthPopup = null;
+
+// Set redirect URI to current page on load
+window.addEventListener('DOMContentLoaded', () => {
+  const uri = window.location.href.split('?')[0].split('#')[0];
+  const el = $$('oauthRedirectUri');
+  if(el) el.value = uri;
+
+  // Check if we're returning from an OAuth redirect (hash contains token or code)
+  handleOAuthCallback();
+});
+
+function switchAuthTab(tab) {
+  authMethod = tab;
+  $$('tabKey').classList.toggle('active', tab==='key');
+  $$('tabOauth').classList.toggle('active', tab==='oauth');
+  $$('panelKey').classList.toggle('hidden', tab!=='key');
+  $$('panelOauth').classList.toggle('hidden', tab!=='oauth');
+}
+
+// ── API Key login ──────────────────────────────────
+function toggleKeyVis() {
+  const i = $$('mondayApiKey');
+  i.type = i.type === 'password' ? 'text' : 'password';
+}
+function toggleOAuthTokenVis() {
+  const i = $$('oauthManualToken');
+  i.type = i.type === 'password' ? 'text' : 'password';
+}
+
+async function connectWithKey() {
+  const key = $$('mondayApiKey').value.trim();
+  if (!key) { setKeyStatus('err','⚠ Please enter your API key.'); return; }
+  mondayKey = key;
+  await finishConnect('key');
+}
+
+async function connectWithOAuthToken() {
+  const tok = $$('oauthManualToken').value.trim();
+  if(!tok) { setKeyStatus('err','⚠ Please paste an access token.'); return; }
+  mondayKey = tok;
+  await finishConnect('oauth-token');
+}
+
+// ── OAuth flow ─────────────────────────────────────
+function startOAuth() {
+  const clientId = $$('oauthClientId').value.trim();
+  if(!clientId) { setKeyStatus('err','⚠ Please enter your OAuth Client ID first.'); return; }
+
+  // Store clientId for the callback
+  sessionStorage.setItem('monday_oauth_client_id', clientId);
+
+  const redirectUri = $$('oauthRedirectUri').value;
+  const state = crypto.randomUUID();
+  sessionStorage.setItem('monday_oauth_state', state);
+
+  const params = new URLSearchParams({
+    client_id: clientId,
+    redirect_uri: redirectUri,
+    response_type: 'token',  // implicit flow — token returned in hash
+    state,
+    scopes: 'boards:read boards:write workspaces:read me:read'
+  });
+
+  const authUrl = `https://auth.monday.com/oauth2/authorize?${params}`;
+
+  // Try popup first, fall back to redirect
+  try {
+    oauthPopup = window.open(authUrl, 'monday_oauth',
+      'width=520,height=680,left=' + Math.round((screen.width-520)/2) +
+      ',top=' + Math.round((screen.height-680)/2));
+    if(!oauthPopup || oauthPopup.closed) throw new Error('popup blocked');
+
+    setKeyStatus('info','🔐 Waiting for Monday.com authorisation…');
+
+    // Poll for popup close or message
+    const timer = setInterval(async () => {
+      try {
+        if(oauthPopup.closed) {
+          clearInterval(timer);
+          // Check if token was stored by the popup's handleOAuthCallback
+          const tok = sessionStorage.getItem('monday_oauth_token');
+          if(tok) {
+            sessionStorage.removeItem('monday_oauth_token');
+            mondayKey = tok;
+            await finishConnect('oauth');
+          } else {
+            setKeyStatus('err','✗ Authorisation cancelled or failed.');
+          }
+          return;
+        }
+        // Try to read popup hash (works if same origin)
+        const hash = oauthPopup.location.hash;
+        if(hash && hash.includes('access_token')) {
+          const token = extractOAuthToken(hash);
+          if(token) {
+            clearInterval(timer);
+            oauthPopup.close();
+            mondayKey = token;
+            await finishConnect('oauth');
+          }
+        }
+      } catch(e) { /* cross-origin — keep polling */ }
+    }, 500);
+
+  } catch(e) {
+    // Popup blocked — redirect current page
+    sessionStorage.setItem('monday_oauth_redirect', '1');
+    window.location.href = authUrl;
+  }
+}
+
+// Called on page load to handle redirect-back from Monday OAuth
+function handleOAuthCallback() {
+  const hash   = window.location.hash;
+  const search = window.location.search;
+
+  // Implicit flow: token in hash
+  if(hash.includes('access_token')) {
+    const token = extractOAuthToken(hash);
+    if(token) {
+      // Clear hash from URL
+      history.replaceState(null, '', window.location.pathname);
+      // If we're in a popup, store and close
+      if(window.opener) {
+        sessionStorage.setItem('monday_oauth_token', token);
+        window.close();
+      } else {
+        // Full-page redirect flow
+        mondayKey = token;
+        finishConnect('oauth');
+      }
+    }
+  }
+
+  // Check for stored token (popup set it before closing)
+  const stored = sessionStorage.getItem('monday_oauth_token');
+  if(stored) {
+    sessionStorage.removeItem('monday_oauth_token');
+    mondayKey = stored;
+    finishConnect('oauth');
+  }
+}
+
+function extractOAuthToken(hash) {
+  const params = new URLSearchParams(hash.replace(/^#/, ''));
+  return params.get('access_token') || null;
+}
+
+// ── Shared post-auth flow ──────────────────────────
+async function finishConnect(method) {
+  setKeyStatus('info','Connecting…');
+  const btn = $$('connectBtn');
+  if(btn) btn.disabled = true;
+  $$('oauthBtn') && ($$('oauthBtn').disabled = true);
+
+  try {
+    // Fetch user info for OAuth display
+    let userName = '', userEmail = '';
+    if(method === 'oauth' || method === 'oauth-token') {
+      try {
+        const me = await gql(`query{me{name email photo_thumb}}`);
+        userName  = me.me?.name  || '';
+        userEmail = me.me?.email || '';
+      } catch(e) { /* non-fatal */ }
+    }
+
+    const [boards, workspaces] = await Promise.all([fetchAllBoards(), fetchWorkspaces()]);
+    boardsData     = boards;
+    workspacesData = workspaces;
+
+    const ws = $$('newBoardWorkspace');
+    ws.innerHTML = '<option value="">— select —</option>';
+    workspaces.forEach(w => {
+      const o = document.createElement('option');
+      o.value=w.id; o.textContent=w.name; ws.appendChild(o);
+    });
+
+    // Build connected UI
+    let statusHtml = `<span class="pill ok">✓ Connected via ${method==='key'?'API key':'OAuth'} — ${boards.length} boards · ${workspaces.length} workspaces</span>`;
+    if(userName) {
+      statusHtml += `
+        <div class="user-chip">
+          <div class="user-avatar">👤</div>
+          <div class="user-info">
+            <div class="user-name">${esc(userName)}</div>
+            <div class="user-email">${esc(userEmail)}</div>
+          </div>
+          <button class="btn btn-sm btn-ghost" onclick="disconnectMonday()" style="flex-shrink:0;">Disconnect</button>
+        </div>`;
+    }
+    $$('keyStatus').innerHTML = statusHtml;
+
+    // Lock inputs
+    if($$('mondayApiKey'))    $$('mondayApiKey').disabled    = true;
+    if($$('oauthManualToken'))$$('oauthManualToken').disabled = true;
+    if($$('oauthClientId'))   $$('oauthClientId').disabled   = true;
+    if($$('oauthBtn'))        $$('oauthBtn').disabled         = true;
+    if(btn) {
+      btn.textContent = '✕ Disconnect';
+      btn.style.cssText='background:rgba(255,101,132,.15);color:var(--error);border:1px solid rgba(255,101,132,.3);box-shadow:none;';
+      btn.onclick = disconnectMonday; btn.disabled = false;
+    }
+
+    $$('boardCard').classList.remove('hidden');
+    renderBoardList('');
+
+  } catch(e) {
+    setKeyStatus('err','✗ ' + e.message);
+    mondayKey = '';
+    if(btn) btn.disabled = false;
+    if($$('oauthBtn')) $$('oauthBtn').disabled = false;
+  }
+}
+
+function disconnectMonday() {
+  mondayKey=''; boardsData=[]; groupsData=[]; columnsData=[]; workspacesData=[];
+  selectedBoardId=selectedBoardName=selectedGroupId=selectedGroupName=null;
+  sessionStorage.removeItem('monday_oauth_token');
+  sessionStorage.removeItem('monday_oauth_state');
+
+  // Re-enable all inputs
+  [$$('mondayApiKey'), $$('oauthManualToken'), $$('oauthClientId'), $$('oauthBtn')]
+    .forEach(el => { if(el) el.disabled = false; });
+
+  $$('mondayApiKey') && ($$('mondayApiKey').value = '');
+  $$('oauthManualToken') && ($$('oauthManualToken').value = '');
+  $$('keyStatus').innerHTML = '';
+
+  const btn = $$('connectBtn');
+  if(btn) { btn.textContent='Connect'; btn.style=''; btn.onclick=connectWithKey; btn.disabled=false; }
+
+  ['boardCard','uploadCard','filterCard','mappingCard','runCard','progressCard']
+    .forEach(id => { const el=$$(id); if(el) el.classList.add('hidden'); });
+  parsedRows=[]; headers=[];
+}
+
+function setKeyStatus(type,msg) {
+  const cls={ok:'ok',err:'err',info:'info'}[type];
+  $$('keyStatus').innerHTML=`<span class="pill ${cls}">${msg}</span>`;
+}
+
+// ═══════════════════════════════════════════════════
+// MONDAY GQL
+// ═══════════════════════════════════════════════════
+async function gql(query, variables={}) {
+  const r = await fetch('https://api.monday.com/v2',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':mondayKey,'API-Version':'2024-01'},
+    body: JSON.stringify({query,variables})
+  });
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  const j = await r.json();
+  if (j.errors?.length) throw new Error(j.errors[0].message);
+  return j.data;
+}
+
+async function fetchAllBoards() {
+  let all=[], page=1;
+  while(true) {
+    const d = await gql(`query($p:Int!){boards(limit:50,page:$p,order_by:created_at){id name workspace{id name}}}`,{p:page});
+    const b = d.boards||[];
+    all = all.concat(b.map(x=>({id:x.id,name:x.name,workspaceName:x.workspace?.name||'Main workspace',workspaceId:x.workspace?.id||''})));
+    if (b.length<50) break; page++;
+  }
+  return all;
+}
+
+async function fetchWorkspaces() {
+  const d = await gql(`query{workspaces(limit:100){id name}}`);
+  return d.workspaces||[];
+}
+
+function quickBoard(boardId, boardName) {
+  // Directly select a DBA board without using the search UI
+  if (!boardId || boardId === 'undefined') {
+    alert('Survey board not created yet. Run Create Survey Board first.');
+    return;
+  }
+  selectedBoardId = boardId;
+  document.getElementById('boardChipName').textContent = boardName + ' (' + boardId + ')';
+  document.getElementById('boardChip').classList.remove('hidden');
+  document.getElementById('boardSelectorSection') && (document.getElementById('boardSelectorSection').style.display = 'none');
+  document.getElementById('boardChip').classList.remove('hidden');
+  fetchGroupsAndColumns(boardId);
+}
+
+function getSurveyBoardId() {
+  return localStorage.getItem('dba_survey_board_id') || '18409897469';
+}
+
+async function fetchGroupsAndColumns(boardId) {
+  const d = await gql(`
+    query($id:ID!){
+      boards(ids:[$id]){
+        groups { id title color }
+        columns { id title type settings_str }
+      }
+    }`,{id:boardId});
+  const board = d.boards?.[0]||{};
+  const columns = (board.columns||[])
+    .filter(c=>!SKIP_TYPES.has(c.type))
+    .map(c => {
+      let settings = {};
+      try { settings = JSON.parse(c.settings_str||'{}'); } catch(e){}
+      // Build label→index map for status (color) columns
+      let statusMap = {};   // lowercase label → index string
+      let dropdownMap = {}; // lowercase label → id string
+      if(c.type === 'color' && settings.labels) {
+        Object.entries(settings.labels).forEach(([idx, label]) => {
+          statusMap[label.toLowerCase().trim()] = idx;
+        });
+      }
+      if(c.type === 'dropdown' && settings.labels) {
+        settings.labels.forEach(l => {
+          dropdownMap[l.name.toLowerCase().trim()] = String(l.id);
+        });
+      }
+      return { id:c.id, title:c.title, type:c.type, statusMap, dropdownMap };
+    });
+  return {
+    groups: board.groups||[],
+    columns
+  };
+}
+
+// ═══════════════════════════════════════════════════
+// BOARD SELECTOR
+// ═══════════════════════════════════════════════════
+document.addEventListener('click', e => {
+  if (!$$('boardSearchWrap').contains(e.target)) $$('boardList').style.display='none';
+  if (!$$('groupSearchWrap')?.contains(e.target)) { const gl=$$('groupList'); if(gl) gl.style.display='none'; }
+});
+
+function openBoardDrop() { renderBoardList($$('boardSearchInput').value); $$('boardList').style.display='block'; }
+
+function filterBoards(term) { renderBoardList(term); $$('boardList').style.display='block'; }
+
+function renderBoardList(term) {
+  const list = $$('boardList');
+  const q = term.toLowerCase();
+  const filtered = boardsData.filter(b=>b.name.toLowerCase().includes(q));
+  let html='';
+  if (!filtered.length) html=`<div class="empty-state">No boards match "${esc(term)}"</div>`;
+  else filtered.forEach(b=>{
+    const sel = b.id===selectedBoardId?' selected':'';
+    const safeN = b.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    html+=`<div class="drop-item${sel}" onclick="selectBoard('${b.id}','${safeN}')">
+      <span>📋</span>
+      <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(b.name)}</span>
+      ${b.workspaceName?`<span class="badge-ws" title="${esc(b.workspaceName)}">${esc(b.workspaceName)}</span>`:''}
+      <span class="badge-sm">${b.id}</span>
+    </div>`;
+  });
+  html+=`<div class="drop-item action" onclick="showCreateBoard()">✦ Create a new board…</div>`;
+  list.innerHTML=html;
+}
+
+async function selectBoard(id, name) {
+  selectedBoardId=id; selectedBoardName=name;
+  selectedGroupId=null; selectedGroupName=null;
+  $$('boardSearchWrap').style.display='none';
+  $$('boardChip').classList.remove('hidden');
+  $$('boardChipName').textContent='📋 '+name;
+  $$('boardChipId').textContent=id;
+  $$('createBoardPanel').classList.add('hidden');
+  $$('boardList').style.display='none';
+
+  // Reset downstream
+  $$('groupSection').classList.remove('hidden');
+  $$('groupChip').classList.add('hidden');
+  $$('groupSearchWrap').style.display='';
+  $$('groupSearchInput').value='';
+  $$('createGroupPanel').classList.add('hidden');
+  $$('syncConfigSection').classList.add('hidden');
+  $$('uploadCard').classList.add('hidden');
+  $$('mappingCard').classList.add('hidden');
+  $$('runCard').classList.add('hidden');
+  groupsData=[]; columnsData=[];
+
+  // Fetch groups + columns in background
+  const glistEl = $$('groupList');
+  glistEl.innerHTML=`<div class="drop-item disabled"><span class="spinner-sm"></span>&nbsp;Loading groups…</div>`;
+  glistEl.style.display='none';
+  try {
+    const {groups, columns} = await fetchGroupsAndColumns(id);
+    groupsData = groups;
+    columnsData = columns;
+    renderGroupList('');
+  } catch(e) {
+    groupsData=[];
+    renderGroupList('');
+  }
+}
+
+function reopenBoardSelector() {
+  selectedBoardId=null; selectedBoardName=null;
+  $$('boardChip').classList.add('hidden');
+  $$('boardSearchWrap').style.display='';
+  $$('boardSearchInput').value='';
+  $$('groupSection').classList.add('hidden');
+  $$('syncConfigSection').classList.add('hidden');
+  $$('uploadCard').classList.add('hidden');
+  $$('mappingCard').classList.add('hidden');
+  $$('runCard').classList.add('hidden');
+  renderBoardList('');
+  $$('boardList').style.display='block';
+}
+
+function showCreateBoard() {
+  $$('boardList').style.display='none';
+  $$('boardSearchWrap').style.display='none';
+  $$('createBoardPanel').classList.remove('hidden');
+  $$('newBoardName').focus();
+}
+function cancelCreateBoard() {
+  $$('createBoardPanel').classList.add('hidden');
+  $$('boardSearchWrap').style.display='';
+  renderBoardList('');
+}
+async function createNewBoard() {
+  const name=$$('newBoardName').value.trim();
+  const wsId=$$('newBoardWorkspace').value;
+  const kind=$$('newBoardKind').value;
+  const desc=$$('newBoardDesc').value.trim();
+  const status=$$('createBoardStatus');
+  if(!name){status.textContent='⚠ Name required';status.style.color='var(--warn)';return;}
+  status.textContent='⏳ Creating…';status.style.color='var(--muted)';
+  const btn=document.querySelector('#createBoardPanel .btn-green'); btn.disabled=true;
+  try {
+    const d=await gql(`mutation($n:String!,$k:BoardKind!,$w:ID,$d:String){create_board(board_name:$n,board_kind:$k,workspace_id:$w,description:$d){id name workspace{id name}}}`,
+      {n:name,k:kind,w:wsId||undefined,d:desc||undefined});
+    const nb=d.create_board;
+    boardsData.unshift({id:nb.id,name:nb.name,workspaceName:nb.workspace?.name||'',workspaceId:nb.workspace?.id||''});
+    status.textContent=`✓ Created!`;status.style.color='var(--success)';
+    setTimeout(()=>{ $$('createBoardPanel').classList.add('hidden'); selectBoard(nb.id,nb.name); },700);
+  } catch(e){status.textContent='✗ '+e.message;status.style.color='var(--error)';}
+  btn.disabled=false;
+}
+
+// ═══════════════════════════════════════════════════
+// GROUP SELECTOR
+// ═══════════════════════════════════════════════════
+function openGroupDrop() { renderGroupList($$('groupSearchInput').value); $$('groupList').style.display='block'; }
+function filterGroups(term) { renderGroupList(term); $$('groupList').style.display='block'; }
+
+function renderGroupList(term) {
+  const list=$$('groupList');
+  const q=term.toLowerCase();
+  const filtered=groupsData.filter(g=>g.title.toLowerCase().includes(q));
+  let html='';
+  if(!filtered.length) html=`<div class="empty-state">No groups match "${esc(term)}"</div>`;
+  else filtered.forEach(g=>{
+    const col=g.color||'#808080';
+    const sel=g.id===selectedGroupId?' selected':'';
+    const safeT=g.title.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    html+=`<div class="drop-item${sel}" onclick="selectGroup('${g.id}','${safeT}','${col}')">
+      <span class="color-dot" style="background:${col}"></span>
+      <span style="flex:1">${esc(g.title)}</span>
+      <span class="badge-sm">${g.id}</span>
+    </div>`;
+  });
+  html+=`<div class="drop-item action" onclick="showCreateGroup()">✦ Create a new group…</div>`;
+  list.innerHTML=html;
+}
+
+function selectGroup(id, title, color) {
+  selectedGroupId=id; selectedGroupName=title;
+  $$('groupSearchWrap').style.display='none';
+  const chip=$$('groupChip'); chip.classList.remove('hidden');
+  $$('groupChipDot').style.background=color;
+  $$('groupChipName').textContent=title;
+  $$('groupList').style.display='none';
+  $$('createGroupPanel').classList.add('hidden');
+  $$('syncConfigSection').classList.remove('hidden');
+  $$('uploadCard').classList.remove('hidden');
+}
+
+function reopenGroupSelector() {
+  selectedGroupId=null; selectedGroupName=null;
+  $$('groupChip').classList.add('hidden');
+  $$('groupSearchWrap').style.display='';
+  $$('groupSearchInput').value='';
+  $$('syncConfigSection').classList.add('hidden');
+  $$('uploadCard').classList.add('hidden');
+  $$('mappingCard').classList.add('hidden');
+  $$('runCard').classList.add('hidden');
+  renderGroupList(''); $$('groupList').style.display='block';
+}
+
+function showCreateGroup() {
+  $$('groupList').style.display='none';
+  $$('groupSearchWrap').style.display='none';
+  $$('createGroupPanel').classList.remove('hidden');
+  $$('newGroupName').focus();
+}
+function cancelCreateGroup() {
+  $$('createGroupPanel').classList.add('hidden');
+  $$('groupSearchWrap').style.display='';
+  renderGroupList('');
+}
+async function createNewGroup() {
+  const name=$$('newGroupName').value.trim();
+  const color=$$('newGroupColor').value;
+  const status=$$('createGroupStatus');
+  if(!name){status.textContent='⚠ Name required';status.style.color='var(--warn)';return;}
+  status.textContent='⏳ Creating…';status.style.color='var(--muted)';
+  const btn=document.querySelector('#createGroupPanel .btn-green'); btn.disabled=true;
+  try {
+    const d=await gql(`mutation($b:ID!,$n:String!,$c:String){create_group(board_id:$b,group_name:$n,group_color:$c){id title color}}`,
+      {b:selectedBoardId,n:name,c:color});
+    const ng=d.create_group;
+    groupsData.unshift({id:ng.id,title:ng.title,color:ng.color||color});
+    status.textContent='✓ Created!';status.style.color='var(--success)';
+    setTimeout(()=>{ $$('createGroupPanel').classList.add('hidden'); selectGroup(ng.id,ng.title,ng.color||color); },700);
+  } catch(e){status.textContent='✗ '+e.message;status.style.color='var(--error)';}
+  btn.disabled=false;
+}
+
+// ═══════════════════════════════════════════════════
+// SYNC MODE
+// ═══════════════════════════════════════════════════
+function setMode(mode,btn) {
+  syncMode=mode;
+  document.querySelectorAll('.tgl').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const needsMatch = mode==='update' || mode==='upsert';
+  $$('matchColField').classList.toggle('hidden', !needsMatch);
+  const hints = {
+    update: 'Matches rows to existing items — skips rows with no match.',
+    create: 'Creates every row as a new item. Rows are never skipped.',
+    upsert: 'Updates matched items; creates new ones for unmatched rows.'
+  };
+  $$('modeHint').textContent = hints[mode] || '';
+}
+
+// Build item name from 1 or 2 columns, clean trailing punctuation/spaces
+function buildItemName(row, col1, col2, sep) {
+  const clean = s => String(s||'').trim().replace(/[,;]+$/, '').trim();
+  const p1 = clean(row[col1]);
+  const p2 = col2 ? clean(row[col2]) : '';
+  return [p1, p2].filter(Boolean).join(sep ?? ' ');
+}
+
+// Clean a cell value for monday API: strip trailing commas, fix floats, etc.
+function cleanVal(v) {
+  if(v === null || v === undefined || v === '') return '';
+  const s = String(v).trim();
+  // If it looks like a float ending in .0, strip the decimal
+  if(/^-?\d+\.0+$/.test(s)) return String(parseInt(s));
+  // Strip trailing commas/semicolons from text fields
+  return s.replace(/[,;]+$/, '').trim();
+}
+
+// ═══════════════════════════════════════════════════
+// FILE UPLOAD
+// ═══════════════════════════════════════════════════
+const dz = document.getElementById('dropzone');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('over');});
+dz.addEventListener('dragleave',()=>dz.classList.remove('over'));
+dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('over');const f=e.dataTransfer.files[0];if(f)handleFile(f);});
+
+function handleFile(file) {
+  if(!file) return;
+  const ext=file.name.split('.').pop().toLowerCase();
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try {
+      const wb=XLSX.read(e.target.result,{type:ext==='csv'?'string':'array'});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const json=XLSX.utils.sheet_to_json(ws,{defval:''});
+      if(!json.length){alert('File appears empty.');return;}
+      parsedRows=json; headers=Object.keys(json[0]);
+      showFileInfo(file,json.length);
+      showPreview(json,headers);
+      buildMapping(headers);
+      populateFilterColDropdowns();
+      $$('filterCard').classList.remove('hidden');
+      $$('mappingCard').classList.remove('hidden');
+      $$('runCard').classList.remove('hidden');
+    } catch(e){alert('Failed to parse: '+e.message);}
+  };
+  if(ext==='csv') reader.readAsText(file); else reader.readAsArrayBuffer(file);
+}
+
+function showFileInfo(file,count) {
+  const info=$$('fileInfo');
+  info.innerHTML=`<div class="file-badge">✅ ${esc(file.name)} &nbsp;|&nbsp; ${count} rows &nbsp;|&nbsp; ${headers.length} columns</div>`;
+  info.classList.remove('hidden');
+}
+function showPreview(rows,cols) {
+  const preview=rows.slice(0,5);
+  let html='<table><thead><tr>'+cols.map(c=>`<th>${esc(c)}</th>`).join('')+'</tr></thead><tbody>';
+  preview.forEach(row=>{html+='<tr>'+cols.map(c=>`<td title="${esc(String(row[c]))}">${esc(String(row[c]))}</td>`).join('')+'</tr>';});
+  html+='</tbody></table>';
+  $$('previewTable').innerHTML=html;
+  $$('rowCount').textContent=`Showing 5 of ${rows.length} rows · ${cols.length} columns detected`;
+  $$('previewWrap').classList.remove('hidden');
+
+  // Populate name/match dropdowns
+  populateHeaderDropdowns(cols, rows);
+}
+
+function populateHeaderDropdowns(cols, rows) {
+  const makeOpts = (placeholder) => `<option value="">${placeholder}</option>` +
+    cols.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+
+  $$('nameCol1').innerHTML = makeOpts('— pick primary column —');
+  $$('nameCol2').innerHTML = makeOpts('— none —');
+  $$('matchCol').innerHTML = makeOpts('— pick match column —');
+
+  // Auto-suggest: try common name patterns
+  const nameCandidates = ['FIRST NAME','first name','Name','NAME','name','Full Name','FULL NAME'];
+  const name2Candidates= ['LAST NAME','last name'];
+  const matchCandidates= ['POLICY NUMBER','policy number','Policy Number','ID','id','Email','EMAIL','Policy #'];
+
+  const findCol = (candidates) => candidates.find(c => cols.includes(c)) || '';
+  const n1 = findCol(nameCandidates);
+  const n2 = findCol(name2Candidates);
+  const mc = findCol(matchCandidates);
+
+  if(n1) $$('nameCol1').value = n1;
+  if(n2) $$('nameCol2').value = n2;
+  if(mc) $$('matchCol').value = mc;
+
+  updateNamePreview(rows);
+}
+
+function updateNamePreview(rows) {
+  const c1 = $$('nameCol1').value;
+  const c2 = $$('nameCol2').value;
+  const sep = $$('nameSep').value;
+  if(!c1 || !parsedRows.length) { $$('namePreview').textContent=''; return; }
+  const sample = parsedRows.slice(0,3).map(r => buildItemName(r, c1, c2, sep)).join(' · ');
+  $$('namePreview').textContent = `Preview: ${sample}`;
+}
+
+// ═══════════════════════════════════════════════════
+// COLUMN MAPPING — live board columns as dropdowns
+// ═══════════════════════════════════════════════════
+function buildMapping(cols) {
+  const container=$$('mappingRows');
+  container.innerHTML='';
+  $$('colsLoadingState').classList.add('hidden');
+  $$('mappingBody').classList.remove('hidden');
+
+  // Build options once
+  const optHtml = `<option value="">— skip —</option>`
+    + columnsData.map(c=>`<option value="${esc(c.id)}">${esc(c.title)} <span style="color:var(--muted)">[${esc(c.type)}]</span></option>`).join('');
+
+  cols.forEach((col,i) => {
+    const row=document.createElement('div');
+    row.className='mapping-row';
+    const autoMatch=columnsData.find(c=>c.title.toLowerCase()===col.toLowerCase());
+    const autoVal=autoMatch?autoMatch.id:'';
+
+    const typeBadgeColor = (t) => ({
+      date:'#0086c0', email:'#579bfc', phone:'#43e8b0', numeric:'#cab641',
+      numbers:'#cab641', color:'#a25ddc', dropdown:'#a25ddc',
+      boolean:'#ff7575', checkbox:'#ff7575', link:'#66ccff', rating:'#ffcb00'
+    })[t] || '#6b6b80';
+
+    // Build status label tooltip for color columns
+    const statusTooltip = (c) => {
+      if(c?.type === 'color' && c.statusMap) {
+        const labels = Object.keys(c.statusMap).map(l=>l.toUpperCase()).join(', ');
+        return labels ? `title="Valid: ${labels}"` : '';
+      }
+      return '';
+    };
+
+    row.innerHTML=`
+      <div class="map-label" title="${esc(col)}">${esc(col)}</div>
+      <div class="map-arrow">→</div>
+      <select class="map-select" data-col="${esc(col)}" id="mapsel_${i}" onchange="updateTypeBadge(this, ${i})" ${autoMatch ? statusTooltip(autoMatch) : ''}>
+        <option value="">— skip —</option>
+        ${columnsData.map(c=>`<option value="${esc(c.id)}" data-type="${esc(c.type)}" ${c.id===autoVal?'selected':''}>${esc(c.title)} · ${esc(c.type)}</option>`).join('')}
+      </select>
+      <button class="map-clear" title="Clear" onclick="$$('mapsel_${i}').value='';$$('typebadge_${i}').textContent=''">×</button>
+    `;
+    const badge = document.createElement('span');
+    badge.id = `typebadge_${i}`;
+    badge.style.cssText = 'font-size:10px;font-family:JetBrains Mono,monospace;padding:2px 6px;border-radius:4px;white-space:nowrap;margin-left:-20px;';
+    if(autoMatch) {
+      badge.textContent = autoMatch.type;
+      badge.style.background = typeBadgeColor(autoMatch.type) + '22';
+      badge.style.color = typeBadgeColor(autoMatch.type);
+    }
+    container.appendChild(row);
+    row.querySelector('.map-clear').insertAdjacentElement('beforebegin', badge);
+  });
+
+  // Show auto-match count hint
+  const autoCount=cols.filter(c=>columnsData.some(mc=>mc.title.toLowerCase()===c.toLowerCase())).length;
+  if(autoCount>0){
+    const hint=document.createElement('div');
+    hint.className='hint'; hint.style.marginTop='10px';
+    hint.textContent=`✨ ${autoCount} column${autoCount>1?'s':''} auto-matched by name. Review and adjust as needed.`;
+    container.appendChild(hint);
+  }
+
+  const colHint=document.createElement('div');
+  colHint.className='hint'; colHint.style.marginTop='6px';
+  colHint.innerHTML=`Board has <strong style="color:var(--text)">${columnsData.length}</strong> mappable columns · Read-only/system columns are excluded.`;
+  container.appendChild(colHint);
+}
+
+// getMappings returns { spreadsheetCol: { id, type, statusMap, dropdownMap } }
+function getMappings() {
+  const result={};
+  document.querySelectorAll('[data-col]').forEach(el=>{
+    const mondayColId = el.value.trim();
+    if(!mondayColId) return;
+    const spreadCol = el.dataset.col;
+    const colMeta = columnsData.find(c => c.id === mondayColId);
+    result[spreadCol] = {
+      id: mondayColId,
+      type: colMeta?.type || 'text',
+      statusMap: colMeta?.statusMap || {},
+      dropdownMap: colMeta?.dropdownMap || {}
+    };
+  });
+  return result;
+}
+
+// Build item name from 1 or 2 columns, clean trailing punctuation/spaces
+function buildItemName(row, col1, col2, sep) {
+  const clean = s => String(s||'').trim().replace(/[,;.]+$/, '').trim();
+  const p1 = clean(row[col1]);
+  const p2 = col2 ? clean(row[col2]) : '';
+  return [p1, p2].filter(Boolean).join(sep ?? ' ');
+}
+
+// ── Type-aware value formatter ────────────────────────────────
+// colMeta = { type, statusMap, dropdownMap }
+// Returns the correctly structured value for Monday's API, or null to skip.
+function formatColValue(rawVal, colMeta) {
+  const colType = typeof colMeta === 'string' ? colMeta : colMeta.type;
+  const statusMap   = colMeta?.statusMap   || {};
+  const dropdownMap = colMeta?.dropdownMap || {};
+
+  // Blank / null / nan → skip
+  const s = String(rawVal ?? '').trim();
+  if(!s || s === 'nan' || s === 'NaN' || s === 'undefined' || s === 'null') return null;
+
+  switch(colType) {
+
+    // ── Date columns: Monday expects { date: "YYYY-MM-DD" }
+    case 'date': {
+      const d = parseDate(s);
+      if(!d) return null;
+      return { date: d };
+    }
+
+    // ── Email: { email: "x@y.z", text: "x@y.z" }
+    case 'email': {
+      const e = s.replace(/[,;]+$/, '');
+      return { email: e, text: e };
+    }
+
+    // ── Phone: { phone: "5551234567", countryShortName: "US" }
+    case 'phone': {
+      let ph = s.replace(/\.0+$/, '').replace(/\D/g, '');
+      if(!ph) return null;
+      if(ph.length === 11 && ph.startsWith('1')) ph = ph.slice(1);
+      return { phone: ph, countryShortName: 'US' };
+    }
+
+    // ── Numbers
+    case 'numeric':
+    case 'numbers': {
+      const n = parseFloat(s.replace(/,/g, ''));
+      if(isNaN(n)) return null;
+      return Number.isInteger(n) ? String(n) : String(n);
+    }
+
+    // ── Status (type="color"): must send index, not label text
+    case 'color': {
+      const key = s.toLowerCase().trim();
+      const idx = statusMap[key];
+      if(idx !== undefined) {
+        // Found exact match
+        return { index: parseInt(idx, 10) };
+      }
+      // Try fuzzy: find a label that contains or is contained by the CSV value
+      const fuzzyKey = Object.keys(statusMap).find(lbl =>
+        lbl.includes(key) || key.includes(lbl)
+      );
+      if(fuzzyKey) {
+        return { index: parseInt(statusMap[fuzzyKey], 10) };
+      }
+      // No match — log will show this as an error from the API
+      // Return label attempt so the error message is informative
+      return { label: s };
+    }
+
+    // ── Dropdown: send by id
+    case 'dropdown': {
+      const key = s.toLowerCase().trim();
+      const id  = dropdownMap[key];
+      if(id !== undefined) return { ids: [parseInt(id, 10)] };
+      // Fuzzy match
+      const fuzzyKey = Object.keys(dropdownMap).find(lbl =>
+        lbl.includes(key) || key.includes(lbl)
+      );
+      if(fuzzyKey) return { ids: [parseInt(dropdownMap[fuzzyKey], 10)] };
+      return { label: s };
+    }
+
+    // ── Checkbox
+    case 'boolean':
+    case 'checkbox': {
+      const t = s.toLowerCase();
+      const checked = (t === 'true' || t === '1' || t === 'yes' || t === 'checked');
+      return { checked: checked ? 'true' : 'false' };
+    }
+
+    // ── Link
+    case 'link': {
+      return { url: s, text: s };
+    }
+
+    // ── Rating: integer 1-10
+    case 'rating': {
+      const r = parseInt(s);
+      if(isNaN(r)) return null;
+      return String(Math.min(10, Math.max(1, r)));
+    }
+
+    // ── Text / long-text / default
+    default: {
+      let out = s.replace(/[,;]+$/, '').trim();
+      if(/^-?\d+\.0+$/.test(out)) out = String(parseInt(out, 10));
+      return out || null;
+    }
+  }
+}
+
+// Parse common date formats → "YYYY-MM-DD"
+function parseDate(s) {
+  if(!s || s === 'nan') return null;
+  // Already ISO: 2025-01-15
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  // MM/DD/YYYY
+  const m1 = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if(m1) return `${m1[3]}-${m1[1].padStart(2,'0')}-${m1[2].padStart(2,'0')}`;
+  // DD-MM-YYYY
+  const m2 = s.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
+  if(m2) return `${m2[3]}-${m2[2].padStart(2,'0')}-${m2[1].padStart(2,'0')}`;
+  // Excel serial number (days since 1900-01-00)
+  if(/^\d{5}$/.test(s)) {
+    const d = new Date(Date.UTC(1899,11,30) + parseInt(s)*86400000);
+    return d.toISOString().slice(0,10);
+  }
+  return null;
+}
+
+// Update type badge when user changes a mapping dropdown
+function updateTypeBadge(sel, i) {
+  const badge = $$(`typebadge_${i}`);
+  if(!badge) return;
+  const opt = sel.options[sel.selectedIndex];
+  const type = opt?.dataset?.type || '';
+  const colors = {date:'#0086c0',email:'#579bfc',phone:'#43e8b0',numeric:'#cab641',numbers:'#cab641',color:'#a25ddc',dropdown:'#a25ddc',boolean:'#ff7575',checkbox:'#ff7575',link:'#66ccff',rating:'#ffcb00'};
+  const c = colors[type] || '#6b6b80';
+  badge.textContent = type;
+  badge.style.background = type ? c + '22' : '';
+  badge.style.color = c;
+}
+
+// ═══════════════════════════════════════════════════
+// FILTERS
+// ═══════════════════════════════════════════════════
+let filterLogic = 'AND';   // 'AND' | 'OR'
+let filter2Visible = false;
+
+const OPS_TEXT = [
+  { v:'eq',      l:'equals' },
+  { v:'neq',     l:'does not equal' },
+  { v:'contains',l:'contains' },
+  { v:'ncontains',l:'does not contain' },
+  { v:'starts',  l:'starts with' },
+  { v:'empty',   l:'is empty' },
+  { v:'notempty',l:'is not empty' },
+];
+const OPS_DATE = [
+  { v:'date_exact',   l:'is exactly' },
+  { v:'date_before',  l:'is before' },
+  { v:'date_after',   l:'is after' },
+  { v:'date_between', l:'is between' },
+  { v:'date_inthismonth', l:'is in this month' },
+  { v:'date_thisyear',    l:'is in this year' },
+  { v:'empty',   l:'is empty' },
+  { v:'notempty',l:'is not empty' },
+];
+const OPS_NUM = [
+  { v:'num_eq',  l:'=' },
+  { v:'num_neq', l:'≠' },
+  { v:'num_gt',  l:'>' },
+  { v:'num_gte', l:'≥' },
+  { v:'num_lt',  l:'<' },
+  { v:'num_lte', l:'≤' },
+  { v:'num_between', l:'between' },
+  { v:'empty',   l:'is empty' },
+  { v:'notempty',l:'is not empty' },
+];
+
+function isDateCol(col) {
+  // Heuristic: check first non-empty value
+  const sample = parsedRows.find(r => r[col] && String(r[col]).trim());
+  if(!sample) return false;
+  const s = String(sample[col]).trim();
+  return /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(s) || /^\d{4}-\d{2}-\d{2}$/.test(s);
+}
+function isNumCol(col) {
+  const sample = parsedRows.find(r => r[col] !== '' && r[col] !== null && r[col] !== undefined && String(r[col]).trim() !== 'nan');
+  if(!sample) return false;
+  return !isNaN(parseFloat(String(sample[col])));
+}
+function colKind(col) {
+  if(!col) return 'text';
+  if(isDateCol(col)) return 'date';
+  if(isNumCol(col)) return 'num';
+  return 'text';
+}
+
+function onFilterColChange(n) {
+  const col = $$(`f${n}Col`).value;
+  const kind = colKind(col);
+  // Populate ops
+  const ops = kind==='date' ? OPS_DATE : kind==='num' ? OPS_NUM : OPS_TEXT;
+  $$(`f${n}Op`).innerHTML = `<option value="">— condition —</option>` +
+    ops.map(o=>`<option value="${o.v}">${o.l}</option>`).join('');
+  $$(`f${n}Vals`).innerHTML = '';
+  $$(`f${n}Preview`).textContent = '';
+  onFilterOpChange(n);
+}
+
+function onFilterOpChange(n) {
+  const col  = $$(`f${n}Col`).value;
+  const op   = $$(`f${n}Op`).value;
+  const kind = colKind(col);
+  const vals = $$(`f${n}Vals`);
+  vals.innerHTML = '';
+
+  const noValOps = new Set(['empty','notempty','date_inthismonth','date_thisyear']);
+  if(!op || noValOps.has(op)) { updateFilterPreview(n); return; }
+
+  const isBetween = op === 'date_between' || op === 'num_between';
+  const inputType = kind === 'date' ? 'date' : (kind === 'num' ? 'number' : 'text');
+
+  const input1 = document.createElement('input');
+  input1.type = inputType; input1.className = 'fval'; input1.id = `f${n}Val1`;
+  input1.placeholder = isBetween ? 'from' : 'value';
+  input1.addEventListener('input', () => updateFilterPreview(n));
+  vals.appendChild(input1);
+
+  if(isBetween) {
+    const sep = document.createElement('span');
+    sep.className = 'fval-between-sep'; sep.textContent = '→';
+    vals.appendChild(sep);
+    const input2 = document.createElement('input');
+    input2.type = inputType; input2.className = 'fval'; input2.id = `f${n}Val2`;
+    input2.placeholder = 'to';
+    input2.addEventListener('input', () => updateFilterPreview(n));
+    vals.appendChild(input2);
+  }
+  updateFilterPreview(n);
+}
+
+function updateFilterPreview(n) {
+  const col = $$(`f${n}Col`).value;
+  const op  = $$(`f${n}Op`).value;
+  if(!col || !op) { $$(`f${n}Preview`).innerHTML=''; updateFilterSummary(); return; }
+
+  const matched = parsedRows.filter(r => rowPassesFilter(r, n)).length;
+  const total   = parsedRows.length;
+  const pct     = total ? Math.round(matched/total*100) : 0;
+  $$(`f${n}Preview`).innerHTML =
+    `<span class="filter-match-badge ${matched>0?'fmb-ok':'fmb-no'}">` +
+    `${matched} / ${total} rows match (${pct}%)</span>`;
+  updateFilterSummary();
+}
+
+function updateFilterSummary() {
+  const rows = getFilteredRows();
+  const total = parsedRows.length;
+  const el = $$('filterSummary');
+  if(!hasActiveFilters()) { el.textContent=''; return; }
+  el.textContent = `→ ${rows.length} of ${total} rows will be synced`;
+  el.style.color = rows.length > 0 ? 'var(--accent3)' : 'var(--error)';
+}
+
+function hasActiveFilters() {
+  const c1 = $$('f1Col')?.value, o1 = $$('f1Op')?.value;
+  const c2 = $$('f2Col')?.value, o2 = $$('f2Op')?.value;
+  return (c1 && o1) || (filter2Visible && c2 && o2);
+}
+
+// Parse a filter date input to a comparable timestamp
+function parseFilterDate(s) {
+  if(!s) return null;
+  // input[type=date] gives YYYY-MM-DD
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return new Date(s).getTime();
+  // Cell value MM/DD/YYYY
+  const iso = parseDate(s);
+  return iso ? new Date(iso).getTime() : null;
+}
+
+function rowPassesFilter(row, n) {
+  const col = $$(`f${n}Col`)?.value;
+  const op  = $$(`f${n}Op`)?.value;
+  if(!col || !op) return true;  // inactive filter → pass
+
+  const rawCell = String(row[col] ?? '').trim();
+  const cellLow = rawCell.toLowerCase();
+  const v1el = $$(`f${n}Val1`);
+  const v2el = $$(`f${n}Val2`);
+  const v1 = v1el?.value?.trim() ?? '';
+  const v2 = v2el?.value?.trim() ?? '';
+
+  switch(op) {
+    // ── Text ops
+    case 'eq':       return cellLow === v1.toLowerCase();
+    case 'neq':      return cellLow !== v1.toLowerCase();
+    case 'contains': return cellLow.includes(v1.toLowerCase());
+    case 'ncontains':return !cellLow.includes(v1.toLowerCase());
+    case 'starts':   return cellLow.startsWith(v1.toLowerCase());
+    case 'empty':    return rawCell === '' || rawCell === 'nan';
+    case 'notempty': return rawCell !== '' && rawCell !== 'nan';
+
+    // ── Date ops
+    case 'date_exact': {
+      const cell = parseFilterDate(rawCell);
+      const cmp  = parseFilterDate(v1);
+      return cell !== null && cmp !== null && cell === cmp;
+    }
+    case 'date_before': {
+      const cell = parseFilterDate(rawCell);
+      const cmp  = parseFilterDate(v1);
+      return cell !== null && cmp !== null && cell < cmp;
+    }
+    case 'date_after': {
+      const cell = parseFilterDate(rawCell);
+      const cmp  = parseFilterDate(v1);
+      return cell !== null && cmp !== null && cell > cmp;
+    }
+    case 'date_between': {
+      const cell  = parseFilterDate(rawCell);
+      const from  = parseFilterDate(v1);
+      const to    = parseFilterDate(v2);
+      return cell !== null && from !== null && to !== null && cell >= from && cell <= to;
+    }
+    case 'date_inthismonth': {
+      const cell = parseFilterDate(rawCell);
+      if(!cell) return false;
+      const now = new Date();
+      const d   = new Date(cell);
+      return d.getFullYear()===now.getFullYear() && d.getMonth()===now.getMonth();
+    }
+    case 'date_thisyear': {
+      const cell = parseFilterDate(rawCell);
+      if(!cell) return false;
+      return new Date(cell).getFullYear() === new Date().getFullYear();
+    }
+
+    // ── Number ops
+    case 'num_eq':      return parseFloat(rawCell) === parseFloat(v1);
+    case 'num_neq':     return parseFloat(rawCell) !== parseFloat(v1);
+    case 'num_gt':      return parseFloat(rawCell) >   parseFloat(v1);
+    case 'num_gte':     return parseFloat(rawCell) >=  parseFloat(v1);
+    case 'num_lt':      return parseFloat(rawCell) <   parseFloat(v1);
+    case 'num_lte':     return parseFloat(rawCell) <=  parseFloat(v1);
+    case 'num_between': {
+      const cell = parseFloat(rawCell);
+      return cell >= parseFloat(v1) && cell <= parseFloat(v2);
+    }
+
+    default: return true;
+  }
+}
+
+function getFilteredRows() {
+  if(!hasActiveFilters()) return parsedRows;
+  return parsedRows.filter(row => {
+    const p1 = rowPassesFilter(row, 1);
+    if(!filter2Visible) return p1;
+    const c2 = $$('f2Col')?.value, o2 = $$('f2Op')?.value;
+    if(!c2 || !o2) return p1; // filter 2 not configured
+    const p2 = rowPassesFilter(row, 2);
+    return filterLogic === 'AND' ? (p1 && p2) : (p1 || p2);
+  });
+}
+
+function setLogic(logic, btn) {
+  filterLogic = logic;
+  $$('logicAnd').classList.toggle('active', logic==='AND');
+  $$('logicOr').classList.toggle('active',  logic==='OR');
+  $$('logicHint').textContent = logic==='AND'
+    ? 'Both conditions must be true'
+    : 'Either condition can be true';
+  updateFilterSummary();
+}
+
+function toggleFilter2() {
+  filter2Visible = !filter2Visible;
+  $$('filter2Row').classList.toggle('hidden', !filter2Visible);
+  $$('logicRow').classList.toggle('hidden', !filter2Visible);
+  const btn = $$('addFilter2Btn');
+  btn.textContent = filter2Visible ? '− Remove second condition' : '＋ Add second condition';
+  if(!filter2Visible) {
+    $$('f2Col').value=''; $$('f2Op').innerHTML='<option value="">— condition —</option>';
+    $$('f2Vals').innerHTML=''; $$('f2Preview').innerHTML='';
+    updateFilterSummary();
+  }
+}
+
+function clearFilters() {
+  ['f1Col','f2Col'].forEach(id=>{ const el=$$(id); if(el) el.value=''; });
+  ['f1Op','f2Op'].forEach(id=>{ const el=$$(id); if(el) el.innerHTML='<option value="">— condition —</option>'; });
+  ['f1Vals','f2Vals','f1Preview','f2Preview'].forEach(id=>{ const el=$$(id); if(el) el.innerHTML=''; });
+  $$('filterSummary').textContent='';
+  if(filter2Visible) toggleFilter2();
+}
+
+function populateFilterColDropdowns() {
+  const opts = `<option value="">— column —</option>` +
+    headers.map(h=>`<option value="${esc(h)}">${esc(h)}</option>`).join('');
+  $$('f1Col').innerHTML = opts;
+  $$('f2Col').innerHTML = opts;
+}
+
+// ═══════════════════════════════════════════════════
+async function startSync() {
+  const nameCol1 = $$('nameCol1').value;
+  const nameCol2 = $$('nameCol2').value;
+  const nameSep  = $$('nameSep').value;
+  const matchCol = $$('matchCol').value;
+  const delay    = parseInt($$('batchDelay').value)||300;
+  const maxRowsN = parseInt($$('maxRows').value)||100;
+
+  if(!selectedBoardId) { alert('Please select a board.'); return; }
+  if(!selectedGroupId) { alert('Please select a group.'); return; }
+  if(!nameCol1) { alert('Please choose the item name column.'); return; }
+  if((syncMode==='update'||syncMode==='upsert') && !matchCol) {
+    alert('Please choose the match column for Update / Update+Create mode.'); return;
+  }
+  if(!parsedRows.length) { alert('No data loaded.'); return; }
+  const mappings = getMappings();
+  if(!Object.keys(mappings).length) { alert('Map at least one column in the mapping section.'); return; }
+
+  okCount=0; errCount=0; skipCount=0;
+  let createdCount=0, updatedCount=0;
+  $$('progressCard').classList.remove('hidden');
+  $$('logWrap').innerHTML='';
+  $$('progressBar').style.width='0%';
+  updateBadges();
+
+  const filteredRows = getFilteredRows();
+  const rows = filteredRows.slice(0, maxRowsN);
+  const syncBtn = $$('syncBtn');
+  syncBtn.disabled=true;
+  syncBtn.innerHTML='<span class="spinner"></span> Syncing…';
+
+  log('info',`Board: ${selectedBoardName} (${selectedBoardId})`);
+  log('info',`Group: ${selectedGroupName} (${selectedGroupId})`);
+  log('info',`Mode: ${syncMode} | Total: ${parsedRows.length} | After filter: ${filteredRows.length} | Syncing: ${rows.length}`);
+  log('info',`Item name: "${nameCol1}"${nameCol2 ? ` + "${nameCol2}"` : ''}`);
+
+  // Pre-fetch existing items for any mode that needs matching
+  let existingItems={}, existingItemsRaw=[];
+  if(syncMode==='update' || syncMode==='upsert') {
+    log('info','Pre-fetching board items for matching…');
+    try {
+      const result = await fetchBoardItems(selectedBoardId);
+      existingItems    = result.map;
+      existingItemsRaw = result.raw;
+      log('info',`Found ${existingItemsRaw.length} board items (${Object.keys(existingItems).length} match keys).`);
+      if(existingItemsRaw.length===0 && syncMode==='update')
+        log('warn','Board has 0 items — all rows will be skipped. Use Create or Update+Create mode for a fresh import.');
+    }
+    catch(e){ log('warn','Could not pre-fetch items: '+e.message); }
+  }
+
+  for(let i=0;i<rows.length;i++) {
+    const row = rows[i];
+    const itemName = buildItemName(row, nameCol1, nameCol2, nameSep);
+    if(!itemName) {
+      log('warn',`Row ${i+1}: item name empty — skipping.`);
+      skipCount++; updateBadges(); continue;
+    }
+
+    // Build column values — type-aware, always at least {}
+    const colVals={};
+    for(const [sc, colMeta] of Object.entries(mappings)){
+      const formatted = formatColValue(row[sc], colMeta);
+      if(formatted !== null && formatted !== undefined && formatted !== '')
+        colVals[colMeta.id] = formatted;
+    }
+    // Serialize once — always a valid JSON string, never null/undefined
+    const cvStr = JSON.stringify(colVals);
+
+    try {
+      if(syncMode==='create') {
+        // Always create — never skip
+        await gql(
+          `mutation($b:ID!,$g:String!,$n:String!,$cv:JSON!){create_item(board_id:$b,group_id:$g,item_name:$n,column_values:$cv){id}}`,
+          {b:selectedBoardId, g:selectedGroupId, n:itemName, cv:cvStr}
+        );
+        log('ok',`Row ${i+1} (${itemName}): created ✓`);
+        okCount++; createdCount++;
+
+      } else {
+        // update or upsert — try to find existing item
+        const matchRaw = String(row[matchCol] ?? '').trim().replace(/[,;]+$/, '');
+        const matchKey = normalize(matchRaw);
+        const byMatch  = matchKey ? existingItems[matchKey] : null;
+        const byName   = existingItems[normalize(itemName)];
+        const itemId   = byMatch || byName;
+
+        if(itemId) {
+          // Found match → update
+          await gql(
+            `mutation($b:ID!,$it:ID!,$cv:JSON!){change_multiple_column_values(board_id:$b,item_id:$it,column_values:$cv){id}}`,
+            {b:selectedBoardId, it:itemId, cv:cvStr}
+          );
+          log('ok',`Row ${i+1} (${itemName}): updated ✓`);
+          okCount++; updatedCount++;
+
+        } else if(syncMode==='upsert') {
+          // No match + upsert → create new
+          await gql(
+            `mutation($b:ID!,$g:String!,$n:String!,$cv:JSON!){create_item(board_id:$b,group_id:$g,item_name:$n,column_values:$cv){id}}`,
+            {b:selectedBoardId, g:selectedGroupId, n:itemName, cv:cvStr}
+          );
+          log('ok',`Row ${i+1} (${itemName}): no match → created new ✓`);
+          okCount++; createdCount++;
+
+        } else {
+          // update-only mode + no match → skip
+          const tried = [];
+          if(matchKey) tried.push(`${matchCol}="${matchRaw}"`);
+          tried.push(`name="${itemName}"`);
+          const sample = Object.keys(existingItems).slice(0,3).map(k=>`"${k}"`).join(', ');
+          log('warn',`Row ${i+1} (${itemName}): no match [${tried.join(' or ')}]. Sample keys: ${sample||'(none)'}`);
+          skipCount++;
+        }
+      }
+    } catch(e) {
+      log('err',`Row ${i+1} (${itemName}): ✗ ${e.message}`); errCount++;
+    }
+
+    $$('progressBar').style.width=Math.round(((i+1)/rows.length)*100)+'%';
+    updateBadges();
+    if(i<rows.length-1) await sleep(delay);
+  }
+
+  syncBtn.disabled=false; syncBtn.innerHTML='⚡ Start Sync';
+  const details = [];
+  if(updatedCount) details.push(`${updatedCount} updated`);
+  if(createdCount) details.push(`${createdCount} created`);
+  log('info',`Done. ✓ ${okCount} synced (${details.join(', ')||'—'}) · ✗ ${errCount} failed · ⊘ ${skipCount} skipped`);
+}
+
+async function fetchBoardItems(boardId) {
+  const map={};   // normalised text → itemId
+  const raw=[];   // [{id,name}]
+  let cursor=null;
+  do {
+    const d=await gql(`query($b:ID!,$c:String){boards(ids:[$b]){items_page(limit:100,cursor:$c){cursor items{id name column_values{id text}}}}}`,{b:boardId,c:cursor});
+    const page=d.boards?.[0]?.items_page;
+    (page?.items||[]).forEach(item=>{
+      raw.push({id:item.id,name:item.name});
+      // Index by normalised name
+      const nk=normalize(item.name);
+      if(nk && !map[nk]) map[nk]=item.id;
+      // Index by each column text value
+      item.column_values.forEach(cv=>{
+        const ck=normalize(cv.text||'');
+        if(ck && !map[ck]) map[ck]=item.id;
+      });
+    });
+    cursor=page?.cursor||null;
+  } while(cursor);
+  return {map,raw};
+}
+
+// Normalise for fuzzy matching: lowercase, trim, collapse whitespace, strip commas from numbers
+function normalize(s) {
+  return String(s).toLowerCase().trim().replace(/\s+/g,' ').replace(/,/g,'');
+}
+
+// ═══════════════════════════════════════════════════
+// LOG + BADGES
+// ═══════════════════════════════════════════════════
+function log(type,msg) {
+  const wrap=$$('logWrap');
+  const now=new Date().toLocaleTimeString('en-US',{hour12:false});
+  const icon={ok:'✓',err:'✗',info:'◈',warn:'⚠'}[type]||'·';
+  const line=document.createElement('div');
+  line.className='log-line';
+  line.innerHTML=`<span class="log-time">${now}</span><span class="log-${type}">${icon} ${esc(msg)}</span>`;
+  wrap.appendChild(line); wrap.scrollTop=wrap.scrollHeight;
+}
+function updateBadges() {
+  $$('summaryBadges').innerHTML=`
+    <div class="badge badge-ok">✓ ${okCount} synced</div>
+    <div class="badge badge-err">✗ ${errCount} failed</div>
+    <div class="badge badge-skip">⊘ ${skipCount} skipped</div>`;
+}
+
+// ═══════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════
+function $$(id){return document.getElementById(id);}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+
+function resetAll() {
+  parsedRows=[]; headers=[];
+  $$('fileInput').value='';
+  ['fileInfo','previewWrap','filterCard','mappingCard','runCard','progressCard'].forEach(id=>$$(id).classList.add('hidden'));
+  $$('mappingRows').innerHTML='';
+  $$('logWrap').innerHTML='';
+  $$('mappingBody').classList.add('hidden');
+  $$('colsLoadingState').classList.remove('hidden');
+  $$('namePreview').textContent='';
+  ['nameCol1','nameCol2','matchCol'].forEach(id=>{
+    $$(id).innerHTML='<option value="">—</option>';
+  });
+  clearFilters();
+}
+
+
+function getOrgKey() {
+  let k = '';
+  try { k = (typeof AUTH !== 'undefined' && AUTH.getMondayKey?.()) || ''; } catch(e) {}
+  if (!k) { try { k = AUTH?.MONDAY_KEY_DEFAULT || ''; } catch(e) {} }
+  if (!k) { try { k = localStorage.getItem('dba_monday_key') || ''; } catch(e) {} }
+  return k;
+}
+
+// ── AUTO-FILL org key in Monday Sync ────────────────────────
+window.addEventListener('load', function() {
+  const k = getOrgKey();
+  if (!k) return;
+  document.querySelectorAll('input[type="password"], input[placeholder*="key"], input[placeholder*="API"]').forEach(inp => {
+    if (!inp.value) { inp.value = k; inp.dispatchEvent(new Event('input')); }
+  });
+  document.querySelectorAll('.key-input-row').forEach(el => el.style.display = 'none');
+});
+</script>
+</body>
+</html>
