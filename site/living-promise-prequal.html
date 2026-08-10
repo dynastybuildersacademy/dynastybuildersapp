@@ -4,7 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Living Promise Pre-Qualification – DBA</title>
-<script src="auth.js?v=20260713"></script>
+<script src="auth.js"></script>
 <style>
   :root {
     --navy: #0a1f44;
@@ -499,12 +499,8 @@ async function saveToMonday() {
 
   // Get Monday.com token from auth.js
   let token = "";
-  try { token = typeof MONDAY_TOKEN !== 'undefined' ? MONDAY_TOKEN : (window.MONDAY_TOKEN || ""); } catch(e) {}
-  if (!token) {
-    status.className = "save-status error";
-    status.textContent = "⚠️ Monday.com token not found in auth.js. Please add MONDAY_TOKEN.";
-    return;
-  }
+  try { token = AUTH.getMondayKey ? AUTH.getMondayKey() : ""; } catch(e) {}
+  if (!token) { status.className = "save-status error"; status.textContent = "⚠️ API configuration error — contact your MD."; return; }
 
   btn.disabled = true;
   status.className = "save-status saving";
@@ -537,7 +533,8 @@ async function saveToMonday() {
   };
 
   try {
-    const res = await fetch("https://api.monday.com/v2", {
+    const PROXY = location.hostname === "localhost" ? "https://api.monday.com/v2" : "/api/monday";
+    const res = await fetch(PROXY, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

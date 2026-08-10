@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DBA — Agent Roster</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@700&family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script src="auth.js?v=20260713"></script>
+<script src="auth.js"></script>
 <style>
 :root{--navy:#0A1628;--navy2:#0F1E38;--navy3:#132240;--navy4:#1A2E50;
   --gold:#C9A84C;--gold2:#E8C97A;--gold-dim:rgba(201,168,76,.12);
@@ -618,7 +618,7 @@ function buildCV(agent, cols) {
 
 // ── Step 4: write one agent ────────────────────────────────────
 async function syncOneToMonday(agentId) {
-  if (!AUTH.getMondayKey()) { toast('No Monday.com API key'); return; }
+  // Key always available via auth.js MONDAY_KEY_DEFAULT
   const agent = rosterData.find(a => a.id === agentId);
   if (!agent) return;
 
@@ -779,7 +779,7 @@ function buildItemMap(items, colTitles={}) {
 
 // ── PULL FROM MONDAY ──────────────────────────────────────────
 async function loadFromMonday() {
-  if (!AUTH.getMondayKey()) { toast('No Monday.com API key'); return; }
+  // Key always available via auth.js MONDAY_KEY_DEFAULT
   clearSyncLog();
   logSync('Pulling from board ' + BOARD_ID + '...', 'sl-info');
 
@@ -883,7 +883,7 @@ async function loadFromMonday() {
 
 // ── PULL THEN SYNC ────────────────────────────────────────────
 async function pullThenSync() {
-  if (!AUTH.getMondayKey()) { toast('No Monday.com API key configured'); return; }
+  // Key always available via auth.js MONDAY_KEY_DEFAULT
   clearSyncLog();
   _cachedColIds  = null;
   _cachedItemIds = {};

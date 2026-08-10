@@ -1597,6 +1597,19 @@ function boot() {
 }
 
 window.addEventListener('DOMContentLoaded', boot);
+
+// ── AUTO-FILL org key in PMD hub ────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+  try {
+    const k = AUTH.getMondayKey ? AUTH.getMondayKey() : '';
+    const inp = document.getElementById('mon-api-key');
+    if (k && inp) {
+      inp.value = k;
+      inp.closest('.mp-field') && (inp.closest('.mp-field').style.display = 'none');
+      if (typeof saveMondayConfig === 'function') saveMondayConfig();
+    }
+  } catch(e) {}
+});
 </script>
 </body>
 </html>

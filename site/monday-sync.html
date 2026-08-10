@@ -1884,6 +1884,21 @@ function resetAll() {
   });
   clearFilters();
 }
+
+// ── AUTO-FILL org key in Monday Sync ────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+  try {
+    const k = AUTH.getMondayKey ? AUTH.getMondayKey() : '';
+    if (k) {
+      // Fill any key inputs
+      document.querySelectorAll('input[type="password"], input[placeholder*="key"], input[placeholder*="API"]').forEach(inp => {
+        if (!inp.value) { inp.value = k; inp.dispatchEvent(new Event('input')); }
+      });
+      // Hide key-input rows
+      document.querySelectorAll('.key-input-row').forEach(el => el.style.display = 'none');
+    }
+  } catch(e) {}
+});
 </script>
 </body>
 </html>

@@ -276,7 +276,6 @@ select option{background:#1A3158;}
     <button class="nav-tab active" onclick="switchTab('sync',this)">📤 Board Sync</button>
     <button class="nav-tab" onclick="switchTab('income',this)">💰 Income</button>
     <button class="nav-tab" onclick="switchTab('calllist',this)">📞 Call List <span class="tab-badge hidden" id="callListBadge"></span></button>
-    <button class="nav-tab" onclick="switchTab('licensing',this)">🪪 Dynasty Licensing</button>
   </div>
   <div class="topbar-right">
     <a href="hub.html" style="font-size:12px;color:var(--accent);text-decoration:none;border:1px solid rgba(201,168,76,.25);padding:6px 14px;border-radius:6px;display:flex;align-items:center;gap:5px;white-space:nowrap;transition:all .15s;" onmouseover="this.style.background='rgba(201,168,76,.1)'" onmouseout="this.style.background=''">&#8592; Hub</a>
@@ -297,7 +296,7 @@ select option{background:#1A3158;}
     <div class="field" style="margin-top:12px;">
       <label>Monday.com API Key</label>
       <div class="key-row">
-        <input type="password" id="mondayApiKey" placeholder="eyJhbGciOiJIUzI1NiJ9…" autocomplete="off">
+        <input type="password" id="mondayApiKey" style="display:none" placeholder="eyJhbGciOiJIUzI1NiJ9…" autocomplete="off">
         <button class="eye-btn" onclick="toggleKeyVis()">👁</button>
         <button class="btn btn-green btn-sm" id="connectBtn" onclick="connectWithKey()">Connect</button>
       </div>
@@ -698,67 +697,6 @@ select option{background:#1A3158;}
   </div>
 </div><!-- /pane-calllist -->
 
-<!-- ════ DYNASTY LICENSING IMPORT ════ -->
-<div class="tab-pane" id="pane-licensing">
-  <div class="card">
-    <div class="card-title">🪪 Dynasty Licensing — Agent Import</div>
-    <div class="hint" style="margin-bottom:16px;">
-      Upload an AgentsAssociates Excel file or sync the built-in roster to Monday.com board
-      <strong style="color:var(--accent3);">18397757902</strong> using upsert (update if exists, create if new).
-      Matches by PHP Code to prevent duplicates.
-    </div>
-
-    <!-- Board info + column preview -->
-    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:center;">
-      <div class="badge-sm" style="font-size:12px;padding:4px 10px;">Board: 18397757902</div>
-      <div class="badge-sm" style="font-size:12px;padding:4px 10px;" id="lic-col-status">Columns: not loaded</div>
-      <button class="btn btn-ghost btn-sm" onclick="licLoadColumns()">&#128260; Load Board Columns</button>
-      <label class="btn btn-ghost btn-sm" style="cursor:pointer;display:inline-flex;align-items:center;gap:6px;">
-        &#128196; Upload Excel
-        <input type="file" accept=".xlsx,.xls,.csv" onchange="licHandleUpload(this)" style="display:none;">
-      </label>
-    </div>
-
-    <!-- Agent table preview -->
-    <div class="card-title" style="font-size:12px;margin-bottom:8px;color:var(--muted);">AGENTS TO IMPORT (<span id="lic-agent-count">27</span>)</div>
-    <div class="pol-table-wrap" style="max-height:280px;margin-bottom:18px;">
-      <table style="width:100%;border-collapse:collapse;font-size:12px;">
-        <thead><tr style="background:var(--surface2);">
-          <th style="padding:6px 10px;text-align:left;color:var(--muted);font-weight:600;">Name</th>
-          <th style="padding:6px 10px;text-align:left;color:var(--muted);font-weight:600;">PHP Code</th>
-          <th style="padding:6px 10px;text-align:left;color:var(--muted);font-weight:600;">Level</th>
-          <th style="padding:6px 10px;text-align:left;color:var(--muted);font-weight:600;">Date Sponsored</th>
-          <th style="padding:6px 10px;text-align:left;color:var(--muted);font-weight:600;">Direct</th>
-          <th style="padding:6px 10px;text-align:left;color:var(--muted);font-weight:600;">MD Base</th>
-        </tr></thead>
-        <tbody id="lic-agent-tbody"></tbody>
-      </table>
-    </div>
-
-    <!-- Column mapping -->
-    <div id="lic-mapping-wrap" style="display:none;margin-bottom:18px;">
-      <div class="card-title" style="font-size:12px;margin-bottom:10px;color:var(--muted);">COLUMN MAPPING</div>
-      <div id="lic-mapping-rows" style="display:grid;grid-template-columns:180px 24px 1fr;gap:8px;align-items:center;"></div>
-    </div>
-
-    <!-- Sync controls -->
-    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px;">
-      <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;">
-        <input type="checkbox" id="lic-skip-existing" checked style="accent-color:var(--accent);"> Skip agents already on board
-      </label>
-      <input type="number" id="lic-delay" value="350" min="100" max="3000" style="width:70px;padding:4px 8px;background:var(--surface2);border:1px solid var(--border);color:var(--cream);border-radius:4px;font-size:12px;">
-      <span style="font-size:11px;color:var(--muted);">ms delay</span>
-    </div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;">
-      <button class="btn btn-accent" id="lic-sync-btn" onclick="licStartSync()" disabled>⚡ Import Agents → Monday.com</button>
-      <button class="btn btn-ghost btn-sm" onclick="licReset()">↺ Reset</button>
-    </div>
-    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;" id="lic-badges"></div>
-    <div class="prog-wrap hidden" id="lic-prog-wrap"><div class="prog-bar" id="lic-prog-bar"></div></div>
-    <div class="log-wrap hidden" id="lic-log"></div>
-  </div>
-</div><!-- /pane-licensing -->
-
 </div><!-- /content -->
 </div><!-- /shell -->
 
@@ -902,7 +840,7 @@ function switchAuthTab(tab){
 }
 function toggleKeyVis(){const i=$$('mondayApiKey');i.type=i.type==='password'?'text':'password';}
 function toggleOAuthTokenVis(){const i=$$('oauthManualToken');i.type=i.type==='password'?'text':'password';}
-async function connectWithKey(){const k=$$('mondayApiKey').value.trim();if(!k){setKeyStatus('err','⚠ Enter API key');return;}mondayKey=k;await finishConnect('key');}
+async function connectWithKey(){let k=$$('mondayApiKey').value.trim();if(!k){try{k=AUTH.getMondayKey();}catch(e){}}if(!k){setKeyStatus('err','⚠ API key missing in auth.js');return;}mondayKey=k;await finishConnect('key');}
 async function connectWithOAuthToken(){const t=$$('oauthManualToken').value.trim();if(!t){setKeyStatus('err','⚠ Paste token');return;}mondayKey=t;await finishConnect('oauth-token');}
 
 function startOAuth(){
@@ -2146,332 +2084,21 @@ function flagStaleEscalation(itemId,clientName){
 // Auto-refresh every 30 min when Production Desk is active
 setInterval(()=>{if(allPolicies.length&&document.querySelector('#pane-production.active')){renderBriefing();renderCarrierClocks();}},30*60*1000);
 
-// ══════════════════════════════════════════════
-// DYNASTY LICENSING IMPORT TAB
-// ══════════════════════════════════════════════
-const LIC_BOARD_ID = '18397757902';
 
-const LIC_AGENTS = [
-  {name:'Paulina Uvidia',       phpCode:'1418582', email:'puvidia@gmail.com',             level:'TRAINEE',   status:'active', dateSponsored:'2026-06-30', directs:'0', mdBase:'Obi & Jennifer Iroezi', phone:'3238095958', direct:'Daniella Jhonson 1401261'},
-  {name:'Morgan Singleton',     phpCode:'1417895', email:'msingleton1333@gmail.com',      level:'TRAINEE',   status:'active', dateSponsored:'2026-06-27', directs:'0', mdBase:'Obi & Jennifer Iroezi', phone:'3109456493', direct:'Tornike Tsagareishvili 1374743'},
-  {name:'Deisy Garcia',         phpCode:'1417894', email:'deisygarcia1713@gmail.com',     level:'TRAINEE',   status:'active', dateSponsored:'2026-06-27', directs:'0', mdBase:'Obi & Jennifer Iroezi', phone:'2133175067', direct:'Obi & Jennifer Iroezi 10146'},
-  {name:'Nneka Ndukwe',         phpCode:'1417300', email:'ekanvene@yahoo.com',            level:'TRAINEE',   status:'active', dateSponsored:'2026-06-23', directs:'3', mdBase:'Obi & Jennifer Iroezi', phone:'5626206937', direct:'Jacinta Abanobi 1353757'},
-  {name:'Chidera Onyekwere',    phpCode:'1416786', email:'chideraonyekwere129@gmail.com', level:'TRAINEE',   status:'active', dateSponsored:'2026-06-20', directs:'0', mdBase:'Obi & Jennifer Iroezi', phone:'3102133833', direct:'Goodluck Nwaka 1338076'},
-  {name:'Ana Reyes',            phpCode:'1416760', email:'annaestrada437@yahoo.com',      level:'TRAINEE',   status:'active', dateSponsored:'2026-06-20', directs:'0', mdBase:'Obi & Jennifer Iroezi', phone:'3109386281', direct:'Brittany Casey 1068135'},
-  {name:'JLynn Whitaker',       phpCode:'1415483', email:'whitakerjlynn@gmail.com',       level:'TRAINEE',   status:'active', dateSponsored:'2026-06-17', directs:'0', mdBase:'Obi & Jennifer Iroezi', phone:'3104133995', direct:'Tornike Tsagareishvili 1374743'},
-  {name:'Yuri Nakatani',        phpCode:'1414867', email:'yurinakatani02@gmail.com',      level:'TRAINEE',   status:'active', dateSponsored:'2026-06-14', directs:'0', mdBase:'Obi & Jennifer Iroezi', phone:'4244439421', direct:'Brittany Casey 1068135'},
-  {name:'OMARI MWAYUNGU',       phpCode:'1414809', email:'omwayungu@gmail.com',           level:'TRAINEE',   status:'active', dateSponsored:'2026-06-13', directs:'0', mdBase:'Obi & Jennifer Iroezi', phone:'7573900622', direct:'Soroush Nasirzadeh 52906'},
-  {name:'Maureen Myers',        phpCode:'1414341', email:'cosmasabanobi088@gmail.com',    level:'TRAINEE',   status:'active', dateSponsored:'2026-06-11', directs:'2', mdBase:'Obi & Jennifer Iroezi', phone:'2135451057', direct:'Regina Ofoedu 1409333'},
-  {name:'Joy Mojokwu',          phpCode:'1412126', email:'mokogwuj@gmail.com',            level:'TRAINEE',   status:'active', dateSponsored:'2026-06-07', directs:'1', mdBase:'Obi & Jennifer Iroezi', phone:'9096822392', direct:'Maureen Onyia-Ekwuazi 1401491'},
-  {name:'Francis Nwadiba',      phpCode:'1411448', email:'meetfarco2020@gmail.com',       level:'TRAINEE',   status:'active', dateSponsored:'2026-06-06', directs:'1', mdBase:'Obi & Jennifer Iroezi', phone:'4244452758', direct:'Fidelis Orji 1404220'},
-  {name:'Marcela Rodriguez',    phpCode:'1411050', email:'marcyrodriguez808@gmail.com',   level:'TRAINEE',   status:'active', dateSponsored:'2026-06-04', directs:'0', mdBase:'Obi & Jennifer Iroezi', phone:'3236749258', direct:'Brittany Casey 1068135'},
-  {name:'Regina Ofoedu',        phpCode:'1409333', email:'ofoeduoby@gmail.com',           level:'TRAINEE',   status:'active', dateSponsored:'2026-06-01', directs:'4', mdBase:'Obi & Jennifer Iroezi', phone:'3236217520', direct:'Jacinta Abanobi 1353757'},
-  {name:'Twishmye Anuarita',    phpCode:'1409136', email:'shimyerose123@gmail.com',       level:'TRAINEE',   status:'active', dateSponsored:'2026-06-01', directs:'3', mdBase:'Obi & Jennifer Iroezi', phone:'6022993207', direct:'Brittany Casey 1068135'},
-  {name:'Jawad Salaam',         phpCode:'1408547', email:'jawadsalaam@hotmail.com',       level:'TRAINEE',   status:'active', dateSponsored:'2026-05-31', directs:'0', mdBase:'Obi & Jennifer Iroezi', phone:'3108620454', direct:'Tornike Tsagareishvili 1374743'},
-  {name:'Emmanuel Okereke',     phpCode:'1405796', email:'michaelokereke002@gmail.com',   level:'TRAINEE',   status:'active', dateSponsored:'2026-05-23', directs:'1', mdBase:'Obi & Jennifer Iroezi', phone:'3232372009', direct:'Lilly Uzondu-Umeojiako 1397343'},
-  {name:'Jude Akalawu',         phpCode:'1404326', email:'phpdynastybuilders@gmail.com',  level:'TRAINEE',   status:'active', dateSponsored:'2026-05-17', directs:'1', mdBase:'Obi & Jennifer Iroezi', phone:'3104046508', direct:'Lilly Uzondu-Umeojiako 1397343'},
-  {name:'Fidelis Orji',         phpCode:'1404220', email:'orjifidelischinweike@gmail.com',level:'ASSOCIATE', status:'active', dateSponsored:'2026-05-17', directs:'5', mdBase:'Obi & Jennifer Iroezi', phone:'4243812069', direct:'Jacinta Abanobi 1353757'},
-  {name:'Babatunde Olaide',     phpCode:'1403634', email:'olaa.may27@gmail.com',          level:'TRAINEE',   status:'active', dateSponsored:'2026-05-16', directs:'0', mdBase:'Obi & Jennifer Iroezi', phone:'8184663998', direct:'Lilly Uzondu-Umeojiako 1397343'},
-  {name:'Andrew Williams',      phpCode:'1402788', email:'andrewbwilliams41@gmail.com',   level:'TRAINEE',   status:'active', dateSponsored:'2026-05-13', directs:'0', mdBase:'Obi & Jennifer Iroezi', phone:'5623596245', direct:'Tornike Tsagareishvili 1374743'},
-  {name:'Angela Lewis',         phpCode:'1401957', email:'poetry8638@gmail.com',          level:'TRAINEE',   status:'active', dateSponsored:'2026-05-08', directs:'1', mdBase:'Obi & Jennifer Iroezi', phone:'3108660176', direct:'Brittany Casey 1068135'},
-  {name:'Maureen Onyia-Ekwuazi',phpCode:'1401491', email:'monicaonyia23@gmail.com',       level:'TRAINEE',   status:'active', dateSponsored:'2026-05-05', directs:'3', mdBase:'Obi & Jennifer Iroezi', phone:'4243474306', direct:'Irene Ibekwe 1401452'},
-  {name:'Irene Ibekwe',         phpCode:'1401452', email:'ireneibekwe1616@yahoo.com',     level:'ASSOCIATE', status:'active', dateSponsored:'2026-05-05', directs:'2', mdBase:'Obi & Jennifer Iroezi', phone:'8322891880', direct:'Daniel Daniel 1037509'},
-  {name:'Daniella Jhonson',     phpCode:'1401261', email:'jhonsonscorporategroup@gmail.com',level:'TRAINEE', status:'active', dateSponsored:'2026-05-02', directs:'3', mdBase:'Obi & Jennifer Iroezi', phone:'4242534292', direct:'Tornike Tsagareishvili 1374743'},
-  {name:'Conleth Chukwu',       phpCode:'1400516', email:'marymadona74@gmail.com',        level:'TRAINEE',   status:'active', dateSponsored:'2026-05-01', directs:'0', mdBase:'Obi & Jennifer Iroezi', phone:'3234036017', direct:'Lilly Uzondu-Umeojiako 1397343'},
-  {name:'Regina Urigwe',        phpCode:'1400510', email:'reginaurigwe@gmail.com',        level:'TRAINEE',   status:'active', dateSponsored:'2026-05-01', directs:'0', mdBase:'Obi & Jennifer Iroezi', phone:'4042711895', direct:'Lilly Uzondu-Umeojiako 1397343'},
-  // --- Added 2026-07-08 ---
-  {name:'Regina Ofoedu',        phpCode:'1409333', email:'ofoeduoby@gmail.com',           level:'TRAINEE',       status:'active', dateSponsored:'2026-06-01', directs:'4', mdBase:'Obi & Jennifer Iroezi', phone:'3236217520', direct:'Jacinta Abanobi 1353757'},
-  {name:'Twishmye Anuarita',    phpCode:'1409136', email:'shimyerose123@gmail.com',       level:'FIELD ASSOCIATE',status:'active', dateSponsored:'2026-06-01', directs:'3', mdBase:'Obi & Jennifer Iroezi', phone:'6022993207', direct:'Brittany Casey 1068135'},
-  {name:'Maureen Myers',        phpCode:'1414341', email:'cosmasabanobi088@gmail.com',    level:'TRAINEE',       status:'active', dateSponsored:'2026-06-11', directs:'2', mdBase:'Obi & Jennifer Iroezi', phone:'2135451057', direct:'Regina Ofoedu 1409333'},
-  {name:'Yuri Nakatani',        phpCode:'1414867', email:'yurinakatani02@gmail.com',      level:'TRAINEE',       status:'active', dateSponsored:'2026-06-14', directs:'0', mdBase:'Obi & Jennifer Iroezi', phone:'4244439421', direct:'Brittany Casey 1068135'},
-  {name:'JLynn Whitaker',       phpCode:'1415483', email:'whitakerjlynn@gmail.com',       level:'TRAINEE',       status:'active', dateSponsored:'2026-06-17', directs:'0', mdBase:'Obi & Jennifer Iroezi', phone:'3104133995', direct:'Tornike Tsagareishvili 1374743'},
-  {name:'Ana Reyes',            phpCode:'1416760', email:'annaestrada437@yahoo.com',      level:'TRAINEE',       status:'active', dateSponsored:'2026-06-20', directs:'0', mdBase:'Obi & Jennifer Iroezi', phone:'3109386281', direct:'Brittany Casey 1068135'},
-  {name:'Chidera Onyekwere',    phpCode:'1416786', email:'chideraonyekwere129@gmail.com', level:'TRAINEE',       status:'active', dateSponsored:'2026-06-20', directs:'0', mdBase:'Obi & Jennifer Iroezi', phone:'3102133833', direct:'Goodluck Nwaka 1338076'},
-  {name:'Nneka Ndukwe',         phpCode:'1417300', email:'ekanvene@yahoo.com',            level:'TRAINEE',       status:'active', dateSponsored:'2026-06-23', directs:'3', mdBase:'Obi & Jennifer Iroezi', phone:'5626206937', direct:'Jacinta Abanobi 1353757'},
-  {name:'Deisy Garcia',         phpCode:'1417894', email:'deisygarcia1713@gmail.com',     level:'TRAINEE',       status:'active', dateSponsored:'2026-06-27', directs:'0', mdBase:'Obi & Jennifer Iroezi', phone:'2133175067', direct:'Obi & Jennifer Iroezi 10146'},
-  {name:'Morgan Singleton',     phpCode:'1417895', email:'msingleton1333@gmail.com',      level:'TRAINEE',       status:'active', dateSponsored:'2026-06-27', directs:'0', mdBase:'Obi & Jennifer Iroezi', phone:'3109456493', direct:'Tornike Tsagareishvili 1374743'},
-  {name:'Paulina Uvidia',       phpCode:'1418582', email:'puvidia@gmail.com',             level:'TRAINEE',       status:'active', dateSponsored:'2026-06-30', directs:'0', mdBase:'Obi & Jennifer Iroezi', phone:'3238095958', direct:'Daniella Jhonson 1401261'},
-];
-
-const LIC_FIELD_MAP = [
-  {field:'phpCode',       titles:['php code','agent code','agent id','php']},
-  {field:'email',         titles:['email','e-mail']},
-  {field:'phone',         titles:['phone','mobile','cell']},
-  {field:'level',         titles:['level','agent level','rank']},
-  {field:'status',        titles:['status']},
-  {field:'dateSponsored', titles:['date sponsored','sponsored','start date','join date']},
-  {field:'directs',       titles:['directs','personally sponsored','recruits']},
-  {field:'mdBase',        titles:['md','upline md','md base','marketing director']},
-  {field:'direct',        titles:['direct','directly sponsored','sponsor','recruiter']},
-];
-
-let licBoardCols=[], licColMapping={};
-let licOkCount=0, licErrCount=0, licSkipCount=0, licCreatedCount=0, licUpdatedCount=0;
-
-
-// ---- Excel Upload Handler ----
-async function licHandleUpload(input) {
-  const file = input.files[0];
-  if (!file) return;
-  input.value = '';
-
-  // Use SheetJS if available, else parse CSV
-  let rows = [];
-  const fname = file.name.toLowerCase();
-
-  if (fname.endsWith('.csv')) {
-    const text = await file.text();
-    rows = text.split('\n').map(l => l.split(',').map(c => c.trim().replace(/^"|"$/g,'')));
-  } else {
-    // Load SheetJS dynamically
-    if (typeof XLSX === 'undefined') {
-      await new Promise((res, rej) => {
-        const s = document.createElement('script');
-        s.src = 'https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js';
-        s.onload = res; s.onerror = rej;
-        document.head.appendChild(s);
-      });
+// ── AUTO-CONNECT using org key from auth.js ─────────────────
+document.addEventListener('DOMContentLoaded', function() {
+  try {
+    const orgKey = AUTH.getMondayKey ? AUTH.getMondayKey() : '';
+    if (orgKey) {
+      const inp = document.getElementById('mondayApiKey');
+      if (inp) inp.value = orgKey;
+      // Hide key-related UI rows
+      document.querySelectorAll('.key-row').forEach(el => el.style.display = 'none');
+      // Trigger connect automatically
+      setTimeout(() => connectWithKey(), 300);
     }
-    const buf = await file.arrayBuffer();
-    const wb  = XLSX.read(buf, {type:'array'});
-    const ws  = wb.Sheets[wb.SheetNames[0]];
-    rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
-  }
-
-  if (rows.length < 2) { alert('No data found in file'); return; }
-
-  // Map header row to field indices
-  const headers = rows[0].map(h => String(h).toLowerCase().trim());
-  const col = key => {
-    const aliases = {
-      name:['name','agent name','full name'],
-      phpCode:['agent phpcode','phpcode','php code','php'],
-      email:['email','e-mail'],
-      phone:['phone','mobile'],
-      level:['level','agent level'],
-      status:['status'],
-      dateSponsored:['date sponsored','sponsored','start date'],
-      directs:['personally sponsored','directs'],
-      direct:['personally sponsored','directs','direct sponsor'],
-      mdBase:['md base','upline md name','md'],
-    };
-    for (const alias of (aliases[key] || [key])) {
-      const i = headers.indexOf(alias);
-      if (i >= 0) return i;
-    }
-    return -1;
-  };
-
-  const nameIdx  = col('name');
-  const phpIdx   = col('phpCode');
-  const emailIdx = col('email');
-  const phoneIdx = col('phone');
-  const levelIdx = col('level');
-  const statIdx  = col('status');
-  const dateIdx  = col('dateSponsored');
-  const dirIdx   = col('directs');
-  const directIdx= col('direct');
-  const mdIdx    = col('mdBase');
-
-  if (nameIdx < 0 || phpIdx < 0) {
-    alert('Could not find NAME or PHP CODE columns in this file.');
-    return;
-  }
-
-  // Parse rows into LIC_AGENTS format
-  const parsed = rows.slice(1).filter(r => r[nameIdx] && r[phpIdx]).map(r => ({
-    name:          String(r[nameIdx]||'').trim(),
-    phpCode:       String(r[phpIdx]||'').trim(),
-    email:         String(r[emailIdx>=0?emailIdx:0]||'').trim(),
-    phone:         String(r[phoneIdx>=0?phoneIdx:0]||'').trim(),
-    level:         String(r[levelIdx>=0?levelIdx:0]||'TRAINEE').trim(),
-    status:        String(r[statIdx>=0?statIdx:0]||'active').trim(),
-    dateSponsored: String(r[dateIdx>=0?dateIdx:0]||'').trim(),
-    directs:       String(r[dirIdx>=0?dirIdx:0]||'0').trim(),
-    direct:        String(r[directIdx>=0?directIdx:0]||'').trim(),
-    mdBase:        String(r[mdIdx>=0?mdIdx:0]||'').trim(),
-  }));
-
-  // Merge: update existing by phpCode, append new
-  const existingCodes = new Set(LIC_AGENTS.map(a => a.phpCode));
-  let added = 0, updated = 0;
-  parsed.forEach(a => {
-    if (existingCodes.has(a.phpCode)) {
-      const i = LIC_AGENTS.findIndex(x => x.phpCode === a.phpCode);
-      if (i >= 0) { LIC_AGENTS[i] = {...LIC_AGENTS[i], ...a}; updated++; }
-    } else {
-      LIC_AGENTS.push(a); existingCodes.add(a.phpCode); added++;
-    }
-  });
-
-  licRenderTable();
-  document.getElementById('lic-agent-count').textContent = LIC_AGENTS.length;
-  alert(`Upload complete: ${added} new agents added, ${updated} updated. Total: ${LIC_AGENTS.length} agents.`);
-  if (licBoardCols.length) document.getElementById('lic-sync-btn').disabled = false;
-}
-
-function licRenderTable(){
-  const tbody=document.getElementById('lic-agent-tbody');
-  if(!tbody) return;
-  tbody.innerHTML=LIC_AGENTS.map(a=>`
-    <tr style="border-bottom:1px solid var(--border);">
-      <td style="padding:5px 10px;">${esc(a.name)}<\/td>
-      <td style="padding:5px 10px;font-family:'DM Mono',monospace;color:var(--accent3);">${a.phpCode}<\/td>
-      <td style="padding:5px 10px;">${a.level}<\/td>
-      <td style="padding:5px 10px;font-family:'DM Mono',monospace;">${a.dateSponsored}<\/td>
-      <td style="padding:5px 10px;">${a.directs}<\/td>
-      <td style="padding:5px 10px;color:var(--muted);font-size:11px;">${esc(a.mdBase)}<\/td>
-    <\/tr>`).join('');
-}
-
-async function licLoadColumns(){
-  if(!mondayKey){alert('Connect Monday.com first.');return;}
-  const statusEl=document.getElementById('lic-col-status');
-  statusEl.textContent='Loading…';
-  try{
-    const d=await gql(`query($b:ID!){boards(ids:[$b]){columns{id title type settings_str}}}`,{b:LIC_BOARD_ID});
-    const rawCols=d.boards?.[0]?.columns||[];
-    const SKIP=new Set(['name','formula','autonumber','subtasks','button','board_relation','dependency']);
-    licBoardCols=rawCols.filter(c=>!SKIP.has(c.type)).map(c=>{
-      let settings={};try{settings=JSON.parse(c.settings_str||'{}');}catch(e){}
-      let statusMap={},dropdownMap={};
-      if(c.type==='color'&&settings.labels) Object.entries(settings.labels).forEach(([idx,lbl])=>{statusMap[lbl.toLowerCase().trim()]=idx;});
-      if(c.type==='dropdown'&&settings.labels) settings.labels.forEach(l=>{dropdownMap[l.name.toLowerCase().trim()]=String(l.id);});
-      return{id:c.id,title:c.title,type:c.type,statusMap,dropdownMap};
-    });
-    statusEl.textContent=`Columns: ${licBoardCols.length} loaded`;
-    licColMapping={};
-    LIC_FIELD_MAP.forEach(({field,titles})=>{
-      const col=licBoardCols.find(c=>titles.some(t=>c.title.toLowerCase().includes(t)));
-      if(col) licColMapping[field]=col;
-    });
-    licRenderMapping();
-    document.getElementById('lic-sync-btn').disabled=false;
-  }catch(e){statusEl.textContent='Error: '+e.message;}
-}
-
-function licRenderMapping(){
-  const wrap=document.getElementById('lic-mapping-wrap');
-  const rows=document.getElementById('lic-mapping-rows');
-  wrap.style.display='block';
-  rows.innerHTML=LIC_FIELD_MAP.map(({field})=>{
-    const mapped=licColMapping[field];
-    const opts=licBoardCols.map(c=>`<option value="${c.id}" ${mapped?.id===c.id?'selected':''}>${esc(c.title)} (${c.type})<\/option>`).join('');
-    return `<span style="font-size:12px;color:var(--muted);font-family:'DM Mono',monospace;">${field}<\/span>
-      <span style="color:var(--accent);text-align:center;">&rarr;<\/span>
-      <select onchange="licUpdateMapping('${field}',this.value)" style="background:var(--surface2);border:1px solid var(--border);color:var(--cream);border-radius:4px;padding:4px 8px;font-size:12px;">
-        <option value="">— skip —<\/option>${opts}<\/select>`;
-  }).join('');
-}
-
-function licUpdateMapping(field,colId){
-  if(!colId){delete licColMapping[field];return;}
-  const col=licBoardCols.find(c=>c.id===colId);
-  if(col) licColMapping[field]=col;
-}
-
-function licFormatValue(val,col){
-  if(val===null||val===undefined||val==='') return null;
-  const s=String(val).trim();
-  if(!s) return null;
-  switch(col.type){
-    case 'text': case 'long_text': return s;
-    case 'numbers': return isNaN(parseFloat(s))?null:String(parseFloat(s));
-    case 'email': return JSON.stringify({email:s,text:s});
-    case 'phone': return JSON.stringify({phone:s,countryShortName:'US'});
-    case 'date': return JSON.stringify({date:s});
-    case 'color':{const lbl=s.toLowerCase().trim();const idx=col.statusMap[lbl];return idx!==undefined?JSON.stringify({index:parseInt(idx)}):null;}
-    case 'dropdown':{const lbl=s.toLowerCase().trim();const id=col.dropdownMap[lbl];return id?JSON.stringify({ids:[parseInt(id)]}):null;}
-    default: return s;
-  }
-}
-
-function licLog(type,msg){
-  const el=document.getElementById('lic-log');
-  const color=type==='ok'?'var(--green)':type==='err'?'var(--error)':type==='warn'?'var(--warn)':'var(--muted)';
-  el.innerHTML+=`<div style="color:${color};font-size:12px;padding:2px 0;font-family:'DM Mono',monospace;">${esc(msg)}<\/div>`;
-  el.scrollTop=el.scrollHeight;
-}
-
-function licUpdateBadges(){
-  document.getElementById('lic-badges').innerHTML=
-    `<span class="badge badge-green">${licOkCount} ok<\/span>`+
-    (licErrCount?`<span class="badge badge-red">${licErrCount} err<\/span>`:'')+
-    (licSkipCount?`<span class="badge badge-muted">${licSkipCount} skipped<\/span>`:'');
-}
-
-async function licStartSync(){
-  if(!mondayKey){alert('Connect Monday.com first.');return;}
-  licOkCount=0;licErrCount=0;licSkipCount=0;licCreatedCount=0;licUpdatedCount=0;
-  const btn=document.getElementById('lic-sync-btn');
-  btn.disabled=true;btn.innerHTML='<span class="spinner"><\/span> Importing…';
-  const log=document.getElementById('lic-log'),prog=document.getElementById('lic-prog-wrap'),bar=document.getElementById('lic-prog-bar');
-  log.innerHTML='';log.classList.remove('hidden');
-  prog.classList.remove('hidden');bar.style.width='0%';
-  licUpdateBadges();
-  const skipExisting=document.getElementById('lic-skip-existing').checked;
-  const delay=parseInt(document.getElementById('lic-delay').value)||350;
-  let existingMap={};
-  licLog('info',`Pre-fetching board ${LIC_BOARD_ID}…`);
-  try{
-    const items=await fetchBoardItems(LIC_BOARD_ID,[]);
-    items.forEach(item=>{
-      const nk=normalize(item.name);
-      if(nk&&!existingMap[nk]) existingMap[nk]=item.id;
-      item.column_values.forEach(cv=>{const ck=normalize(cv.text||'');if(ck&&!existingMap[ck]) existingMap[ck]=item.id;});
-    });
-    licLog('info',`Found ${items.length} existing items on board.`);
-  }catch(e){licLog('warn','Pre-fetch failed: '+e.message);}
-  for(let i=0;i<LIC_AGENTS.length;i++){
-    const agent=LIC_AGENTS[i];
-    const itemName=agent.name;
-    const existingId=existingMap[normalize(agent.phpCode)]||existingMap[normalize(itemName)];
-    if(existingId&&skipExisting){
-      licLog('warn',`${itemName} (${agent.phpCode}): already on board — skipped`);
-      licSkipCount++;licUpdateBadges();
-      bar.style.width=Math.round(((i+1)/LIC_AGENTS.length)*100)+'%';
-      continue;
-    }
-    const colVals={};
-    for(const[field,col] of Object.entries(licColMapping)){
-      const formatted=licFormatValue(agent[field],col);
-      if(formatted!==null&&formatted!==undefined) colVals[col.id]=formatted;
-    }
-    const cvStr=JSON.stringify(colVals);
-    try{
-      if(existingId){
-        await gql(`mutation($b:ID!,$it:ID!,$cv:JSON!){change_multiple_column_values(board_id:$b,item_id:$it,column_values:$cv){id}}`,{b:LIC_BOARD_ID,it:existingId,cv:cvStr});
-        licLog('ok',`${itemName} (${agent.phpCode}): updated ✓`);licUpdatedCount++;
-      }else{
-        const res=await gql(`mutation($b:ID!,$n:String!,$cv:JSON!){create_item(board_id:$b,item_name:$n,column_values:$cv){id}}`,{b:LIC_BOARD_ID,n:itemName,cv:cvStr});
-        if(res?.create_item?.id){existingMap[normalize(itemName)]=res.create_item.id;existingMap[normalize(agent.phpCode)]=res.create_item.id;}
-        licLog('ok',`${itemName} (${agent.phpCode}): created ✓`);licCreatedCount++;
-      }
-      licOkCount++;
-    }catch(e){licLog('err',`${itemName}: ✗ ${e.message}`);licErrCount++;}
-    bar.style.width=Math.round(((i+1)/LIC_AGENTS.length)*100)+'%';
-    licUpdateBadges();
-    if(i<LIC_AGENTS.length-1) await sleep(delay);
-  }
-  btn.disabled=false;btn.innerHTML='⚡ Import Agents → Monday.com';
-  const details=[];
-  if(licCreatedCount) details.push(`${licCreatedCount} created`);
-  if(licUpdatedCount) details.push(`${licUpdatedCount} updated`);
-  licLog('info',`Done. ✓ ${licOkCount} (${details.join(', ')||'—'}) · ✗ ${licErrCount} failed · ⊘ ${licSkipCount} skipped`);
-}
-
-function licReset(){
-  document.getElementById('lic-log').innerHTML='';
-  document.getElementById('lic-log').classList.add('hidden');
-  document.getElementById('lic-prog-wrap').classList.add('hidden');
-  document.getElementById('lic-prog-bar').style.width='0%';
-  document.getElementById('lic-badges').innerHTML='';
-  document.getElementById('lic-sync-btn').disabled=!licBoardCols.length;
-  licOkCount=0;licErrCount=0;licSkipCount=0;licCreatedCount=0;licUpdatedCount=0;
-}
-
-document.addEventListener('DOMContentLoaded',()=>{ licRenderTable(); });
-
+  } catch(e) { console.warn('BMP auto-connect:', e); }
+});
 </script>
 </body>
 </html>

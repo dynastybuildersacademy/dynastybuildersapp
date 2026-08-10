@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>June Incentive Tracker · Dynasty Builders</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,400&family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script src="auth.js?v=20260713"></script>
+<script src="auth.js"></script>
 <style>
 :root{
   --navy:#0A1628;--navy2:#0F1E38;--navy3:#132240;--navy4:#1A2E50;
@@ -331,7 +331,7 @@ function getStatus(d) {
 // Reads each agent's recruits, submitted pts, paid pts from the
 // Call Log board (18411252612) and populates the incentive tracker.
 async function autoSyncFromCallLog() {
-  if (!AUTH.getMondayKey()) { toast('No Monday.com API key'); return; }
+  // Key always available via auth.js MONDAY_KEY_DEFAULT
   toast('Pulling stats from Call Log…');
 
   const CALL_LOG_BOARD = TEAM.monday.boardCallLog; // 18411252612
@@ -635,7 +635,7 @@ async function ensureIncentiveBoard() {
 }
 
 async function saveAllToMonday() {
-  if (!AUTH.getMondayKey()) { toast('No Monday.com API key configured'); return; }
+  // Key always available via auth.js MONDAY_KEY_DEFAULT
   toast('Saving to Monday.com…');
   const boardId = await ensureIncentiveBoard();
 
@@ -709,7 +709,7 @@ async function saveAllToMonday() {
 }
 
 async function loadFromMonday() {
-  if (!AUTH.getMondayKey()) { toast('No API key — loading from local cache'); return; }
+  // Key always available via auth.js MONDAY_KEY_DEFAULT
   const boardId = getBoardId();
   toast('Loading from Monday.com…');
   try {
