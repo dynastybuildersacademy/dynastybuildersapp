@@ -841,10 +841,12 @@ function switchAuthTab(tab){
 function toggleKeyVis(){const i=$$('mondayApiKey');i.type=i.type==='password'?'text':'password';}
 function toggleOAuthTokenVis(){const i=$$('oauthManualToken');i.type=i.type==='password'?'text':'password';}
 async function connectWithKey(){
-  let k = $$('mondayApiKey')?.value.trim() || '';
-  if (!k) { try { k = AUTH.getMondayKey?.() || ''; } catch(e) {} }
-  if (!k) { try { k = AUTH.MONDAY_KEY_DEFAULT || ''; } catch(e) {} }
-  if (!k) { try { k = localStorage.getItem('dba_monday_key') || ''; } catch(e) {} }
+  // 1. Check the visible input first (manual entry)
+  let k = ($$('mondayApiKey')?.value || '').trim();
+  // 2. Fall back to auth.js org key — most agents use this path
+  if (!k) {
+    try { k = AUTH.getMondayKey(); } catch(e) {}
+  }
   if (!k) { setKeyStatus('err', '⚠ API key not configured — contact your MD'); return; }
   mondayKey = k;
   await finishConnect('key');
@@ -2094,38 +2096,21 @@ setInterval(()=>{if(allPolicies.length&&document.querySelector('#pane-production
 
 
 // ── AUTO-CONNECT using org key from auth.js ─────────────────
-function bmpAutoConnect() {
+// AUTH.getMondayKey() returns MONDAY_KEY_DEFAULT for all agents automatically.
+// We skip the input entirely and connect directly.
+window.addEventListener('load', function bmpAutoConnect() {
   try {
-    // Try multiple ways to get the key — AUTH may not be fully ready yet
-    let orgKey = '';
-    if (typeof AUTH !== 'undefined' && typeof AUTH.getMondayKey === 'function') {
-      orgKey = AUTH.getMondayKey() || '';
-    }
-    if (!orgKey && typeof AUTH !== 'undefined' && AUTH.MONDAY_KEY_DEFAULT) {
-      orgKey = AUTH.MONDAY_KEY_DEFAULT;
-    }
-    if (!orgKey) {
-      // Last resort: check localStorage directly
-      try { orgKey = localStorage.getItem('dba_monday_key') || ''; } catch(e) {}
-    }
-    if (orgKey) {
-      const inp = document.getElementById('mondayApiKey');
-      if (inp) inp.value = orgKey;
-      document.querySelectorAll('.key-row').forEach(el => el.style.display = 'none');
-      connectWithKey();
-    } else {
-      console.warn('[BMP] No org key found — user must connect manually');
-    }
-  } catch(e) { console.warn('[BMP] Auto-connect error:', e); }
-}
-
-// Run after everything is loaded — use window.onload not DOMContentLoaded
-// to ensure auth.js constants are available
-if (document.readyState === 'complete') {
-  setTimeout(bmpAutoConnect, 100);
-} else {
-  window.addEventListener('load', () => setTimeout(bmpAutoConnect, 100));
-}
+    const orgKey = AUTH.getMondayKey();
+    if (!orgKey) { console.warn('[BMP] getMondayKey() returned empty'); return; }
+    // Hide the manual key UI — agents never need it
+    document.querySelectorAll('.key-row, .auth-row').forEach(el => el.style.display = 'none');
+    // Set mondayKey directly and connect — bypass the input field entirely
+    mondayKey = orgKey;
+    finishConnect('key');
+  } catch(e) {
+    console.error('[BMP] Auto-connect failed:', e);
+  }
+});
 </script>
 </body>
 </html>
