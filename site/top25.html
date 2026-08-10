@@ -391,14 +391,35 @@ function cacheAgentBoardId(id){ const s=AUTH.getSession(); if(!s||!id) return; l
 async function resolveAgentBoardId(){
   const s = AUTH.getSession();
   if(!s) return SHARED_BOARD_ID;
+
+  // ── 1. Read directly from AGENTS roster in auth.js (fastest, no API call) ──
+  try {
+    const agentRecord = typeof AGENTS !== 'undefined'
+      ? AGENTS.find(a => a.id === s.agentId)
+      : null;
+    if (agentRecord?.top25BoardId && /^\d+$/.test(agentRecord.top25BoardId)) {
+      console.log(`[Top25] Board from AGENTS roster: ${agentRecord.top25BoardId}`);
+      cacheAgentBoardId(agentRecord.top25BoardId);
+      return agentRecord.top25BoardId;
+    }
+  } catch(e) { console.warn('[Top25] AGENTS lookup failed:', e.message); }
+
+  // ── 2. Cached value from a previous session ──
+  const cached = getAgentBoardIdFromCache();
+  if (cached) {
+    console.log(`[Top25] Board from cache: ${cached}`);
+    return cached;
+  }
+
+  // ── 3. Monday Agent Roster API lookup (fallback for agents not in auth.js) ──
   try{
     const key=AUTH.getMondayKey();
     if(key){
-      const colR=await fetch('https://api.monday.com/v2',{method:'POST',headers:{'Content-Type':'application/json','Authorization':key},body:JSON.stringify({query:`{boards(ids:${AGENT_ROSTER_BOARD}){columns{id title}}}`})}).then(r=>r.json());
+      const colR=await mondayQuery(`{boards(ids:${AGENT_ROSTER_BOARD}){columns{id title}}}`);
       const cols=colR?.data?.boards?.[0]?.columns||[];
       const top25Col=cols.find(c=>c.title.toLowerCase().includes('top 25')||c.title.toLowerCase().includes('top25'));
       if(top25Col){
-        const itemR=await fetch('https://api.monday.com/v2',{method:'POST',headers:{'Content-Type':'application/json','Authorization':key},body:JSON.stringify({query:`{boards(ids:${AGENT_ROSTER_BOARD}){items_page(limit:200){items{id name column_values{id text}}}}}`})}).then(r=>r.json());
+        const itemR=await mondayQuery(`{boards(ids:${AGENT_ROSTER_BOARD}){items_page(limit:200){items{id name column_values{id text}}}}}`);
         const items=itemR?.data?.boards?.[0]?.items_page?.items||[];
         const agentRow=items.find(item=>{
           const nameMatch=item.name.toLowerCase()===s.name.toLowerCase();
@@ -408,13 +429,18 @@ async function resolveAgentBoardId(){
         if(agentRow){
           const boardIdCV=agentRow.column_values.find(cv=>cv.id===top25Col.id);
           const assignedId=boardIdCV?.text?.trim();
-          if(assignedId&&/^\d+$/.test(assignedId)){cacheAgentBoardId(assignedId);return assignedId;}
+          if(assignedId&&/^\d+$/.test(assignedId)){
+            console.log(`[Top25] Board from Monday roster: ${assignedId}`);
+            cacheAgentBoardId(assignedId);
+            return assignedId;
+          }
         }
       }
     }
-  }catch(e){console.warn('[Top25] Admin lookup failed:',e.message);}
-  const cached=getAgentBoardIdFromCache();
-  if(cached) return cached;
+  }catch(e){console.warn('[Top25] Monday roster lookup failed:',e.message);}
+
+  // ── 4. Default template board ──
+  console.log(`[Top25] Using default board: ${SHARED_BOARD_ID}`);
   return SHARED_BOARD_ID;
 }
 
