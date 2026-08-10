@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dynasty — Top 25 Prospects</title>
+<script src="auth.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0A1628;--surface:#112040;--surface2:#1A3158;
+  --border:rgba(201,168,76,0.22);--accent:#C9A84C;--accent2:#E8C97A;
+  --green:#2DCA73;--text:#FAF6EE;--muted:#6B7C93;
+  --warn:#E67E22;--danger:#C0392B;--info:#3498DB;
+}
+body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(201,168,76,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(201,168,76,.04) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+.glow{position:fixed;width:600px;height:600px;border-radius:50%;filter:blur(120px);pointer-events:none;z-index:0;opacity:.1;}
+.glow-1{background:var(--accent);top:-200px;left:-100px;}
+.glow-2{background:#1A3158;bottom:-200px;right:-100px;}
+.shell{position:relative;z-index:1;display:flex;flex-direction:column;min-height:100vh;}
+
+/* ── TOPBAR ── */
+.topbar{background:rgba(10,22,40,.97);border-bottom:1px solid var(--border);padding:0 28px;display:flex;align-items:center;backdrop-filter:blur(12px);position:sticky;top:0;z-index:100;flex-wrap:wrap;gap:0;}
+.topbar-brand{display:flex;align-items:center;gap:12px;padding:14px 0;margin-right:28px;border-right:1px solid var(--border);padding-right:28px;flex-shrink:0;}
+.brand-mark{width:34px;height:34px;background:linear-gradient(135deg,var(--accent),var(--accent2));clip-path:polygon(50% 0%,100% 20%,100% 68%,50% 100%,0% 68%,0% 20%);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:var(--bg);}
+.brand-name{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;letter-spacing:-.2px;line-height:1.2;}
+.brand-name span{color:var(--accent);}
+.brand-sub{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-top:1px;}
+.nav-tabs{display:flex;height:100%;flex-wrap:wrap;flex:1;}
+.nav-tab{padding:0 16px;height:56px;display:flex;align-items:center;gap:7px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap;background:none;border-top:none;border-left:none;border-right:none;letter-spacing:.03em;}
+.nav-tab:hover{color:var(--text);}
+.nav-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+.tab-badge{background:var(--danger);color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;font-family:'DM Mono',monospace;}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px;padding:14px 0;flex-shrink:0;}
+.conn-chip{display:flex;align-items:center;gap:6px;padding:5px 11px;border-radius:20px;font-size:11px;font-family:'DM Mono',monospace;}
+.conn-chip.ok{background:rgba(45,202,115,.1);color:var(--green);border:1px solid rgba(45,202,115,.3);}
+.conn-chip.no{background:rgba(107,124,147,.1);color:var(--muted);border:1px solid var(--border);}
+.icon-btn{display:flex;align-items:center;gap:5px;padding:6px 13px;border-radius:7px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);transition:all .2s;text-decoration:none;letter-spacing:.04em;}
+.icon-btn:hover{border-color:var(--accent);color:var(--accent);}
+.icon-btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:var(--bg);border-color:transparent;}
+.icon-btn.primary:hover{opacity:.88;transform:translateY(-1px);}
+
+/* ── CONTENT WRAPPER ── */
+.content{flex:1;max-width:1200px;margin:0 auto;padding:28px 24px;width:100%;}
+.tab-pane{display:none;}.tab-pane.active{display:block;}
+
+/* ── CARDS (reusable) ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:18px;}
+.card-title{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.card-title::before{content:'';width:3px;height:13px;background:var(--accent);border-radius:2px;flex-shrink:0;}
+
+/* ── STAT GRID ── */
+.stat-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:22px;}
+@media(max-width:700px){.stat-grid{grid-template-columns:repeat(3,1fr);}}
+.stat-box{background:var(--surface);padding:18px 14px;cursor:pointer;transition:background .15s;}
+.stat-box:hover{background:var(--surface2);}
+.stat-box.active-filter{background:rgba(201,168,76,.1);}
+.stat-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;}
+.stat-value{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:800;line-height:1;}
+.stat-sub{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-top:3px;}
+
+/* ── FILTER ROW ── */
+.filter-bar{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:16px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.search-wrap{position:relative;flex:1;min-width:180px;}
+.search-ico{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--muted);pointer-events:none;}
+.search-input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:8px 12px 8px 32px;color:var(--text);font-family:'DM Mono',monospace;font-size:13px;outline:none;transition:border-color .2s;}
+.search-input:focus{border-color:var(--accent);}
+.fsel{background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:8px 30px 8px 11px;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;outline:none;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236b6b80' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;min-width:130px;}
+.fsel:focus{border-color:var(--accent);}
+.fsel option{background:var(--surface2);}
+.filter-count{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);white-space:nowrap;margin-left:auto;}
+
+/* ── PROSPECT TABLE / ROWS ── */
+.prospect-table{border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.tbl-head{display:grid;grid-template-columns:44px 1fr 130px 130px 120px 100px 80px;gap:0;background:var(--surface2);padding:9px 16px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);}
+@media(max-width:900px){
+  .tbl-head{grid-template-columns:40px 1fr 110px 100px 80px;}
+  .th-next,.th-duration{display:none;}
+}
+@media(max-width:600px){
+  .tbl-head{grid-template-columns:34px 1fr 90px 70px;}
+  .th-next,.th-duration,.th-log{display:none;}
+}
+.prospect-row{border-bottom:1px solid rgba(26,49,88,.8);transition:background .12s;}
+.prospect-row:last-child{border-bottom:none;}
+.prospect-row:hover{background:rgba(201,168,76,.04);}
+.prospect-row.overdue{border-left:3px solid var(--danger);}
+.prospect-row.due-today{border-left:3px solid var(--warn);}
+.row-main{display:grid;grid-template-columns:44px 1fr 130px 130px 120px 100px 80px;gap:0;padding:10px 16px;align-items:center;cursor:pointer;}
+@media(max-width:900px){.row-main{grid-template-columns:40px 1fr 110px 100px 80px;}}
+@media(max-width:600px){.row-main{grid-template-columns:34px 1fr 90px 70px;}}
+.row-num{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;color:var(--accent);opacity:.7;}
+.row-info{min-width:0;}
+.row-name{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.row-meta{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.row-cell{font-family:'DM Mono',monospace;font-size:11px;}
+@media(max-width:900px){.row-cell.hide-md{display:none;}}
+@media(max-width:600px){.row-cell.hide-sm{display:none;}}
+.pill{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:600;font-family:'DM Mono',monospace;white-space:nowrap;}
+.pill-gold{background:rgba(201,168,76,.12);color:var(--accent);border:1px solid rgba(201,168,76,.3);}
+.pill-green{background:rgba(45,202,115,.1);color:var(--green);border:1px solid rgba(45,202,115,.3);}
+.pill-blue{background:rgba(52,152,219,.1);color:#5dade2;border:1px solid rgba(52,152,219,.3);}
+.pill-purple{background:rgba(155,89,182,.1);color:#bb8fce;border:1px solid rgba(155,89,182,.3);}
+.pill-warn{background:rgba(230,126,34,.1);color:var(--warn);border:1px solid rgba(230,126,34,.3);}
+.pill-danger{background:rgba(192,57,43,.1);color:var(--danger);border:1px solid rgba(192,57,43,.3);}
+.pill-muted{background:rgba(107,124,147,.1);color:var(--muted);border:1px solid var(--border);}
+.row-actions{display:flex;gap:5px;justify-content:flex-end;align-items:center;}
+.qa-btn{width:30px;height:30px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .15s;flex-shrink:0;}
+.qa-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(201,168,76,.08);}
+.qa-btn.call:hover{border-color:var(--green);color:var(--green);background:rgba(45,202,115,.08);}
+
+/* ── EXPANDED DETAIL PANEL ── */
+.row-detail{display:none;padding:16px 20px 20px;border-top:1px solid var(--border);background:rgba(17,32,64,.5);}
+.row-detail.open{display:block;}
+.detail-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px;}
+@media(max-width:700px){.detail-grid{grid-template-columns:repeat(2,1fr);}}
+.detail-item .d-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;}
+.detail-item .d-val{font-size:13px;color:var(--text);}
+.detail-item .d-val a{color:var(--accent2);text-decoration:none;}
+.detail-item .d-val a:hover{text-decoration:underline;}
+.notes-box{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:12px;line-height:1.7;color:var(--text);margin-bottom:14px;font-family:'DM Mono',monospace;}
+.notes-box.empty{color:var(--muted);font-style:italic;}
+.action-row{display:flex;gap:8px;flex-wrap:wrap;}
+.btn{display:inline-flex;align-items:center;gap:7px;border:none;border-radius:8px;padding:9px 18px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;text-decoration:none;letter-spacing:.04em;}
+.btn-accent{background:linear-gradient(135deg,var(--accent),var(--accent2));color:var(--bg);}
+.btn-accent:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(201,168,76,.3);}
+.btn-green{background:linear-gradient(135deg,var(--green),#1a8a47);color:#fff;}
+.btn-green:hover{box-shadow:0 6px 20px rgba(45,202,115,.25);}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--muted);}
+.btn-ghost:hover{border-color:var(--accent);color:var(--text);}
+.btn-sm{padding:7px 13px;font-size:12px;}
+
+/* ── BOARD BAR ── */
+.board-bar{background:rgba(201,168,76,.06);border-bottom:1px solid rgba(201,168,76,.12);padding:5px 24px;font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);display:none;align-items:center;gap:14px;flex-wrap:wrap;}
+.board-bar a{color:var(--accent);text-decoration:none;margin-left:auto;}
+.board-bar a:hover{text-decoration:underline;}
+
+/* ── STATE BOXES ── */
+.state-box{text-align:center;padding:70px 24px;color:var(--muted);}
+.state-box .ico{font-size:42px;margin-bottom:16px;}
+.state-box p{font-size:14px;line-height:1.7;max-width:380px;margin:0 auto;}
+.state-box .s-title{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:8px;}
+.spinner{display:inline-block;width:22px;height:22px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ── LOG MODAL ── */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;align-items:center;justify-content:center;padding:20px;}
+.modal-bg.open{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;width:100%;max-width:500px;padding:26px;max-height:90vh;overflow-y:auto;}
+.modal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--border);}
+.modal-title{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;color:var(--accent);}
+.modal-close{background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;line-height:1;}
+.modal-close:hover{color:var(--danger);}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+@media(max-width:480px){.form-row{grid-template-columns:1fr;}}
+.form-field label{display:block;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;}
+.form-field input,.form-field select,.form-field textarea{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'DM Mono',monospace;font-size:13px;outline:none;transition:border-color .2s;}
+.form-field input:focus,.form-field select:focus,.form-field textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(201,168,76,.12);}
+.form-field select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236b6b80' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 11px center;padding-right:30px;}
+.form-field select option{background:var(--surface2);}
+.form-field textarea{resize:vertical;min-height:64px;}
+.modal-footer{display:flex;gap:10px;margin-top:18px;padding-top:14px;border-bottom-left-radius:16px;border-bottom-right-radius:16px;}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:22px;right:22px;background:var(--surface);border:1px solid var(--accent);border-radius:10px;padding:11px 18px;font-size:13px;transform:translateY(70px);opacity:0;transition:all .3s;z-index:999;color:var(--accent2);max-width:320px;font-family:'DM Mono',monospace;}
+.toast.show{transform:translateY(0);opacity:1;}
+
+/* ── CALL LIST TAB ── */
+.cl-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px;}
+.cl-tab{padding:7px 16px;border-radius:20px;font-family:'DM Mono',monospace;font-size:11px;font-weight:600;cursor:pointer;background:var(--surface2);border:1px solid var(--border);color:var(--muted);transition:all .15s;}
+.cl-tab.active{background:var(--accent);color:var(--bg);border-color:var(--accent);}
+.cl-tab .ct{margin-left:6px;background:rgba(0,0,0,.2);padding:1px 6px;border-radius:10px;font-size:10px;}
+.call-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px;}
+.call-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px;transition:border-color .2s;}
+.call-card:hover{border-color:var(--accent);}
+.call-card-name{font-size:14px;font-weight:700;margin-bottom:6px;}
+.call-card-meta{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);line-height:1.8;}
+.call-card-meta span{display:block;}
+.call-card-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:10px;}
+.call-card-actions{display:flex;gap:6px;margin-top:12px;}
+</style>
+</head>
+<body>
+<script>AUTH.require('top25.html');</script>
+<div class="glow glow-1"></div>
+<div class="glow glow-2"></div>
+<div class="shell">
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-brand">
+    <div class="brand-mark">⬡</div>
+    <div>
+      <div class="brand-name">Dynasty <span>Top 25</span></div>
+      <div class="brand-sub" id="agent-sub">Lead Management</div>
+    </div>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="switchTab('prospects',this)">📋 All Prospects</button>
+    <button class="nav-tab" onclick="switchTab('calllist',this)">📞 Call List <span class="tab-badge hidden" id="callListBadge">0</span></button>
+    <button class="nav-tab" onclick="switchTab('followups',this)">📅 Follow-Ups <span class="tab-badge hidden" id="fuBadge">0</span></button>
+  </div>
+  <div class="topbar-right">
+    <button class="icon-btn" onclick="loadProspects()" id="refresh-btn">↻ Refresh</button>
+    <a href="tracker.html" class="icon-btn">📞 Tracker</a>
+    <a href="portal.html" class="icon-btn">📋 Portal</a>
+    <a href="hub.html" class="icon-btn">← Hub</a>
+    <div class="conn-chip no" id="connChip">⬡ Not connected</div>
+  </div>
+</div>
+
+<!-- BOARD BAR -->
+<div class="board-bar" id="board-bar">
+  <span>📋 Board: <span id="debug-board-id" style="color:var(--accent2);"></span></span>
+  <span id="debug-board-source"></span>
+  <a href="#" onclick="promptSetBoard();return false;">⚙ Override Board ID</a>
+</div>
+
+<div class="content">
+
+<!-- ════ PROSPECTS TAB ════ -->
+<div class="tab-pane active" id="pane-prospects">
+
+  <!-- Stat Grid -->
+  <div class="stat-grid" id="stat-grid">
+    <div class="stat-box" onclick="clearStatFilter()" id="stat-total">
+      <div class="stat-label">Total</div>
+      <div class="stat-value" id="sv-total">—</div>
+      <div class="stat-sub">prospects</div>
+    </div>
+    <div class="stat-box" onclick="applyStatFilter('appt')" id="stat-appt">
+      <div class="stat-label">Appt Set</div>
+      <div class="stat-value" style="color:var(--green);" id="sv-appt">—</div>
+      <div class="stat-sub">in pipeline</div>
+    </div>
+    <div class="stat-box" onclick="applyStatFilter('followup')" id="stat-fu">
+      <div class="stat-label">Follow-Up</div>
+      <div class="stat-value" style="color:var(--accent);" id="sv-fu">—</div>
+      <div class="stat-sub">planned</div>
+    </div>
+    <div class="stat-box" onclick="applyStatFilter('today')" id="stat-today">
+      <div class="stat-label">Due Today</div>
+      <div class="stat-value" style="color:var(--warn);" id="sv-today">—</div>
+      <div class="stat-sub">need action</div>
+    </div>
+    <div class="stat-box" onclick="applyStatFilter('overdue')" id="stat-overdue">
+      <div class="stat-label">Overdue</div>
+      <div class="stat-value" style="color:var(--danger);" id="sv-overdue">—</div>
+      <div class="stat-sub">past due date</div>
+    </div>
+  </div>
+
+  <!-- Filter Bar -->
+  <div class="filter-bar">
+    <div class="search-wrap">
+      <span class="search-ico">🔍</span>
+      <input class="search-input" type="text" id="search-input" placeholder="Search name, phone, occupation…" oninput="filterCards()">
+    </div>
+    <select class="fsel" id="filter-status" onchange="filterCards()">
+      <option value="">All Statuses</option>
+      <option>New Lead</option><option>Contacted</option><option>Appointment Set</option>
+      <option>Follow Up</option><option>Warm</option><option>Closed</option><option>Not Interested</option>
+    </select>
+    <select class="fsel" id="filter-next" onchange="filterCards()">
+      <option value="">All Next Actions</option>
+      <option>Call</option><option>Text</option><option>Email</option><option>BOM Invite</option><option>Appointment</option>
+    </select>
+    <select class="fsel" id="filter-followup" onchange="filterCards()">
+      <option value="">All Follow-Up</option>
+      <option value="today">Due Today</option><option value="overdue">Overdue</option>
+      <option value="upcoming">Upcoming</option><option value="planned">Planned</option>
+    </select>
+    <select class="fsel" id="filter-group" onchange="loadByGroup()">
+      <option value="">All Groups</option>
+    </select>
+    <span class="filter-count" id="count-pill">—</span>
+  </div>
+
+  <!-- Prospect Table -->
+  <div class="prospect-table" id="prospect-table">
+    <div class="tbl-head">
+      <div>#</div><div>Name</div>
+      <div>Status</div><div class="th-next">Next Action</div>
+      <div class="th-log">Call Log</div><div class="th-duration">Follow-Up</div>
+      <div style="text-align:right;">Actions</div>
+    </div>
+    <div id="cards-container">
+      <div class="state-box">
+        <div class="ico"><span class="spinner"></span></div>
+        <div class="s-title">Loading Top 25…</div>
+        <p>Connecting to your Monday.com board</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ CALL LIST TAB ════ -->
+<div class="tab-pane" id="pane-calllist">
+  <div class="cl-tabs" id="cl-tab-row">
+    <button class="cl-tab active" onclick="setCLTab('all',this)">All <span class="ct" id="clt-all">0</span></button>
+    <button class="cl-tab" onclick="setCLTab('today',this)">📅 Due Today <span class="ct" id="clt-today">0</span></button>
+    <button class="cl-tab" onclick="setCLTab('overdue',this)">⚠ Overdue <span class="ct" id="clt-overdue">0</span></button>
+    <button class="cl-tab" onclick="setCLTab('nocontact',this)">🔕 No Contact Yet <span class="ct" id="clt-nocontact">0</span></button>
+    <button class="cl-tab" onclick="setCLTab('appt',this)">✅ Appt Set <span class="ct" id="clt-appt">0</span></button>
+  </div>
+  <div class="call-grid" id="call-grid">
+    <div class="state-box"><div class="ico">📞</div><p>Load prospects first.</p></div>
+  </div>
+</div>
+
+<!-- ════ FOLLOW-UPS TAB ════ -->
+<div class="tab-pane" id="pane-followups">
+  <div class="card">
+    <div class="card-title">Upcoming Follow-Ups</div>
+    <div id="fu-container">
+      <div class="state-box"><div class="ico">📅</div><p>Load prospects first.</p></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /content -->
+
+<!-- LOG MODAL -->
+<div class="modal-bg" id="log-modal">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title" id="modal-prospect-name">Log Activity</div>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <input type="hidden" id="modal-item-id">
+    <div class="form-row">
+      <div class="form-field">
+        <label>Call Log</label>
+        <select id="modal-call-log">
+          <option>Called — No Answer</option><option>Left Voicemail</option>
+          <option>Spoke — Interested</option><option>Spoke — Not Interested</option>
+          <option>Called — Wrong Number</option><option>Text Sent</option><option>Email Sent</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>Update Status</label>
+        <select id="modal-status">
+          <option value="">No change</option><option>New Lead</option><option>Contacted</option>
+          <option>Appointment Set</option><option>Follow Up</option><option>Warm</option>
+          <option>Closed</option><option>Not Interested</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-field">
+        <label>Next Action</label>
+        <select id="modal-next-action">
+          <option value="">No change</option><option>Call</option><option>Text</option>
+          <option>Email</option><option>BOM Invite</option><option>Appointment</option><option>None</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>Follow-Up Date</label>
+        <input type="date" id="modal-followup">
+      </div>
+    </div>
+    <div class="form-field" style="margin-bottom:12px;">
+      <label>Notes</label>
+      <textarea id="modal-notes" rows="3" placeholder="What happened? Key details…"></textarea>
+    </div>
+    <div class="form-field">
+      <label>Duration (minutes)</label>
+      <input type="number" id="modal-duration" min="0" max="120" placeholder="e.g. 5">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal()" style="flex:1;justify-content:center;">Cancel</button>
+      <button class="btn btn-accent" onclick="saveLog()" style="flex:2;justify-content:center;">Save to Monday.com ✓</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── CONSTANTS ─────────────────────────────────────────────────
+const SHARED_BOARD_ID    = '7030392283';
+const TOP25_WORKSPACE_ID = '13768899';
+const AGENT_ROSTER_BOARD = '18411252280';
+
+function _top25CacheKey(agentId){ return 'dba_top25_board_' + agentId; }
+function getAgentBoardIdFromCache(){ const s=AUTH.getSession(); if(!s) return null; return localStorage.getItem(_top25CacheKey(s.agentId))||null; }
+function cacheAgentBoardId(id){ const s=AUTH.getSession(); if(!s||!id) return; localStorage.setItem(_top25CacheKey(s.agentId),id); }
+
+async function resolveAgentBoardId(){
+  const s = AUTH.getSession();
+  if(!s) return SHARED_BOARD_ID;
+  try{
+    const key=AUTH.getMondayKey();
+    if(key){
+      const colR=await fetch('https://api.monday.com/v2',{method:'POST',headers:{'Content-Type':'application/json','Authorization':key},body:JSON.stringify({query:`{boards(ids:${AGENT_ROSTER_BOARD}){columns{id title}}}`})}).then(r=>r.json());
+      const cols=colR?.data?.boards?.[0]?.columns||[];
+      const top25Col=cols.find(c=>c.title.toLowerCase().includes('top 25')||c.title.toLowerCase().includes('top25'));
+      if(top25Col){
+        const itemR=await fetch('https://api.monday.com/v2',{method:'POST',headers:{'Content-Type':'application/json','Authorization':key},body:JSON.stringify({query:`{boards(ids:${AGENT_ROSTER_BOARD}){items_page(limit:200){items{id name column_values{id text}}}}}`})}).then(r=>r.json());
+        const items=itemR?.data?.boards?.[0]?.items_page?.items||[];
+        const agentRow=items.find(item=>{
+          const nameMatch=item.name.toLowerCase()===s.name.toLowerCase();
+          const agentIdColV=item.column_values.find(cv=>{const colDef=cols.find(c=>c.id===cv.id);return(colDef?.title||'').toLowerCase().includes('agent id');});
+          return agentIdColV?.text===s.agentId||nameMatch;
+        });
+        if(agentRow){
+          const boardIdCV=agentRow.column_values.find(cv=>cv.id===top25Col.id);
+          const assignedId=boardIdCV?.text?.trim();
+          if(assignedId&&/^\d+$/.test(assignedId)){cacheAgentBoardId(assignedId);return assignedId;}
+        }
+      }
+    }
+  }catch(e){console.warn('[Top25] Admin lookup failed:',e.message);}
+  const cached=getAgentBoardIdFromCache();
+  if(cached) return cached;
+  return SHARED_BOARD_ID;
+}
+
+function getAgentBoardId(){ return getAgentBoardIdFromCache()||SHARED_BOARD_ID; }
+function setAgentBoardId(id){ cacheAgentBoardId(id); }
+
+let BOARD_ID = getAgentBoardId();
+const BOARD_URL = ()=>`https://app.monday.com/boards/${BOARD_ID}`;
+
+// ── SESSION INIT ──────────────────────────────────────────────
+const session = AUTH.getSession();
+document.getElementById('agent-sub').textContent = `${session?.name||'Agent'} · Top 25`;
+
+// Connection chip
+function updateConnChip(){
+  const chip=document.getElementById('connChip');
+  if(AUTH.getMondayKey()){chip.className='conn-chip ok';chip.textContent='⬡ Connected';}
+  else{chip.className='conn-chip no';chip.textContent='⬡ Not connected';}
+}
+updateConnChip();
+
+// ── TAB SWITCHING ─────────────────────────────────────────────
+let activeTab = 'prospects';
+function switchTab(name, el){
+  activeTab = name;
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('pane-'+name).classList.add('active');
+  if(el) el.classList.add('active');
+  if(name==='calllist') renderCallList('all');
+  if(name==='followups') renderFollowUps();
+}
+
+// ── STAT FILTER ───────────────────────────────────────────────
+let activeStatFilter = null;
+function applyStatFilter(type){
+  activeStatFilter = type;
+  document.querySelectorAll('.stat-box').forEach(b=>b.classList.remove('active-filter'));
+  const map={appt:'stat-appt',followup:'stat-fu',today:'stat-today',overdue:'stat-overdue'};
+  if(map[type]) document.getElementById(map[type]).classList.add('active-filter');
+  filterCards();
+}
+function clearStatFilter(){
+  activeStatFilter = null;
+  document.querySelectorAll('.stat-box').forEach(b=>b.classList.remove('active-filter'));
+  filterCards();
+}
+
+// ── ITEM FRAGMENT ─────────────────────────────────────────────
+const ITEM_FRAGMENT = `
+  id name
+  group { id title }
+  column_values {
+    id text type
+    ... on PhoneValue     { phone countryShortName }
+    ... on StatusValue    { label }
+    ... on DateValue      { date }
+    ... on CheckboxValue  { checked }
+    ... on NumbersValue   { number }
+    ... on HourValue      { hour minute }
+    ... on EmailValue     { email text }
+    ... on LinkValue      { url text }
+    ... on LongTextValue  { text value }
+    ... on TextValue      { text value }
+    ... on PeopleValue    { persons_and_teams { id } }
+  }
+`;
+
+let allProspects = [];
+let expandedId = null;
+let boardGroups = [];
+
+// ── LOAD ──────────────────────────────────────────────────────
+async function loadProspects(){
+  if(!AUTH.getMondayKey()){showNoKey();return;}
+  document.getElementById('cards-container').innerHTML=`<div class="state-box"><div class="ico"><span class="spinner"></span></div><div class="s-title">Loading…</div><p>Fetching your prospects from Monday.com</p></div>`;
+  document.getElementById('refresh-btn').textContent='↻ Loading…';
+  const activeBoardId = await resolveAgentBoardId();
+  BOARD_ID = activeBoardId;
+  // Board bar
+  document.getElementById('debug-board-id').textContent = activeBoardId;
+  document.getElementById('debug-board-source').textContent = '✓ DBA Top 25 Board';
+  document.getElementById('board-bar').style.display = 'flex';
+  try{
+    const gRes = await mondayQuery(`{ boards(ids:${activeBoardId}) { groups { id title color } } }`);
+    boardGroups = gRes?.data?.boards?.[0]?.groups||[];
+    populateGroupDropdown(boardGroups);
+    await fetchAndRender(activeBoardId);
+  }catch(e){
+    document.getElementById('cards-container').innerHTML=`<div class="state-box"><div class="ico">⚠️</div><div class="s-title">Load Failed</div><p>Board ${activeBoardId}<br>${e.message}<br><br><button onclick="promptSetBoard()" class="btn btn-ghost btn-sm">⚙ Override Board ID</button></p></div>`;
+    console.error('Top25 load error:',e);
+  }
+  document.getElementById('refresh-btn').textContent='↻ Refresh';
+}
+
+function populateGroupDropdown(groups){
+  const sel=document.getElementById('filter-group');
+  const prev=sel.value;
+  sel.innerHTML=`<option value="">All Groups</option>`;
+  groups.forEach(g=>{const o=document.createElement('option');o.value=g.id;o.textContent=g.title;sel.appendChild(o);});
+  if(prev&&[...sel.options].some(o=>o.value===prev)) sel.value=prev;
+}
+
+async function loadByGroup(){
+  if(!BOARD_ID) return;
+  await fetchAndRender(BOARD_ID);
+}
+
+async function fetchAndRender(boardId){
+  const selGrp=document.getElementById('filter-group').value;
+  const selGrpTitle=boardGroups.find(g=>g.id===selGrp)?.title||'';
+  document.getElementById('cards-container').innerHTML=`<div class="state-box"><div class="ico"><span class="spinner"></span></div><p>Loading${selGrpTitle?` "${selGrpTitle}"`:''}…</p></div>`;
+  let allItems=[],cursor=null;
+  try{
+    do{
+      let pageArg=`limit: 500`;
+      if(cursor) pageArg+=`, cursor: "${cursor}"`;
+      const groupArg=selGrp?`, query_params: { rules: [{ column_id: "__group__", compare_value: ["${selGrp}"], operator: any_of }] }`:'';
+      const res=await mondayQuery(`{ boards(ids: ${boardId}) { items_page(${pageArg}${groupArg}) { cursor items { ${ITEM_FRAGMENT} } } } }`);
+      if(res?.errors?.length) throw new Error(res.errors[0]?.message||'Monday API error');
+      const page=res?.data?.boards?.[0]?.items_page;
+      const items=page?.items||[];
+      allItems=allItems.concat(items);
+      cursor=page?.cursor||null;
+      if(items.length===0) break;
+    } while(cursor);
+  }catch(e){
+    console.warn('[Top25] Group filter failed, trying client-side:',e.message);
+    try{
+      allItems=await fetchAllItems(boardId);
+      if(selGrp) allItems=allItems.filter(item=>item.group?.id===selGrp);
+    }catch(e2){
+      document.getElementById('cards-container').innerHTML=`<div class="state-box"><div class="ico">⚠️</div><p>${e2.message}<br><br><button onclick="promptSetBoard()" class="btn btn-ghost btn-sm">⚙ Override</button></p></div>`;
+      return;
+    }
+  }
+  allProspects=allItems.map(parseItem);
+  if(allItems.length===0){
+    document.getElementById('cards-container').innerHTML=`<div class="state-box"><div class="ico">📋</div><div class="s-title">No Prospects Found</div><p>${selGrpTitle?`Group "${selGrpTitle}" is empty.`:'This board has no items yet.'}<br><br>Add prospects in Monday.com and click Refresh.<br><br><button onclick="promptSetBoard()" class="btn btn-ghost btn-sm">⚙ Override Board ID</button></p></div>`;
+    document.getElementById('count-pill').textContent='0 prospects';
+    updateStats([]);
+  }else{
+    renderAll();
+    updateBadges();
+  }
+}
+
+async function fetchAllItems(boardId){
+  let all=[],cursor=null;
+  do{
+    const cursorArg=cursor?`, cursor: "${cursor}"`:'';
+    const res=await mondayQuery(`{ boards(ids: ${boardId}) { items_page(limit: 500${cursorArg}) { cursor items { ${ITEM_FRAGMENT} } } } }`);
+    const page=res?.data?.boards?.[0]?.items_page;
+    const items=page?.items||[];
+    all=all.concat(items);
+    cursor=page?.cursor||null;
+    if(items.length===0) break;
+  }while(cursor);
+  return all;
+}
+
+// ── PARSE ITEM ────────────────────────────────────────────────
+// Column IDs verified from board 7030392283 via API
+function parseItem(item){
+  const cv={};
+  item.column_values.forEach(c=>{cv[c.id]=c;});
+  const get=(id)=>cv[id]?.text||cv[id]?.label||cv[id]?.value||'';
+  return{
+    id:           item.id,
+    name:         item.name,
+    group_id:     item.group?.id||'',
+    group_title:  item.group?.title||'',
+    phone:        cv['phone_number__1']?.phone || get('phone_number__1'),
+    email:        get('dup__of_notes__1'),
+    occupation:   get('text76__1'),
+    contact_method: get('color_mkwqeqgq'),
+    status:       get('status'),
+    next_action:  get('dup__of_status_mkm9gppm'),
+    call_log:     get('dup__of_contact_method_mkmqyxkj'),
+    notes:        get('text4__1'),
+    next_appt:    get('date4'),
+    relationship: cv['relationship__1']?.text || cv['relationship__1']?.value || '',
+    rel_status:   get('relationship8__1'),
+    ri_ft_bom:    get('text69__1'),
+    outcome:      get('text75__1'),
+    purpose:      get('purpose_of_contact__1'),
+    follow_up:    cv['follow_up_planned__1']?.checked === true,
+    followup_date:get('date_of_follow_up__1'),
+    event_title:  get('event_title__1'),
+    event_status: get('event_status__1'),
+    duration:     cv['duration__1']?.number || 0,
+    person:       cv['person']?.persons_and_teams?.map(p=>p.id).join(', ') || '',
+    good_qualities: get('text7__1'),
+    _raw:         cv
+  };
+}
+
+// ── RENDER ALL ────────────────────────────────────────────────
+function renderAll(){
+  const filtered=getFiltered();
+  updateStats(allProspects);
+  renderRows(filtered);
+}
+
+function updateStats(prospects){
+  const today=new Date().toISOString().slice(0,10);
+  document.getElementById('sv-total').textContent=prospects.length;
+  document.getElementById('sv-appt').textContent=prospects.filter(p=>/appointment/i.test(p.status)).length;
+  document.getElementById('sv-fu').textContent=prospects.filter(p=>p.follow_up).length;
+  document.getElementById('sv-today').textContent=prospects.filter(p=>p.followup_date===today).length;
+  document.getElementById('sv-overdue').textContent=prospects.filter(p=>p.followup_date&&p.followup_date<today).length;
+}
+
+function updateBadges(){
+  const today=new Date().toISOString().slice(0,10);
+  const fuCount=allProspects.filter(p=>p.follow_up||p.followup_date).length;
+  const overdueCount=allProspects.filter(p=>p.followup_date&&p.followup_date<today).length;
+  const fuBadge=document.getElementById('fuBadge');
+  if(fuCount>0){fuBadge.textContent=fuCount;fuBadge.classList.remove('hidden');}
+  const clBadge=document.getElementById('callListBadge');
+  if(overdueCount>0){clBadge.textContent=overdueCount;clBadge.classList.remove('hidden');}
+}
+
+function getFiltered(){
+  const q=document.getElementById('search-input').value.toLowerCase();
+  const status=document.getElementById('filter-status').value;
+  const next=document.getElementById('filter-next').value;
+  const fu=document.getElementById('filter-followup').value;
+  const today=new Date().toISOString().slice(0,10);
+  return allProspects.filter(p=>{
+    if(q&&!p.name.toLowerCase().includes(q)&&!(p.phone||'').includes(q)&&!(p.occupation||'').toLowerCase().includes(q)) return false;
+    if(status&&p.status!==status) return false;
+    if(next&&p.next_action!==next) return false;
+    if(fu==='today'){if(p.followup_date!==today) return false;}
+    else if(fu==='overdue'){if(!(p.followup_date&&p.followup_date<today)) return false;}
+    else if(fu==='upcoming'){if(!(p.followup_date&&p.followup_date>today)) return false;}
+    else if(fu==='planned'){if(!p.follow_up) return false;}
+    // stat filter
+    if(activeStatFilter==='appt'&&!/appointment/i.test(p.status)) return false;
+    if(activeStatFilter==='followup'&&!p.follow_up) return false;
+    if(activeStatFilter==='today'&&p.followup_date!==today) return false;
+    if(activeStatFilter==='overdue'&&!(p.followup_date&&p.followup_date<today)) return false;
+    return true;
+  });
+}
+
+function filterCards(){
+  renderRows(getFiltered());
+}
+
+// ── STATUS PILL ────────────────────────────────────────────────
+function statusPill(label){
+  if(!label) return '';
+  const lo=label.toLowerCase();
+  const cls=lo.includes('appointment')||lo.includes('appt')?'pill-green':
+             lo.includes('warm')||lo.includes('interested')?'pill-gold':
+             lo.includes('not interested')||lo.includes('closed')?'pill-muted':
+             lo.includes('follow')?'pill-warn':
+             lo.includes('contact')?'pill-blue':'pill-muted';
+  return `<span class="pill ${cls}">${label}</span>`;
+}
+function actionPill(label){
+  if(!label) return '';
+  const lo=label.toLowerCase();
+  const cls=lo.includes('appointment')?'pill-green':lo.includes('call')?'pill-blue':lo.includes('text')||lo.includes('email')?'pill-purple':'pill-muted';
+  return `<span class="pill ${cls}">${label}</span>`;
+}
+function callPill(label){
+  if(!label) return '';
+  const lo=label.toLowerCase();
+  const cls=lo.includes('spoke')&&lo.includes('interested')&&!lo.includes('not')?'pill-green':
+             lo.includes('appointment')?'pill-green':
+             lo.includes('not interested')?'pill-muted':'pill-warn';
+  return `<span class="pill ${cls}">${label}</span>`;
+}
+
+// ── RENDER ROWS ────────────────────────────────────────────────
+function renderRows(prospects){
+  const container=document.getElementById('cards-container');
+  document.getElementById('count-pill').textContent=`${prospects.length} of ${allProspects.length}`;
+  if(!prospects.length){
+    container.innerHTML=`<div class="state-box"><div class="ico">🔍</div><div class="s-title">No matches</div><p>Try adjusting your filters above.</p></div>`;
+    return;
+  }
+  const today=new Date().toISOString().slice(0,10);
+  container.innerHTML=prospects.map((p,i)=>{
+    const isOverdue=p.followup_date&&p.followup_date<today;
+    const isDueToday=p.followup_date===today;
+    const rowCls=isOverdue?'overdue':isDueToday?'due-today':'';
+    let fuDisplay='';
+    if(isOverdue) fuDisplay=`<span class="pill pill-danger">⚠ ${p.followup_date}</span>`;
+    else if(isDueToday) fuDisplay=`<span class="pill pill-warn">📅 Today</span>`;
+    else if(p.followup_date) fuDisplay=`<span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);">${p.followup_date}</span>`;
+    const expanded=expandedId===p.id;
+    return `
+    <div class="prospect-row ${rowCls}" id="row-${p.id}">
+      <div class="row-main" onclick="toggleRow('${p.id}')">
+        <div class="row-num">${String(i+1).padStart(2,'0')}</div>
+        <div class="row-info">
+          <div class="row-name">${p.name}</div>
+          <div class="row-meta">${[p.occupation,p.phone?`📞 ${p.phone}`:''].filter(Boolean).join(' · ')}</div>
+        </div>
+        <div class="row-cell">${statusPill(p.status)||'<span style="color:var(--muted);font-size:11px;">—</span>'}</div>
+        <div class="row-cell hide-md">${actionPill(p.next_action)||'<span style="color:var(--muted);font-size:11px;">—</span>'}</div>
+        <div class="row-cell hide-sm">${callPill(p.call_log)||'<span style="color:var(--muted);font-size:11px;">—</span>'}</div>
+        <div class="row-cell hide-md">${fuDisplay||'<span style="color:var(--muted);font-size:11px;">—</span>'}</div>
+        <div class="row-actions" onclick="event.stopPropagation()">
+          ${p.phone?`<button class="qa-btn call" title="Call" onclick="callProspect('${p.id}','${(p.phone||'').replace(/'/g,"\\'")}','${p.name.replace(/'/g,"\\'")}')">📞</button>`:''}
+          <button class="qa-btn" title="Log activity" onclick="openModal('${p.id}','${p.name.replace(/'/g,"\\'")}')">📝</button>
+          <button class="qa-btn" title="Expand" style="font-size:11px;transition:transform .2s;${expanded?'transform:rotate(180deg)':''}" id="expand-${p.id}">▼</button>
+        </div>
+      </div>
+      <div class="row-detail ${expanded?'open':''}" id="detail-${p.id}">
+        <div class="detail-grid">
+          <div class="detail-item"><div class="d-label">Phone</div><div class="d-val">${p.phone?`<a href="tel:${p.phone}">${p.phone}</a>`:'—'}</div></div>
+          <div class="detail-item"><div class="d-label">Email</div><div class="d-val">${p.email?`<a href="mailto:${p.email}">${p.email}</a>`:'—'}</div></div>
+          <div class="detail-item"><div class="d-label">Occupation</div><div class="d-val">${p.occupation||'—'}</div></div>
+          <div class="detail-item"><div class="d-label">Contact Method</div><div class="d-val">${p.contact_method||'—'}</div></div>
+          <div class="detail-item"><div class="d-label">Next Appt</div><div class="d-val">${p.next_appt||'—'}</div></div>
+          <div class="detail-item"><div class="d-label">RI / FT / BOM</div><div class="d-val">${p.ri_ft_bom||'—'}</div></div>
+          <div class="detail-item"><div class="d-label">Rel. Status</div><div class="d-val">${p.rel_status||'—'}</div></div>
+          <div class="detail-item"><div class="d-label">Purpose</div><div class="d-val">${p.purpose||'—'}</div></div>
+        </div>
+        ${(p.notes||p.relationship)?`<div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">Notes</div><div class="notes-box">${p.notes||p.relationship}</div>`:''}
+        ${p.outcome?`<div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">Last Outcome</div><div class="notes-box">${p.outcome}</div>`:''}
+        <div class="action-row">
+          ${p.phone?`<a href="tel:${p.phone}" class="btn btn-green btn-sm">📞 Call Now</a>`:''}
+          ${p.phone?`<a href="sms:${p.phone}" class="btn btn-ghost btn-sm">💬 Text</a>`:''}
+          ${p.email?`<a href="mailto:${p.email}" class="btn btn-ghost btn-sm">✉️ Email</a>`:''}
+          <button class="btn btn-accent btn-sm" onclick="openModal('${p.id}','${p.name.replace(/'/g,"\\'")}')">📝 Log Activity</button>
+          <a href="${BOARD_URL()}/pulse/${p.id}" target="_blank" class="btn btn-ghost btn-sm">Open in Monday ↗</a>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleRow(id){
+  if(expandedId===id){
+    expandedId=null;
+    document.getElementById('detail-'+id)?.classList.remove('open');
+    const icon=document.getElementById('expand-'+id);
+    if(icon) icon.style.transform='';
+  }else{
+    if(expandedId){
+      document.getElementById('detail-'+expandedId)?.classList.remove('open');
+      const prev=document.getElementById('expand-'+expandedId);
+      if(prev) prev.style.transform='';
+    }
+    expandedId=id;
+    document.getElementById('detail-'+id)?.classList.add('open');
+    const icon=document.getElementById('expand-'+id);
+    if(icon) icon.style.transform='rotate(180deg)';
+  }
+}
+
+// ── CALL LIST ─────────────────────────────────────────────────
+let activeClTab='all';
+function setCLTab(type,el){
+  activeClTab=type;
+  document.querySelectorAll('.cl-tab').forEach(t=>t.classList.remove('active'));
+  if(el) el.classList.add('active');
+  renderCallList(type);
+}
+
+function renderCallList(type){
+  const today=new Date().toISOString().slice(0,10);
+  let filtered;
+  if(type==='today') filtered=allProspects.filter(p=>p.followup_date===today);
+  else if(type==='overdue') filtered=allProspects.filter(p=>p.followup_date&&p.followup_date<today);
+  else if(type==='nocontact') filtered=allProspects.filter(p=>!p.call_log||!p.contact_method);
+  else if(type==='appt') filtered=allProspects.filter(p=>/appointment/i.test(p.status));
+  else filtered=[...allProspects];
+
+  // Update tab counts
+  document.getElementById('clt-all').textContent=allProspects.length;
+  document.getElementById('clt-today').textContent=allProspects.filter(p=>p.followup_date===today).length;
+  document.getElementById('clt-overdue').textContent=allProspects.filter(p=>p.followup_date&&p.followup_date<today).length;
+  document.getElementById('clt-nocontact').textContent=allProspects.filter(p=>!p.call_log||!p.contact_method).length;
+  document.getElementById('clt-appt').textContent=allProspects.filter(p=>/appointment/i.test(p.status)).length;
+
+  const grid=document.getElementById('call-grid');
+  if(!allProspects.length){grid.innerHTML='<div class="state-box"><div class="ico">📞</div><div class="s-title">No data</div><p>Load your prospects first from the Prospects tab.</p></div>';return;}
+  if(!filtered.length){grid.innerHTML='<div class="state-box"><div class="ico">✅</div><div class="s-title">All clear</div><p>No prospects in this category.</p></div>';return;}
+
+  const today2=new Date().toISOString().slice(0,10);
+  grid.innerHTML=filtered.map(p=>{
+    const isOverdue=p.followup_date&&p.followup_date<today2;
+    const isDueToday=p.followup_date===today2;
+    const tags=[];
+    if(isOverdue) tags.push(`<span class="pill pill-danger">⚠ Overdue</span>`);
+    if(isDueToday) tags.push(`<span class="pill pill-warn">📅 Today</span>`);
+    if(!p.call_log&&!p.contact_method) tags.push(`<span class="pill pill-muted">No Contact Yet</span>`);
+    if(p.next_action) tags.push(actionPill(p.next_action));
+    if(p.group_title) tags.push(`<span class="pill pill-muted">${p.group_title}</span>`);
+    return `<div class="call-card">
+      <div class="call-card-name">${p.name}</div>
+      <div class="call-card-meta">
+        ${p.phone?`<span>📞 <a href="tel:${p.phone}" style="color:var(--accent2);text-decoration:none;">${p.phone}</a></span>`:''}
+        ${p.occupation?`<span>💼 ${p.occupation}</span>`:''}
+        ${p.status?`<span>Status: ${p.status}</span>`:''}
+        ${p.followup_date?`<span>Follow-up: ${p.followup_date}</span>`:''}
+        ${p.notes?`<span style="margin-top:4px;color:var(--text);">${p.notes.slice(0,80)}${p.notes.length>80?'…':''}</span>`:''}
+      </div>
+      ${tags.length?`<div class="call-card-tags">${tags.join('')}</div>`:''}
+      <div class="call-card-actions">
+        ${p.phone?`<a href="tel:${p.phone}" class="btn btn-green btn-sm" style="flex:1;justify-content:center;">📞 Call</a>`:''}
+        <button class="btn btn-accent btn-sm" style="flex:1;justify-content:center;" onclick="openModal('${p.id}','${p.name.replace(/'/g,"\\'")}')">📝 Log</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── FOLLOW-UPS ────────────────────────────────────────────────
+function renderFollowUps(){
+  const today=new Date().toISOString().slice(0,10);
+  const withDates=allProspects
+    .filter(p=>p.followup_date||p.follow_up)
+    .sort((a,b)=>(a.followup_date||'9999')>(b.followup_date||'9999')?1:-1);
+
+  const container=document.getElementById('fu-container');
+  if(!allProspects.length){container.innerHTML='<div class="state-box"><div class="ico">📅</div><p>Load prospects first from the Prospects tab.</p></div>';return;}
+  if(!withDates.length){container.innerHTML='<div class="state-box"><div class="ico">✅</div><div class="s-title">No follow-ups scheduled</div><p>Add follow-up dates in Monday.com to see them here.</p></div>';return;}
+
+  const overdue=withDates.filter(p=>p.followup_date&&p.followup_date<today);
+  const dueToday=withDates.filter(p=>p.followup_date===today);
+  const upcoming=withDates.filter(p=>p.followup_date&&p.followup_date>today);
+  const noDate=withDates.filter(p=>!p.followup_date&&p.follow_up);
+
+  const renderSection=(title,items,color)=>items.length?`
+    <div style="margin-bottom:20px;">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:${color};margin-bottom:10px;display:flex;align-items:center;gap:8px;">
+        <div style="width:3px;height:12px;background:${color};border-radius:2px;"></div>${title} <span style="font-family:'DM Mono',monospace;font-size:11px;opacity:.6;">(${items.length})</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        ${items.map(p=>`
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:12px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:14px;font-weight:600;">${p.name}</div>
+            <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-top:2px;">${[p.occupation,p.phone?`📞 ${p.phone}`:''].filter(Boolean).join(' · ')}</div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+            ${p.followup_date?`<span style="font-family:'DM Mono',monospace;font-size:12px;color:${color};">${p.followup_date}</span>`:'<span class="pill pill-muted">No date</span>'}
+            ${statusPill(p.status)}
+            ${actionPill(p.next_action)}
+          </div>
+          <div style="display:flex;gap:6px;">
+            ${p.phone?`<a href="tel:${p.phone}" class="btn btn-green btn-sm">📞</a>`:''}
+            <button class="btn btn-accent btn-sm" onclick="openModal('${p.id}','${p.name.replace(/'/g,"\\'")}')">📝 Log</button>
+          </div>
+        </div>`).join('')}
+      </div>
+    </div>`:'';;
+
+  container.innerHTML=
+    renderSection('⚠ Overdue',overdue,'var(--danger)')+
+    renderSection('📅 Due Today',dueToday,'var(--warn)')+
+    renderSection('📆 Upcoming',upcoming,'var(--green)')+
+    renderSection('📌 No Date Set',noDate,'var(--muted)');
+}
+
+// ── CALL PROSPECT ─────────────────────────────────────────────
+function callProspect(id,phone,name){
+  window.location.href=`tel:${phone}`;
+  setTimeout(()=>openModal(id,name),2000);
+}
+
+// ── LOG MODAL ─────────────────────────────────────────────────
+function openModal(id,name){
+  document.getElementById('modal-item-id').value=id;
+  document.getElementById('modal-prospect-name').textContent=`📝 ${name}`;
+  document.getElementById('modal-notes').value='';
+  document.getElementById('modal-duration').value='';
+  document.getElementById('modal-status').value='';
+  document.getElementById('modal-next-action').value='';
+  document.getElementById('modal-call-log').value='Called — No Answer';
+  const tomorrow=new Date(); tomorrow.setDate(tomorrow.getDate()+1);
+  document.getElementById('modal-followup').value=tomorrow.toISOString().slice(0,10);
+  document.getElementById('log-modal').classList.add('open');
+}
+
+function closeModal(){ document.getElementById('log-modal').classList.remove('open'); }
+
+async function saveLog(){
+  const itemId=document.getElementById('modal-item-id').value;
+  const callLog=document.getElementById('modal-call-log').value;
+  const newStatus=document.getElementById('modal-status').value;
+  const nextAction=document.getElementById('modal-next-action').value;
+  const notes=document.getElementById('modal-notes').value.trim();
+  const duration=document.getElementById('modal-duration').value;
+  const followup=document.getElementById('modal-followup').value;
+  if(!AUTH.getMondayKey()){toast('⚠ Connect Monday.com first');return;}
+  const updates={};
+  // Column IDs from board 7030392283
+  if(callLog)    updates['dup__of_contact_method_mkmqyxkj'] = {label:callLog};
+  if(newStatus)  updates['status']                           = {label:newStatus};
+  if(nextAction) updates['dup__of_status_mkm9gppm']         = {label:nextAction};
+  if(notes)      updates['text4__1']                        = notes;
+  if(duration)   updates['duration__1']                     = parseFloat(duration);
+  if(followup){
+    updates['date_of_follow_up__1'] = {date:followup};
+    updates['follow_up_planned__1'] = true;
+  }
+  const now=new Date();
+  updates['time_contacted__1']={hour:now.getHours(),minute:now.getMinutes()};
+  try{
+    await mondayQuery(`mutation { change_multiple_column_values(board_id:${BOARD_ID},item_id:${itemId},column_values:${JSON.stringify(JSON.stringify(updates))}) { id } }`);
+    const idx=allProspects.findIndex(p=>p.id===itemId);
+    if(idx>=0){
+      if(callLog) allProspects[idx].call_log=callLog;
+      if(newStatus) allProspects[idx].status=newStatus;
+      if(nextAction) allProspects[idx].next_action=nextAction;
+      if(notes) allProspects[idx].notes=notes;
+      if(followup){allProspects[idx].followup_date=followup;allProspects[idx].follow_up=true;}
+    }
+    closeModal(); renderAll(); updateBadges();
+    toast(`✅ Logged — ${callLog}`);
+    logToTracker(callLog);
+  }catch(e){toast(`⚠ Save failed: ${e.message}`);console.error(e);}
+}
+
+function logToTracker(callLog){
+  const today=new Date().toISOString().slice(0,10);
+  const key=`dba_tracker_${session?.agentId}_${today}`;
+  try{
+    const data=JSON.parse(localStorage.getItem(key)||'{}');
+    const counts=data.counts||{calls:0,contacts:0,appts:0,shows:0,recruits:0,pts:0};
+    counts.calls++;
+    if(/Spoke/i.test(callLog)) counts.contacts++;
+    if(/appointment/i.test(callLog)) counts.appts++;
+    counts.pts=counts.calls*10+counts.contacts*50+counts.appts*200;
+    localStorage.setItem(key,JSON.stringify({...data,counts}));
+    setTimeout(()=>toast('📞 Call counted in Tracker'),1200);
+  }catch(e){}
+}
+
+// ── OVERRIDE BOARD ────────────────────────────────────────────
+function promptSetBoard(){
+  const current=BOARD_ID||SHARED_BOARD_ID;
+  const input=prompt(`Enter your Top 25 Board ID\n\nFind it: open your Monday.com board → copy the number from the URL (/boards/XXXXXXXXXX)\n\nCurrent: ${current}`,current);
+  if(input&&input.trim()&&/^\d+$/.test(input.trim())){
+    setAgentBoardId(input.trim()); BOARD_ID=input.trim();
+    toast(`✓ Board updated — reloading…`);
+    setTimeout(()=>loadProspects(),500);
+  }else if(input!==null) alert('Invalid ID — enter only the number from the Monday.com URL.');
+}
+
+// ── NO KEY STATE ──────────────────────────────────────────────
+function showNoKey(){
+  document.getElementById('cards-container').innerHTML=`<div class="state-box"><div class="ico">🔑</div><div class="s-title">Connect Monday.com</div><p>An API key is required to load your prospects.<br><br><a href="monday-setup.html" style="color:var(--accent);">Go to Board Setup →</a></p></div>`;
+  document.getElementById('count-pill').textContent='No key';
+}
+
+// ── TOAST ─────────────────────────────────────────────────────
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3200);
+}
+
+// ── INIT ──────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('log-modal').addEventListener('click',e=>{if(e.target===document.getElementById('log-modal')) closeModal();});
+  loadProspects();
+});
+</script>
+</body>
+</html>
