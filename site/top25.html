@@ -469,7 +469,7 @@ const ITEM_FRAGMENT = `
   group { id title }
   column_values {
     id text type
-    ... on PhoneValue     { phone countryShortName }
+    ... on PhoneValue     { phone }
     ... on StatusValue    { label }
     ... on DateValue      { date }
     ... on CheckboxValue  { checked }
@@ -587,7 +587,7 @@ function parseItem(item){
     name:         item.name,
     group_id:     item.group?.id||'',
     group_title:  item.group?.title||'',
-    phone:        cv['phone_number__1']?.phone || get('phone_number__1'),
+    phone:        get('phone_number__1') || cv['phone_number__1']?.phone || '',
     email:        get('dup__of_notes__1'),
     occupation:   get('text76__1'),
     contact_method: get('color_mkwqeqgq'),
