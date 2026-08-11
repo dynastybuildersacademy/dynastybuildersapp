@@ -1698,6 +1698,13 @@ const AGENTS = [
     phone: "", email: "",
     top25BoardId: "18397351108", licenseStates: [], enrollmentDate: "",
     uplineId: "obi001"
+  },
+  {
+    id: "deigar526", name: "Deisy Garcia", phpId: "", pin: "1111",
+    role: "trainee", level: 20,
+    phone: "", email: "",
+    top25BoardId: "", licenseStates: [], enrollmentDate: "",
+    uplineId: "obi001"
   }
 ];
 
