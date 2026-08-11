@@ -1701,7 +1701,7 @@ const AGENTS = [
   },
   {
     id: "deigar526", name: "Deisy Garcia", phpId: "", pin: "1111",
-    role: "trainee", level: 20,
+    role: "admin", level: 100,
     phone: "", email: "",
     top25BoardId: "", licenseStates: [], enrollmentDate: "",
     uplineId: "obi001"
