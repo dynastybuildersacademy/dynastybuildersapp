@@ -6,6 +6,7 @@
 <title>Dynasty PMD Hub — Agency Operating System</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<script src="auth.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
@@ -742,6 +743,8 @@ tr:hover td{background:rgba(201,168,76,.04)}
 <div class="toast" id="toast"></div>
 
 <script>
+const MONDAY_ENDPOINT = location.hostname === 'localhost' ? 'https://api.monday.com/v2' : '/api/monday';
+
 // ── SIDEBAR TOGGLE ─────────────────────────────────────────────
 function toggleSidebar() {
   const sb = document.getElementById('sidebar');
@@ -1216,7 +1219,7 @@ function renderCTTable() {
   const sl = data.slice((p-1)*PP, p*PP);
   document.getElementById('ct-tbody').innerHTML = sl.map(r=>`<tr class="${r.amt<0?'cb-row':''}">
     <td title="${r.wa}">${r.wa}</td>
-    <td style="font-family:'DM Mono',monospace;font-size:10.5px">${r.pol}${r.amt<0?'<span class="cb-lbl">CB</span>':''}</td>
+    <td style="font-family:\'DM Mono\',monospace;font-size:10.5px">${r.pol}${r.amt<0?'<span class="cb-lbl">CB</span>':''}</td>
     <td title="${r.prod||''}">${r.prod||'—'}</td>
     <td title="${r.cl}">${r.cl}</td>
     <td>${r.dt}</td>
@@ -1238,7 +1241,7 @@ function renderCBTable() {
   const sl = data.slice((p-1)*PP, p*PP);
   document.getElementById('cb-tbody').innerHTML = sl.map(r=>`<tr class="cb-row">
     <td title="${r.wa}">${r.wa}</td>
-    <td style="font-family:'DM Mono',monospace;font-size:10.5px">${r.pol}</td>
+    <td style="font-family:\'DM Mono\',monospace;font-size:10.5px">${r.pol}</td>
     <td>${r.prod||'—'}</td><td title="${r.cl}">${r.cl}</td><td>${r.dt}</td>
     <td class="am am-r">−$${fmt(Math.abs(r.amt))}</td>
     <td>${r.car}</td>
@@ -1492,7 +1495,7 @@ async function testMondayConnection() {
   if (!key) { addSyncLog('Enter API key first', 'err'); return; }
   addSyncLog('Testing Monday.com connection...', 'info');
   try {
-    const res = await fetch('https://api.monday.com/v2', {
+    const res = await fetch(MONDAY_ENDPOINT, {
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':key},
       body: JSON.stringify({query:'{ me { name email } }'})
@@ -1522,7 +1525,7 @@ async function syncToMonday() {
   for (const r of cbItems.slice(0,5)) { // Rate-limited demo
     try {
       const mutation = `mutation { create_item (board_id: ${boardId}, item_name: "${(r.cl||r.pol).replace(/"/g,"'")} — CB $${fmt(Math.abs(r.amt))}", column_values: "{\"text\":\"${r.wa}\",\"text1\":\"${r.pol}\",\"date4\":\"${r.dt}\"}") { id } }`;
-      await fetch('https://api.monday.com/v2',{method:'POST',headers:{'Content-Type':'application/json','Authorization':key},body:JSON.stringify({query:mutation})});
+      await fetch(MONDAY_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json','Authorization':key},body:JSON.stringify({query:mutation})});
       pushed++;
       addSyncLog(`→ Pushed: ${r.cl||r.pol} (-$${fmt(Math.abs(r.amt))})`, 'ok');
     } catch(e) { addSyncLog(`✗ Failed: ${r.pol} — ${e.message}`, 'err'); }
@@ -1598,17 +1601,25 @@ function boot() {
 
 window.addEventListener('DOMContentLoaded', boot);
 
+
+function getOrgKey() {
+  let k = '';
+  try { k = (typeof AUTH !== 'undefined' && AUTH.getMondayKey?.()) || ''; } catch(e) {}
+  if (!k) { try { k = AUTH?.MONDAY_KEY_DEFAULT || ''; } catch(e) {} }
+  if (!k) { try { k = localStorage.getItem('dba_monday_key') || ''; } catch(e) {} }
+  return k;
+}
+
 // ── AUTO-FILL org key in PMD hub ────────────────────────────
-document.addEventListener('DOMContentLoaded', function() {
-  try {
-    const k = AUTH.getMondayKey ? AUTH.getMondayKey() : '';
-    const inp = document.getElementById('mon-api-key');
-    if (k && inp) {
-      inp.value = k;
-      inp.closest('.mp-field') && (inp.closest('.mp-field').style.display = 'none');
-      if (typeof saveMondayConfig === 'function') saveMondayConfig();
-    }
-  } catch(e) {}
+window.addEventListener('load', function() {
+  const k = getOrgKey();
+  const inp = document.getElementById('mon-api-key');
+  if (k && inp) {
+    inp.value = k;
+    const field = inp.closest('.mp-field');
+    if (field) field.style.display = 'none';
+    try { if (typeof saveMondayConfig === 'function') saveMondayConfig(); } catch(e) {}
+  }
 });
 </script>
 </body>

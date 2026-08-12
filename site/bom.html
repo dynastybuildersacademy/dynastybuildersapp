@@ -4,7 +4,7 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DBA — BOM Tracker</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700&family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
-<script src="auth.js?v=20260713"></script>
+<script src="auth.js"></script>
 <style>
 :root{--navy:#0A1628;--navy-mid:#112040;--navy-light:#1A3158;--gold:#C9A84C;--gold-light:#E8C97A;--cream:#FAF6EE;--success:#27AE60;--warn:#E67E22;--danger:#C0392B;--slate:#6B7C93;--border:rgba(201,168,76,0.22);}
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -710,14 +710,14 @@ function renderLeaderboard(sessions, metric, dayFilter) {
     </div>
     <table style="width:100%;border-collapse:collapse;">
       <thead><tr>
-        <th style="font-size:10px;color:var(--slate);padding:7px 12px;text-align:left;border-bottom:1px solid var(--border);font-family:'Barlow Condensed',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.09em;">#</th>
-        <th style="font-size:10px;color:var(--slate);padding:7px 12px;text-align:left;border-bottom:1px solid var(--border);font-family:'Barlow Condensed',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.09em;">Captain</th>
-        <th style="font-size:10px;color:var(--slate);padding:7px 12px;text-align:center;border-bottom:1px solid var(--border);font-family:'Barlow Condensed',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.09em;">Sessions</th>
-        <th style="font-size:10px;color:var(--slate);padding:7px 12px;text-align:center;border-bottom:1px solid var(--border);font-family:'Barlow Condensed',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.09em;">Tue</th>
-        <th style="font-size:10px;color:var(--slate);padding:7px 12px;text-align:center;border-bottom:1px solid var(--border);font-family:'Barlow Condensed',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.09em;">Sat</th>
-        <th style="font-size:10px;color:var(--slate);padding:7px 12px;text-align:center;border-bottom:1px solid var(--border);font-family:'Barlow Condensed',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.09em;">Invited</th>
-        <th style="font-size:10px;color:var(--slate);padding:7px 12px;text-align:center;border-bottom:1px solid var(--border);font-family:'Barlow Condensed',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.09em;">Showed</th>
-        <th style="font-size:10px;color:var(--slate);padding:7px 12px;border-bottom:1px solid var(--border);font-family:'Barlow Condensed',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.09em;">${METRIC_LABELS[metric]}</th>
+        <th style="font-size:10px;color:var(--slate);padding:7px 12px;text-align:left;border-bottom:1px solid var(--border);font-family:\'Barlow Condensed\',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.09em;">#</th>
+        <th style="font-size:10px;color:var(--slate);padding:7px 12px;text-align:left;border-bottom:1px solid var(--border);font-family:\'Barlow Condensed\',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.09em;">Captain</th>
+        <th style="font-size:10px;color:var(--slate);padding:7px 12px;text-align:center;border-bottom:1px solid var(--border);font-family:\'Barlow Condensed\',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.09em;">Sessions</th>
+        <th style="font-size:10px;color:var(--slate);padding:7px 12px;text-align:center;border-bottom:1px solid var(--border);font-family:\'Barlow Condensed\',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.09em;">Tue</th>
+        <th style="font-size:10px;color:var(--slate);padding:7px 12px;text-align:center;border-bottom:1px solid var(--border);font-family:\'Barlow Condensed\',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.09em;">Sat</th>
+        <th style="font-size:10px;color:var(--slate);padding:7px 12px;text-align:center;border-bottom:1px solid var(--border);font-family:\'Barlow Condensed\',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.09em;">Invited</th>
+        <th style="font-size:10px;color:var(--slate);padding:7px 12px;text-align:center;border-bottom:1px solid var(--border);font-family:\'Barlow Condensed\',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.09em;">Showed</th>
+        <th style="font-size:10px;color:var(--slate);padding:7px 12px;border-bottom:1px solid var(--border);font-family:\'Barlow Condensed\',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.09em;">${METRIC_LABELS[metric]}</th>
       </tr></thead>
       <tbody>
         ${rows.map((r,i) => {
@@ -726,17 +726,17 @@ function renderLeaderboard(sessions, metric, dayFilter) {
           const rkColor = rank===1?'var(--gold)':rank===2?'#C0C0C0':rank===3?'#CD7F32':'var(--slate)';
           const pct = Math.round((r[metricKey]/maxVal)*100);
           return `<tr style="${isMe?'background:rgba(201,168,76,.05);':''}">
-            <td style="padding:9px 12px;font-family:'DM Mono',monospace;font-size:12px;color:${rkColor};font-weight:700;">${rank}</td>
+            <td style="padding:9px 12px;font-family:\'DM Mono\',monospace;font-size:12px;color:${rkColor};font-weight:700;">${rank}</td>
             <td style="padding:9px 12px;font-size:13px;font-weight:600;">${r.name}${isMe?' <span style="font-size:9px;color:var(--gold);font-family:Barlow Condensed,sans-serif;font-weight:700;">(you)</span>':''}</td>
-            <td style="padding:9px 12px;text-align:center;font-family:'DM Mono',monospace;font-size:13px;">${r.sessions}</td>
+            <td style="padding:9px 12px;text-align:center;font-family:\'DM Mono\',monospace;font-size:13px;">${r.sessions}</td>
             <td style="padding:9px 12px;text-align:center;font-size:12px;color:var(--slate);">${r.tue}</td>
             <td style="padding:9px 12px;text-align:center;font-size:12px;color:var(--slate);">${r.sat}</td>
-            <td style="padding:9px 12px;text-align:center;font-family:'DM Mono',monospace;font-size:13px;">${r.invites}</td>
-            <td style="padding:9px 12px;text-align:center;font-family:'DM Mono',monospace;font-size:13px;color:var(--success);font-weight:700;">${r.showed}</td>
+            <td style="padding:9px 12px;text-align:center;font-family:\'DM Mono\',monospace;font-size:13px;">${r.invites}</td>
+            <td style="padding:9px 12px;text-align:center;font-family:\'DM Mono\',monospace;font-size:13px;color:var(--success);font-weight:700;">${r.showed}</td>
             <td style="padding:9px 12px;">
               <div style="display:flex;align-items:center;gap:6px;">
                 <div style="flex:1;height:5px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;"><div style="width:${pct}%;height:100%;background:var(--gold);border-radius:2px;"></div></div>
-                <span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--gold-light);font-weight:700;min-width:24px;">${r[metricKey]}</span>
+                <span style="font-family:\'DM Mono\',monospace;font-size:12px;color:var(--gold-light);font-weight:700;min-width:24px;">${r[metricKey]}</span>
               </div>
             </td>
           </tr>`;
@@ -753,10 +753,10 @@ renderGuests();
 
 <!-- ── GUEST ADD/EDIT MODAL ── -->
 <div id="guest-modal" style="position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:500;align-items:center;justify-content:center;padding:20px;">
-  <div style="background:#132240;border:1px solid rgba(201,168,76,.25);border-radius:6px;width:100%;max-width:480px;max-height:92vh;overflow-y:auto;font-family:'Barlow',sans-serif;">
+  <div style="background:#132240;border:1px solid rgba(201,168,76,.25);border-radius:6px;width:100%;max-width:480px;max-height:92vh;overflow-y:auto;font-family:\'Barlow\',sans-serif;">
     <div style="height:3px;background:linear-gradient(90deg,transparent,#C9A84C,transparent);"></div>
     <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid rgba(201,168,76,.15);">
-      <div id="gm-title" style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;color:#E8C97A;text-transform:uppercase;letter-spacing:.08em;">Add Guest</div>
+      <div id="gm-title" style="font-family:\'Barlow Condensed\',sans-serif;font-size:14px;font-weight:700;color:#E8C97A;text-transform:uppercase;letter-spacing:.08em;">Add Guest</div>
       <button onclick="closeGuestModal()" style="background:transparent;border:none;color:#6B7C93;font-size:18px;cursor:pointer;line-height:1;">✕</button>
     </div>
     <div style="padding:20px;">
@@ -797,13 +797,13 @@ renderGuests();
         </div>
         <div style="grid-column:1/-1;">
           <label style="display:block;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(201,168,76,.7);margin-bottom:5px;">Notes</label>
-          <textarea id="gm-notes" placeholder="Interest level, follow-up needed, etc." style="width:100%;background:#0A1628;border:1px solid rgba(201,168,76,.2);color:#FAF6EE;font-size:13px;padding:10px 12px;border-radius:3px;outline:none;min-height:60px;resize:vertical;font-family:'Barlow',sans-serif;"></textarea>
+          <textarea id="gm-notes" placeholder="Interest level, follow-up needed, etc." style="width:100%;background:#0A1628;border:1px solid rgba(201,168,76,.2);color:#FAF6EE;font-size:13px;padding:10px 12px;border-radius:3px;outline:none;min-height:60px;resize:vertical;font-family:\'Barlow\',sans-serif;"></textarea>
         </div>
       </div>
     </div>
     <div style="display:flex;gap:8px;justify-content:flex-end;padding:14px 20px;border-top:1px solid rgba(201,168,76,.15);">
-      <button onclick="closeGuestModal()" style="background:transparent;border:1px solid rgba(255,255,255,.1);color:#6B7C93;padding:9px 18px;border-radius:3px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;">Cancel</button>
-      <button onclick="saveGuestModal()" style="background:#C9A84C;color:#0A1628;border:none;padding:9px 22px;border-radius:3px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:.05em;">Save Guest</button>
+      <button onclick="closeGuestModal()" style="background:transparent;border:1px solid rgba(255,255,255,.1);color:#6B7C93;padding:9px 18px;border-radius:3px;cursor:pointer;font-family:\'Barlow Condensed\',sans-serif;font-size:12px;font-weight:700;">Cancel</button>
+      <button onclick="saveGuestModal()" style="background:#C9A84C;color:#0A1628;border:none;padding:9px 22px;border-radius:3px;cursor:pointer;font-family:\'Barlow Condensed\',sans-serif;font-size:12px;font-weight:700;letter-spacing:.05em;">Save Guest</button>
     </div>
   </div>
 </div>

@@ -107,7 +107,7 @@ td{padding:11px 12px;font-size:13px;vertical-align:middle;}
 .toast{position:fixed;bottom:24px;right:24px;background:var(--navy-mid);border:1px solid var(--gold);border-radius:4px;padding:12px 20px;font-size:13px;transform:translateY(80px);opacity:0;transition:all 0.3s;z-index:2000;}
 .toast.show{transform:translateY(0);opacity:1;}
 </style>
-<script src="auth.js?v=20260713"></script>
+<script src="auth.js"></script>
 </head>
 <body>
 
@@ -767,7 +767,7 @@ function renderClients() {
     <tr>
       <td><div style="font-weight:600;">${c.name}</div><div style="font-size:11px;color:var(--slate);">${c.phone||''}</div></td>
       <td style="font-size:12px;">${c.ptype}</td>
-      <td style="font-family:'DM Mono',monospace;font-size:13px;color:var(--gold);">${c.premium?'$'+c.premium.toLocaleString():'—'}</td>
+      <td style="font-family:\'DM Mono\',monospace;font-size:13px;color:var(--gold);">${c.premium?'$'+c.premium.toLocaleString():'—'}</td>
       <td><span class="badge ${c.referralsGiven>0?'badge-closed':'badge-new'}">${c.referralsGiven} referrals</span></td>
       <td style="font-size:12px;">${ann}</td>
       <td>
@@ -866,7 +866,7 @@ function toast(msg, icon='✅') {
 function buildPortalShareLinks() {
   const session = AUTH.getSession();
   const agentId = session?.agentId || session?.id || '';
-  const base    = 'https://agent.yourdynastybuilder.com';
+  const base    = 'https://agent.dynastybuildersapp.com';
   const param   = agentId ? `?agent=${encodeURIComponent(agentId)}` : '';
 
   const LINKS = [
@@ -890,7 +890,7 @@ function buildPortalShareLinks() {
           <div style="font-size:11px;color:var(--slate);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${l.url}</div>
         </div>
         <button onclick="portalCopyLink('${l.url}',this)"
-          style="flex-shrink:0;background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.3);color:var(--gold);padding:6px 14px;border-radius:3px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;white-space:nowrap;transition:all 0.15s;">Copy</button>
+          style="flex-shrink:0;background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.3);color:var(--gold);padding:6px 14px;border-radius:3px;cursor:pointer;font-family:\'Barlow Condensed\',sans-serif;font-size:11px;font-weight:700;white-space:nowrap;transition:all 0.15s;">Copy</button>
         <a href="${l.url}" target="_blank"
           style="flex-shrink:0;color:var(--slate);text-decoration:none;border:1px solid var(--border);padding:6px 11px;border-radius:3px;font-size:11px;transition:all 0.15s;"
           onmouseover="this.style.color='var(--gold)';this.style.borderColor='var(--border)'"
@@ -920,15 +920,15 @@ function buildPortalShareLinks() {
               <span style="font-size:1.4rem;">${c.icon}</span>
               <div style="font-size:13px;font-weight:700;color:var(--cream);">${c.title}</div>
             </div>
-            <span style="font-size:9px;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.25);color:var(--gold);padding:2px 7px;border-radius:2px;font-family:'Barlow Condensed',sans-serif;font-weight:700;white-space:nowrap;">${c.badge}</span>
+            <span style="font-size:9px;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.25);color:var(--gold);padding:2px 7px;border-radius:2px;font-family:\'Barlow Condensed\',sans-serif;font-weight:700;white-space:nowrap;">${c.badge}</span>
           </div>
           <p style="font-size:12px;color:var(--slate);line-height:1.6;margin-bottom:14px;">${c.desc}</p>
           <div style="display:flex;gap:8px;">
             <a href="${c.url}" target="_blank"
-              style="flex:1;background:var(--gold);color:var(--navy);text-align:center;padding:9px;border-radius:3px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;text-decoration:none;letter-spacing:0.04em;transition:opacity 0.15s;"
+              style="flex:1;background:var(--gold);color:var(--navy);text-align:center;padding:9px;border-radius:3px;font-family:\'Barlow Condensed\',sans-serif;font-size:12px;font-weight:700;text-decoration:none;letter-spacing:0.04em;transition:opacity 0.15s;"
               onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">Open Page ↗</a>
             <button onclick="portalCopyLink('${c.url}',this)"
-              style="background:transparent;border:1px solid var(--border);color:var(--slate);padding:9px 16px;border-radius:3px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;transition:all 0.15s;"
+              style="background:transparent;border:1px solid var(--border);color:var(--slate);padding:9px 16px;border-radius:3px;cursor:pointer;font-family:\'Barlow Condensed\',sans-serif;font-size:12px;font-weight:700;transition:all 0.15s;"
               onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--slate)'">Copy Link</button>
           </div>
         </div>

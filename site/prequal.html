@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Client Pre-Qualification · DBA</title>
+<script src="auth.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0A1628;--surface:#112040;--surface2:#1A3158;
+  --border:rgba(201,168,76,0.22);--gold:#C9A84C;--gold2:#E8C97A;
+  --green:#2DCA73;--text:#FAF6EE;--muted:#6B7C93;
+  --warn:#E67E22;--danger:#C0392B;
+}
+body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(201,168,76,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(201,168,76,.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+
+/* TOPBAR */
+.topbar{background:rgba(10,22,40,.97);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px);}
+.brand{display:flex;align-items:center;gap:10px;padding:14px 0;border-right:1px solid var(--border);padding-right:20px;margin-right:4px;}
+.brand-mark{width:30px;height:30px;background:linear-gradient(135deg,var(--gold),var(--gold2));clip-path:polygon(50% 0%,100% 20%,100% 68%,50% 100%,0% 68%,0% 20%);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#0A1628;}
+.brand-name{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;line-height:1.1;}
+.brand-name span{color:var(--gold);}
+.brand-sub{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);}
+.topbar-nav{display:flex;gap:4px;flex:1;}
+.tnav{padding:0 12px;height:52px;display:flex;align-items:center;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:var(--muted);text-decoration:none;border-bottom:2px solid transparent;transition:all .15s;letter-spacing:.04em;}
+.tnav:hover,.tnav.active{color:var(--gold);border-bottom-color:var(--gold);}
+.topbar-right{margin-left:auto;display:flex;gap:8px;align-items:center;}
+.icon-btn{padding:6px 13px;border-radius:6px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);transition:all .2s;text-decoration:none;letter-spacing:.04em;}
+.icon-btn:hover{border-color:var(--gold);color:var(--gold);}
+
+/* HERO */
+.hero{position:relative;z-index:1;padding:40px 24px 32px;max-width:1080px;margin:0 auto;}
+.hero-eyebrow{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:10px;}
+.hero-title{font-family:'Barlow Condensed',sans-serif;font-size:38px;font-weight:800;line-height:1.05;margin-bottom:10px;}
+.hero-title span{color:var(--gold);}
+.hero-sub{font-size:14px;color:var(--muted);max-width:520px;line-height:1.7;}
+
+/* SEARCH */
+.search-wrap{max-width:1080px;margin:0 auto;padding:0 24px 24px;position:relative;z-index:1;}
+.search-inner{position:relative;}
+.search-ico{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:15px;color:var(--muted);pointer-events:none;}
+.search-input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px 12px 42px;color:var(--text);font-family:'DM Mono',monospace;font-size:13px;outline:none;transition:border-color .2s;}
+.search-input:focus{border-color:var(--gold);}
+
+/* FILTER TABS */
+.filter-row{max-width:1080px;margin:0 auto;padding:0 24px 24px;display:flex;gap:8px;flex-wrap:wrap;position:relative;z-index:1;}
+.ftab{padding:7px 16px;border-radius:20px;font-family:'DM Mono',monospace;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--muted);transition:all .15s;}
+.ftab:hover{border-color:var(--gold);color:var(--text);}
+.ftab.active{background:var(--gold);color:#0A1628;border-color:var(--gold);}
+
+/* GRID */
+.grid{max-width:1080px;margin:0 auto;padding:0 24px 60px;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;position:relative;z-index:1;}
+
+/* PRODUCT CARD */
+.pcard{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;display:flex;flex-direction:column;gap:0;transition:all .2s;text-decoration:none;color:var(--text);cursor:pointer;position:relative;overflow:hidden;}
+.pcard::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(201,168,76,.04),transparent);opacity:0;transition:opacity .2s;}
+.pcard:hover{border-color:var(--gold);transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,.3);}
+.pcard:hover::before{opacity:1;}
+.pcard.coming-soon{opacity:.5;pointer-events:none;}
+.pcard-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;}
+.pcard-icon{font-size:28px;line-height:1;}
+.pcard-badges{display:flex;flex-direction:column;align-items:flex-end;gap:4px;}
+.badge{display:inline-flex;padding:2px 8px;border-radius:10px;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.06em;}
+.badge-gold{background:rgba(201,168,76,.15);color:var(--gold);border:1px solid rgba(201,168,76,.3);}
+.badge-green{background:rgba(45,202,115,.1);color:var(--green);border:1px solid rgba(45,202,115,.3);}
+.badge-blue{background:rgba(52,152,219,.1);color:#5dade2;border:1px solid rgba(52,152,219,.3);}
+.badge-purple{background:rgba(155,89,182,.1);color:#bb8fce;border:1px solid rgba(155,89,182,.3);}
+.badge-muted{background:rgba(107,124,147,.1);color:var(--muted);border:1px solid var(--border);}
+.pcard-company{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:4px;}
+.pcard-name{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;line-height:1.1;margin-bottom:6px;}
+.pcard-type{font-size:12px;color:var(--muted);margin-bottom:12px;}
+.pcard-divider{height:1px;background:var(--border);margin-bottom:12px;}
+.pcard-desc{font-size:12px;color:var(--muted);line-height:1.7;flex:1;margin-bottom:16px;}
+.pcard-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px;}
+.tag{padding:3px 9px;border-radius:6px;font-family:'DM Mono',monospace;font-size:10px;background:rgba(255,255,255,.04);color:var(--muted);border:1px solid var(--border);}
+.pcard-cta{display:flex;align-items:center;justify-content:space-between;}
+.cta-text{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:var(--gold);letter-spacing:.04em;}
+.cta-arrow{font-size:16px;color:var(--gold);transition:transform .2s;}
+.pcard:hover .cta-arrow{transform:translateX(4px);}
+.coming-pill{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.06em;}
+
+/* SECTION HEADER */
+.section-hdr{max-width:1080px;margin:0 auto;padding:0 24px 14px;position:relative;z-index:1;}
+.section-hdr-inner{display:flex;align-items:center;gap:10px;margin-bottom:4px;}
+.section-hdr-line{flex:1;height:1px;background:var(--border);}
+.section-hdr-label{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);}
+
+/* EMPTY */
+.empty{text-align:center;padding:60px 24px;color:var(--muted);grid-column:1/-1;}
+.empty .e-ico{font-size:36px;margin-bottom:12px;}
+.empty p{font-size:14px;}
+</style>
+</head>
+<body>
+<script>AUTH.require('prequal.html');</script>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-mark">⬡</div>
+    <div><div class="brand-name">Dynasty <span>Pre-Qual</span></div><div class="brand-sub">Client Screening Tools</div></div>
+  </div>
+  <nav class="topbar-nav">
+    <a class="tnav active" href="prequal.html">📋 All Products</a>
+    <a class="tnav" href="#" onclick="setFilter('Whole Life');return false;">❤️ Whole Life</a>
+    <a class="tnav" href="#" onclick="setFilter('IUL');return false;">📈 IUL</a>
+    <a class="tnav" href="#" onclick="setFilter('Annuity');return false;">💰 Annuity</a>
+    <a class="tnav" href="#" onclick="setFilter('Term');return false;">🛡️ Term</a>
+  </nav>
+  <div class="topbar-right">
+    <a href="marketing.html" class="icon-btn">📢 Marketing</a>
+    <a href="portal.html" class="icon-btn">📋 Portal</a>
+    <a href="hub.html" class="icon-btn">← Hub</a>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="hero-eyebrow">Dynasty Builders Academy · Client Tools</div>
+  <div class="hero-title">Client <span>Pre-Qualification</span></div>
+  <div class="hero-sub">Screen clients for the right product before running a quote. Each tool walks through underwriting questions and recommends the best fit.</div>
+</div>
+
+<div style="max-width:1080px;margin:0 auto;padding:0 24px 20px;position:relative;z-index:1;">
+  <a href="client-questionnaire.html" style="display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,rgba(201,168,76,.12),rgba(201,168,76,.06));border:1px solid rgba(201,168,76,.3);border-radius:12px;padding:16px 22px;text-decoration:none;transition:all .2s;gap:16px;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform=''">
+    <div>
+      <div style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:4px;">Not sure which product is right?</div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;color:var(--text);">Take the 2-Minute Coverage Finder Quiz →</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:3px;">8 questions · tells you which product fits best + how much coverage you need</div>
+    </div>
+    <div style="font-size:32px;flex-shrink:0;">🎯</div>
+  </a>
+</div>
+<div class="search-wrap">
+  <div class="search-inner">
+    <span class="search-ico">🔍</span>
+    <input class="search-input" type="text" id="search-input" placeholder="Search by product, company, or coverage type…" oninput="renderCards()">
+  </div>
+</div>
+
+<div class="filter-row" id="filter-row">
+  <button class="ftab active" onclick="setFilter('',this)">All</button>
+  <button class="ftab" onclick="setFilter('Whole Life',this)">Whole Life</button>
+  <button class="ftab" onclick="setFilter('IUL',this)">IUL</button>
+  <button class="ftab" onclick="setFilter('Annuity',this)">Annuity</button>
+  <button class="ftab" onclick="setFilter('Term',this)">Term</button>
+  <button class="ftab" onclick="setFilter('Mutual of Omaha',this)">Mutual of Omaha</button>
+  <button class="ftab" onclick="setFilter('National Life',this)">National Life</button>
+  <button class="ftab" onclick="setFilter('Foresters',this)">Foresters</button>
+</div>
+
+<div class="grid" id="cards-grid"></div>
+
+<script>
+const PRODUCTS = [
+  {
+    id: 'living-promise',
+    icon: '💛',
+    company: 'Mutual of Omaha',
+    name: 'Living Promise',
+    type: 'Whole Life · Final Expense',
+    desc: 'Whole life insurance for ages 45–85. No medical exam. Determines Level vs. Graded benefit eligibility through knockout and graded underwriting questions.',
+    tags: ['Ages 45–85', 'No Exam', 'Level & Graded', 'Final Expense', '$2K–$25K'],
+    badges: [{ label: 'LIVE', cls: 'badge-green' }, { label: 'WHOLE LIFE', cls: 'badge-gold' }],
+    category: ['Whole Life', 'Mutual of Omaha'],
+    href: 'living-promise-prequal.html',
+    cta: 'Start Pre-Qual',
+    altHref: 'client-questionnaire.html',
+    altCta: 'Not sure? Take the quiz →'
+  },
+  {
+    id: 'flexlife',
+    icon: '📈',
+    company: 'National Life Group',
+    name: 'FlexLife IUL',
+    type: 'Indexed Universal Life',
+    desc: 'IUL pre-qualification for FlexLife product. Screens for insurability, income thresholds, and risk tolerance before running illustrations.',
+    tags: ['IUL', 'Cash Value', 'Living Benefits', 'Flexible Premiums'],
+    badges: [{ label: 'COMING SOON', cls: 'badge-muted' }, { label: 'IUL', cls: 'badge-blue' }],
+    category: ['IUL', 'National Life'],
+    href: '#',
+    cta: 'Coming Soon',
+    comingSoon: true
+  },
+  {
+    id: 'foresters-level',
+    icon: '🌲',
+    company: 'Foresters Financial',
+    name: 'PlanRight Whole Life',
+    type: 'Whole Life · Final Expense',
+    desc: 'Final expense whole life pre-qual for Foresters PlanRight. Three plan levels: Standard, Graded, and Modified. Ages 50–85.',
+    tags: ['Ages 50–85', 'No Exam', '3 Plan Levels', 'Final Expense'],
+    badges: [{ label: 'COMING SOON', cls: 'badge-muted' }, { label: 'WHOLE LIFE', cls: 'badge-gold' }],
+    category: ['Whole Life', 'Foresters'],
+    href: '#',
+    cta: 'Coming Soon',
+    comingSoon: true
+  },
+  {
+    id: 'aig-guaranteed',
+    icon: '🛡️',
+    company: 'AIG / Corebridge',
+    name: 'Guaranteed Issue WL',
+    type: 'Whole Life · Guaranteed Issue',
+    desc: 'No-question guaranteed issue whole life for ages 50–80. Pre-qual confirms eligibility and sets premium expectations based on age and face amount.',
+    tags: ['Ages 50–80', 'No Questions', 'Guaranteed', '$5K–$25K'],
+    badges: [{ label: 'COMING SOON', cls: 'badge-muted' }, { label: 'GUARANTEED', cls: 'badge-purple' }],
+    category: ['Whole Life'],
+    href: '#',
+    cta: 'Coming Soon',
+    comingSoon: true
+  },
+  {
+    id: 'pacific-annuity',
+    icon: '💰',
+    company: 'Pacific Life',
+    name: 'Fixed Indexed Annuity',
+    type: 'Annuity · Retirement',
+    desc: 'Suitability pre-screen for Pacific Life FIA. Confirms minimum premium, investment timeline, risk tolerance, and state availability.',
+    tags: ['Min $10K', 'Retirement', 'Tax-Deferred', 'No Market Loss'],
+    badges: [{ label: 'COMING SOON', cls: 'badge-muted' }, { label: 'ANNUITY', cls: 'badge-blue' }],
+    category: ['Annuity'],
+    href: '#',
+    cta: 'Coming Soon',
+    comingSoon: true
+  },
+  {
+    id: 'nlg-term',
+    icon: '🛡️',
+    company: 'National Life Group',
+    name: 'TermLife Express',
+    type: 'Term Life · 10/20/30 Year',
+    desc: 'Term life pre-qual covering health history, income verification, and coverage needs. Recommends face amount and term length.',
+    tags: ['10/20/30yr', 'Income Replace', 'No Exam Option', '$100K–$1M'],
+    badges: [{ label: 'COMING SOON', cls: 'badge-muted' }, { label: 'TERM', cls: 'badge-green' }],
+    category: ['Term', 'National Life'],
+    href: '#',
+    cta: 'Coming Soon',
+    comingSoon: true
+  },
+];
+
+let activeFilter = '';
+
+function setFilter(filter, el) {
+  activeFilter = filter;
+  document.querySelectorAll('.ftab').forEach(t => t.classList.remove('active'));
+  if (el) el.classList.add('active');
+  renderCards();
+}
+
+function renderCards() {
+  const q = document.getElementById('search-input').value.toLowerCase();
+  const grid = document.getElementById('cards-grid');
+
+  let filtered = PRODUCTS.filter(p => {
+    const matchFilter = !activeFilter || p.category.includes(activeFilter);
+    const matchSearch = !q ||
+      p.name.toLowerCase().includes(q) ||
+      p.company.toLowerCase().includes(q) ||
+      p.type.toLowerCase().includes(q) ||
+      p.tags.some(t => t.toLowerCase().includes(q)) ||
+      p.desc.toLowerCase().includes(q);
+    return matchFilter && matchSearch;
+  });
+
+  if (!filtered.length) {
+    grid.innerHTML = `<div class="empty"><div class="e-ico">🔍</div><p>No products match your search.<br>Try a different keyword or clear the filter.</p></div>`;
+    return;
+  }
+
+  // Separate live vs coming soon
+  const live = filtered.filter(p => !p.comingSoon);
+  const soon = filtered.filter(p => p.comingSoon);
+
+  let html = '';
+
+  if (live.length) {
+    html += live.map(p => cardHTML(p)).join('');
+  }
+
+  if (soon.length) {
+    html += `<div style="grid-column:1/-1;padding:8px 0 4px;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-family:\'Barlow Condensed\',sans-serif;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);">Coming Soon</span>
+        <div style="flex:1;height:1px;background:var(--border);"></div>
+      </div>
+    </div>`;
+    html += soon.map(p => cardHTML(p)).join('');
+  }
+
+  grid.innerHTML = html;
+}
+
+function cardHTML(p) {
+  const badgesHTML = p.badges.map(b => `<span class="badge ${b.cls}">${b.label}</span>`).join('');
+  const tagsHTML = p.tags.map(t => `<span class="tag">${t}</span>`).join('');
+  const ctaHTML = p.comingSoon
+    ? `<span class="coming-pill">Coming Soon</span>`
+    : `<span class="cta-text">${p.cta}</span><span class="cta-arrow">→</span>`;
+
+  return `<a class="pcard${p.comingSoon ? ' coming-soon' : ''}" href="${p.href}">
+    <div class="pcard-top">
+      <div class="pcard-icon">${p.icon}</div>
+      <div class="pcard-badges">${badgesHTML}</div>
+    </div>
+    <div class="pcard-company">${p.company}</div>
+    <div class="pcard-name">${p.name}</div>
+    <div class="pcard-type">${p.type}</div>
+    <div class="pcard-divider"></div>
+    <div class="pcard-desc">${p.desc}</div>
+    <div class="pcard-tags">${tagsHTML}</div>
+    <div class="pcard-cta">${ctaHTML}</div>
+  </a>`;
+}
+
+document.addEventListener('DOMContentLoaded', renderCards);
+</script>
+</body>
+</html>

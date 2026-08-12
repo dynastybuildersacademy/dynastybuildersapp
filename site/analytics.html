@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DBA · Lead Analytics & Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
-<script src="auth.js?v=20260713"></script>
+<script src="auth.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 :root{
@@ -120,7 +120,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
     <a href="lead-dashboard.html" class="sb-item">&#128203; Lead Dashboard</a>
     <a href="leaderboard.html" class="sb-item">&#127942; Team Leaderboard</a>
   </nav>
-  <div class="sb-bot"><span class="odot"></span>LIVE &middot; agent.yourdynastybuilder.com</div>
+  <div class="sb-bot"><span class="odot"></span>LIVE &middot; agent.dynastybuildersapp.com</div>
 </aside>
 
 <!-- MAIN -->
@@ -518,7 +518,7 @@ function renderAllTable(allLeads) {
       <td><span class="source-pill" style="background:${clr}22;color:${clr};">${l.type||'—'}</span></td>
       <td style="color:var(--muted);font-size:.65rem;">${esc(l.source||'Direct')}</td>
       <td style="font-size:.65rem;color:var(--muted);">${esc(l.referringAgent||l.agentId||'—')}</td>
-      <td style="font-family:'DM Mono',monospace;font-size:.65rem;color:var(--muted);">${date}</td>
+      <td style="font-family:\'DM Mono\',monospace;font-size:.65rem;color:var(--muted);">${date}</td>
       <td style="font-size:.65rem;">${l.phone?`<a href="tel:${esc(l.phone)}" style="color:var(--gold);text-decoration:none;">${esc(l.phone)}</a>`:''}${l.email?`<span style="color:var(--muted);margin-left:4px;">${esc(l.email)}</span>`:''}</td>
       <td style="font-size:.65rem;color:var(--muted);">${esc(l.status||'New')}</td>
     </tr>`;
@@ -542,7 +542,7 @@ function renderLeadTable(elId, leads) {
         <td style="color:var(--muted);font-size:.62rem;">${esc(l.email||'—')}</td>
         <td style="font-size:.62rem;color:var(--muted);">${esc(l.source||'Direct')}</td>
         <td style="font-size:.62rem;color:var(--muted);">${esc(l.referringAgent||l.agentId||'—')}</td>
-        <td style="font-family:'DM Mono',monospace;font-size:.62rem;color:var(--muted);">${date}</td>
+        <td style="font-family:\'DM Mono\',monospace;font-size:.62rem;color:var(--muted);">${date}</td>
       </tr>`;
     }).join('')}</tbody>
   </table>${leads.length>20?`<div style="font-size:.65rem;color:var(--muted);padding:10px 0;">Showing 20 of ${leads.length} — go to All Records for full table</div>`:''}`;

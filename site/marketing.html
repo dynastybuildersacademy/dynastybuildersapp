@@ -4,7 +4,7 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DBA — Marketing Hub</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700&family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
-<script src="auth.js?v=20260713"></script>
+<script src="auth.js"></script>
 <style>
 :root{--navy:#0A1628;--navy-mid:#112040;--navy-light:#1A3158;--gold:#C9A84C;--gold-light:#E8C97A;--cream:#FAF6EE;--success:#27AE60;--warn:#E67E22;--danger:#C0392B;--slate:#6B7C93;--border:rgba(201,168,76,0.22);}
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -112,7 +112,7 @@ textarea{resize:vertical;min-height:80px;}
       <div></div>
     </div>
     <div style="display:flex;gap:8px;margin-bottom:16px;">
-      <input type="text" id="base-url-input" placeholder="https://agent.yourdynastybuilder.com" value="https://agent.yourdynastybuilder.com"
+      <input type="text" id="base-url-input" placeholder="https://agent.dynastybuildersapp.com" value="https://agent.dynastybuildersapp.com"
         style="flex:1;background:var(--navy);border:1px solid var(--border);color:var(--cream);font-family:'DM Mono',monospace;font-size:12px;padding:9px 12px;border-radius:3px;outline:none;"
         oninput="refreshLinks()">
       <button onclick="refreshLinks()" style="background:rgba(201,168,76,0.15);border:1px solid var(--border);color:var(--gold);padding:9px 16px;border-radius:3px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;">Refresh</button>
@@ -252,9 +252,9 @@ function refreshLinks() {
     <div style="display:flex;align-items:center;gap:10px;background:var(--navy);border:1px solid var(--border);border-radius:3px;padding:10px 14px;">
       <div style="flex:1;min-width:0;">
         <div style="font-size:11px;font-weight:700;color:var(--cream);margin-bottom:2px;">${l.label}</div>
-        <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--slate);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${l.url}</div>
+        <div style="font-family:\'DM Mono\',monospace;font-size:11px;color:var(--slate);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${l.url}</div>
       </div>
-      <button onclick="copyLink('${l.url}',this)" style="flex-shrink:0;background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.3);color:var(--gold);padding:6px 14px;border-radius:3px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;white-space:nowrap;">Copy</button>
+      <button onclick="copyLink('${l.url}',this)" style="flex-shrink:0;background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.3);color:var(--gold);padding:6px 14px;border-radius:3px;cursor:pointer;font-family:\'Barlow Condensed\',sans-serif;font-size:11px;font-weight:700;white-space:nowrap;">Copy</button>
       <a href="${l.url}" target="_blank" style="flex-shrink:0;background:transparent;border:1px solid var(--border);color:var(--slate);padding:6px 12px;border-radius:3px;text-decoration:none;font-size:11px;">Open ↗</a>
     </div>`).join('');
 }
@@ -279,12 +279,12 @@ function buildFunnelCards() {
             <span style="font-size:1.4rem;">${p.icon}</span>
             <div><div style="font-size:13px;font-weight:700;">${p.title}</div><div style="font-size:10px;color:var(--slate);">${p.audience}</div></div>
           </div>
-          <span style="font-size:9px;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.25);color:var(--gold);padding:2px 7px;border-radius:2px;font-family:'Barlow Condensed',sans-serif;font-weight:700;">${p.badge}</span>
+          <span style="font-size:9px;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.25);color:var(--gold);padding:2px 7px;border-radius:2px;font-family:\'Barlow Condensed\',sans-serif;font-weight:700;">${p.badge}</span>
         </div>
         <p style="font-size:12px;color:var(--slate);line-height:1.6;margin-bottom:14px;">${p.desc}</p>
         <div style="display:flex;gap:8px;">
-          <a href="${base}/${p.file}?agent=${agent}" target="_blank" style="flex:1;background:var(--gold);color:var(--navy);text-align:center;padding:8px;border-radius:3px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;text-decoration:none;">Open ↗</a>
-          <button onclick="copyLink('${base}/${p.file}?agent=${agent}',this)" style="background:transparent;border:1px solid var(--border);color:var(--slate);padding:8px 14px;border-radius:3px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;">Copy</button>
+          <a href="${base}/${p.file}?agent=${agent}" target="_blank" style="flex:1;background:var(--gold);color:var(--navy);text-align:center;padding:8px;border-radius:3px;font-family:\'Barlow Condensed\',sans-serif;font-size:12px;font-weight:700;text-decoration:none;">Open ↗</a>
+          <button onclick="copyLink('${base}/${p.file}?agent=${agent}',this)" style="background:transparent;border:1px solid var(--border);color:var(--slate);padding:8px 14px;border-radius:3px;cursor:pointer;font-family:\'Barlow Condensed\',sans-serif;font-size:12px;font-weight:700;">Copy</button>
         </div>
       </div>
     </div>`).join('');
@@ -312,12 +312,12 @@ function buildSurveyCards() {
             <span style="font-size:1.4rem;">${p.icon}</span>
             <div><div style="font-size:13px;font-weight:700;">${p.title}</div><div style="font-size:10px;color:var(--slate);">${p.audience}</div></div>
           </div>
-          <span style="font-size:9px;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.25);color:var(--gold);padding:2px 7px;border-radius:2px;font-family:'Barlow Condensed',sans-serif;font-weight:700;">${p.badge}</span>
+          <span style="font-size:9px;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.25);color:var(--gold);padding:2px 7px;border-radius:2px;font-family:\'Barlow Condensed\',sans-serif;font-weight:700;">${p.badge}</span>
         </div>
         <p style="font-size:12px;color:var(--slate);line-height:1.6;margin-bottom:14px;">${p.desc}</p>
         <div style="display:flex;gap:8px;">
-          <a href="${base}/${p.file}?agent=${agent}" target="_blank" style="flex:1;background:var(--gold);color:var(--navy);text-align:center;padding:8px;border-radius:3px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;text-decoration:none;">Open ↗</a>
-          <button onclick="copyLink('${base}/${p.file}?agent=${agent}',this)" style="background:transparent;border:1px solid var(--border);color:var(--slate);padding:8px 14px;border-radius:3px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;">Copy</button>
+          <a href="${base}/${p.file}?agent=${agent}" target="_blank" style="flex:1;background:var(--gold);color:var(--navy);text-align:center;padding:8px;border-radius:3px;font-family:\'Barlow Condensed\',sans-serif;font-size:12px;font-weight:700;text-decoration:none;">Open ↗</a>
+          <button onclick="copyLink('${base}/${p.file}?agent=${agent}',this)" style="background:transparent;border:1px solid var(--border);color:var(--slate);padding:8px 14px;border-radius:3px;cursor:pointer;font-family:\'Barlow Condensed\',sans-serif;font-size:12px;font-weight:700;">Copy</button>
         </div>
       </div>
     </div>`).join('');

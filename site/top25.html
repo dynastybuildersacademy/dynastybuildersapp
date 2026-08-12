@@ -765,7 +765,7 @@ function renderRows(prospects){
     let fuDisplay='';
     if(isOverdue) fuDisplay=`<span class="pill pill-danger">⚠ ${p.followup_date}</span>`;
     else if(isDueToday) fuDisplay=`<span class="pill pill-warn">📅 Today</span>`;
-    else if(p.followup_date) fuDisplay=`<span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);">${p.followup_date}</span>`;
+    else if(p.followup_date) fuDisplay=`<span style="font-family:\'DM Mono\',monospace;font-size:11px;color:var(--muted);">${p.followup_date}</span>`;
     const expanded=expandedId===p.id;
     return `
     <div class="prospect-row ${rowCls}" id="row-${p.id}">
@@ -796,8 +796,8 @@ function renderRows(prospects){
           <div class="detail-item"><div class="d-label">Rel. Status</div><div class="d-val">${p.rel_status||'—'}</div></div>
           <div class="detail-item"><div class="d-label">Purpose</div><div class="d-val">${p.purpose||'—'}</div></div>
         </div>
-        ${(p.notes||p.relationship)?`<div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">Notes</div><div class="notes-box">${p.notes||p.relationship}</div>`:''}
-        ${p.outcome?`<div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">Last Outcome</div><div class="notes-box">${p.outcome}</div>`:''}
+        ${(p.notes||p.relationship)?`<div style="font-family:\'DM Mono\',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">Notes</div><div class="notes-box">${p.notes||p.relationship}</div>`:''}
+        ${p.outcome?`<div style="font-family:\'DM Mono\',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">Last Outcome</div><div class="notes-box">${p.outcome}</div>`:''}
         <div class="action-row">
           ${p.phone?`<a href="tel:${p.phone}" class="btn btn-green btn-sm">📞 Call Now</a>`:''}
           ${p.phone?`<a href="sms:${p.phone}" class="btn btn-ghost btn-sm">💬 Text</a>`:''}
@@ -904,18 +904,18 @@ function renderFollowUps(){
 
   const renderSection=(title,items,color)=>items.length?`
     <div style="margin-bottom:20px;">
-      <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:${color};margin-bottom:10px;display:flex;align-items:center;gap:8px;">
-        <div style="width:3px;height:12px;background:${color};border-radius:2px;"></div>${title} <span style="font-family:'DM Mono',monospace;font-size:11px;opacity:.6;">(${items.length})</span>
+      <div style="font-family:\'Barlow Condensed\',sans-serif;font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:${color};margin-bottom:10px;display:flex;align-items:center;gap:8px;">
+        <div style="width:3px;height:12px;background:${color};border-radius:2px;"></div>${title} <span style="font-family:\'DM Mono\',monospace;font-size:11px;opacity:.6;">(${items.length})</span>
       </div>
       <div style="display:flex;flex-direction:column;gap:6px;">
         ${items.map(p=>`
         <div style="background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:12px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
           <div style="flex:1;min-width:0;">
             <div style="font-size:14px;font-weight:600;">${p.name}</div>
-            <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-top:2px;">${[p.occupation,p.phone?`📞 ${p.phone}`:''].filter(Boolean).join(' · ')}</div>
+            <div style="font-family:\'DM Mono\',monospace;font-size:11px;color:var(--muted);margin-top:2px;">${[p.occupation,p.phone?`📞 ${p.phone}`:''].filter(Boolean).join(' · ')}</div>
           </div>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-            ${p.followup_date?`<span style="font-family:'DM Mono',monospace;font-size:12px;color:${color};">${p.followup_date}</span>`:'<span class="pill pill-muted">No date</span>'}
+            ${p.followup_date?`<span style="font-family:\'DM Mono\',monospace;font-size:12px;color:${color};">${p.followup_date}</span>`:'<span class="pill pill-muted">No date</span>'}
             ${statusPill(p.status)}
             ${actionPill(p.next_action)}
           </div>
@@ -1056,7 +1056,7 @@ function buildAgentChips(agent, session) {
 
   if (!downline.length) { row.style.display='none'; return; }
   row.style.display = 'flex';
-  row.innerHTML = '<span style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;padding-right:4px;">Quick:</span>' +
+  row.innerHTML = '<span style="font-family:\'DM Mono\',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;padding-right:4px;">Quick:</span>' +
     downline.map(a => `<button class="agent-chip" onclick="selectAgentBoard('${a.top25BoardId}','${a.name.replace(/'/g,"\\'")}',this)">
       ${a.name.split(' ')[0]}
     </button>`).join('');
@@ -1111,7 +1111,7 @@ function renderBoardList(boards) {
   container.style.display = 'block';
 
   if (!filtered.length) {
-    container.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);font-family:'DM Mono',monospace;font-size:12px;">No boards match your search.</div>';
+    container.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);font-family:\'DM Mono\',monospace;font-size:12px;">No boards match your search.</div>';
     return;
   }
 
@@ -1232,7 +1232,7 @@ document.addEventListener('DOMContentLoaded',()=>{
       <div class="modal-title">📋 Select Top 25 Board</div>
       <button class="modal-close" onclick="closeBoardPicker()">×</button>
     </div>
-    <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:14px;">
+    <div style="font-family:\'DM Mono\',monospace;font-size:11px;color:var(--muted);margin-bottom:14px;">
       Director &amp; above — select which agent's board to load, or assign your own.
     </div>
 
@@ -1241,7 +1241,7 @@ document.addEventListener('DOMContentLoaded',()=>{
       <span style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px;pointer-events:none;">🔍</span>
       <input id="board-search" type="text" placeholder="Search boards by name or ID…"
         oninput="filterBoardList()"
-        style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 12px 9px 34px;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;outline:none;">
+        style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 12px 9px 34px;color:var(--text);font-family:\'DM Mono\',monospace;font-size:12px;outline:none;">
     </div>
 
     <!-- Agent quick-select (for MDs loading a downline agent's board) -->
@@ -1249,7 +1249,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 
     <!-- Board list -->
     <div id="board-list-wrap" style="background:var(--surface2);border:1px solid var(--border);border-radius:9px;max-height:320px;overflow-y:auto;">
-      <div id="board-list-loading" style="padding:32px;text-align:center;color:var(--muted);font-family:'DM Mono',monospace;font-size:12px;">
+      <div id="board-list-loading" style="padding:32px;text-align:center;color:var(--muted);font-family:\'DM Mono\',monospace;font-size:12px;">
         <span class="spinner"></span> Loading boards from Monday.com…
       </div>
       <div id="board-list-items" style="display:none;"></div>
@@ -1257,16 +1257,16 @@ document.addEventListener('DOMContentLoaded',()=>{
 
     <!-- Current selection -->
     <div style="margin-top:12px;padding:10px 14px;background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.15);border-radius:8px;display:flex;align-items:center;gap:10px;">
-      <span style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);">Current:</span>
-      <span id="board-picker-current" style="font-family:'DM Mono',monospace;font-size:12px;color:var(--accent2);">—</span>
+      <span style="font-family:\'DM Mono\',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);">Current:</span>
+      <span id="board-picker-current" style="font-family:\'DM Mono\',monospace;font-size:12px;color:var(--accent2);">—</span>
     </div>
 
     <!-- Manual entry fallback -->
     <details style="margin-top:10px;">
-      <summary style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);cursor:pointer;padding:4px 0;">Enter board ID manually</summary>
+      <summary style="font-family:\'DM Mono\',monospace;font-size:11px;color:var(--muted);cursor:pointer;padding:4px 0;">Enter board ID manually</summary>
       <div style="display:flex;gap:8px;margin-top:8px;">
         <input id="board-manual-input" type="text" placeholder="e.g. 18419015866"
-          style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;outline:none;"
+          style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:\'DM Mono\',monospace;font-size:12px;outline:none;"
           onkeydown="if(event.key==='Enter') applyManualBoard()">
         <button class="btn btn-ghost btn-sm" onclick="applyManualBoard()">Apply</button>
       </div>

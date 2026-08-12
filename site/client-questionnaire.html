@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Find Your Coverage · Dynasty Builders Academy</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --navy:#0A1628;--navy2:#112040;--navy3:#1A3158;
+  --gold:#C9A84C;--gold2:#E8C97A;
+  --green:#2DCA73;--red:#C0392B;--orange:#E67E22;--blue:#3498DB;
+  --text:#FAF6EE;--muted:#6B7C93;--border:rgba(201,168,76,.2);
+}
+body{background:var(--navy);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh;display:flex;flex-direction:column;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(201,168,76,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(201,168,76,.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+
+/* TOPBAR */
+.topbar{background:rgba(10,22,40,.97);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px);flex-shrink:0;}
+.brand{display:flex;align-items:center;gap:10px;padding:13px 0;border-right:1px solid var(--border);padding-right:18px;}
+.brand-hex{width:28px;height:28px;background:linear-gradient(135deg,var(--gold),var(--gold2));clip-path:polygon(50% 0%,100% 20%,100% 68%,50% 100%,0% 68%,0% 20%);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--navy);}
+.brand-text{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;line-height:1.1;}
+.brand-text span{color:var(--gold);}
+.brand-small{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);display:block;}
+.topbar-right{margin-left:auto;display:flex;gap:8px;align-items:center;}
+.t-btn{padding:5px 12px;border-radius:6px;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);transition:all .15s;text-decoration:none;letter-spacing:.04em;}
+.t-btn:hover{border-color:var(--gold);color:var(--gold);}
+
+/* PROGRESS */
+.progress-strip{background:rgba(17,32,64,.9);border-bottom:1px solid var(--border);padding:10px 24px;display:flex;align-items:center;gap:16px;flex-shrink:0;position:relative;z-index:10;}
+.step-dots{display:flex;gap:6px;align-items:center;}
+.sdot{width:8px;height:8px;border-radius:50%;background:var(--navy3);border:1px solid var(--border);transition:all .3s;}
+.sdot.done{background:var(--gold);border-color:var(--gold);}
+.sdot.active{background:var(--gold2);border-color:var(--gold2);box-shadow:0 0 8px rgba(201,168,76,.5);}
+.step-label{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);}
+.prog-bar-wrap{flex:1;height:3px;background:var(--navy3);border-radius:99px;overflow:hidden;max-width:200px;}
+.prog-bar-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:99px;transition:width .4s ease;}
+
+/* SHELL */
+.shell{flex:1;display:flex;align-items:flex-start;justify-content:center;padding:32px 20px 60px;position:relative;z-index:1;}
+.card{background:var(--navy2);border:1px solid var(--border);border-radius:16px;width:100%;max-width:660px;overflow:hidden;}
+
+/* SECTION */
+.section{display:none;padding:32px;}
+.section.active{display:block;}
+.sec-eyebrow{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;}
+.sec-title{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:800;line-height:1.1;margin-bottom:8px;}
+.sec-title span{color:var(--gold);}
+.sec-sub{font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:24px;}
+
+/* CHOICES */
+.choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px;}
+.choice-grid.single{grid-template-columns:1fr;}
+@media(max-width:480px){.choice-grid{grid-template-columns:1fr;}}
+.choice{background:var(--navy3);border:1.5px solid var(--border);border-radius:10px;padding:15px 14px;cursor:pointer;transition:all .15s;display:flex;align-items:flex-start;gap:10px;}
+.choice:hover{border-color:var(--gold);background:rgba(201,168,76,.06);}
+.choice.selected{border-color:var(--gold);background:rgba(201,168,76,.1);}
+.choice.selected .c-check{opacity:1;transform:scale(1);}
+.c-icon{font-size:20px;flex-shrink:0;line-height:1;margin-top:2px;}
+.c-body{flex:1;min-width:0;}
+.c-name{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;line-height:1.2;margin-bottom:2px;}
+.c-desc{font-size:11px;color:var(--muted);line-height:1.5;}
+.c-check{width:16px;height:16px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;opacity:0;transform:scale(.5);transition:all .2s;margin-top:2px;color:var(--navy);font-weight:800;}
+
+/* YN */
+.yn-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;}
+.yn{padding:14px;border-radius:10px;border:2px solid;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:8px;}
+.yn.yes{border-color:rgba(192,57,43,.4);background:rgba(192,57,43,.06);color:#e57373;}
+.yn.yes:hover,.yn.yes.active{border-color:var(--red);background:rgba(192,57,43,.15);}
+.yn.no{border-color:rgba(45,202,115,.3);background:rgba(45,202,115,.05);color:var(--green);}
+.yn.no:hover,.yn.no.active{border-color:var(--green);background:rgba(45,202,115,.12);}
+
+/* INPUTS */
+.field{margin-bottom:16px;}
+.field label{display:block;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;}
+.field input,.field select{width:100%;background:var(--navy3);border:1.5px solid var(--border);border-radius:8px;padding:10px 13px;color:var(--text);font-family:'Barlow',sans-serif;font-size:14px;outline:none;transition:border-color .2s;}
+.field input:focus,.field select:focus{border-color:var(--gold);}
+.field select option{background:var(--navy2);}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media(max-width:480px){.row2{grid-template-columns:1fr;}}
+
+/* SLIDER */
+.slider-wrap{margin-bottom:20px;}
+.slider-label{display:flex;justify-content:space-between;margin-bottom:8px;}
+.s-lbl{font-size:12px;font-weight:600;color:var(--muted);}
+.s-val{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;color:var(--gold);}
+input[type=range]{width:100%;-webkit-appearance:none;height:5px;border-radius:99px;background:var(--navy3);outline:none;cursor:pointer;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--gold);cursor:pointer;box-shadow:0 0 6px rgba(201,168,76,.4);}
+.range-ticks{display:flex;justify-content:space-between;margin-top:5px;}
+.range-ticks span{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);}
+
+/* CALC */
+.calc-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+@media(max-width:480px){.calc-row{grid-template-columns:1fr;}}
+.calc-box{background:var(--navy3);border:1px solid var(--border);border-radius:8px;padding:12px;}
+.calc-box .cb-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;}
+.calc-box .cb-val{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;color:var(--gold);}
+.calc-total{background:linear-gradient(135deg,rgba(201,168,76,.12),rgba(201,168,76,.05));border:1px solid rgba(201,168,76,.3);border-radius:9px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.ct-label{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);}
+.ct-val{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:800;color:var(--gold2);}
+
+/* NAV */
+.nav-row{display:flex;gap:10px;margin-top:4px;}
+.btn-back{flex:0 0 auto;padding:11px 16px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;}
+.btn-back:hover{border-color:var(--gold);color:var(--text);}
+.btn-back:disabled{opacity:.3;cursor:default;}
+.btn-next{flex:1;padding:12px;border-radius:8px;border:none;background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--navy);font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;cursor:pointer;transition:all .2s;letter-spacing:.04em;}
+.btn-next:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 20px rgba(201,168,76,.35);}
+.btn-next:disabled{opacity:.4;cursor:default;}
+
+/* INFO BOX */
+.info-box{background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.2);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:18px;}
+.info-box strong{color:var(--gold);}
+.divider{height:1px;background:var(--border);margin:20px 0;}
+
+/* RESULT */
+.result-hero{padding:28px 32px 0;text-align:center;}
+.result-emoji{font-size:48px;margin-bottom:12px;display:block;}
+.result-verdict{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:800;margin-bottom:8px;}
+.result-verdict.green{color:var(--green);}
+.result-verdict.gold{color:var(--gold);}
+.result-verdict.red{color:var(--red);}
+.result-sub{font-size:13px;color:var(--muted);line-height:1.7;max-width:480px;margin:0 auto 24px;}
+.result-cards{padding:0 32px 32px;display:flex;flex-direction:column;gap:12px;}
+.rcard{border-radius:10px;padding:16px 18px;}
+.rcard-gold{background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.25);}
+.rcard-green{background:rgba(45,202,115,.07);border:1px solid rgba(45,202,115,.25);}
+.rcard-orange{background:rgba(230,126,34,.07);border:1px solid rgba(230,126,34,.25);}
+.rcard-navy{background:var(--navy3);border:1px solid var(--border);}
+.rcard-title{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:7px;}
+.rcard-title.gold{color:var(--gold);}
+.rcard-title.green{color:var(--green);}
+.rcard-title.orange{color:var(--orange);}
+.rcard-title.muted{color:var(--muted);}
+.rcard-body{font-size:13px;color:var(--text);line-height:1.9;}
+.rcard-body li{margin-left:14px;margin-bottom:2px;}
+.rcard-body b{color:var(--gold2);}
+.result-action-row{display:flex;gap:10px;flex-wrap:wrap;}
+.btn-restart{flex:1;padding:11px;border-radius:8px;border:1.5px solid var(--border);background:transparent;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;}
+.btn-restart:hover{border-color:var(--gold);color:var(--gold);}
+.btn-prequal{flex:2;padding:11px;border-radius:8px;border:none;background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--navy);font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;cursor:pointer;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s;}
+.btn-prequal:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(201,168,76,.35);}
+
+@media(max-width:520px){
+  .shell{padding:14px 10px 48px;}
+  .section{padding:20px 16px;}
+  .result-hero{padding:20px 16px 0;}
+  .result-cards{padding:0 16px 20px;}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-hex">⬡</div>
+    <div class="brand-text">Dynasty <span>Builders</span><span class="brand-small">Coverage Finder</span></div>
+  </div>
+  <div class="topbar-right">
+    <a href="prequal.html" class="t-btn">← Products</a>
+    <a href="hub.html" class="t-btn">Hub</a>
+  </div>
+</div>
+
+<div class="progress-strip">
+  <div class="step-dots" id="step-dots"></div>
+  <div class="prog-bar-wrap"><div class="prog-bar-fill" id="prog-fill" style="width:0%"></div></div>
+  <span class="step-label" id="step-label-text">Step 1 of 8</span>
+</div>
+
+<div class="shell"><div class="card">
+
+<!-- STEP 1: GOAL -->
+<div class="section active" id="step-1">
+  <div class="sec-eyebrow">Step 1 of 8 · Coverage Goal</div>
+  <div class="sec-title">What's the <span>main reason</span> you want life insurance?</div>
+  <div class="sec-sub">Select all that apply. This determines which products fit your situation best.</div>
+  <div class="choice-grid single">
+    <div class="choice" data-val="final_expense" onclick="toggleGoal(this)">
+      <div class="c-icon">⚰️</div>
+      <div class="c-body"><div class="c-name">Final Expense / Burial Costs</div><div class="c-desc">Cover funeral, medical bills, and end-of-life costs so family isn't burdened</div></div>
+      <div class="c-check">✓</div>
+    </div>
+    <div class="choice" data-val="income_replace" onclick="toggleGoal(this)">
+      <div class="c-icon">💼</div>
+      <div class="c-body"><div class="c-name">Income Replacement</div><div class="c-desc">Replace my income if I die so my family maintains their lifestyle</div></div>
+      <div class="c-check">✓</div>
+    </div>
+    <div class="choice" data-val="debt" onclick="toggleGoal(this)">
+      <div class="c-icon">🏠</div>
+      <div class="c-body"><div class="c-name">Debt / Mortgage Protection</div><div class="c-desc">Pay off mortgage and loans so family keeps the home</div></div>
+      <div class="c-check">✓</div>
+    </div>
+    <div class="choice" data-val="wealth_transfer" onclick="toggleGoal(this)">
+      <div class="c-icon">🏦</div>
+      <div class="c-body"><div class="c-name">Wealth Transfer / Legacy</div><div class="c-desc">Leave a tax-free inheritance or grow cash value for retirement</div></div>
+      <div class="c-check">✓</div>
+    </div>
+    <div class="choice" data-val="savings" onclick="toggleGoal(this)">
+      <div class="c-icon">📈</div>
+      <div class="c-body"><div class="c-name">Savings & Cash Value Growth</div><div class="c-desc">Build a living benefit policy I can borrow against during my lifetime</div></div>
+      <div class="c-check">✓</div>
+    </div>
+    <div class="choice" data-val="business" onclick="toggleGoal(this)">
+      <div class="c-icon">🏢</div>
+      <div class="c-body"><div class="c-name">Business Protection</div><div class="c-desc">Key person insurance or buy-sell agreement funding</div></div>
+      <div class="c-check">✓</div>
+    </div>
+  </div>
+  <div class="nav-row">
+    <button class="btn-back" disabled>← Back</button>
+    <button class="btn-next" id="next-1" disabled onclick="goNext(1)">Next →</button>
+  </div>
+</div>
+
+<!-- STEP 2: BASICS -->
+<div class="section" id="step-2">
+  <div class="sec-eyebrow">Step 2 of 8 · About You</div>
+  <div class="sec-title">A little about <span>you</span></div>
+  <div class="sec-sub">Helps us match the right product age ranges and premium tiers.</div>
+  <div class="row2">
+    <div class="field"><label>Your Age</label>
+      <input type="number" id="q-age" min="18" max="100" placeholder="e.g. 47" oninput="checkStep2()"></div>
+    <div class="field"><label>Gender</label>
+      <select id="q-gender" onchange="checkStep2()">
+        <option value="">Select…</option>
+        <option value="male">Male</option>
+        <option value="female">Female</option>
+      </select></div>
+  </div>
+  <div class="field"><label>State of Residence</label>
+    <select id="q-state" onchange="checkStep2()">
+      <option value="">Select your state…</option>
+      <option>Alabama</option><option>Alaska</option><option>Arizona</option><option>Arkansas</option><option>California</option><option>Colorado</option><option>Connecticut</option><option>Delaware</option><option>Florida</option><option>Georgia</option><option>Hawaii</option><option>Idaho</option><option>Illinois</option><option>Indiana</option><option>Iowa</option><option>Kansas</option><option>Kentucky</option><option>Louisiana</option><option>Maine</option><option>Maryland</option><option>Massachusetts</option><option>Michigan</option><option>Minnesota</option><option>Mississippi</option><option>Missouri</option><option>Montana</option><option>Nebraska</option><option>Nevada</option><option>New Hampshire</option><option>New Jersey</option><option>New Mexico</option><option>New York</option><option>North Carolina</option><option>North Dakota</option><option>Ohio</option><option>Oklahoma</option><option>Oregon</option><option>Pennsylvania</option><option>Rhode Island</option><option>South Carolina</option><option>South Dakota</option><option>Tennessee</option><option>Texas</option><option>Utah</option><option>Vermont</option><option>Virginia</option><option>Washington</option><option>West Virginia</option><option>Wisconsin</option><option>Wyoming</option>
+    </select></div>
+  <div class="field"><label>Tobacco use in the last 12 months?</label>
+    <div class="yn-row" style="margin-bottom:0;">
+      <button class="yn yes" id="tob-yes" onclick="setTobacco('yes')">🚬 Yes</button>
+      <button class="yn no" id="tob-no" onclick="setTobacco('no')">✓ No</button>
+    </div></div>
+  <div class="nav-row" style="margin-top:20px;">
+    <button class="btn-back" onclick="goBack(2)">← Back</button>
+    <button class="btn-next" id="next-2" disabled onclick="goNext(2)">Next →</button>
+  </div>
+</div>
+
+<!-- STEP 3: HEALTH -->
+<div class="section" id="step-3">
+  <div class="sec-eyebrow">Step 3 of 8 · Health Overview</div>
+  <div class="sec-title">How would you describe your <span>overall health</span>?</div>
+  <div class="sec-sub">Be honest — this determines which products and benefit levels you qualify for.</div>
+  <div class="choice-grid single">
+    <div class="choice" data-val="excellent" onclick="singleChoice(this,'health','next-3')">
+      <div class="c-icon">💪</div>
+      <div class="c-body"><div class="c-name">Excellent</div><div class="c-desc">No chronic conditions, no major surgeries in 5+ years, healthy weight</div></div>
+      <div class="c-check">✓</div>
+    </div>
+    <div class="choice" data-val="good" onclick="singleChoice(this,'health','next-3')">
+      <div class="c-icon">😊</div>
+      <div class="c-body"><div class="c-name">Good</div><div class="c-desc">Minor conditions (controlled BP, cholesterol) — well-managed with medication</div></div>
+      <div class="c-check">✓</div>
+    </div>
+    <div class="choice" data-val="fair" onclick="singleChoice(this,'health','next-3')">
+      <div class="c-icon">😐</div>
+      <div class="c-body"><div class="c-name">Fair</div><div class="c-desc">Multiple conditions or one serious condition (diabetes, heart issues, COPD)</div></div>
+      <div class="c-check">✓</div>
+    </div>
+    <div class="choice" data-val="poor" onclick="singleChoice(this,'health','next-3')">
+      <div class="c-icon">🏥</div>
+      <div class="c-body"><div class="c-name">Poor / Multiple Serious Conditions</div><div class="c-desc">Terminal illness, recent cancer, organ failure, or nursing home/hospice care</div></div>
+      <div class="c-check">✓</div>
+    </div>
+  </div>
+  <div class="nav-row">
+    <button class="btn-back" onclick="goBack(3)">← Back</button>
+    <button class="btn-next" id="next-3" disabled onclick="goNext(3)">Next →</button>
+  </div>
+</div>
+
+<!-- STEP 4: MEDICAL HISTORY -->
+<div class="section" id="step-4">
+  <div class="sec-eyebrow">Step 4 of 8 · Medical History</div>
+  <div class="sec-title">Have you been <span>diagnosed</span> with any of these <span>in the last 2 years</span>?</div>
+  <div class="sec-sub">This affects benefit level — not a full disqualifier for all products.</div>
+  <div class="choice-grid single">
+    <div class="choice" data-val="cancer" onclick="toggleCondition(this)">
+      <div class="c-icon">🎗️</div>
+      <div class="c-body"><div class="c-name">Cancer (active or treated within 2 years)</div><div class="c-desc">Excludes basal/squamous cell skin cancer</div></div>
+      <div class="c-check">✓</div>
+    </div>
+    <div class="choice" data-val="heart" onclick="toggleCondition(this)">
+      <div class="c-icon">❤️</div>
+      <div class="c-body"><div class="c-name">Heart Attack or Stroke (within 2 years)</div><div class="c-desc">Including TIA or mini-stroke</div></div>
+      <div class="c-check">✓</div>
+    </div>
+    <div class="choice" data-val="organ_failure" onclick="toggleCondition(this)">
+      <div class="c-icon">🫁</div>
+      <div class="c-body"><div class="c-name">Organ Failure / Transplant</div><div class="c-desc">Kidney, liver, lung, or heart failure or awaiting transplant</div></div>
+      <div class="c-check">✓</div>
+    </div>
+    <div class="choice" data-val="dementia" onclick="toggleCondition(this)">
+      <div class="c-icon">🧠</div>
+      <div class="c-body"><div class="c-name">Dementia, Alzheimer's, or Cognitive Decline</div></div>
+      <div class="c-check">✓</div>
+    </div>
+    <div class="choice" data-val="aids" onclick="toggleCondition(this)">
+      <div class="c-icon">🩺</div>
+      <div class="c-body"><div class="c-name">AIDS or HIV Positive</div></div>
+      <div class="c-check">✓</div>
+    </div>
+    <div class="choice" data-val="confined" onclick="toggleCondition(this)">
+      <div class="c-icon">🏥</div>
+      <div class="c-body"><div class="c-name">Confined to Nursing Home / Hospice Care</div></div>
+      <div class="c-check">✓</div>
+    </div>
+    <div class="choice" data-val="none" onclick="conditionNone(this)">
+      <div class="c-icon">✅</div>
+      <div class="c-body"><div class="c-name">None of the above</div></div>
+      <div class="c-check">✓</div>
+    </div>
+  </div>
+  <div class="nav-row">
+    <button class="btn-back" onclick="goBack(4)">← Back</button>
+    <button class="btn-next" id="next-4" disabled onclick="goNext(4)">Next →</button>
+  </div>
+</div>
+
+<!-- STEP 5: FINANCES -->
+<div class="section" id="step-5">
+  <div class="sec-eyebrow">Step 5 of 8 · Financial Picture</div>
+  <div class="sec-title">Your <span>financial situation</span></div>
+  <div class="sec-sub">Used to calculate how much coverage you actually need.</div>
+  <div class="field"><label>Annual Household Income</label>
+    <select id="q-income">
+      <option value="">Select range…</option>
+      <option value="under30k">Under $30,000</option>
+      <option value="30to50k">$30,000 – $50,000</option>
+      <option value="50to75k">$50,000 – $75,000</option>
+      <option value="75to100k">$75,000 – $100,000</option>
+      <option value="100to150k">$100,000 – $150,000</option>
+      <option value="over150k">Over $150,000</option>
+    </select></div>
+  <div class="field"><label>Estimated Total Debt (mortgage + loans + credit)</label>
+    <select id="q-debt">
+      <option value="">Select range…</option>
+      <option value="0">No significant debt</option>
+      <option value="under50k">Under $50,000</option>
+      <option value="50to150k">$50,000 – $150,000</option>
+      <option value="150to300k">$150,000 – $300,000</option>
+      <option value="over300k">Over $300,000</option>
+    </select></div>
+  <div class="field"><label>Number of Dependents (spouse, children, elderly parents)</label>
+    <select id="q-dependents">
+      <option value="">Select…</option>
+      <option value="0">0 — No dependents</option>
+      <option value="1">1</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4plus">4 or more</option>
+    </select></div>
+  <div class="field"><label>Monthly budget for premiums</label>
+    <select id="q-budget">
+      <option value="">Select range…</option>
+      <option value="under50">Under $50/month</option>
+      <option value="50to100">$50 – $100/month</option>
+      <option value="100to200">$100 – $200/month</option>
+      <option value="200to400">$200 – $400/month</option>
+      <option value="over400">$400+/month</option>
+    </select></div>
+  <div class="nav-row">
+    <button class="btn-back" onclick="goBack(5)">← Back</button>
+    <button class="btn-next" onclick="saveFinances();goNext(5)">Next →</button>
+  </div>
+</div>
+
+<!-- STEP 6: DURATION -->
+<div class="section" id="step-6">
+  <div class="sec-eyebrow">Step 6 of 8 · Coverage Type</div>
+  <div class="sec-title">How long do you need <span>coverage</span>?</div>
+  <div class="sec-sub">One of the biggest factors in choosing term vs. permanent life insurance.</div>
+  <div class="choice-grid single">
+    <div class="choice" data-val="temporary" onclick="singleChoice(this,'duration','next-6')">
+      <div class="c-icon">⏳</div>
+      <div class="c-body"><div class="c-name">Temporary — 10, 20, or 30 years</div><div class="c-desc">Affordable premiums while mortgage is active or kids are young. No cash value.</div></div>
+      <div class="c-check">✓</div>
+    </div>
+    <div class="choice" data-val="lifetime" onclick="singleChoice(this,'duration','next-6')">
+      <div class="c-icon">♾️</div>
+      <div class="c-body"><div class="c-name">Lifetime — Permanent coverage</div><div class="c-desc">Coverage that never expires, ideally with cash value I can access.</div></div>
+      <div class="c-check">✓</div>
+    </div>
+    <div class="choice" data-val="unsure" onclick="singleChoice(this,'duration','next-6')">
+      <div class="c-icon">🤔</div>
+      <div class="c-body"><div class="c-name">Not sure — guide me</div><div class="c-desc">I'll rely on the recommendation based on my situation.</div></div>
+      <div class="c-check">✓</div>
+    </div>
+  </div>
+  <div class="nav-row">
+    <button class="btn-back" onclick="goBack(6)">← Back</button>
+    <button class="btn-next" id="next-6" disabled onclick="goNext(6)">Next →</button>
+  </div>
+</div>
+
+<!-- STEP 7: PRIORITIES -->
+<div class="section" id="step-7">
+  <div class="sec-eyebrow">Step 7 of 8 · Top Priority</div>
+  <div class="sec-title">What matters most <span>to you</span>?</div>
+  <div class="sec-sub">Pick your single top priority to rank product options.</div>
+  <div class="choice-grid single">
+    <div class="choice" data-val="lowest_premium" onclick="singleChoice(this,'priority','next-7')">
+      <div class="c-icon">💵</div>
+      <div class="c-body"><div class="c-name">Lowest possible monthly premium</div><div class="c-desc">Most coverage for the least monthly cost</div></div>
+      <div class="c-check">✓</div>
+    </div>
+    <div class="choice" data-val="guaranteed_acceptance" onclick="singleChoice(this,'priority','next-7')">
+      <div class="c-icon">✅</div>
+      <div class="c-body"><div class="c-name">Guaranteed acceptance — no health questions</div><div class="c-desc">Approved regardless of health history</div></div>
+      <div class="c-check">✓</div>
+    </div>
+    <div class="choice" data-val="cash_value" onclick="singleChoice(this,'priority','next-7')">
+      <div class="c-icon">📈</div>
+      <div class="c-body"><div class="c-name">Cash value / living benefits</div><div class="c-desc">Policy I can borrow from or that grows over time</div></div>
+      <div class="c-check">✓</div>
+    </div>
+    <div class="choice" data-val="immediate_full" onclick="singleChoice(this,'priority','next-7')">
+      <div class="c-icon">⚡</div>
+      <div class="c-body"><div class="c-name">Full death benefit from day one</div><div class="c-desc">No waiting periods — full payout from first day of coverage</div></div>
+      <div class="c-check">✓</div>
+    </div>
+  </div>
+  <div class="nav-row">
+    <button class="btn-back" onclick="goBack(7)">← Back</button>
+    <button class="btn-next" id="next-7" disabled onclick="goNext(7)">Next →</button>
+  </div>
+</div>
+
+<!-- STEP 8: COVERAGE CALCULATOR -->
+<div class="section" id="step-8">
+  <div class="sec-eyebrow">Step 8 of 8 · Coverage Amount</div>
+  <div class="sec-title">How much <span>coverage</span> do you need?</div>
+  <div class="sec-sub">Adjust the sliders — we've pre-filled based on your financial profile.</div>
+  <div class="info-box" id="calc-hint">💡 Adjust the sliders below to match your actual needs.</div>
+  <div class="slider-wrap">
+    <div class="slider-label"><span class="s-lbl">Final Expense / Burial</span><span class="s-val" id="val-burial">$15,000</span></div>
+    <input type="range" id="sl-burial" min="5000" max="35000" step="1000" value="15000" oninput="updateCalc()">
+    <div class="range-ticks"><span>$5K</span><span>$35K</span></div>
+  </div>
+  <div class="slider-wrap" id="sl-income-wrap">
+    <div class="slider-label"><span class="s-lbl">Income Replacement (years)</span><span class="s-val" id="val-income-yrs">5 years</span></div>
+    <input type="range" id="sl-income-yrs" min="0" max="20" step="1" value="5" oninput="updateCalc()">
+    <div class="range-ticks"><span>0</span><span>20 yrs</span></div>
+  </div>
+  <div class="slider-wrap" id="sl-debt-wrap">
+    <div class="slider-label"><span class="s-lbl">Debt / Mortgage Payoff</span><span class="s-val" id="val-debt">$50,000</span></div>
+    <input type="range" id="sl-debt" min="0" max="500000" step="10000" value="50000" oninput="updateCalc()">
+    <div class="range-ticks"><span>$0</span><span>$500K</span></div>
+  </div>
+  <div class="divider"></div>
+  <div class="calc-row">
+    <div class="calc-box"><div class="cb-label">Burial / Final Expense</div><div class="cb-val" id="cb-burial">$15,000</div></div>
+    <div class="calc-box"><div class="cb-label">Income Replacement</div><div class="cb-val" id="cb-income">$0</div></div>
+    <div class="calc-box"><div class="cb-label">Debt Payoff</div><div class="cb-val" id="cb-debt">$50,000</div></div>
+    <div class="calc-box"><div class="cb-label">Emergency Buffer</div><div class="cb-val" id="cb-buffer">$15,000</div></div>
+  </div>
+  <div class="calc-total">
+    <div class="ct-label">Recommended Coverage</div>
+    <div class="ct-val" id="ct-total">$80,000</div>
+  </div>
+  <div class="nav-row">
+    <button class="btn-back" onclick="goBack(8)">← Back</button>
+    <button class="btn-next" onclick="showResult()">See My Results →</button>
+  </div>
+</div>
+
+<!-- RESULT -->
+<div class="section" id="step-result">
+  <div class="result-hero">
+    <span class="result-emoji" id="res-emoji">✅</span>
+    <div class="result-verdict" id="res-verdict">You have great options!</div>
+    <div class="result-sub" id="res-sub"></div>
+  </div>
+  <div class="result-cards" id="res-cards"></div>
+</div>
+
+</div></div><!-- /card /shell -->
+
+<script>
+// ── STATE ─────────────────────────────────────────────────────
+const S = {
+  goals:[], age:null, gender:null, stateName:null, tobacco:null,
+  health:null, conditions:[], income:null, debt:null,
+  dependents:null, budget:null, duration:null, priority:null,
+  coverageAmount:80000
+};
+let currentStep = 1;
+const TOTAL = 8;
+
+// ── PROGRESS ──────────────────────────────────────────────────
+function updateProgress(step) {
+  const pct = Math.min(((step-1)/TOTAL)*100, 100);
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('step-label-text').textContent = step <= TOTAL ? `Step ${step} of ${TOTAL}` : 'Your Results';
+  document.getElementById('step-dots').innerHTML = Array.from({length:TOTAL},(_,i) => {
+    const c = i+1 < step ? 'done' : i+1 === step ? 'active' : '';
+    return `<div class="sdot ${c}"></div>`;
+  }).join('');
+}
+
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function goNext(step) {
+  currentStep = step + 1;
+  if (currentStep > TOTAL) { showResult(); return; }
+  showSection('step-' + currentStep);
+  updateProgress(currentStep);
+  if (currentStep === 8) prefillCalc();
+}
+
+function goBack(step) {
+  currentStep = step - 1;
+  showSection('step-' + currentStep);
+  updateProgress(currentStep);
+}
+
+// ── CHOICE HANDLERS ───────────────────────────────────────────
+function toggleGoal(el) {
+  el.classList.toggle('selected');
+  const v = el.dataset.val;
+  if (el.classList.contains('selected')) { if (!S.goals.includes(v)) S.goals.push(v); }
+  else S.goals = S.goals.filter(g => g !== v);
+  document.getElementById('next-1').disabled = S.goals.length === 0;
+}
+
+function toggleCondition(el) {
+  // Clear "none" if selecting something else
+  const noneEl = document.querySelector('#step-4 [data-val="none"]');
+  if (noneEl) { noneEl.classList.remove('selected'); S.conditions = S.conditions.filter(c => c !== 'none'); }
+  el.classList.toggle('selected');
+  const v = el.dataset.val;
+  if (el.classList.contains('selected')) { if (!S.conditions.includes(v)) S.conditions.push(v); }
+  else S.conditions = S.conditions.filter(c => c !== v);
+  document.getElementById('next-4').disabled = S.conditions.length === 0;
+}
+
+function conditionNone(el) {
+  document.querySelectorAll('#step-4 .choice').forEach(c => c.classList.remove('selected'));
+  S.conditions = ['none'];
+  el.classList.add('selected');
+  document.getElementById('next-4').disabled = false;
+}
+
+function singleChoice(el, key, nextId) {
+  el.closest('.choice-grid').querySelectorAll('.choice').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  S[key] = el.dataset.val;
+  if (nextId) document.getElementById(nextId).disabled = false;
+}
+
+// ── STEP 2 ────────────────────────────────────────────────────
+function setTobacco(val) {
+  S.tobacco = val;
+  document.getElementById('tob-yes').classList.toggle('active', val === 'yes');
+  document.getElementById('tob-no').classList.toggle('active', val === 'no');
+  checkStep2();
+}
+function checkStep2() {
+  S.age = parseInt(document.getElementById('q-age').value);
+  S.gender = document.getElementById('q-gender').value;
+  S.stateName = document.getElementById('q-state').value;
+  document.getElementById('next-2').disabled = !(S.age >= 18 && S.age <= 100 && S.gender && S.stateName && S.tobacco);
+}
+
+function saveFinances() {
+  S.income = document.getElementById('q-income').value;
+  S.debt = document.getElementById('q-debt').value;
+  S.dependents = document.getElementById('q-dependents').value;
+  S.budget = document.getElementById('q-budget').value;
+}
+
+// ── CALCULATOR ────────────────────────────────────────────────
+const INCOME_MAP = {under30k:25000,'30to50k':40000,'50to75k':62500,'75to100k':87500,'100to150k':125000,over150k:175000};
+const DEBT_MAP   = {0:0,under50k:25000,'50to150k':100000,'150to300k':225000,over300k:350000};
+const DEP_MAP    = {0:0,1:1,2:2,3:3,'4plus':4};
+const fmt = n => '$' + Math.round(n).toLocaleString();
+
+function prefillCalc() {
+  const inc = INCOME_MAP[S.income] || 30000;
+  const dbt = DEBT_MAP[S.debt] || 0;
+  const deps = DEP_MAP[S.dependents] || 0;
+  const incYrs = deps > 0 ? Math.min(deps*3+2, 15) : 3;
+  const burial = S.goals.includes('final_expense') ? 15000 : 10000;
+  const debtSl = S.goals.includes('debt') ? dbt : 0;
+
+  document.getElementById('sl-burial').value = burial;
+  document.getElementById('sl-income-yrs').value = incYrs;
+  document.getElementById('sl-debt').value = debtSl;
+  document.getElementById('sl-income-wrap').style.display = S.goals.includes('income_replace') ? '' : 'none';
+  document.getElementById('sl-debt-wrap').style.display = S.goals.includes('debt') ? '' : 'none';
+
+  if (inc > 0) {
+    const rec = burial + (inc * incYrs) + debtSl + Math.round(inc/2);
+    document.getElementById('calc-hint').innerHTML =
+      `💡 <strong>Based on your profile:</strong> We suggest <strong style="color:var(--gold2);">${fmt(rec)}</strong> in total coverage — income for ~${incYrs} years, burial costs, and debt payoff.`;
+  }
+  updateCalc();
+}
+
+function updateCalc() {
+  const burial = parseInt(document.getElementById('sl-burial').value) || 0;
+  const incYrs = parseInt(document.getElementById('sl-income-yrs').value) || 0;
+  const debt   = parseInt(document.getElementById('sl-debt').value) || 0;
+  const inc    = INCOME_MAP[S.income] || 30000;
+  const incAmt = inc * incYrs;
+  const buffer = Math.round(inc / 2);
+  const total  = burial + incAmt + debt + buffer;
+  S.coverageAmount = total;
+
+  document.getElementById('val-burial').textContent = fmt(burial);
+  document.getElementById('val-income-yrs').textContent = incYrs + (incYrs === 1 ? ' year' : ' years');
+  document.getElementById('val-debt').textContent = fmt(debt);
+  document.getElementById('cb-burial').textContent = fmt(burial);
+  document.getElementById('cb-income').textContent = fmt(incAmt);
+  document.getElementById('cb-debt').textContent = fmt(debt);
+  document.getElementById('cb-buffer').textContent = fmt(buffer);
+  document.getElementById('ct-total').textContent = fmt(total);
+}
+
+// ── RECOMMENDATION ENGINE ─────────────────────────────────────
+function getRecommendations() {
+  const age = S.age || 50;
+  const hasKnockout = S.conditions.some(c => ['cancer','heart','organ_failure','dementia','aids','confined'].includes(c));
+  const isNoneCondition = S.conditions.includes('none');
+  const goals = S.goals;
+  const isFE  = goals.includes('final_expense');
+  const isInc = goals.includes('income_replace');
+  const isDebt= goals.includes('debt');
+  const isGrow= goals.includes('savings') || goals.includes('wealth_transfer');
+  const isPerm = S.duration === 'lifetime' || S.priority === 'cash_value';
+  const budget = S.budget;
+  const cov = S.coverageAmount;
+  const products = [];
+
+  // Living Promise (Mutual of Omaha) — ages 45–85, final expense
+  if (age >= 45 && age <= 85 && (isFE || cov <= 30000)) {
+    if (!hasKnockout && isNoneCondition) {
+      products.push({rank:1,icon:'💛',company:'Mutual of Omaha',name:'Living Promise — Level Benefit',
+        type:'Whole Life · Final Expense',color:'green',
+        why:`At age ${age} with your health profile you likely qualify for the <b>Level Benefit</b> — full death benefit from <b>day one</b>, no waiting period, no medical exam. ${S.tobacco === 'yes' ? '<b>Tobacco user rates apply.</b>' : ''} Coverage up to <b>$25,000</b>.`,
+        coverRange:'$2,000 – $25,000',href:'living-promise-prequal.html',cta:'Run Full Pre-Qual →'});
+    } else if (hasKnockout) {
+      products.push({rank:2,icon:'💛',company:'Mutual of Omaha',name:'Living Promise — Graded Benefit',
+        type:'Whole Life · Final Expense',color:'orange',
+        why:`With some health history, the <b>Graded Benefit</b> plan may apply. Years 1–2 for illness: return of premiums + interest. Accidental death: full benefit immediately. Year 3+: full face amount for any cause. No exam required.`,
+        coverRange:'$2,000 – $25,000',href:'living-promise-prequal.html',cta:'Run Full Pre-Qual →'});
+    }
+  }
+
+  // Guaranteed Issue — for poor health or knockout conditions
+  if (hasKnockout && (S.health === 'poor' || S.conditions.includes('dementia') || S.conditions.includes('aids') || S.conditions.includes('confined'))) {
+    products.push({rank:1,icon:'🛡️',company:'AIG / Corebridge',name:'Guaranteed Issue Whole Life',
+      type:'Whole Life · No Health Questions',color:'green',
+      why:`<b>No health questions — guaranteed approval</b> for ages 50–80. A 2-year graded period applies for illness; accidental death is covered immediately at full benefit. This is the most accessible option for your situation. Coverage: <b>$5,000 – $25,000</b>.`,
+      coverRange:'$5,000 – $25,000',href:'#',cta:'Coming Soon'});
+  }
+
+  // Term Life — income replacement and debt
+  if ((isInc || isDebt) && (S.duration === 'temporary' || S.duration === 'unsure') && age < 70) {
+    products.push({rank: age < 45 ? 1 : 2,icon:'🛡️',company:'National Life Group',name:'TermLife Express',
+      type:'Term Life · 10 / 20 / 30 Year',color:'green',
+      why:`Term life gives you the <b>most coverage for the lowest premium</b>. Your recommended <b>${fmt(cov)}</b> in coverage could protect your family's income and pay off the mortgage. A 20-year term fits most families with young kids or an active mortgage.`,
+      coverRange:'$100,000 – $1,000,000',href:'#',cta:'Coming Soon'});
+  }
+
+  // IUL — cash value, savings, wealth transfer, business
+  if (isGrow || S.priority === 'cash_value' || goals.includes('business')) {
+    products.push({rank: age < 50 ? 1 : 3,icon:'📈',company:'National Life Group',name:'FlexLife IUL',
+      type:'Indexed Universal Life',color:'blue',
+      why:`An IUL matches your goal of <b>cash value growth and living benefits</b>. Premium grows indexed to the S&P 500 with a floor — you can't lose to market drops. Tax-free loans, accelerated death benefit, and flexible premiums. Best value for ages <b>under 55</b>.`,
+      coverRange:'$50,000 – $2,000,000',href:'#',cta:'Coming Soon'});
+  }
+
+  // Annuity — wealth transfer, older age
+  if (goals.includes('wealth_transfer') && age >= 50 && budget !== 'under50') {
+    products.push({rank:4,icon:'💰',company:'Pacific Life',name:'Fixed Indexed Annuity',
+      type:'Annuity · Retirement Income',color:'gold',
+      why:`For wealth transfer and retirement income, a <b>Fixed Indexed Annuity</b> can complement life insurance. Tax-deferred growth, no market loss floor, guaranteed income stream. Passes to beneficiaries. Single premium from <b>$10,000</b>.`,
+      coverRange:'$10,000+ single premium',href:'#',cta:'Coming Soon'});
+  }
+
+  return products.sort((a,b) => a.rank - b.rank);
+}
+
+function showResult() {
+  const recs = getRecommendations();
+  const top = recs[0];
+  const colorMap = {green:'rcard-green',gold:'rcard-gold',orange:'rcard-orange',blue:'rcard-navy',red:'rcard-red'};
+  const titleMap  = {green:'green',gold:'gold',orange:'orange',blue:'muted',red:'red'};
+
+  let emoji, verdict, verdictCls, sub;
+  if (!top) {
+    emoji = '📞'; verdictCls = 'gold';
+    verdict = 'Let\'s talk through your options';
+    sub = 'Your situation needs a personalized review. An agent will walk you through all available options.';
+  } else {
+    emoji = '✅'; verdictCls = 'green';
+    verdict = 'You have great options!';
+    sub = `Based on your profile — age ${S.age}, ${S.health} health — here are the best-fit products. <strong style="color:var(--gold2);">Recommended coverage: ${fmt(S.coverageAmount)}</strong>.`;
+  }
+
+  document.getElementById('res-emoji').textContent = emoji;
+  document.getElementById('res-verdict').textContent = verdict;
+  document.getElementById('res-verdict').className = 'result-verdict ' + verdictCls;
+  document.getElementById('res-sub').innerHTML = sub;
+
+  let html = recs.map((p,i) => `
+    <div class="${colorMap[p.color]||'rcard-gold'} rcard">
+      <div class="rcard-title ${titleMap[p.color]||'gold'}">${p.icon} ${p.company}
+        ${i===0?'<span style="margin-left:auto;font-size:9px;background:var(--gold);color:var(--navy);padding:1px 7px;border-radius:3px;font-family:\'Barlow Condensed\',sans-serif;">TOP MATCH</span>':''}
+      </div>
+      <div style="font-family:\'Barlow Condensed\',sans-serif;font-size:18px;font-weight:800;margin-bottom:3px;">${p.name}</div>
+      <div style="font-family:\'DM Mono\',monospace;font-size:10px;color:var(--muted);margin-bottom:12px;">${p.type} · ${p.coverRange}</div>
+      <div class="rcard-body">${p.why}</div>
+      ${p.href && p.href !== '#' ? `<div style="margin-top:12px;"><a href="${p.href}" class="btn-prequal" style="display:inline-flex;padding:9px 16px;font-size:12px;border-radius:7px;">${p.cta}</a></div>`
+      : p.cta === 'Coming Soon' ? `<div style="margin-top:10px;font-family:\'DM Mono\',monospace;font-size:11px;color:var(--muted);">⏳ Full pre-qual coming soon — your agent will follow up</div>` : ''}
+    </div>`).join('');
+
+  // Coverage summary
+  html += `<div class="rcard rcard-navy">
+    <div class="rcard-title muted">📊 Your Coverage Summary</div>
+    <div class="rcard-body">
+      <b>Recommended amount:</b> ${fmt(S.coverageAmount)}<br>
+      <b>Goal(s):</b> ${S.goals.map(g=>g.replace(/_/g,' ')).join(', ')||'—'}<br>
+      <b>Age / Gender:</b> ${S.age||'?'} / ${S.gender||'?'} · ${S.stateName||'?'}<br>
+      <b>Health:</b> ${S.health||'?'} · Tobacco: ${S.tobacco==='yes'?'Yes':'No'}<br>
+      <b>Coverage type:</b> ${S.duration||'?'} · Priority: ${(S.priority||'?').replace(/_/g,' ')}
+    </div>
+  </div>`;
+
+  // Next steps
+  html += `<div class="rcard rcard-gold">
+    <div class="rcard-title gold">📋 Next Steps</div>
+    <div class="rcard-body">
+      <li>Run the product pre-qual above to confirm your exact eligibility</li>
+      <li>Your agent will prepare a quote in PHP Bamboo or the carrier portal</li>
+      <li>Review the application together — takes 15–30 minutes</li>
+      <li>Submit and receive a policy decision (often same-day for final expense)</li>
+    </div>
+  </div>`;
+
+  html += `<div class="result-action-row">
+    <button class="btn-restart" onclick="restart()">↩ Start Over</button>
+    <a href="prequal.html" class="btn-prequal">← All Products</a>
+  </div>`;
+
+  document.getElementById('res-cards').innerHTML = html;
+  showSection('step-result');
+  updateProgress(TOTAL + 1);
+}
+
+function restart() {
+  Object.assign(S, {goals:[],age:null,gender:null,stateName:null,tobacco:null,health:null,conditions:[],income:null,debt:null,dependents:null,budget:null,duration:null,priority:null,coverageAmount:80000});
+  document.querySelectorAll('.choice').forEach(c => c.classList.remove('selected'));
+  document.querySelectorAll('.yn').forEach(b => b.classList.remove('active'));
+  ['q-age','q-gender','q-state','q-income','q-debt','q-dependents','q-budget'].forEach(id => { const e=document.getElementById(id); if(e) e.value=''; });
+  ['next-1','next-2','next-3','next-4','next-6','next-7'].forEach(id => { const b=document.getElementById(id); if(b) b.disabled=true; });
+  currentStep = 1;
+  showSection('step-1');
+  updateProgress(1);
+}
+
+updateProgress(1);
+</script>
+</body>
+</html>
