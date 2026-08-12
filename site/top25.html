@@ -198,6 +198,43 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .agent-chip{padding:5px 12px;border-radius:16px;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;cursor:pointer;border:1px solid var(--border);background:var(--surface2);color:var(--muted);transition:all .15s;}
 .agent-chip:hover,.agent-chip.active{border-color:var(--gold);color:var(--gold);background:rgba(201,168,76,.08);}
 
+
+/* ── ADD FROM PHOTO ──────────────────────────────────────────── */
+.photo-modal{max-width:760px;}
+.photo-step{display:none;}.photo-step.active{display:block;}
+.photo-drop-zone{border:2px dashed var(--border);border-radius:12px;padding:40px 24px;text-align:center;cursor:pointer;transition:all .2s;background:var(--navy3);}
+.photo-drop-zone:hover,.photo-drop-zone.drag-over{border-color:var(--accent);background:rgba(201,168,76,.06);}
+.photo-drop-zone .dz-icon{font-size:36px;margin-bottom:10px;}
+.photo-drop-zone .dz-title{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.photo-drop-zone .dz-hint{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);}
+.thumb-grid{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0;}
+.thumb-item{position:relative;width:80px;height:80px;border-radius:8px;overflow:hidden;border:1px solid var(--border);}
+.thumb-item img{width:100%;height:100%;object-fit:cover;}
+.thumb-del{position:absolute;top:3px;right:3px;width:18px;height:18px;background:rgba(192,57,43,.9);border-radius:50%;border:none;color:#fff;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;}
+.thumb-status{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.65);font-size:9px;text-align:center;padding:2px;color:#fff;font-family:'DM Mono',monospace;}
+.thumb-status.ok{background:rgba(45,202,115,.8);}
+.thumb-status.err{background:rgba(192,57,43,.8);}
+.extract-progress{font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);margin:10px 0;min-height:18px;}
+/* Review table */
+.review-table{width:100%;border-collapse:collapse;font-size:12px;}
+.review-table th{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:7px 8px;border-bottom:1px solid var(--border);text-align:left;white-space:nowrap;}
+.review-table td{padding:5px 5px;border-bottom:1px solid rgba(26,49,88,.6);vertical-align:middle;}
+.review-table tr:last-child td{border-bottom:none;}
+.review-table tr.low-conf td:first-child{border-left:2px solid var(--orange);}
+.review-table tr.duplicate td:first-child{border-left:2px solid var(--blue);}
+.review-table tr.deleted{opacity:.35;text-decoration:line-through;}
+.rt-input{width:100%;background:transparent;border:none;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;outline:none;padding:2px 4px;border-radius:4px;}
+.rt-input:focus{background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.3);}
+.conf-badge{display:inline-flex;padding:1px 6px;border-radius:6px;font-family:'Barlow Condensed',sans-serif;font-size:9px;font-weight:700;white-space:nowrap;}
+.conf-high{background:rgba(45,202,115,.1);color:var(--green);border:1px solid rgba(45,202,115,.25);}
+.conf-low{background:rgba(230,126,34,.1);color:var(--orange);border:1px solid rgba(230,126,34,.3);}
+.conf-dup{background:rgba(52,152,219,.1);color:var(--info);border:1px solid rgba(52,152,219,.25);}
+.review-table-wrap{max-height:340px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;}
+.push-result{background:var(--navy3);border:1px solid var(--border);border-radius:8px;padding:14px 16px;font-size:13px;line-height:1.9;}
+.push-result .pr-ok{color:var(--green);}
+.push-result .pr-fail{color:var(--danger);}
+.photo-modal .modal-footer{display:flex;gap:10px;margin-top:16px;padding-top:14px;border-top:1px solid var(--border);}
+
 </style>
 </head>
 <body>
@@ -222,6 +259,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
   </div>
   <div class="topbar-right">
     <button class="icon-btn" onclick="loadProspects()" id="refresh-btn">↻ Refresh</button>
+    <button class="icon-btn primary" onclick="openPhotoCapture()" style="gap:6px;">📷 Add from Photo</button>
     <a href="tracker.html" class="icon-btn">📞 Tracker</a>
     <a href="portal.html" class="icon-btn">📋 Portal</a>
     <a href="hub.html" class="icon-btn">← Hub</a>
@@ -1217,6 +1255,330 @@ function toast(msg){
   setTimeout(()=>t.classList.remove('show'),3200);
 }
 
+
+// ══════════════════════════════════════════════════════════════
+// ADD FROM PHOTO — PROSPECT CAPTURE TOOL
+// ══════════════════════════════════════════════════════════════
+
+// ── STATE ─────────────────────────────────────────────────────
+const photoState = {
+  images: [],      // { file, dataUrl, status, entries }
+  reviewed: [],    // final editable rows
+};
+let photoCurrentStep = 1;
+
+// ── OPEN / CLOSE ──────────────────────────────────────────────
+function openPhotoCapture() {
+  photoState.images = [];
+  photoState.reviewed = [];
+  photoCurrentStep = 1;
+  document.getElementById('thumb-grid').innerHTML = '';
+  document.getElementById('extract-progress').textContent = '';
+  document.getElementById('photo-extract-btn').disabled = true;
+  document.querySelectorAll('.photo-step').forEach(s => s.classList.remove('active'));
+  document.getElementById('photo-step-1').classList.add('active');
+  document.getElementById('photo-modal-title').textContent = '📷 Add from Photo';
+  document.getElementById('photo-modal').classList.add('open');
+}
+
+function closePhotoCapture() {
+  document.getElementById('photo-modal').classList.remove('open');
+}
+
+function photoGoBack() {
+  document.querySelectorAll('.photo-step').forEach(s => s.classList.remove('active'));
+  document.getElementById('photo-step-1').classList.add('active');
+  document.getElementById('photo-modal-title').textContent = '📷 Add from Photo';
+}
+
+function photoGoBack2() {
+  document.querySelectorAll('.photo-step').forEach(s => s.classList.remove('active'));
+  document.getElementById('photo-step-2').classList.add('active');
+  document.getElementById('photo-modal-title').textContent = '📷 Review Prospects';
+}
+
+// ── FILE HANDLING ─────────────────────────────────────────────
+function handlePhotoDrop(e) {
+  e.preventDefault();
+  document.getElementById('photo-drop-zone').classList.remove('drag-over');
+  handlePhotoFiles(e.dataTransfer.files);
+}
+
+function handlePhotoFiles(files) {
+  [...files].forEach(file => {
+    if (!file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const entry = { file, dataUrl: ev.target.result, status: 'queued', entries: [] };
+      photoState.images.push(entry);
+      addThumb(entry, photoState.images.length - 1);
+      document.getElementById('photo-extract-btn').disabled = false;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function addThumb(entry, idx) {
+  const grid = document.getElementById('thumb-grid');
+  const div = document.createElement('div');
+  div.className = 'thumb-item';
+  div.id = `thumb-${idx}`;
+  div.innerHTML = `
+    <img src="${entry.dataUrl}" alt="photo ${idx+1}">
+    <button class="thumb-del" onclick="removeThumb(${idx})">×</button>
+    <div class="thumb-status" id="thumb-status-${idx}">queued</div>`;
+  grid.appendChild(div);
+}
+
+function removeThumb(idx) {
+  photoState.images.splice(idx, 1);
+  // Re-render all thumbs
+  const grid = document.getElementById('thumb-grid');
+  grid.innerHTML = '';
+  photoState.images.forEach((e, i) => addThumb(e, i));
+  document.getElementById('photo-extract-btn').disabled = photoState.images.length === 0;
+}
+
+function setThumbStatus(idx, status, text) {
+  const el = document.getElementById(`thumb-status-${idx}`);
+  if (!el) return;
+  el.textContent = text;
+  el.className = `thumb-status ${status}`;
+}
+
+// ── EXTRACTION ────────────────────────────────────────────────
+async function extractAllPhotos() {
+  const btn = document.getElementById('photo-extract-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Extracting…';
+
+  const ANTHROPIC_KEY = AUTH.getAnthropicKey ? AUTH.getAnthropicKey() : '';
+  if (!ANTHROPIC_KEY) {
+    toast('⚠ No Anthropic API key — set it in Board Setup');
+    btn.disabled = false;
+    btn.textContent = '🔍 Extract Prospects';
+    return;
+  }
+
+  const prog = document.getElementById('extract-progress');
+  let allEntries = [];
+
+  for (let i = 0; i < photoState.images.length; i++) {
+    const img = photoState.images[i];
+    prog.textContent = `Processing image ${i+1} of ${photoState.images.length}…`;
+    setThumbStatus(i, '', '⏳');
+
+    try {
+      const entries = await extractFromImage(img.dataUrl, ANTHROPIC_KEY);
+      img.status = 'ok';
+      img.entries = entries;
+      setThumbStatus(i, 'ok', `✓ ${entries.length} found`);
+      allEntries = allEntries.concat(entries);
+    } catch(e) {
+      img.status = 'err';
+      setThumbStatus(i, 'err', '✗ failed');
+      console.warn(`Image ${i} extraction failed:`, e);
+    }
+  }
+
+  prog.textContent = `Done — ${allEntries.length} prospects extracted across ${photoState.images.length} image(s).`;
+
+  if (allEntries.length === 0) {
+    toast('No prospects found in any image. Try clearer photos.');
+    btn.disabled = false;
+    btn.textContent = '🔍 Extract Prospects';
+    return;
+  }
+
+  // Duplicate check against existing board prospects
+  const existingPhones = new Set(allProspects.map(p => (p.phone||'').replace(/\D/g,'')).filter(Boolean));
+  allEntries = allEntries.map(e => {
+    const digits = (e.phone||'').replace(/\D/g,'');
+    if (digits.length >= 7 && existingPhones.has(digits)) {
+      return { ...e, duplicate: true };
+    }
+    return e;
+  });
+
+  photoState.reviewed = allEntries.map((e, i) => ({ ...e, _id: i, selected: true, deleted: false }));
+  renderReviewTable();
+
+  // Go to step 2
+  document.querySelectorAll('.photo-step').forEach(s => s.classList.remove('active'));
+  document.getElementById('photo-step-2').classList.add('active');
+  document.getElementById('photo-modal-title').textContent = '📷 Review Prospects';
+  btn.textContent = '🔍 Extract Prospects';
+}
+
+async function extractFromImage(dataUrl, apiKey) {
+  const base64 = dataUrl.split(',')[1];
+  const mimeType = dataUrl.split(';')[0].split(':')[1];
+
+  const SYSTEM = `You are a prospect data extraction assistant for a life insurance sales team.
+Your ONLY job is to extract contact information from images of business cards, handwritten notes, or typed lists.
+Return ONLY valid JSON — no preamble, no markdown, no explanation.`;
+
+  const USER = `Extract every distinct prospect (person or business contact) visible in this image.
+For each, return a JSON array with objects containing:
+  - name: string (full name as written, empty string if unclear)
+  - phone: string (digits only, no formatting — e.g. "3105551234"; empty if none visible)
+  - email: string (empty if none)
+  - company: string (company/title if on a business card; empty otherwise)
+  - note: string (any handwritten annotation near this entry, e.g. "call after 3pm", "not interested"; empty if none)
+  - confidence: "high" or "low"
+  - flagReason: string (explain why confidence is low — e.g. "digits smudged", "name unclear"; empty if high)
+Rules:
+- Skip entries that are visibly crossed out or struck through
+- If the image is unreadable, return [{name:"",phone:"",email:"",company:"",note:"IMAGE_UNREADABLE",confidence:"low",flagReason:"Image too blurry or unreadable"}]
+- Never silently guess — always flag uncertainty
+- Return ONLY the JSON array, nothing else`;
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 2000,
+      system: SYSTEM,
+      messages: [{
+        role: 'user',
+        content: [
+          { type: 'image', source: { type: 'base64', media_type: mimeType, data: base64 } },
+          { type: 'text', text: USER }
+        ]
+      }]
+    })
+  });
+
+  if (!res.ok) throw new Error(`Claude API ${res.status}`);
+  const data = await res.json();
+  const text = data?.content?.[0]?.text || '[]';
+
+  // Clean and parse JSON
+  const cleaned = text.replace(/^```json\s*/,'').replace(/```\s*$/,'').trim();
+  let entries;
+  try { entries = JSON.parse(cleaned); } catch(e) { throw new Error('Could not parse Claude response as JSON'); }
+
+  if (!Array.isArray(entries)) throw new Error('Claude returned non-array');
+  return entries.filter(e => e.name || e.phone); // drop empty entries
+}
+
+// ── REVIEW TABLE ──────────────────────────────────────────────
+function renderReviewTable() {
+  const rows = photoState.reviewed;
+  const tbody = document.getElementById('review-tbody');
+  const selected = rows.filter(r => r.selected && !r.deleted).length;
+  document.getElementById('review-summary').textContent =
+    `${selected} of ${rows.length} prospects selected · ${rows.filter(r=>r.duplicate).length} possible duplicates`;
+  document.getElementById('photo-push-btn').textContent =
+    `✓ Add ${selected} to My Top 25`;
+  document.getElementById('select-all-rows').checked = rows.every(r => r.selected || r.deleted);
+
+  tbody.innerHTML = rows.map((r, i) => {
+    if (r.deleted) return `<tr class="deleted"><td colspan="6" style="padding:5px 8px;font-family:\'DM Mono\',monospace;font-size:11px;">${r.name||'—'} · ${r.phone||'—'} <button class="btn btn-ghost btn-sm" onclick="undoDeleteRow(${i})" style="margin-left:8px;padding:1px 7px;font-size:10px;">Undo</button></td></tr>`;
+    const rowCls = r.duplicate ? 'duplicate' : r.confidence === 'low' ? 'low-conf' : '';
+    const badge = r.duplicate
+      ? `<span class="conf-badge conf-dup" title="Already on your board">⚠ Duplicate</span>`
+      : r.confidence === 'low'
+        ? `<span class="conf-badge conf-low" title="${(r.flagReason||'').replace(/'/g,'\')}">⚠ ${r.confidence}</span>`
+        : `<span class="conf-badge conf-high">✓</span>`;
+    return `<tr class="${rowCls}" id="review-row-${i}">
+      <td><input type="checkbox" ${r.selected?'checked':''} onchange="toggleRow(${i},this.checked)"></td>
+      <td><input class="rt-input" value="${esc(r.name||'')}" oninput="updateRow(${i},'name',this.value)" placeholder="Name"></td>
+      <td><input class="rt-input" value="${esc(r.phone||'')}" oninput="updateRow(${i},'phone',this.value)" placeholder="Phone" style="min-width:110px;"></td>
+      <td><input class="rt-input" value="${esc(r.note||r.company||'')}" oninput="updateRow(${i},'note',this.value)" placeholder="Note / Company"></td>
+      <td>${badge}</td>
+      <td><button class="thumb-del" style="position:static;width:18px;height:18px;background:rgba(192,57,43,.7);" onclick="deleteRow(${i})">×</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
+function toggleRow(i, checked) { photoState.reviewed[i].selected = checked; renderReviewTable(); }
+function deleteRow(i) { photoState.reviewed[i].deleted = true; photoState.reviewed[i].selected = false; renderReviewTable(); }
+function undoDeleteRow(i) { photoState.reviewed[i].deleted = false; photoState.reviewed[i].selected = true; renderReviewTable(); }
+function updateRow(i, field, val) { photoState.reviewed[i][field] = val; }
+function toggleSelectAll(checked) {
+  photoState.reviewed.forEach(r => { if (!r.deleted) r.selected = checked; });
+  renderReviewTable();
+}
+
+// ── PUSH TO MONDAY ────────────────────────────────────────────
+const NEW_PROSPECTS_GROUP = 'current_week_prospects__Mjj6JdxM'; // "New Prospects for the Week"
+
+async function pushToMonday() {
+  const btn = document.getElementById('photo-push-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Adding to board…';
+
+  const toCreate = photoState.reviewed.filter(r => r.selected && !r.deleted && (r.name || r.phone));
+  if (!toCreate.length) { toast('No rows selected'); btn.disabled = false; return; }
+
+  let created = 0, failed = 0, failReasons = [];
+  const BATCH = 10;
+
+  for (let start = 0; start < toCreate.length; start += BATCH) {
+    const batch = toCreate.slice(start, start + BATCH);
+    const aliases = batch.map((row, i) => {
+      const itemName = (row.name || row.phone || 'New Prospect').replace(/"/g,'\'');
+      const cv = {};
+      if (row.phone) {
+        const digits = row.phone.replace(/\D/g,'');
+        if (digits) cv['phone_number__1'] = { phone: digits, countryShortName: 'US' };
+      }
+      if (row.note || row.company) cv['text4__1'] = (row.note || row.company).slice(0, 200);
+      const cvStr = JSON.stringify(JSON.stringify(cv));
+      return `p${i}: create_item(board_id: ${BOARD_ID}, group_id: "${NEW_PROSPECTS_GROUP}", item_name: "${itemName}", column_values: ${cvStr}) { id name }`;
+    }).join('\n  ');
+
+    try {
+      const res = await mondayQuery(`mutation {\n  ${aliases}\n}`);
+      if (res?.errors?.length) {
+        failed += batch.length;
+        failReasons.push(res.errors[0].message);
+      } else {
+        created += batch.length;
+      }
+    } catch(e) {
+      failed += batch.length;
+      failReasons.push(e.message);
+    }
+  }
+
+  // Show result
+  const resultEl = document.getElementById('push-result-body');
+  resultEl.innerHTML = `
+    <div class="pr-ok" style="font-family:\'Barlow Condensed\',sans-serif;font-size:22px;font-weight:800;margin-bottom:8px;">
+      ${created > 0 ? `✅ ${created} prospect${created!==1?'s':''} added to your Top 25` : '⚠ No prospects were added'}
+    </div>
+    ${failed > 0 ? `<div class="pr-fail">✗ ${failed} failed: ${failReasons.slice(0,3).join('; ')}</div>` : ''}
+    <div style="margin-top:10px;font-family:\'DM Mono\',monospace;font-size:11px;color:var(--muted);">
+      Added to <strong style="color:var(--accent2);">New Prospects for the Week</strong> group
+      ${created > 0 ? `· <a href="https://app.monday.com/boards/${BOARD_ID}" target="_blank" style="color:var(--accent);">View in Monday.com ↗</a>` : ''}
+    </div>
+    ${failed > 0 ? `<div style="margin-top:10px;font-size:12px;color:var(--muted);">Your reviewed list is preserved — go back and retry the failed rows.</div>` : ''}
+  `;
+
+  document.querySelectorAll('.photo-step').forEach(s => s.classList.remove('active'));
+  document.getElementById('photo-step-3').classList.add('active');
+  document.getElementById('photo-modal-title').textContent = '📷 Done';
+  btn.disabled = false;
+  btn.textContent = '✓ Add to My Top 25';
+}
+
+// ── CLOSE ON BACKDROP ─────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('photo-modal').addEventListener('click', e => {
+    if (e.target === document.getElementById('photo-modal')) closePhotoCapture();
+  });
+});
+
+
 // ── INIT ──────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded',()=>{
   document.getElementById('log-modal').addEventListener('click',e=>{if(e.target===document.getElementById('log-modal')) closeModal();});
@@ -1275,6 +1637,80 @@ document.addEventListener('DOMContentLoaded',()=>{
     <div class="modal-footer" style="margin-top:14px;">
       <button class="btn btn-ghost btn-sm" onclick="closeBoardPicker()" style="flex:1;justify-content:center;">Cancel</button>
     </div>
+  </div>
+</div>
+
+
+<!-- ══ ADD FROM PHOTO MODAL ════════════════════════════════════ -->
+<div class="modal-bg" id="photo-modal">
+  <div class="modal photo-modal">
+    <div class="modal-hdr">
+      <div class="modal-title" id="photo-modal-title">📷 Add from Photo</div>
+      <button class="modal-close" onclick="closePhotoCapture()">×</button>
+    </div>
+
+    <!-- STEP 1: Upload -->
+    <div class="photo-step active" id="photo-step-1">
+      <div class="photo-drop-zone" id="photo-drop-zone"
+        onclick="document.getElementById('photo-file-input').click()"
+        ondragover="event.preventDefault();this.classList.add('drag-over')"
+        ondragleave="this.classList.remove('drag-over')"
+        ondrop="handlePhotoDrop(event)">
+        <div class="dz-icon">📸</div>
+        <div class="dz-title">Drop photos here or tap to capture</div>
+        <div class="dz-hint">Business cards · Handwritten lists · Typed lists — any legible image</div>
+      </div>
+      <input id="photo-file-input" type="file" accept="image/*" multiple capture="environment"
+        style="display:none" onchange="handlePhotoFiles(this.files)">
+      <div class="thumb-grid" id="thumb-grid"></div>
+      <div class="extract-progress" id="extract-progress"></div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost btn-sm" onclick="closePhotoCapture()" style="flex:1;justify-content:center;">Cancel</button>
+        <button class="btn btn-accent" id="photo-extract-btn" onclick="extractAllPhotos()" disabled style="flex:2;justify-content:center;">🔍 Extract Prospects</button>
+      </div>
+    </div>
+
+    <!-- STEP 2: Review -->
+    <div class="photo-step" id="photo-step-2">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+        <div style="font-family:\'DM Mono\',monospace;font-size:11px;color:var(--muted);" id="review-summary">Review extracted prospects</div>
+        <div style="display:flex;gap:6px;">
+          <label style="display:flex;align-items:center;gap:5px;font-family:\'DM Mono\',monospace;font-size:11px;color:var(--muted);cursor:pointer;">
+            <input type="checkbox" id="select-all-rows" onchange="toggleSelectAll(this.checked)"> Select all
+          </label>
+        </div>
+      </div>
+      <div class="review-table-wrap">
+        <table class="review-table">
+          <thead>
+            <tr>
+              <th style="width:28px;"></th>
+              <th>Name</th>
+              <th>Phone</th>
+              <th style="width:36%;max-width:200px;">Note</th>
+              <th>Status</th>
+              <th style="width:28px;"></th>
+            </tr>
+          </thead>
+          <tbody id="review-tbody"></tbody>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost btn-sm" onclick="photoGoBack()" style="flex:1;justify-content:center;">← Back</button>
+        <button class="btn btn-accent" id="photo-push-btn" onclick="pushToMonday()" style="flex:2;justify-content:center;">✓ Add to My Top 25</button>
+      </div>
+    </div>
+
+    <!-- STEP 3: Result -->
+    <div class="photo-step" id="photo-step-3">
+      <div class="push-result" id="push-result-body"></div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost btn-sm" onclick="closePhotoCapture()" style="flex:1;justify-content:center;">Close</button>
+        <button class="btn btn-accent" onclick="photoGoBack2()" style="flex:1;justify-content:center;">← Add More</button>
+        <button class="btn btn-accent" onclick="closePhotoCapture();loadProspects();" style="flex:2;justify-content:center;">↻ Refresh Board</button>
+      </div>
+    </div>
+
   </div>
 </div>
 
