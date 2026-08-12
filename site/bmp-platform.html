@@ -1609,7 +1609,7 @@ function renderCallSection(key){
   content.innerHTML=`<div class="call-section-header" style="margin-top:0;">
     <div class="call-section-icon" style="background:${bg}22;color:${bg};">${section?.icon||'📋'}</div>
     <div><div class="call-section-title">${esc(section?.label||key)}</div>
-    <div style="font-size:12px;color:var(--muted);font-family:'DM Mono',monospace;">${esc(section?.desc||'')}</div></div>
+    <div style="font-size:12px;color:var(--muted);font-family:\'DM Mono\',monospace;">${esc(section?.desc||'')}</div></div>
     <div class="call-section-count">${items.length} clients <button class="btn btn-ghost btn-sm" onclick="exportSectionCSV('${key}')">↓ Export</button></div>
     </div><div class="call-grid" id="callGrid_${key}"></div>`;
   const grid=document.getElementById(`callGrid_${key}`);
@@ -1632,7 +1632,7 @@ function renderCallSection(key){
       <div class="call-card-tags">${tags.join('')}</div>`;
     grid.appendChild(card);
   });
-  if(items.length>100)grid.insertAdjacentHTML('beforeend',`<div style="grid-column:1/-1;text-align:center;padding:16px;color:var(--muted);font-family:'DM Mono',monospace;font-size:12px;">Showing 100 of ${items.length}.</div>`);
+  if(items.length>100)grid.insertAdjacentHTML('beforeend',`<div style="grid-column:1/-1;text-align:center;padding:16px;color:var(--muted);font-family:\'DM Mono\',monospace;font-size:12px;">Showing 100 of ${items.length}.</div>`);
 }
 
 function statusTagClass(s){if(/DECLINED|REJECTED/.test(s))return'ct-err';if(/APPROVED|ISSUED/.test(s))return'ct-ok';if(/WITHDRAWN|NOT TAKEN|CLOSED/.test(s))return'ct-info';if(/LAPSE/.test(s))return'ct-err';return'ct-info';}
@@ -1752,23 +1752,23 @@ function renderBriefing(){
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-top:20px;">
       <div style="background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.3);border-radius:10px;padding:14px;">
         <div style="font-size:24px;font-weight:800;color:var(--accent);">${pipeline.length}</div>
-        <div style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:2px;">Active pipeline</div>
+        <div style="font-size:11px;color:var(--muted);font-family:\'DM Mono\',monospace;margin-top:2px;">Active pipeline</div>
       </div>
       <div style="background:rgba(192,57,43,.1);border:1px solid rgba(192,57,43,.3);border-radius:10px;padding:14px;">
         <div style="font-size:24px;font-weight:800;color:var(--error);">${stalled.length}</div>
-        <div style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:2px;">Stalled ${staleThreshold}+ days</div>
+        <div style="font-size:11px;color:var(--muted);font-family:\'DM Mono\',monospace;margin-top:2px;">Stalled ${staleThreshold}+ days</div>
       </div>
       <div style="background:rgba(230,126,34,.1);border:1px solid rgba(230,126,34,.3);border-radius:10px;padding:14px;">
         <div style="font-size:24px;font-weight:800;color:var(--warn);">${pendingReqs.length}</div>
-        <div style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:2px;">Pending requirements</div>
+        <div style="font-size:11px;color:var(--muted);font-family:\'DM Mono\',monospace;margin-top:2px;">Pending requirements</div>
       </div>
       <div style="background:rgba(45,202,115,.08);border:1px solid rgba(45,202,115,.3);border-radius:10px;padding:14px;">
         <div style="font-size:24px;font-weight:800;color:var(--accent3);">${urgent.length}</div>
-        <div style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:2px;">Need draft date</div>
+        <div style="font-size:11px;color:var(--muted);font-family:\'DM Mono\',monospace;margin-top:2px;">Need draft date</div>
       </div>
       <div style="background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);border-radius:10px;padding:14px;">
         <div style="font-size:24px;font-weight:800;">${newBiz.length}</div>
-        <div style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:2px;">New apps (24h)</div>
+        <div style="font-size:11px;color:var(--muted);font-family:\'DM Mono\',monospace;margin-top:2px;">New apps (24h)</div>
       </div>
     </div>`;
   $$('stalledCount').textContent=stalled.length>0?stalled.length:'';
@@ -1814,7 +1814,7 @@ function renderCarrierClocks(){
     card.innerHTML=`<div class="cc-name">${esc(name)}</div>
       <div class="cc-hours">${hrs.open}am–${hrs.close<=12?hrs.close+'pm':'3pm'} PT</div>
       <div><span class="cc-status ${statusClass}">${statusText}</span></div>
-      <a href="${esc(portal)}" target="_blank" style="display:inline-block;margin-top:6px;font-size:10px;color:var(--accent);text-decoration:none;font-family:'DM Mono',monospace;">Open portal →</a>`;
+      <a href="${esc(portal)}" target="_blank" style="display:inline-block;margin-top:6px;font-size:10px;color:var(--accent);text-decoration:none;font-family:\'DM Mono\',monospace;">Open portal →</a>`;
     row.appendChild(card);
   });
 }
@@ -1854,7 +1854,7 @@ function renderPipeline(){
     kanban.appendChild(col);
 
     const list=document.getElementById(`pipe_${stage.key}`);
-    if(!policies.length){list.innerHTML=`<div style="text-align:center;padding:20px;font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);">Nothing here</div>`;return;}
+    if(!policies.length){list.innerHTML=`<div style="text-align:center;padding:20px;font-family:\'DM Mono\',monospace;font-size:11px;color:var(--muted);">Nothing here</div>`;return;}
     policies.forEach(p=>{
       const stale=isStale(p,staleThreshold);
       const daysInStatus=p.statusDate?Math.round((new Date()-new Date(p.statusDate+'T00:00:00'))/(1000*60*60*24)):null;
@@ -1951,14 +1951,14 @@ function renderTasks(){
       <input type="checkbox" class="task-check" ${done?'checked':''} onchange="toggleTask('${task.id}',this.checked,this.closest('.task-item'))">
       <span class="task-text">${esc(task.text)}</span>
       ${task.count!==null?`<span class="task-count" style="color:${priorityColor};background:${priorityColor}18;">${task.count}</span>`:''}
-      <span style="font-size:9px;text-transform:uppercase;letter-spacing:.08em;padding:2px 8px;border-radius:4px;font-family:'DM Mono',monospace;background:${priorityColor}18;color:${priorityColor};">${task.priority}</span>`;
+      <span style="font-size:9px;text-transform:uppercase;letter-spacing:.08em;padding:2px 8px;border-radius:4px;font-family:\'DM Mono\',monospace;background:${priorityColor}18;color:${priorityColor};">${task.priority}</span>`;
     taskList.appendChild(item);
   });
 
   const completedCount=Object.values(completedTasks).filter(Boolean).length;
   const totalCount=tasks.length;
   const pct=totalCount?Math.round(completedCount/totalCount*100):0;
-  taskList.insertAdjacentHTML('afterbegin',`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-bottom:12px;font-family:'DM Mono',monospace;font-size:12px;display:flex;align-items:center;gap:12px;">
+  taskList.insertAdjacentHTML('afterbegin',`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-bottom:12px;font-family:\'DM Mono\',monospace;font-size:12px;display:flex;align-items:center;gap:12px;">
     <div style="flex:1;background:var(--border);border-radius:4px;height:6px;overflow:hidden;">
       <div style="width:${pct}%;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent3));border-radius:4px;transition:width .3s;"></div>
     </div>
