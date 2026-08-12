@@ -578,8 +578,10 @@ async function fetchAndRender(boardId){
       if(cursor) pageArg+=`, cursor: "${cursor}"`;
       const groupArg=selGrp?`, query_params: { rules: [{ column_id: "__group__", compare_value: ["${selGrp}"], operator: any_of }] }`:'';
       const res=await mondayQuery(`{ boards(ids: ${boardId}) { items_page(${pageArg}${groupArg}) { cursor items { ${ITEM_FRAGMENT} } } } }`);
+      if(!res) throw new Error('No response from Monday API — check connection');
       if(res?.errors?.length) throw new Error(res.errors[0]?.message||'Monday API error');
       const page=res?.data?.boards?.[0]?.items_page;
+      if(!page) throw new Error(`Board ${boardId} not found or no access`);
       const items=page?.items||[];
       allItems=allItems.concat(items);
       cursor=page?.cursor||null;
@@ -591,7 +593,18 @@ async function fetchAndRender(boardId){
       allItems=await fetchAllItems(boardId);
       if(selGrp) allItems=allItems.filter(item=>item.group?.id===selGrp);
     }catch(e2){
-      document.getElementById('cards-container').innerHTML=`<div class="state-box"><div class="ico">⚠️</div><p>${e2.message}<br><br><button onclick="promptSetBoard()" class="btn btn-ghost btn-sm">⚙ Override</button></p></div>`;
+      document.getElementById('cards-container').innerHTML=`
+        <div class="state-box">
+          <div class="ico">⚠️</div>
+          <div class="s-title">Failed to Load Board</div>
+          <p style="margin-bottom:16px;">Board <code style="font-size:11px;background:rgba(201,168,76,.1);padding:2px 6px;border-radius:3px;">${boardId}</code><br>${e2.message}</p>
+          <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+            <button onclick="loadProspects()" class="btn btn-accent btn-sm">↻ Retry</button>
+            <button onclick="promptSetBoard()" class="btn btn-ghost btn-sm">⚙ Change Board</button>
+            <a href="https://app.monday.com/boards/${boardId}" target="_blank" class="btn btn-ghost btn-sm">Open in Monday ↗</a>
+          </div>
+        </div>`;
+      document.getElementById('refresh-btn').textContent='↻ Refresh';
       return;
     }
   }
@@ -611,6 +624,7 @@ async function fetchAllItems(boardId){
   do{
     const cursorArg=cursor?`, cursor: "${cursor}"`:'';
     const res=await mondayQuery(`{ boards(ids: ${boardId}) { items_page(limit: 500${cursorArg}) { cursor items { ${ITEM_FRAGMENT} } } } }`);
+    if(!res) throw new Error('No response from Monday API');
     const page=res?.data?.boards?.[0]?.items_page;
     const items=page?.items||[];
     all=all.concat(items);

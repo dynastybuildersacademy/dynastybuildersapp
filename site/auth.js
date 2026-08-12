@@ -1970,25 +1970,18 @@ const MONDAY_PROXY = window.location.hostname === 'localhost' || window.location
 
 async function mondayQuery(query, variables = {}) {
   const key = AUTH.getMondayKey() || MONDAY_ORG_KEY || '';
-  try {
-    const res = await fetch(MONDAY_PROXY, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': key,
-        'x-monday-key': key,
-      },
-      body: JSON.stringify({ query, variables, apiKey: key })
-    });
-    if (!res.ok) {
-      console.warn('Monday.com proxy error:', res.status, res.statusText);
-      return null;
-    }
-    return res.json();
-  } catch (e) {
-    console.warn('Monday.com query failed:', e);
-    return null;
-  }
+  const res = await fetch(MONDAY_PROXY, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': key,
+      'x-monday-key': key,
+    },
+    body: JSON.stringify({ query, variables, apiKey: key })
+  });
+  if (!res.ok) throw new Error(`Monday API HTTP ${res.status}`);
+  const json = await res.json();
+  return json; // callers check .errors and .data themselves
 }
 
 // ── 10. ANTHROPIC CHAT ────────────────────────────────────────

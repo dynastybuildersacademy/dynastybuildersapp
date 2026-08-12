@@ -894,6 +894,22 @@ async function finishConnect(method){
     if($$('oauthBtn'))$$('oauthBtn').disabled=true;
     if(btn){btn.textContent='✕ Disconnect';btn.style.cssText='background:rgba(192,57,43,.15);color:var(--error);border:1px solid rgba(192,57,43,.3);box-shadow:none;';btn.onclick=disconnectMonday;btn.disabled=false;}
     $$('sharedBoardCard').classList.remove('hidden');renderBoardList('');
+
+    // Auto-select the logged-in agent's Top 25 board
+    try {
+      const session = AUTH.getSession ? AUTH.getSession() : null;
+      const agentRecord = session && typeof AGENTS !== 'undefined'
+        ? AGENTS.find(a => a.id === session.agentId)
+        : null;
+      const agentBoardId = agentRecord?.top25BoardId || '';
+      if (agentBoardId) {
+        const match = boards.find(b => b.id === agentBoardId);
+        const boardName = match ? match.name : `Agent Top 25 (${agentBoardId})`;
+        await selectBoard(agentBoardId, boardName);
+        setKeyStatus('ok', `✓ Connected · ${boardName}`);
+      }
+    } catch(e) { console.warn('[BMP] Auto-board select:', e); }
+
   }catch(e){setKeyStatus('err','✗ '+e.message);mondayKey='';if(btn)btn.disabled=false;if($$('oauthBtn'))$$('oauthBtn').disabled=false;}
 }
 
@@ -937,7 +953,18 @@ async function gql(query,variables={}){
   if(j.errors?.length)throw new Error(j.errors[0].message);
   return j.data;
 }
-async function fetchAllBoards(){let all=[],page=1;while(true){const d=await gql(`query($p:Int!){boards(limit:50,page:$p,order_by:created_at){id name workspace{id name}}}`,{p:page});const b=d.boards||[];all=all.concat(b.map(x=>({id:x.id,name:x.name,workspaceName:x.workspace?.name||''})));if(b.length<50)break;page++;}return all;}
+async function fetchAllBoards(){
+  // Limit to 100 boards max to avoid timeouts
+  let all=[], page=1;
+  while(all.length < 100){
+    const d=await gql(`query($p:Int!){boards(limit:50,page:$p,order_by:created_at){id name workspace{id name}}}`,{p:page});
+    const b=d.boards||[];
+    all=all.concat(b.map(x=>({id:x.id,name:x.name,workspaceName:x.workspace?.name||''})));
+    if(b.length<50)break;
+    page++;
+  }
+  return all;
+}
 
 async function fetchColumnsAndGroups(boardId){
   const d=await gql(`query($id:ID!){boards(ids:[$id]){groups{id title color}columns{id title type settings_str}}}`,{id:boardId});
