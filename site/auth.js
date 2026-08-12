@@ -1969,14 +1969,16 @@ const MONDAY_PROXY = window.location.hostname === 'localhost' || window.location
   : '/api/monday';                        // Netlify Function in production
 
 async function mondayQuery(query, variables = {}) {
-  const key = AUTH.getMondayKey();
-  if (!key) return null;
+  const key = AUTH.getMondayKey() || MONDAY_ORG_KEY || '';
   try {
-    const isProxy = MONDAY_PROXY.startsWith('/');
     const res = await fetch(MONDAY_PROXY, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...(isProxy ? {} : { 'Authorization': key }) },
-      body: JSON.stringify(isProxy ? { query, variables, apiKey: key } : { query, variables })
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': key,
+        'x-monday-key': key,
+      },
+      body: JSON.stringify({ query, variables, apiKey: key })
     });
     if (!res.ok) {
       console.warn('Monday.com proxy error:', res.status, res.statusText);
