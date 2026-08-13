@@ -1799,7 +1799,6 @@ const AUTH = {
   // Agents can still override with their own key via Board Setup.
   MONDAY_KEY_DEFAULT:  'eyJhbGciOiJIUzI1NiJ9.eyJ0aWQiOjY1Nzg0OTc3NSwiYWFpIjoxMSwidWlkIjo2MTY2MDI5NCwiaWFkIjoiMjAyNi0wNS0xM1QwOTo0OTowNy4wMDBaIiwicGVyIjoibWU6d3JpdGUiLCJhY3RpZCI6MjM3NjI1MTMsInJnbiI6InVzZTEifQ.eCbOAEJTC3mcsit4IjVWOw3r2wyQBYL4lN5Qmnok0r0',
   ANTHROPIC_KEY_STORAGE:"dba_anthropic_key",
-  ANTHROPIC_KEY_DEFAULT:"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",
 
   login(agentId, pin) {
     const agent = AGENTS.find(a =>
@@ -1879,7 +1878,7 @@ const AUTH = {
     return MONDAY_ORG_KEY || AUTH.MONDAY_KEY_DEFAULT || '';
   },
   saveAnthropicKey(k){ try { localStorage.setItem(AUTH.ANTHROPIC_KEY_STORAGE, k); } catch {} },
-  getAnthropicKey()  { try { return localStorage.getItem(AUTH.ANTHROPIC_KEY_STORAGE) || AUTH.ANTHROPIC_KEY_DEFAULT || ''; } catch { return AUTH.ANTHROPIC_KEY_DEFAULT || ''; } }
+  getAnthropicKey()  { try { return localStorage.getItem(AUTH.ANTHROPIC_KEY_STORAGE) || ''; } catch { return ''; } }
 };
 
 // ── 7. HELPER FUNCTIONS ───────────────────────────────────────

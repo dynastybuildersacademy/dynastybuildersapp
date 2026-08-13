@@ -1352,13 +1352,8 @@ async function extractAllPhotos() {
   btn.disabled = true;
   btn.textContent = '⏳ Extracting…';
 
-  const ANTHROPIC_KEY = AUTH.getAnthropicKey ? AUTH.getAnthropicKey() : '';
-  if (!ANTHROPIC_KEY) {
-    toast('⚠ No Anthropic API key — set it in Board Setup');
-    btn.disabled = false;
-    btn.textContent = '🔍 Extract Prospects';
-    return;
-  }
+  // Anthropic key is server-side in Netlify env — no client-side key needed
+  const ANTHROPIC_KEY = ''; // kept for localhost dev fallback only
 
   const prog = document.getElementById('extract-progress');
   let allEntries = [];
@@ -1433,14 +1428,14 @@ Rules:
 - Never silently guess — always flag uncertainty
 - Return ONLY the JSON array, nothing else`;
 
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
+  // Route through Netlify proxy — key stays server-side, never in browser
+  const CLAUDE_ENDPOINT = location.hostname === 'localhost'
+    ? 'https://api.anthropic.com/v1/messages'
+    : '/api/claude';
+
+  const fetchOpts = {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-      'anthropic-dangerous-direct-browser-access': 'true'
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       model: 'claude-sonnet-4-6',
       max_tokens: 2000,
@@ -1453,7 +1448,14 @@ Rules:
         ]
       }]
     })
-  });
+  };
+  // For localhost dev only — add key directly
+  if (location.hostname === 'localhost' && apiKey) {
+    fetchOpts.headers['x-api-key'] = apiKey;
+    fetchOpts.headers['anthropic-version'] = '2023-06-01';
+    fetchOpts.headers['anthropic-dangerous-direct-browser-access'] = 'true';
+  }
+  const res = await fetch(CLAUDE_ENDPOINT, fetchOpts);
 
   if (!res.ok) throw new Error(`Claude API ${res.status}`);
   const data = await res.json();
