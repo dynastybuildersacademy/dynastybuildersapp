@@ -4,7 +4,7 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DBA — Monday.com Board Setup</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@700&family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script src="auth.js?v=20260713"></script>
+<script src="auth.js"></script>
 <style>
 :root{--navy:#0A1628;--navy-mid:#112040;--navy-light:#1A3158;--gold:#C9A84C;--gold-light:#E8C97A;--cream:#FAF6EE;--success:#27AE60;--warn:#E67E22;--danger:#C0392B;--slate:#6B7C93;--border:rgba(201,168,76,0.22);}
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -77,7 +77,9 @@ input:focus{outline:none;border-color:var(--gold);}
 </style>
 </head>
 <body>
-<script>AUTH.require('monday-setup.html');</script>
+<script>
+const MONDAY_ENDPOINT = location.hostname === 'localhost' ? 'https://api.monday.com/v2' : '/api/monday';
+AUTH.require('monday-setup.html');</script>
 
 <div class="header">
   <div style="display:flex;align-items:center;gap:12px;">
@@ -783,7 +785,7 @@ async function copyColIds(boardId) {
 
 // ── GQL HELPER ────────────────────────────────────────────────
 async function gql(query, variables={}) {
-  const res = await fetch('https://api.monday.com/v2', {
+  const res = await fetch(MONDAY_ENDPOINT, {
     method: 'POST',
     headers: { 'Content-Type':'application/json', 'Authorization': mondayKey, 'API-Version': '2023-10' },
     body: JSON.stringify({ query, variables })

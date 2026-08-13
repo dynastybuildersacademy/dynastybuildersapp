@@ -308,7 +308,7 @@ footer strong{color:rgba(255,255,255,0.35);}
   .event-grid{grid-template-columns:1fr 1fr;}
 }
 </style>
-<script src="auth.js?v=20260713"></script>
+<script src="auth.js"></script>
 </head>
 <body>
 <div class="bg-layer"></div>
@@ -499,6 +499,8 @@ footer strong{color:rgba(255,255,255,0.35);}
 </div>
 
 <script>
+const MONDAY_ENDPOINT = location.hostname === 'localhost' ? 'https://api.monday.com/v2' : '/api/monday';
+
 // ── CONFIG ─────────────────────────────────────────────
 // Paste your Monday.com API key and confirm Board ID
 const MONDAY_API_KEY = window.AUTH ? AUTH.getMondayKey() : '';        // ← paste your API key
@@ -636,7 +638,7 @@ function submitForm() {
 
   // Fire Monday and Zapier in parallel
   const mondayPromise = MONDAY_API_KEY
-    ? fetch('https://api.monday.com/v2', {
+    ? fetch(MONDAY_ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': MONDAY_API_KEY, 'API-Version': '2024-01' },
         body: JSON.stringify({ query })
@@ -698,7 +700,7 @@ function retryWithoutStatus(nameSafe, cols, fname, lname) {
     ) { id }
   }`;
 
-  fetch('https://api.monday.com/v2', {
+  fetch(MONDAY_ENDPOINT, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

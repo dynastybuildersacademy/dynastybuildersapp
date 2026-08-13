@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<script src="auth.js?v=20260713"></script>
+<script src="auth.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>World Cup Financial Game Plan -- Dynasty Builders Academy</title>
+<title>World Cup Financial Game Plan — Dynasty Builders Academy</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=Barlow:wght@300;400;500;600&family=Barlow+Condensed:wght@600;700;800&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -116,16 +116,16 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);m
 </head>
 <body>
 <div class="bg"></div>
-<div class="score-bug" id="score-bug" style="display:none;"><span class="ball">&#9917;</span><span id="score-bug-text">0/0</span></div>
+<div class="score-bug" id="score-bug" style="display:none;"><span class="ball">⚽</span><span id="score-bug-text">0/0</span></div>
 <div class="wrap">
 
-  <a href="hub.html" class="back-link">&#8592; Back to Hub</a>
+  <a href="hub.html" class="back-link">← Back to Hub</a>
 
   <div class="hdr">
-    <div class="hdr-tag">&#9917; 2026 World Cup . Quarterfinals Edition</div>
+    <div class="hdr-tag">2026 World Cup Edition</div>
     <h1 class="hdr-title">The <em>Financial World Cup</em> Challenge</h1>
-    <p class="hdr-sub">The 2026 FIFA World Cup is in the quarterfinals -- 8 teams remain after 56 matches of drama, upsets, and comeback victories. Test your soccer IQ on the tournament so far, then find out how your financial game plan stacks up -- because winning takes a strategy, on the pitch and off it.</p>
-    <div class="flag-row">&#9917; &#127482;&#127480; &#127474;&#127485; &#127464;&#127462; &#127942;</div>
+    <p class="hdr-sub">The 2026 FIFA World Cup is officially underway across Los Angeles, Mexico, Canada, and cities throughout North America. Test your soccer knowledge from the matches so far, then find out how your financial game plan stacks up — because winning takes a strategy, on the pitch and off it.</p>
+    <div class="flag-row">⚽ 🇺🇸 🇲🇽 🇨🇦 🏆</div>
   </div>
 
   <div class="progress-wrap">
@@ -140,49 +140,49 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);m
   <div class="step active" id="step-1">
     <div class="q-num">Question 1 <span class="q-badge trivia">Kickoff</span></div>
     <div class="q-text">When the 2026 World Cup kicks off, which team are you rooting for?</div>
-    <div class="q-sub">This is your home team for the rest of the game -- we'll bring it back at the end.</div>
+    <div class="q-sub">This is your home team for the rest of the game — we'll bring it back at the end.</div>
     <div class="options">
       <div class="opt" onclick="select(this,'team','usa')">
         <div class="opt-radio"></div>
-        <div><div class="opt-label">&#127482;&#127480; Team USA</div><div class="opt-desc">Co-host nation -- eliminated in Round of 16 by Belgium (4-1)</div></div>
+        <div><div class="opt-label">🇺🇸 Team USA</div><div class="opt-desc">Co-host nation — games across the country including LA</div></div>
       </div>
       <div class="opt" onclick="select(this,'team','mexico')">
         <div class="opt-radio"></div>
-        <div><div class="opt-label">&#127474;&#127485; Mexico</div><div class="opt-desc">Co-host nation -- eliminated in Round of 16 by England (3-2)</div></div>
+        <div><div class="opt-label">🇲🇽 Mexico</div><div class="opt-desc">Co-host nation — legendary fan energy</div></div>
       </div>
       <div class="opt" onclick="select(this,'team','canada')">
         <div class="opt-radio"></div>
-        <div><div class="opt-label">&#127464;&#127462; Canada</div><div class="opt-desc">Co-host nation -- eliminated in Round of 16 by Morocco (3-0)</div></div>
+        <div><div class="opt-label">🇨🇦 Canada</div><div class="opt-desc">Co-host nation — first World Cup appearance since 1986</div></div>
       </div>
       <div class="opt" onclick="select(this,'team','other')">
         <div class="opt-radio"></div>
-        <div><div class="opt-label">&#127758; Another country</div><div class="opt-desc">Still alive: France, Spain, Belgium, Norway, England, Argentina, Morocco, Switzerland</div></div>
+        <div><div class="opt-label">🌍 Another country</div><div class="opt-desc">Brazil, Argentina, England, France... wherever your roots are!</div></div>
       </div>
     </div>
     <div class="nav-row">
-      <button class="btn-next" id="next-1" onclick="next(1)" disabled>Continue &#8594;</button>
+      <button class="btn-next" id="next-1" onclick="next(1)" disabled>Continue →</button>
     </div>
   </div>
 
   <!-- Q2: TRIVIA - Host cities -->
   <div class="step" id="step-2">
     <div class="q-num">Question 2 <span class="q-badge trivia">Trivia</span></div>
-    <div class="q-text">True or False: Germany -- four-time World Cup champions -- was eliminated from the 2026 World Cup by Paraguay in the Round of 32.</div>
-    <div class="q-sub">Hint: One of the biggest upsets in World Cup history.</div>
+    <div class="q-text">True or False: Team USA opened the 2026 World Cup with a win at SoFi Stadium in Los Angeles (renamed "Los Angeles Stadium" for the tournament).</div>
+    <div class="q-sub">Hint: It was a statement performance on home turf.</div>
     <div class="options" id="opts-2">
       <div class="opt" onclick="selectTrivia(this,2,'true',true)">
         <div class="opt-radio"></div>
-        <div><div class="opt-label">True -- Paraguay won on penalties (4-3)</div></div>
+        <div><div class="opt-label">True</div></div>
       </div>
       <div class="opt" onclick="selectTrivia(this,2,'false',false)">
         <div class="opt-radio"></div>
-        <div><div class="opt-label">False -- Germany advanced</div></div>
+        <div><div class="opt-label">False</div></div>
       </div>
     </div>
     <div class="feedback" id="fb-2"></div>
     <div class="nav-row">
-      <button class="btn-back" onclick="back(2)">&#8592; Back</button>
-      <button class="btn-next" id="next-2" onclick="next(2)" disabled>Continue &#8594;</button>
+      <button class="btn-back" onclick="back(2)">← Back</button>
+      <button class="btn-next" id="next-2" onclick="next(2)" disabled>Continue →</button>
     </div>
   </div>
 
@@ -190,7 +190,7 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);m
   <div class="step" id="step-3">
     <div class="q-num">Question 3 <span class="q-badge trivia">Trivia</span></div>
     <div class="q-text">How many countries are co-hosting the 2026 World Cup?</div>
-    <div class="q-sub">It's the first World Cup ever hosted by this many nations -- USA, Canada, and Mexico. All three co-hosts have since been eliminated in the knockout rounds.</div>
+    <div class="q-sub">It's the first World Cup ever hosted by this many nations — and group-stage matches are happening across all three right now.</div>
     <div class="options" id="opts-3">
       <div class="opt" onclick="selectTrivia(this,3,'2',false)">
         <div class="opt-radio"></div><div><div class="opt-label">2 countries</div></div>
@@ -204,8 +204,8 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);m
     </div>
     <div class="feedback" id="fb-3"></div>
     <div class="nav-row">
-      <button class="btn-back" onclick="back(3)">&#8592; Back</button>
-      <button class="btn-next" id="next-3" onclick="next(3)" disabled>Continue &#8594;</button>
+      <button class="btn-back" onclick="back(3)">← Back</button>
+      <button class="btn-next" id="next-3" onclick="next(3)" disabled>Continue →</button>
     </div>
   </div>
 
@@ -217,7 +217,7 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);m
     <div class="options">
       <div class="opt" onclick="select(this,'q4','bench')">
         <div class="opt-radio"></div>
-        <div><div class="opt-label">A strong "bench" matters</div><div class="opt-desc">Just like a team needs depth beyond the starting 11, your finances need backup plans -- savings, insurance, and reserves ready when called on</div></div>
+        <div><div class="opt-label">A strong "bench" matters</div><div class="opt-desc">Just like a team needs depth beyond the starting 11, your finances need backup plans — savings, insurance, and reserves ready when called on</div></div>
       </div>
       <div class="opt" onclick="select(this,'q4','starters')">
         <div class="opt-radio"></div>
@@ -229,8 +229,8 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);m
       </div>
     </div>
     <div class="nav-row">
-      <button class="btn-back" onclick="back(4)">&#8592; Back</button>
-      <button class="btn-next" id="next-4" onclick="next(4)" disabled>Continue &#8594;</button>
+      <button class="btn-back" onclick="back(4)">← Back</button>
+      <button class="btn-next" id="next-4" onclick="next(4)" disabled>Continue →</button>
     </div>
   </div>
 
@@ -242,7 +242,7 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);m
     <div class="options">
       <div class="opt" onclick="select(this,'q5','employer')">
         <div class="opt-radio"></div>
-        <div><div class="opt-label">Group Term through my employer</div><div class="opt-desc">Like borrowing a player -- coverage ends when you leave the team (job)</div></div>
+        <div><div class="opt-label">Group Term through my employer</div><div class="opt-desc">Like borrowing a player — coverage ends when you leave the team (job)</div></div>
       </div>
       <div class="opt" onclick="select(this,'q5','personal')">
         <div class="opt-radio"></div>
@@ -250,7 +250,7 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);m
       </div>
       <div class="opt" onclick="select(this,'q5','both')">
         <div class="opt-radio"></div>
-        <div><div class="opt-label">Both employer and personal coverage</div><div class="opt-desc">A deep roster -- primary and backup protection</div></div>
+        <div><div class="opt-label">Both employer and personal coverage</div><div class="opt-desc">A deep roster — primary and backup protection</div></div>
       </div>
       <div class="opt" onclick="select(this,'q5','none')">
         <div class="opt-radio"></div>
@@ -258,8 +258,8 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);m
       </div>
     </div>
     <div class="nav-row">
-      <button class="btn-back" onclick="back(5)">&#8592; Back</button>
-      <button class="btn-next" id="next-5" onclick="next(5)" disabled>Continue &#8594;</button>
+      <button class="btn-back" onclick="back(5)">← Back</button>
+      <button class="btn-next" id="next-5" onclick="next(5)" disabled>Continue →</button>
     </div>
   </div>
 
@@ -267,7 +267,7 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);m
   <div class="step" id="step-6">
     <div class="q-num">Question 6 <span class="q-badge trivia">Trivia</span></div>
     <div class="q-text">True or False: The winning team of the World Cup takes home over $40 million in prize money.</div>
-    <div class="q-sub">The 2026 World Cup has a record $625M prize pool -- the champion takes home $40M+. Financial wins compound the same way.</div>
+    <div class="q-sub">Championship payouts aren't small — and neither should your financial wins be.</div>
     <div class="options" id="opts-6">
       <div class="opt" onclick="selectTrivia(this,6,'true',true)">
         <div class="opt-radio"></div><div><div class="opt-label">True</div></div>
@@ -278,8 +278,8 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);m
     </div>
     <div class="feedback" id="fb-6"></div>
     <div class="nav-row">
-      <button class="btn-back" onclick="back(6)">&#8592; Back</button>
-      <button class="btn-next" id="next-6" onclick="next(6)" disabled>Continue &#8594;</button>
+      <button class="btn-back" onclick="back(6)">← Back</button>
+      <button class="btn-next" id="next-6" onclick="next(6)" disabled>Continue →</button>
     </div>
   </div>
 
@@ -307,16 +307,16 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);m
       </div>
     </div>
     <div class="nav-row">
-      <button class="btn-back" onclick="back(7)">&#8592; Back</button>
-      <button class="btn-next" id="next-7" onclick="next(7)" disabled>Continue &#8594;</button>
+      <button class="btn-back" onclick="back(7)">← Back</button>
+      <button class="btn-next" id="next-7" onclick="next(7)" disabled>Continue →</button>
     </div>
   </div>
 
   <!-- Q8: TRIVIA - 2026 format (48 teams) -->
   <div class="step" id="step-8">
     <div class="q-num">Question 8 <span class="q-badge trivia">Trivia</span></div>
-    <div class="q-text">The 2026 World Cup's expanded format featured 48 teams across 12 groups -- the largest field ever. How many teams advanced from the group stage to the knockout rounds?</div>
-    <div class="q-sub">The group stage is complete -- 32 teams advanced, and now just 8 remain in the quarterfinals. Bigger tournament, bigger opportunity -- same as building wealth over time.</div>
+    <div class="q-text">For the first time ever, the 2026 World Cup features 48 teams across 12 groups. After the group stage wraps up later this month, how many teams advance to the knockout rounds?</div>
+    <div class="q-sub">Bigger tournament, bigger opportunity — same as building wealth over time.</div>
     <div class="options" id="opts-8">
       <div class="opt" onclick="selectTrivia(this,8,'16',false)">
         <div class="opt-radio"></div><div><div class="opt-label">16 teams</div></div>
@@ -330,8 +330,8 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);m
     </div>
     <div class="feedback" id="fb-8"></div>
     <div class="nav-row">
-      <button class="btn-back" onclick="back(8)">&#8592; Back</button>
-      <button class="btn-next" id="next-8" onclick="next(8)" disabled>Continue &#8594;</button>
+      <button class="btn-back" onclick="back(8)">← Back</button>
+      <button class="btn-next" id="next-8" onclick="next(8)" disabled>Continue →</button>
     </div>
   </div>
 
@@ -339,7 +339,7 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);m
   <div class="step" id="step-9">
     <div class="q-num">Question 9 <span class="q-badge money">Game Plan</span></div>
     <div class="q-text">Champions train consistently. What monthly "training budget" could you commit to building your financial game plan?</div>
-    <div class="q-sub">A rough monthly amount -- this just helps personalize your results.</div>
+    <div class="q-sub">A rough monthly amount — this just helps personalize your results.</div>
     <div class="options">
       <div class="opt" onclick="select(this,'q9','under100')">
         <div class="opt-radio"></div>
@@ -347,11 +347,11 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);m
       </div>
       <div class="opt" onclick="select(this,'q9','100-250')">
         <div class="opt-radio"></div>
-        <div><div class="opt-label">$100 - $250/month</div><div class="opt-desc">Solid starting lineup budget</div></div>
+        <div><div class="opt-label">$100 – $250/month</div><div class="opt-desc">Solid starting lineup budget</div></div>
       </div>
       <div class="opt" onclick="select(this,'q9','250-500')">
         <div class="opt-radio"></div>
-        <div><div class="opt-label">$250 - $500/month</div><div class="opt-desc">Playing for serious results</div></div>
+        <div><div class="opt-label">$250 – $500/month</div><div class="opt-desc">Playing for serious results</div></div>
       </div>
       <div class="opt" onclick="select(this,'q9','500plus')">
         <div class="opt-radio"></div>
@@ -359,8 +359,8 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);m
       </div>
     </div>
     <div class="nav-row">
-      <button class="btn-back" onclick="back(9)">&#8592; Back</button>
-      <button class="btn-next" id="next-9" onclick="next(9)" disabled>Continue &#8594;</button>
+      <button class="btn-back" onclick="back(9)">← Back</button>
+      <button class="btn-next" id="next-9" onclick="next(9)" disabled>Continue →</button>
     </div>
   </div>
 
@@ -379,32 +379,32 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);m
       <div class="text-group"><label>Age Range</label>
         <select id="s-age">
           <option value="">Select...</option>
-          <option value="18-25">18-25</option>
-          <option value="26-35">26-35</option>
-          <option value="36-45">36-45</option>
-          <option value="46-55">46-55</option>
+          <option value="18-25">18–25</option>
+          <option value="26-35">26–35</option>
+          <option value="36-45">36–45</option>
+          <option value="46-55">46–55</option>
           <option value="56+">56+</option>
         </select>
       </div>
       <div class="text-group"><label>Zip Code</label><input type="text" id="s-zip" placeholder="90001" maxlength="5"></div>
     </div>
     <div class="nav-row">
-      <button class="btn-back" onclick="back(10)">&#8592; Back</button>
-      <button class="btn-next" onclick="submit()">See My Results &#8594;</button>
+      <button class="btn-back" onclick="back(10)">← Back</button>
+      <button class="btn-next" onclick="submit()">See My Results →</button>
     </div>
   </div>
 
   <!-- RESULT -->
   <div class="step" id="step-result">
     <div class="result-wrap">
-      <div class="result-trophy" id="result-trophy">&#127942;</div>
+      <div class="result-trophy" id="result-trophy">🏆</div>
       <div class="result-score" id="result-score">Trivia Score: 0/4</div>
       <div class="result-title" id="result-title">Your Financial Game Plan</div>
       <div class="result-sub" id="result-sub"></div>
       <div id="result-cards"></div>
       <div class="result-cta">
-        <a href="schedule-1on1.html" class="btn-primary" id="cta-schedule">&#128467;&#65039; Book My Free Game Plan Session</a>
-        <a href="employer-vs-iul-brochure.html" class="btn-secondary">&#128202; See the Employer vs. IUL Comparison</a>
+        <a href="schedule-1on1.html" class="btn-primary" id="cta-schedule">🗓️ Book My Free Game Plan Session</a>
+        <a href="employer-vs-iul-brochure.html" class="btn-secondary">📊 See the Employer vs. IUL Comparison</a>
       </div>
     </div>
   </div>
@@ -440,13 +440,13 @@ function selectTrivia(el, step, val, isCorrect) {
     triviaScore++;
     el.classList.add('correct');
     fb.className = 'feedback show correct-fb';
-    fb.textContent = "&#9917; Goal! That's correct.";
+    fb.textContent = "⚽ Goal! That's correct.";
   } else {
     el.classList.add('incorrect');
     // Highlight the correct one
     opts.forEach((o,i) => { if (o.onclick.toString().includes(',true)')) o.classList.add('correct'); });
     fb.className = 'feedback show incorrect-fb';
-    fb.innerHTML = '&#129000; Not quite -- but every champion learns from a missed shot.';
+    fb.textContent = '🟨 Not quite — but every champion learns from a missed shot.';
   }
 
   // Update score bug
@@ -479,18 +479,18 @@ function updateProgress(step) {
 }
 
 
-// &#9472;&#9472; WRITE TO FINANCIAL SURVEYS BOARD ON MONDAY.COM &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;
+// ── WRITE TO FINANCIAL SURVEYS BOARD ON MONDAY.COM ────────────
 // Shared by all survey funnels (IUL survey, World Cup survey, etc.)
 // "source" column differentiates which survey/funnel the lead came from.
 async function writeSurveyToMonday(opts) {
   try {
-    if (!AUTH.getMondayKey()) { console.warn('[Survey&#8594;Monday] No Monday API key set -- skipping write'); return; }
+    if (!AUTH.getMondayKey()) { console.warn('[Survey→Monday] No Monday API key set — skipping write'); return; }
     const boardId = localStorage.getItem('dba_survey_board_id') || TEAM.monday.boardSurveys;
     const today = new Date().toISOString().slice(0,10);
 
     const itemName = `${opts.firstName} ${opts.lastName||''} \u2014 ${opts.sourceLabel} \u00b7 ${opts.phone} \u00b7 Ref: ${opts.agentRef||'direct'}`.trim();
 
-    // &#9472;&#9472; Discover columns (id + type) &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;
+    // ── Discover columns (id + type) ──────────────────────────
     // Cache key includes board ID so switching boards invalidates the cache.
     let cols = null;
     const cacheKey = 'dba_survey_cols_' + boardId;
@@ -501,12 +501,12 @@ async function writeSurveyToMonday(opts) {
     if (!cols) {
       const boardRes = await mondayQuery(`{ boards(ids: ${boardId}) { columns { id title type } } }`);
       if (boardRes?.errors) {
-        console.error('[Survey&#8594;Monday] Failed to fetch board columns:', boardRes.errors);
+        console.error('[Survey→Monday] Failed to fetch board columns:', boardRes.errors);
         return;
       }
       cols = boardRes?.data?.boards?.[0]?.columns || [];
       if (!cols.length) {
-        console.error('[Survey&#8594;Monday] No columns found on board', boardId, '-- check board ID / API key permissions');
+        console.error('[Survey→Monday] No columns found on board', boardId, '— check board ID / API key permissions');
         return;
       }
       localStorage.setItem(cacheKey, JSON.stringify(cols));
@@ -531,7 +531,7 @@ async function writeSurveyToMonday(opts) {
       notes:           find('notes'),
     };
 
-    // &#9472;&#9472; Format a value based on the target column's TYPE &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;
+    // ── Format a value based on the target column's TYPE ──────
     // This is the critical fix: Monday rejects column_values where the
     // shape doesn't match the column type (e.g. sending a plain string
     // to a "status" column, or a number to a "text" column). When ANY
@@ -560,7 +560,7 @@ async function writeSurveyToMonday(opts) {
         case 'checkbox':
           return { checked: !!rawValue };
         default:
-          // Unknown/unsupported type -- try plain text fallback
+          // Unknown/unsupported type — try plain text fallback
           return String(rawValue);
       }
     }
@@ -591,7 +591,7 @@ async function writeSurveyToMonday(opts) {
       cv[col.id] = formatted;
     }
     if (skipped.length) {
-      console.warn('[Survey&#8594;Monday] Some fields have no matching column on the board:', skipped.join(', '));
+      console.warn('[Survey→Monday] Some fields have no matching column on the board:', skipped.join(', '));
     }
 
     const q = `mutation($cv: JSON!) {
@@ -605,18 +605,18 @@ async function writeSurveyToMonday(opts) {
     const result = await mondayQuery(q, { cv: JSON.stringify(cv) });
 
     if (result?.errors) {
-      console.error('[Survey&#8594;Monday] create_item returned errors (item may have been created WITHOUT column data):', result.errors);
+      console.error('[Survey→Monday] create_item returned errors (item may have been created WITHOUT column data):', result.errors);
       // If the error mentions an invalid status/dropdown label, the cached column
       // metadata may be stale (e.g. label doesn't exist as an option yet).
       // Clear the cache so the next submission re-fetches fresh column definitions.
       localStorage.removeItem(cacheKey);
     } else if (result?.data?.create_item?.id) {
-      console.log('[Survey&#8594;Monday] Item created:', result.data.create_item.id, 'with', Object.keys(cv).length, 'column values');
+      console.log('[Survey→Monday] Item created:', result.data.create_item.id, 'with', Object.keys(cv).length, 'column values');
     } else {
-      console.warn('[Survey&#8594;Monday] Unexpected response (no errors, no item id):', result);
+      console.warn('[Survey→Monday] Unexpected response (no errors, no item id):', result);
     }
   } catch(e) {
-    console.error('[Survey&#8594;Monday] writeSurveyToMonday threw:', e);
+    console.error('[Survey→Monday] writeSurveyToMonday threw:', e);
   }
 }
 
@@ -663,7 +663,7 @@ function submit() {
 }
 
 const TEAM_LABELS = {
-  usa:'Team USA &#127482;&#127480;', mexico:'Mexico &#127474;&#127485;', canada:'Canada &#127464;&#127462;', other:'your team &#127757;'
+  usa:'Team USA 🇺🇸', mexico:'Mexico 🇲🇽', canada:'Canada 🇨🇦', other:'your team 🌍'
 };
 
 function showResult(fname, a) {
@@ -674,14 +674,14 @@ function showResult(fname, a) {
   document.getElementById('step-pct').textContent = '100%';
   document.getElementById('score-bug').style.display = 'none';
 
-  document.getElementById('result-score').innerHTML = `&#9917; Trivia Score: ${triviaScore}/${triviaTotal}`;
+  document.getElementById('result-score').textContent = `⚽ Trivia Score: ${triviaScore}/${triviaTotal}`;
 
   const team = TEAM_LABELS[a.team] || 'your team';
   const coverage = a.q5;
   const goal = a.q7;
   const budget = a.q9;
 
-  // Financial readiness score (separate from trivia) -- higher = more urgent need
+  // Financial readiness score (separate from trivia) — higher = more urgent need
   let finScore = 0;
   if (coverage === 'none') finScore = 5; // always top urgency
   else if (coverage === 'employer') finScore = 3;
@@ -693,31 +693,31 @@ function showResult(fname, a) {
   let trophy, title, sub, cards;
 
   if (finScore >= 4) {
-    trophy = '&#128997;'; // red card energy -> opportunity
-    title = `${fname}, ${team} just scored -- but your finances are still warming up.`;
+    trophy = '🟥'; // red card energy -> opportunity
+    title = `${fname}, ${team} just scored — but your finances are still warming up.`;
     sub = `Like a team without a keeper, your current setup (${coverageLabel(coverage)}) leaves your family exposed. The good news: there's time to build a championship-level game plan before kickoff.`;
     cards = [
-      { label:'Your Lineup', title:'Coverage Gap Detected', body:`${coverageLabel(coverage)} won't go the distance. If something happens to you, your family is left playing shorthanded -- without the protection a personal policy provides.`, highlight:true },
+      { label:'Your Lineup', title:'Coverage Gap Detected', body:`${coverageLabel(coverage)} won't go the distance. If something happens to you, your family is left playing shorthanded — without the protection a personal policy provides.`, highlight:true },
       { label:'Your Trophy', title:goalTitle(goal), body:goalBody(goal), highlight:true },
-      { label:'Training Budget', title:budgetLabel(budget) + ' Plan', body:'Based on your training budget, we can design a strategy that fits your life -- building protection and cash value over time, just like a team builds momentum through a tournament.', highlight:false },
+      { label:'Training Budget', title:budgetLabel(budget) + ' Plan', body:'Based on your training budget, we can design a strategy that fits your life — building protection and cash value over time, just like a team builds momentum through a tournament.', highlight:false },
     ];
   } else if (finScore >= 2) {
-    trophy = '&#129000;'; // yellow card -> room to improve
-    title = `${fname}, ${team} is through to the next round -- and so are you, with room to grow.`;
+    trophy = '🟨'; // yellow card -> room to improve
+    title = `${fname}, ${team} is through to the next round — and so are you, with room to grow.`;
     sub = `You've got ${coverageLabel(coverage).toLowerCase()} in place. That's a solid start, but every championship team looks for ways to strengthen their bench before the knockout rounds.`;
     cards = [
-      { label:'Your Lineup', title:'Solid Starting XI', body:`${coverageLabel(coverage)} gives you a base -- but is it enough to go all the way to the final? A personal policy adds depth your employer plan can't.`, highlight:false },
+      { label:'Your Lineup', title:'Solid Starting XI', body:`${coverageLabel(coverage)} gives you a base — but is it enough to go all the way to the final? A personal policy adds depth your employer plan can't.`, highlight:false },
       { label:'Your Trophy', title:goalTitle(goal), body:goalBody(goal), highlight:true },
-      { label:'Next Move', title:'Strengthen the Squad', body:`With a ${budgetLabel(budget).toLowerCase()} training budget, we can layer in additional coverage and start building tax-advantaged value -- without overspending your budget.`, highlight:false },
+      { label:'Next Move', title:'Strengthen the Squad', body:`With a ${budgetLabel(budget).toLowerCase()} training budget, we can layer in additional coverage and start building tax-advantaged value — without overspending your budget.`, highlight:false },
     ];
   } else {
-    trophy = '&#127942;';
-    title = `${fname}, ${team} is looking like a championship contender -- and so is your game plan.`;
-    sub = `You've already got ${coverageLabel(coverage).toLowerCase()} in place. That's a strong defense. The question now is whether your strategy is optimized to go all the way -- protection AND growth.`;
+    trophy = '🏆';
+    title = `${fname}, ${team} is looking like a championship contender — and so is your game plan.`;
+    sub = `You've already got ${coverageLabel(coverage).toLowerCase()} in place. That's a strong defense. The question now is whether your strategy is optimized to go all the way — protection AND growth.`;
     cards = [
-      { label:'Your Lineup', title:'Well-Protected -- For Now', body:`${coverageLabel(coverage)} gives you solid coverage. The next step is making sure it's optimized for your goal: ${goalLabel(goal)}.`, highlight:false },
+      { label:'Your Lineup', title:'Well-Protected — For Now', body:`${coverageLabel(coverage)} gives you solid coverage. The next step is making sure it's optimized for your goal: ${goalLabel(goal)}.`, highlight:false },
       { label:'Your Trophy', title:goalTitle(goal), body:goalBody(goal), highlight:true },
-      { label:'Championship Move', title:'Optimize for the Final', body:'A quick review can confirm your current coverage lines up with your goals -- and uncover opportunities to add tax-free growth on top of what you already have.', highlight:false },
+      { label:'Championship Move', title:'Optimize for the Final', body:'A quick review can confirm your current coverage lines up with your goals — and uncover opportunities to add tax-free growth on top of what you already have.', highlight:false },
     ];
   }
 
@@ -751,7 +751,7 @@ function goalTitle(g) {
 }
 function goalBody(g) {
   const map = {
-    protection: "Every championship team has a rock-solid defense. A properly structured life insurance policy is your family's defense line -- making sure they're covered no matter what happens on or off the field.",
+    protection: "Every championship team has a rock-solid defense. A properly structured life insurance policy is your family's defense line — making sure they're covered no matter what happens on or off the field.",
     retirement: 'Just like a team builds momentum match by match, a properly funded policy builds tax-advantaged cash value over time \\u2014 giving you a second income stream you can draw on tax-free in retirement.',
     college: 'Think of this like developing young talent in an academy \\u2014 small, consistent contributions now can grow into a meaningful fund for college, a first home, or a head start for your kids.',
     legacy: 'A World Cup trophy gets passed down for generations. With the right policy, you can pass down a tax-free inheritance \\u2014 a legacy that outlasts the final whistle.',

@@ -475,20 +475,7 @@ h1.hero-title em{font-style:italic;color:var(--gold2);}
   .path-switcher{padding:9px 16px;}
 }
 </style>
-<script>
-// Lightweight Monday proxy for brochure lead capture (no auth required).
-// The Netlify function holds the real Monday.com key server-side (MONDAY_API_KEY env var) —
-// nothing secret is sent from the browser.
-async function mondayQuery(q) {
-  try {
-    const r = await fetch('/.netlify/functions/monday', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({query: q})
-    });
-    return r.json();
-  } catch(e) { return null; }
-}
-</script>
+<script src="auth.js"></script>
 <style>body.gated{overflow:hidden;}</style>
 </head>
 <body>
@@ -591,14 +578,13 @@ async function submitBrochureGate() {
 
   fetch('https://hook.us2.make.com/jky3rg3jsql0r8pp9d7v6d1aclvblvu4', { method:'POST', mode:'no-cors', body:JSON.stringify(payload) }).catch(()=>{});
 
-  // Send to Monday.com (fire and forget)
-  try {
+  if (window.AUTH && AUTH.getMondayKey()) {
     const cv = { first_name:fname, last_name:lname, email:{email,text:email},
       phone:{phone:phone.replace(/\D/g,''),countryShortName:'US'},
       status:'New Lead', source:'Brochure Page', referred_by:decodeURIComponent(agentId)||'', date:{date:now} };
-    const q = `mutation{create_item(board_id:18409897469,item_name:"${(fname+' '+lname).replace(/"/g,"'")} -- Brochure Lead",column_values:${JSON.stringify(JSON.stringify(cv))}){id}}`;
+    const q = `mutation{create_item(board_id:18409897469,item_name:"${(fname+' '+lname).replace(/"/g,"'")} \u2014 Brochure Lead",column_values:${JSON.stringify(JSON.stringify(cv))}){id}}`;
     mondayQuery(q).catch(()=>{});
-  } catch(e) {}
+  }
 
   spin.style.display='none';
   document.getElementById('brochure-gate').style.display = 'none';
@@ -622,7 +608,7 @@ async function submitBrochureGate() {
 <!-- AGENT TAG (populated by URL params) -->
 <div class="agent-tag" id="agent-tag">
   <span class="at-name" id="at-name">Dynasty Builders Academy & Life Changers</span>
-  <span class="at-contact" id="at-contact">(310) 995-6507 · yourdynastybuilder.com · lifechangersfs.com</span>
+  <span class="at-contact" id="at-contact">(310) 995-6507 · dynastybuildersapp.com · lifechangersfs.com</span>
 </div>
 
 <!-- ══ PATH SELECTOR OVERLAY ══════════════════════════════════════════════ -->
@@ -1164,13 +1150,13 @@ async function submitBrochureGate() {
   <div class="bf-contact">
     <strong id="ft-agent">Licensed Financial Services Professional</strong><br>
     <span id="ft-phone">(310) 995-6507</span> · 
-    <span id="ft-email">yourdynastybuilder.com</span><br>
+    <span id="ft-email">dynastybuildersapp.com</span><br>
     Licensed in All 50 States & Puerto Rico · Independent — We Work for You
   </div>
 </div>
 
 <div class="disclaimer">
-  This educational guide is for informational purposes only and does not constitute financial, tax, or legal advice. Individual results vary. Please consult with a licensed professional before making any financial decisions. Life insurance and annuity products are offered through licensed insurance agents. Dynasty Builders Academy & Life Changers · yourdynastybuilder.com · lifechangersfs.com
+  This educational guide is for informational purposes only and does not constitute financial, tax, or legal advice. Individual results vary. Please consult with a licensed professional before making any financial decisions. Life insurance and annuity products are offered through licensed insurance agents. Dynasty Builders Academy & Life Changers · dynastybuildersapp.com · lifechangersfs.com
 </div>
 
 <script>
@@ -1185,17 +1171,17 @@ function sel(el){
 const params    = new URLSearchParams(window.location.search);
 const agentName = params.get('agent_name') || params.get('name') || '';
 const agentPhone= params.get('phone') || '(310) 995-6507';
-const agentEmail= params.get('email') || 'yourdynastybuilder.com';
+const agentEmail= params.get('email') || 'dynastybuildersapp.com';
 const agentId   = params.get('agent') || '';
 const pathParam = params.get('path')  || ''; // ?path=life | retirement | both
-const base      = 'https://agent.yourdynastybuilder.com';
+const base      = 'https://agent.dynastybuildersapp.com';
 
 if (agentName) {
   document.getElementById('at-name').textContent  = agentName + ' — Dynasty Builders & Life Changers';
   document.getElementById('ft-agent').textContent = agentName + ' · Licensed Financial Professional';
 }
 if (agentPhone) {
-  document.getElementById('at-contact').textContent = agentPhone + ' · yourdynastybuilder.com · lifechangersfs.com';
+  document.getElementById('at-contact').textContent = agentPhone + ' · dynastybuildersapp.com · lifechangersfs.com';
   document.getElementById('ft-phone').textContent   = agentPhone;
 }
 if (agentEmail) document.getElementById('ft-email').textContent = agentEmail;

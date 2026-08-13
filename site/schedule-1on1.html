@@ -270,7 +270,7 @@ body::before{
   .time-grid{grid-template-columns:repeat(3,1fr);}
 }
 </style>
-<script src="auth.js?v=20260713"></script>
+<script src="auth.js"></script>
 </head>
 <body class="z">
 
@@ -427,6 +427,8 @@ body::before{
 </div><!-- /shell -->
 
 <script>
+const MONDAY_ENDPOINT = location.hostname === 'localhost' ? 'https://api.monday.com/v2' : '/api/monday';
+
 const BASE = 'https://agent.yourdynastybuilder.com';
 
 // ── MONDAY.COM — Events Board ─────────────────────────────────────────────
@@ -705,7 +707,7 @@ async function syncToMonday(d) {
     const nameSafe = itemName.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
     const query = `mutation{create_item(board_id:${MONDAY_BOARD_ID},item_name:"${nameSafe}",column_values:${JSON.stringify(JSON.stringify(cols))}){id}}`;
 
-    const r = await fetch('https://api.monday.com/v2', {
+    const r = await fetch(MONDAY_ENDPOINT, {
       method:  'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': MONDAY_API_KEY, 'API-Version': '2024-01' },
       body:    JSON.stringify({ query }),

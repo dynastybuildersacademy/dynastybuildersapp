@@ -9,6 +9,8 @@
 <!-- FACEBOOK PIXEL — retargeting                -->
 <!-- ══════════════════════════════════════════ -->
 <script>
+const MONDAY_ENDPOINT = location.hostname === 'localhost' ? 'https://api.monday.com/v2' : '/api/monday';
+
 !function(f,b,e,v,n,t,s)
 {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
 n.callMethod.apply(n,arguments):n.queue.push(arguments)};
@@ -533,7 +535,7 @@ fbq('track', 'PageView');
   /* ── HIDDEN UTIL ── */
   .hidden { display: none !important; }
 </style>
-<script src="auth.js?v=20260713"></script>
+<script src="auth.js"></script>
 </head>
 <body>
 
@@ -1197,7 +1199,7 @@ function mondayHeaders() {
 }
 
 function mondayFetch(query, label) {
-  return fetch('https://api.monday.com/v2', {
+  return fetch(MONDAY_ENDPOINT, {
     method: 'POST',
     headers: mondayHeaders(),
     body: JSON.stringify({ query })

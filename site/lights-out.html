@@ -743,7 +743,6 @@
       </div>
       <input class="form-input" type="email" name="email" placeholder="Email Address" required/>
       <input class="form-input" type="tel" name="phone" placeholder="Phone (optional)"/>
-      <input class="form-input" type="text" name="referrer" placeholder="Referred by (Agent name or ID)" id="referrerField"/>
       <div class="form-error" id="formError">Something went wrong. Please try again.</div>
       <button class="cta-btn" type="submit" id="submitBtn">COUNT ME IN — SEND MY INFO &nbsp;→</button>
       <p class="form-privacy">No spam. Just Dynasty Builders fire. Unsubscribe anytime.</p>
@@ -777,16 +776,8 @@
     email     : "email_mm3smqmh",
     phone     : "phone_mm3s7xt9",
     date      : "date_mm3sxmpc",
-    status    : "color_mm3skezr",
-    referrer  : "text_mm52vqtz"
+    status    : "color_mm3skezr"
   };
-
-  // Read referring agent from URL: ?ref=agentId or ?agent=agentId
-  function getRefAgent() {
-    const p = new URLSearchParams(window.location.search);
-    return (p.get('ref') || p.get('agent') || '').trim();
-  }
-  const REF_AGENT = getRefAgent();
 
   // Embers
   const ec = document.getElementById('embers');
@@ -811,33 +802,17 @@
   }
   tick(); setInterval(tick,1000);
 
-  // Pre-fill referrer field if agent link
-  window.addEventListener('DOMContentLoaded', function() {
-    const rf = document.getElementById('referrerField');
-    if (rf && REF_AGENT) {
-      rf.value = REF_AGENT;
-      rf.style.display = 'none'; // hide if auto-filled from URL
-      // Add a subtle "referred by" badge near the form
-      const badge = document.createElement('p');
-      badge.style.cssText = 'font-size:12px;color:var(--gold);opacity:.8;margin-bottom:8px;';
-      badge.textContent = '✓ Referred by: ' + REF_AGENT;
-      rf.parentNode.insertBefore(badge, rf);
-    }
-  });
-
   // Form
   async function handleSubmit(e) {
     e.preventDefault();
     const form=e.target, btn=document.getElementById('submitBtn'), errEl=document.getElementById('formError');
     const firstName=form.firstName.value.trim(), lastName=form.lastName.value.trim(),
           email=form.email.value.trim(), phone=form.phone.value.trim(),
-          referrer=form.referrer.value.trim()||REF_AGENT,
           today=new Date().toISOString().split('T')[0];
     const colVals=JSON.stringify({
       [COL.firstName]:firstName,[COL.lastName]:lastName,
       [COL.email]:{email,text:email},[COL.phone]:{phone,countryShortName:"US"},
-      [COL.date]:{date:today},[COL.status]:{label:"New Lead"},
-      ...(referrer?{[COL.referrer]:referrer}:{})
+      [COL.date]:{date:today},[COL.status]:{label:"New Lead"}
     });
     const mutation=`mutation{create_item(board_id:${MONDAY_BOARD_ID},item_name:"${firstName} ${lastName}",column_values:${JSON.stringify(colVals)}){id}}`;
     btn.disabled=true;

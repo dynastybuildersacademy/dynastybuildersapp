@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Licensing Tracker · Dynasty Builders</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700&family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script src="auth.js?v=20260713"></script>
+<script src="auth.js"></script>
 <style>
 :root{
   --navy:#0A1628;--navy2:#0F1E38;--navy3:#132240;--navy4:#1A2E50;
@@ -870,58 +870,23 @@ async function buildCV(rec, cols) {
 }
 
 // Fetch existing board items and build agentId → item ID map
-// ── BMP-PATTERN HELPERS ───────────────────────────────────────
-// Normalize a string for matching (mirrors bmp-platform.html)
-function normalize(s){ return String(s||'').toLowerCase().replace(/[^a-z0-9]/g,''); }
-
-// Full cursor-paginated item fetch — no item cap, handles boards of any size
-async function fetchAllBoardItems(boardId) {
-  const items = [];
-  let cursor = null;
-  do {
-    const ca = cursor ? `, cursor: "${cursor}"` : '';
-    const r = await mondayQuery(`{boards(ids:${boardId}){items_page(limit:100${ca}){cursor items{id name column_values{id text}}}}}`);
-    const page = r?.data?.boards?.[0]?.items_page;
-    items.push(...(page?.items || []));
-    cursor = page?.cursor || null;
-    if (!page?.items?.length) break;
-  } while (cursor);
-  return items;
-}
-
-// Build agentId → Monday item ID map using full pagination + normalize matching
 async function refreshItemMap(boardId) {
   try {
-    const colR = await mondayQuery(`{boards(ids:${boardId}){columns{id title}}}`);
-    const cols  = colR?.data?.boards?.[0]?.columns || [];
-    const agentIdColId = cols.find(c =>
-      normalize(c.title).includes('agentid') || normalize(c.title).includes('agentcode') || normalize(c.title).includes('phpcode')
-    )?.id || null;
-
-    const items = await fetchAllBoardItems(boardId);
-    const newMap = {};
-
+    const r = await mondayQuery(`{boards(ids:${boardId}){items_page(limit:200){items{id name column_values{id text}}}}}`);
+    const items = r?.data?.boards?.[0]?.items_page?.items || [];
     items.forEach(item => {
-      // Primary: dedicated Agent ID column
-      if (agentIdColId) {
-        const cv = item.column_values.find(c => c.id === agentIdColId);
-        const val = cv?.text?.trim();
-        if (val) { newMap[val] = item.id; return; }
+      const agCol = item.column_values.find(c =>
+        (c.title||'').toLowerCase().includes('agent id') || (c.title||'').toLowerCase().includes('agent_id')
+      );
+      if (agCol?.text) {
+        mondayItemMap[agCol.text.trim()] = item.id;
+      } else {
+        const rec = records.find(r => item.name.startsWith(r.name));
+        if (rec) mondayItemMap[rec.agentId] = item.id;
       }
-      // Secondary: any column value that looks like an agent/PHP code
-      item.column_values.forEach(cv => {
-        const val = cv?.text?.trim();
-        if (val && /^\d{3,10}$/.test(val)) newMap[val] = item.id;
-      });
-      // Fallback: match local record by normalized name
-      const nName = normalize(item.name);
-      const rec = records.find(r => normalize(r.name) === nName || nName.startsWith(normalize(r.name)));
-      if (rec && !newMap[rec.agentId]) newMap[rec.agentId] = item.id;
     });
-
-    Object.assign(mondayItemMap, newMap);
     save();
-    console.log('[Licensing] Item map refreshed:', Object.keys(mondayItemMap).length, 'entries from', items.length, 'board items');
+    console.log('[Licensing] Item map refreshed:', Object.keys(mondayItemMap).length, 'existing records');
   } catch(e) {
     console.warn('[Licensing] Could not refresh item map:', e.message);
   }
@@ -937,32 +902,34 @@ async function syncRecord(rec) {
     cols = r?.data?.boards?.[0]?.columns || [];
   } catch(e){}
 
-  // Always refresh item map before every sync — prevents stale cache creating duplicates
-  await refreshItemMap(boardId);
+  // If map is empty refresh from board first (handles first run / stale cache / new device)
+  if (!Object.keys(mondayItemMap).length) {
+    await refreshItemMap(boardId);
+  }
 
   const cv    = await buildCV(rec, cols);
   const cvStr = JSON.stringify(JSON.stringify(cv));
   const iname = `${rec.name} — Licensing`;
-  const existingId = mondayItemMap[rec.agentId];
 
   try {
-    if (existingId) {
-      // UPDATE — confirmed match, no duplicate risk
-      await mondayQuery(`mutation{change_multiple_column_values(board_id:${boardId},item_id:${existingId},column_values:${cvStr}){id}}`);
+    if (mondayItemMap[rec.agentId]) {
+      // Update existing — no duplicate created
+      await mondayQuery(`mutation{change_multiple_column_values(board_id:${boardId},item_id:${mondayItemMap[rec.agentId]},column_values:${cvStr}){id}}`);
       toast(`${rec.name} updated in Monday.com ✅`);
     } else {
-      // UPSERT — final name-check via full pagination before creating
-      const allItems = await fetchAllBoardItems(boardId);
-      const nameMatch = allItems.find(item =>
-        normalize(item.name) === normalize(iname) || normalize(item.name) === normalize(rec.name)
+      // Double-check by item name before creating — catches edge cases where localStorage map was cleared
+      const checkR = await mondayQuery(`{boards(ids:${boardId}){items_page(limit:100){items{id name}}}}`).catch(()=>null);
+      const checkItems = checkR?.data?.boards?.[0]?.items_page?.items || [];
+      const nameMatch  = checkItems.find(item =>
+        item.name.toLowerCase() === iname.toLowerCase() ||
+        item.name.toLowerCase().startsWith(rec.name.toLowerCase())
       );
       if (nameMatch) {
         mondayItemMap[rec.agentId] = nameMatch.id;
         await mondayQuery(`mutation{change_multiple_column_values(board_id:${boardId},item_id:${nameMatch.id},column_values:${cvStr}){id}}`);
         toast(`${rec.name} updated in Monday.com ✅`);
       } else {
-        // Truly new — create exactly once
-        const r = await mondayQuery(`mutation{create_item(board_id:${boardId},item_name:${JSON.stringify(iname)},column_values:${cvStr}){id}}`);
+        const r = await mondayQuery(`mutation{create_item(board_id:${boardId},item_name:"${iname.replace(/"/g,"'")}",column_values:${cvStr}){id}}`);
         const newId = r?.data?.create_item?.id;
         if (newId) mondayItemMap[rec.agentId] = newId;
         toast(`${rec.name} added to Monday.com ✅`);
@@ -1002,7 +969,8 @@ async function loadFromMonday() {
     const colR = await mondayQuery(`{boards(ids:${boardId}){columns{id title}}}`);
     const colTitles = {};
     (colR?.data?.boards?.[0]?.columns||[]).forEach(col => { colTitles[col.id] = (col.title||'').toLowerCase(); });
-    const items = await fetchAllBoardItems(boardId);
+    const r = await mondayQuery(`{boards(ids:${boardId}){items_page(limit:100){items{id name column_values{id text}}}}}`);
+    const items = r?.data?.boards?.[0]?.items_page?.items||[];
     items.forEach(item => {
       if (!item.name.includes('Licensing')) return;
       const get=(...kws)=>item.column_values.find(cv=>kws.some(k=>(colTitles[cv.id]||'').includes(k)))?.text||'';

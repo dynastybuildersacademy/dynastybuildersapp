@@ -143,6 +143,7 @@ tfoot td{font-weight:700;border-top:1px solid var(--border);color:var(--gold);}
 .spinner{width:14px;height:14px;border:2px solid rgba(201,168,76,.2);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;display:inline-block;flex-shrink:0;}
 @keyframes spin{to{transform:rotate(360deg);}}
 </style>
+<script src="auth.js"></script>
 </head>
 <body>
 <div class="page">
@@ -334,6 +335,8 @@ tfoot td{font-weight:700;border-top:1px solid var(--border);color:var(--gold);}
 
 </div>
 <script>
+const MONDAY_ENDPOINT = location.hostname === 'localhost' ? 'https://api.monday.com/v2' : '/api/monday';
+
 // ══════════════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════════════
@@ -401,7 +404,7 @@ function toggleKey() {
 }
 
 async function gql(query, variables={}) {
-  const r = await fetch('https://api.monday.com/v2',{
+  const r = await fetch(MONDAY_ENDPOINT,{
     method:'POST',
     headers:{'Content-Type':'application/json','Authorization':mondayKey,'API-Version':'2024-01'},
     body:JSON.stringify({query,variables})
