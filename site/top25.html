@@ -611,10 +611,26 @@ async function fetchAndRender(boardId){
   document.getElementById('cards-container').innerHTML=`<div class="state-box"><div class="ico"><span class="spinner"></span></div><p>Loading${selGrpTitle?` "${selGrpTitle}"`:''}…</p></div>`;
   let allItems=[],cursor=null;
   try{
-    // Always fetch all items then filter client-side — server-side group filter is unreliable
-    allItems=await fetchAllItems(boardId);
-    if(selGrp) allItems=allItems.filter(item=>item.group?.id===selGrp);
-  }catch(e2){
+    do{
+      let pageArg=`limit: 500`;
+      if(cursor) pageArg+=`, cursor: "${cursor}"`;
+      const groupArg=selGrp?`, query_params: { rules: [{ column_id: "__group__", compare_value: ["${selGrp}"], operator: any_of }] }`:'';
+      const res=await mondayQuery(`{ boards(ids: ${boardId}) { items_page(${pageArg}${groupArg}) { cursor items { ${ITEM_FRAGMENT} } } } }`);
+      if(!res) throw new Error('No response from Monday API — check connection');
+      if(res?.errors?.length) throw new Error(res.errors[0]?.message||'Monday API error');
+      const page=res?.data?.boards?.[0]?.items_page;
+      if(!page) throw new Error(`Board ${boardId} not found or no access`);
+      const items=page?.items||[];
+      allItems=allItems.concat(items);
+      cursor=page?.cursor||null;
+      if(items.length===0) break;
+    } while(cursor);
+  }catch(e){
+    console.warn('[Top25] Group filter failed, trying client-side:',e.message);
+    try{
+      allItems=await fetchAllItems(boardId);
+      if(selGrp) allItems=allItems.filter(item=>item.group?.id===selGrp);
+    }catch(e2){
       document.getElementById('cards-container').innerHTML=`
         <div class="state-box">
           <div class="ico">⚠️</div>
@@ -628,6 +644,7 @@ async function fetchAndRender(boardId){
         </div>`;
       document.getElementById('refresh-btn').textContent='↻ Refresh';
       return;
+    }
   }
   allProspects=allItems.map(parseItem);
   if(allItems.length===0){
