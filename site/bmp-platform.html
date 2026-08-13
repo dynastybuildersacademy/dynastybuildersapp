@@ -882,9 +882,16 @@ async function finishConnect(method){
   const btn=$$('connectBtn');if(btn)btn.disabled=true;
   if($$('oauthBtn'))$$('oauthBtn').disabled=true;
   try{
-    // Lightweight test — just fetch the current user, not all boards
+    // Lightweight connection test
     let userName='';
-    try{const me=await gql(`query{me{name email}}`);userName=me?.me?.name||'';}catch(e){console.warn('[BMP] me query:',e);}
+    try{
+      const me=await gql(`query{me{name email}}`);
+      // Handle both {me:{name}} and {data:{me:{name}}} structures
+      userName=me?.me?.name||me?.data?.me?.name||'';
+      console.log('[BMP] Connected as:', userName||'(name not returned)');
+    }catch(e){
+      console.warn('[BMP] me query (non-fatal):', e.message);
+    }
     const label=userName?`✓ ${userName}`:`✓ Connected`;
     setKeyStatus('ok',label);updateConnChip(true,userName||'Connected');
     // Load boards lazily — only when user opens the board picker
@@ -896,8 +903,12 @@ async function finishConnect(method){
     if($$('oauthBtn'))$$('oauthBtn').disabled=true;
     if(btn){btn.textContent='✕ Disconnect';btn.style.cssText='background:rgba(192,57,43,.15);color:var(--error);border:1px solid rgba(192,57,43,.3);box-shadow:none;';btn.onclick=disconnectMonday;btn.disabled=false;}
     $$('sharedBoardCard').classList.remove('hidden');
-    // Fetch boards lazily in background for the board picker
-    fetchAllBoards().then(b=>{boardsData=b;}).catch(e=>console.warn('[BMP] Board list fetch:',e));
+    // Fetch boards lazily in background for the board picker (non-blocking)
+    setTimeout(()=>{
+      fetchAllBoards()
+        .then(b=>{ boardsData=b; console.log(`[BMP] ${b.length} boards loaded`); })
+        .catch(e=>console.warn('[BMP] Board list (non-critical):', e.message));
+    }, 2000); // delay so it doesn't compete with board load
 
     // Auto-select the logged-in agent's Top 25 board immediately
     try {
@@ -938,24 +949,38 @@ function updateConnChip(ok,name){const c=$$('connChip');c.className='conn-chip '
 // MONDAY GQL
 // ══════════════════════════════════════════════
 async function gql(query,variables={}){
-  const ENDPOINT = location.hostname === 'localhost'
+  const ENDPOINT = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
     ? 'https://api.monday.com/v2'
     : '/api/monday';
+  const hasKey = !!mondayKey;
   const r=await fetch(ENDPOINT,{
     method:'POST',
     headers:{
       'Content-Type':'application/json',
-      'Authorization':mondayKey,
-      'x-monday-key':mondayKey,
+      'Authorization':mondayKey||'',
+      'x-monday-key':mondayKey||'',
       'API-Version':'2024-01'
     },
-    // Send key in body as fallback — Netlify may strip Authorization header
-    body:JSON.stringify({query,variables,apiKey:mondayKey})
+    body:JSON.stringify({query,variables,apiKey:mondayKey||''})
   });
-  if(!r.ok)throw new Error(`HTTP ${r.status}`);
+  if(!hasKey) console.warn('[BMP] gql called with empty mondayKey!');
+  if(!r.ok){
+    let errBody='';
+    try{errBody=await r.text();}catch(e){}
+    throw new Error(`HTTP ${r.status}: ${errBody.slice(0,200)}`);
+  }
   const j=await r.json();
-  if(j.errors?.length)throw new Error(j.errors[0].message);
-  return j.data;
+  // Handle both Monday error formats and proxy error format
+  if(j.error) throw new Error(j.error);
+  if(j.errors?.length){
+    const msg=j.errors[0]?.message||j.errors[0]?.error_code||JSON.stringify(j.errors[0]);
+    throw new Error(msg);
+  }
+  // Handle both {data:{...}} and direct data (in case proxy unwraps)
+  if(j.data !== undefined) return j.data;
+  // If no data wrapper, the response IS the data
+  if(!j.errors) return j;
+  throw new Error(`No data: ${JSON.stringify(j).slice(0,150)}`);
 }
 async function fetchAllBoards(){
   // Limit to 100 boards max to avoid timeouts
@@ -1036,7 +1061,21 @@ async function selectBoard(id,name){
     $$('incomeColumnMapCard').classList.remove('hidden');
     $$('callFetchCard').classList.remove('hidden');
     $$('prodFetchCard').classList.remove('hidden');
-  }catch(e){$$('groupLoadingMsg').classList.add('hidden');alert('Could not load board: '+e.message);}
+  }catch(e){
+    $$('groupLoadingMsg').classList.add('hidden');
+    console.error('[BMP] selectBoard error:', e.message);
+    // Show inline error instead of blocking alert
+    const errDiv = document.createElement('div');
+    errDiv.style.cssText = 'padding:10px 14px;background:rgba(192,57,43,.1);border:1px solid rgba(192,57,43,.3);border-radius:8px;font-family:\'DM Mono\',monospace;font-size:12px;color:#e57373;margin-top:8px;';
+    errDiv.innerHTML = `⚠ Could not load board groups: ${e.message}<br><small style="opacity:.7">The board may still work — try running a sync.</small>`;
+    $$('groupPanel').classList.remove('hidden');
+    $$('groupPanel').prepend(errDiv);
+    // Still show the action cards so user can proceed
+    $$('syncUploadCard').classList.remove('hidden');
+    $$('incomeColumnMapCard').classList.remove('hidden');
+    $$('callFetchCard').classList.remove('hidden');
+    $$('prodFetchCard').classList.remove('hidden');
+  }
 }
 
 function reopenBoard(){
