@@ -646,12 +646,17 @@ async function fetchAllItems(boardId){
     const cursorArg=cursor?`, cursor: "${cursor}"`:'';
     const res=await mondayQuery(`{ boards(ids: ${boardId}) { items_page(limit: 500${cursorArg}) { cursor items { ${ITEM_FRAGMENT} } } } }`);
     if(!res) throw new Error('No response from Monday API');
+    // Log the raw response structure to diagnose issues
+    if(all.length===0) console.log('[Top25] API response structure:', JSON.stringify(res).slice(0,300));
     const page=res?.data?.boards?.[0]?.items_page;
+    if(!page && res?.errors?.length) throw new Error(res.errors[0]?.message||'Monday API error');
+    if(!page) throw new Error('Board not found or no access. Response: '+JSON.stringify(res).slice(0,200));
     const items=page?.items||[];
     all=all.concat(items);
     cursor=page?.cursor||null;
     if(items.length===0) break;
   }while(cursor);
+  console.log(`[Top25] Fetched ${all.length} items from board ${boardId}`);
   return all;
 }
 
