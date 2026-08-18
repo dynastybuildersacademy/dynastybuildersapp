@@ -1969,19 +1969,14 @@ const MONDAY_PROXY = window.location.hostname === 'localhost' || window.location
   : '/api/monday';                        // Netlify Function in production
 
 async function mondayQuery(query, variables = {}) {
-  const key = AUTH.getMondayKey() || MONDAY_ORG_KEY || '';
+  // Proxy uses ORG_KEY server-side — don't send key from browser
   const res = await fetch(MONDAY_PROXY, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': key,
-      'x-monday-key': key,
-    },
-    body: JSON.stringify({ query, variables, apiKey: key })
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query, variables })
   });
   if (!res.ok) throw new Error(`Monday API HTTP ${res.status}`);
-  const json = await res.json();
-  return json; // callers check .errors and .data themselves
+  return res.json();
 }
 
 // ── 10. ANTHROPIC CHAT ────────────────────────────────────────
