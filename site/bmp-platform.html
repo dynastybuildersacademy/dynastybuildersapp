@@ -912,20 +912,8 @@ async function finishConnect(method){
         .catch(e=>console.warn('[BMP] Board list (non-critical):', e.message));
     }, 2000); // delay so it doesn't compete with board load
 
-    // Auto-select the logged-in agent's Top 25 board immediately
-    try {
-      const session = AUTH.getSession ? AUTH.getSession() : null;
-      const agentRecord = session && typeof AGENTS !== 'undefined'
-        ? AGENTS.find(a => a.id === session.agentId)
-        : null;
-      const agentBoardId = agentRecord?.top25BoardId || '';
-      if (agentBoardId) {
-        await selectBoard(agentBoardId, `My Top 25`);
-        setKeyStatus('ok', `✓ Connected — My Top 25 loaded`);
-      } else {
-        setKeyStatus('ok', userName ? `✓ ${userName} · Select a board` : `✓ Connected · Select a board`);
-      }
-    } catch(e) { console.warn('[BMP] Auto-board select:', e); }
+    // BMP connects to production/policy boards — agent selects their board from the list
+    setKeyStatus('ok', userName ? `✓ ${userName} · Select a board below` : `✓ Connected · Select a board`);
 
   }catch(e){setKeyStatus('err','✗ '+e.message);mondayKey='';if(btn)btn.disabled=false;if($$('oauthBtn'))$$('oauthBtn').disabled=false;}
 }
@@ -954,18 +942,15 @@ async function gql(query,variables={}){
   const ENDPOINT = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
     ? 'https://api.monday.com/v2'
     : '/api/monday';
-  const hasKey = !!mondayKey;
+  // Proxy handles authentication server-side — browser key not required
+  // Send whatever key we have; proxy uses ORG_KEY regardless
   const r=await fetch(ENDPOINT,{
     method:'POST',
     headers:{
       'Content-Type':'application/json',
-      'Authorization':mondayKey||'',
-      'x-monday-key':mondayKey||'',
-      'API-Version':'2024-01'
     },
-    body:JSON.stringify({query,variables,apiKey:mondayKey||''})
+    body:JSON.stringify({query,variables})
   });
-  if(!hasKey) console.warn('[BMP] gql called with empty mondayKey!');
   if(!r.ok){
     let errBody='';
     try{errBody=await r.text();}catch(e){}
