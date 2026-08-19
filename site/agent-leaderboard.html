@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Agent Leaderboard · DBA</title>
+<script src="auth.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Barlow:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0A1628;--s1:#112040;--s2:#1A3158;
+  --gold:#C9A84C;--gold2:#E8C97A;
+  --green:#2DCA73;--red:#C0392B;--orange:#E67E22;--blue:#3498DB;
+  --text:#FAF6EE;--muted:#6B7C93;--border:rgba(201,168,76,.2);
+}
+body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(201,168,76,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(201,168,76,.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+
+/* TOPBAR */
+.topbar{background:rgba(10,22,40,.97);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px);}
+.brand{display:flex;align-items:center;gap:10px;padding:12px 0;border-right:1px solid var(--border);padding-right:18px;}
+.brand-hex{width:28px;height:28px;background:linear-gradient(135deg,var(--gold),var(--gold2));clip-path:polygon(50% 0%,100% 20%,100% 68%,50% 100%,0% 68%,0% 20%);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--bg);}
+.brand-text{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;line-height:1.1;}
+.brand-text span{color:var(--gold);}
+.brand-sub{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);display:block;}
+.topbar-right{margin-left:auto;display:flex;gap:8px;align-items:center;}
+.t-btn{padding:6px 13px;border-radius:6px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);transition:all .15s;text-decoration:none;}
+.t-btn:hover{border-color:var(--gold);color:var(--gold);}
+.t-btn.primary{background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--bg);border-color:transparent;}
+
+/* HERO */
+.hero{max-width:1100px;margin:0 auto;padding:28px 24px 0;position:relative;z-index:1;}
+.hero-title{font-family:'Barlow Condensed',sans-serif;font-size:32px;font-weight:900;letter-spacing:.02em;margin-bottom:6px;}
+.hero-title span{color:var(--gold);}
+.hero-sub{font-size:13px;color:var(--muted);margin-bottom:20px;}
+
+/* CONTROLS */
+.controls{max-width:1100px;margin:0 auto;padding:0 24px 16px;display:flex;gap:10px;flex-wrap:wrap;position:relative;z-index:1;align-items:center;}
+.ctrl-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
+.sort-btn{padding:7px 14px;border-radius:8px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;cursor:pointer;border:1px solid var(--border);background:var(--s2);color:var(--muted);transition:all .15s;letter-spacing:.04em;}
+.sort-btn.active{background:var(--gold);color:var(--bg);border-color:var(--gold);}
+.sort-btn:hover:not(.active){border-color:var(--gold);color:var(--text);}
+.filter-select{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-family:'DM Mono',monospace;font-size:11px;outline:none;cursor:pointer;}
+.filter-select:focus{border-color:var(--gold);}
+.filter-select option{background:var(--s1);}
+.search-wrap{position:relative;flex:1;min-width:180px;max-width:280px;}
+.search-wrap input{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:7px 10px 7px 30px;color:var(--text);font-family:'DM Mono',monospace;font-size:11px;outline:none;}
+.search-wrap input:focus{border-color:var(--gold);}
+.search-wrap .si{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:12px;}
+.ctrl-sep{height:20px;width:1px;background:var(--border);}
+
+/* STATS BAR */
+.stats-bar{max-width:1100px;margin:0 auto;padding:0 24px 20px;display:flex;gap:12px;flex-wrap:wrap;position:relative;z-index:1;}
+.stat-chip{background:var(--s1);border:1px solid var(--border);border-radius:9px;padding:10px 16px;display:flex;flex-direction:column;gap:2px;min-width:110px;}
+.sc-val{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:var(--gold2);}
+.sc-lbl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
+
+/* TABLE */
+.table-wrap{max-width:1100px;margin:0 auto;padding:0 24px 60px;position:relative;z-index:1;}
+.lb-table{width:100%;border-collapse:collapse;}
+.lb-table th{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;white-space:nowrap;cursor:pointer;user-select:none;background:var(--s1);}
+.lb-table th:hover{color:var(--gold);}
+.lb-table th.sort-asc::after{content:' ↑';}
+.lb-table th.sort-desc::after{content:' ↓';}
+.lb-table td{padding:10px 12px;border-bottom:1px solid rgba(26,49,88,.5);vertical-align:middle;font-size:13px;}
+.lb-table tbody tr{transition:background .12s;}
+.lb-table tbody tr:hover td{background:rgba(201,168,76,.04);}
+.lb-table tbody tr.top3-1 td:first-child{border-left:3px solid #FFD700;}
+.lb-table tbody tr.top3-2 td:first-child{border-left:3px solid #C0C0C0;}
+.lb-table tbody tr.top3-3 td:first-child{border-left:3px solid #CD7F32;}
+
+/* RANK */
+.rank-num{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;color:var(--muted);text-align:center;min-width:32px;}
+.rank-1{color:#FFD700;font-size:18px;}
+.rank-2{color:#C0C0C0;font-size:18px;}
+.rank-3{color:#CD7F32;font-size:18px;}
+
+/* AGENT CELL */
+.agent-cell{display:flex;align-items:center;gap:10px;}
+.agent-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--s2),var(--s1));border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:var(--gold);flex-shrink:0;}
+.agent-name{font-weight:600;line-height:1.2;}
+.agent-id{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);}
+
+/* BARS */
+.bar-wrap{display:flex;align-items:center;gap:8px;min-width:80px;}
+.bar-bg{flex:1;height:6px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden;min-width:50px;}
+.bar-fill{height:100%;border-radius:99px;transition:width .4s ease;}
+.bar-attend{background:linear-gradient(90deg,#3498DB,#5DADE2);}
+.bar-prod{background:linear-gradient(90deg,var(--gold),var(--gold2));}
+.bar-score{background:linear-gradient(90deg,var(--green),#1a8a47);}
+.bar-val{font-family:'DM Mono',monospace;font-size:11px;font-weight:500;min-width:28px;text-align:right;}
+
+/* SCORE BADGE */
+.score-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:8px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;}
+.sb-elite{background:rgba(255,215,0,.12);color:#FFD700;border:1px solid rgba(255,215,0,.3);}
+.sb-high{background:rgba(45,202,115,.1);color:var(--green);border:1px solid rgba(45,202,115,.25);}
+.sb-mid{background:rgba(201,168,76,.1);color:var(--gold);border:1px solid rgba(201,168,76,.25);}
+.sb-low{background:rgba(107,124,147,.08);color:var(--muted);border:1px solid var(--border);}
+
+/* MARK ATTENDANCE */
+.mark-btn{padding:4px 10px;border-radius:6px;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);transition:all .15s;white-space:nowrap;}
+.mark-btn:hover{border-color:var(--blue);color:#5dade2;}
+.mark-btn.marked{background:rgba(52,152,219,.1);border-color:var(--blue);color:#5dade2;}
+
+/* RECORD PANEL */
+.record-panel{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px;display:none;}
+.record-panel.open{display:block;}
+.rp-title{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.meeting-types{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
+.mtype{padding:8px 14px;border-radius:8px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;cursor:pointer;border:1.5px solid var(--border);background:var(--s2);color:var(--muted);transition:all .15s;}
+.mtype:hover{border-color:var(--gold);color:var(--text);}
+.mtype.active{background:rgba(201,168,76,.12);border-color:var(--gold);color:var(--gold);}
+.agent-search{position:relative;margin-bottom:12px;}
+.agent-search input{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:9px 12px 9px 32px;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;outline:none;}
+.agent-search input:focus{border-color:var(--gold);}
+.agent-search .asi{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);}
+.agent-checklist{max-height:260px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;background:var(--s2);}
+.ac-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid rgba(26,49,88,.5);cursor:pointer;transition:background .12s;}
+.ac-item:last-child{border-bottom:none;}
+.ac-item:hover{background:rgba(201,168,76,.05);}
+.ac-item.checked{background:rgba(45,202,115,.06);}
+.ac-cb{width:16px;height:16px;border-radius:4px;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;transition:all .15s;}
+.ac-item.checked .ac-cb{background:var(--green);border-color:var(--green);color:#fff;}
+.ac-name{font-size:13px;flex:1;}
+.ac-count{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);}
+.rp-actions{display:flex;gap:10px;margin-top:12px;}
+.btn-save{flex:1;padding:11px;border-radius:8px;border:none;background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--bg);font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;cursor:pointer;transition:all .2s;}
+.btn-save:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(201,168,76,.3);}
+.btn-cancel{padding:11px 18px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;cursor:pointer;}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--s1);border:1px solid var(--gold);border-radius:10px;padding:11px 18px;font-size:13px;transform:translateY(60px);opacity:0;transition:all .3s;z-index:999;color:var(--gold2);font-family:'DM Mono',monospace;}
+.toast.show{transform:translateY(0);opacity:1;}
+
+/* EMPTY */
+.empty{text-align:center;padding:48px;color:var(--muted);font-size:13px;}
+.empty .e-ico{font-size:32px;margin-bottom:10px;}
+</style>
+</head>
+<body>
+<script>AUTH.require('agent-leaderboard.html');</script>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-hex">⬡</div>
+    <div class="brand-text">Dynasty <span>Leaderboard</span><span class="brand-sub">Attendance · Activity · Results</span></div>
+  </div>
+  <div class="topbar-right">
+    <button class="t-btn primary" onclick="toggleRecordPanel()">📋 Record Attendance</button>
+    <button class="t-btn" onclick="syncFromMonday()" id="sync-btn">↺ Sync</button>
+    <a href="hub.html" class="t-btn">← Hub</a>
+  </div>
+</div>
+
+<!-- RECORD ATTENDANCE PANEL -->
+<div class="record-panel" id="record-panel">
+  <div class="rp-title">📋 Record Meeting Attendance</div>
+
+  <!-- Meeting type -->
+  <div style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Meeting Type</div>
+  <div class="meeting-types">
+    <div class="mtype active" data-type="BOM" onclick="selectMeetingType(this)">🏢 BOM</div>
+    <div class="mtype" data-type="Training" onclick="selectMeetingType(this)">📚 Training</div>
+    <div class="mtype" data-type="Book Club" onclick="selectMeetingType(this)">📖 Book Club</div>
+    <div class="mtype" data-type="1-on-1" onclick="selectMeetingType(this)">👤 1-on-1</div>
+    <div class="mtype" data-type="Field Training" onclick="selectMeetingType(this)">🌐 Field Training</div>
+    <div class="mtype" data-type="Team Call" onclick="selectMeetingType(this)">📞 Team Call</div>
+    <div class="mtype" data-type="Convention" onclick="selectMeetingType(this)">🏆 Convention</div>
+    <div class="mtype" data-type="Other" onclick="selectMeetingType(this)">✦ Other</div>
+  </div>
+
+  <!-- Date -->
+  <div style="display:flex;gap:12px;margin-bottom:14px;">
+    <div style="flex:1;">
+      <div style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;">Date</div>
+      <input type="date" id="attend-date" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;outline:none;">
+    </div>
+    <div style="flex:1;">
+      <div style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;">Notes (optional)</div>
+      <input type="text" id="attend-notes" placeholder="e.g. 3 guests brought" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-family:'Barlow',sans-serif;font-size:13px;outline:none;">
+    </div>
+  </div>
+
+  <!-- Agent search & checklist -->
+  <div style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">
+    Mark Who Attended <span id="checked-count" style="color:var(--gold);margin-left:6px;">0 selected</span>
+  </div>
+  <div class="agent-search">
+    <span class="asi">🔍</span>
+    <input type="text" id="agent-search-input" placeholder="Search agents…" oninput="filterAgentChecklist()">
+  </div>
+  <div class="agent-checklist" id="agent-checklist"></div>
+
+  <div class="rp-actions">
+    <button class="btn-cancel" onclick="toggleRecordPanel()">Cancel</button>
+    <button class="btn-save" onclick="saveAttendance()">✓ Save Attendance</button>
+  </div>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-title">Agent <span>Leaderboard</span></div>
+  <div class="hero-sub">Ranked by attendance × activity × production results. Updates live from your records.</div>
+</div>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stat-chip"><div class="sc-val" id="stat-total">—</div><div class="sc-lbl">Total Agents</div></div>
+  <div class="stat-chip"><div class="sc-val" id="stat-active">—</div><div class="sc-lbl">Active (any activity)</div></div>
+  <div class="stat-chip"><div class="sc-val" id="stat-meetings">—</div><div class="sc-lbl">Meetings Recorded</div></div>
+  <div class="stat-chip"><div class="sc-val" id="stat-top-attend">—</div><div class="sc-lbl">Top Attendance</div></div>
+</div>
+
+<!-- CONTROLS -->
+<div class="controls">
+  <span class="ctrl-label">Sort:</span>
+  <button class="sort-btn active" data-sort="score" onclick="setSort('score',this)">⭐ Overall Score</button>
+  <button class="sort-btn" data-sort="attendance" onclick="setSort('attendance',this)">📋 Attendance</button>
+  <button class="sort-btn" data-sort="production" onclick="setSort('production',this)">💰 Production</button>
+  <button class="sort-btn" data-sort="recruits" onclick="setSort('recruits',this)">👥 Recruits</button>
+  <div class="ctrl-sep"></div>
+  <select class="filter-select" id="filter-upline" onchange="renderTable()">
+    <option value="">All Uplines</option>
+  </select>
+  <select class="filter-select" id="filter-role" onchange="renderTable()">
+    <option value="">All Roles</option>
+    <option value="admin">Admin</option>
+    <option value="marketing_director">Marketing Director</option>
+    <option value="director">Director</option>
+    <option value="agency_builder">Agency Builder</option>
+    <option value="trainee">Trainee</option>
+  </select>
+  <div class="search-wrap">
+    <span class="si">🔍</span>
+    <input type="text" placeholder="Search agents…" oninput="renderTable()" id="search-input">
+  </div>
+</div>
+
+<!-- TABLE -->
+<div class="table-wrap">
+  <table class="lb-table">
+    <thead>
+      <tr>
+        <th style="width:40px;text-align:center">#</th>
+        <th onclick="setSort('name',document.querySelector('[data-sort=name]'))">Agent</th>
+        <th onclick="setSort('attendance',document.querySelector('[data-sort=attendance]'))" data-sort="attendance">Attendance</th>
+        <th onclick="setSort('recruits',document.querySelector('[data-sort=recruits]'))" data-sort="recruits">Recruits</th>
+        <th onclick="setSort('production',document.querySelector('[data-sort=production]'))" data-sort="production">Production pts</th>
+        <th onclick="setSort('score',document.querySelector('[data-sort=score]'))" data-sort="score">Score</th>
+        <th style="min-width:90px;">Mark Today</th>
+      </tr>
+    </thead>
+    <tbody id="lb-tbody"></tbody>
+  </table>
+  <div class="empty" id="lb-empty" style="display:none;">
+    <div class="e-ico">📊</div>
+    <p>No agents match your filters.</p>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── STATE ─────────────────────────────────────────────────────
+const STORAGE_KEY = 'dba_attendance_records';
+const PROD_KEY    = 'dba_production_scores';
+
+let records = [];       // { agentId, type, date, notes }
+let prodScores = {};    // { agentId: { pts, recruits, apps } }
+let currentSort = 'score';
+let sortDir = 'desc';
+let recordPanelOpen = false;
+let selectedMeetingType = 'BOM';
+let checkedAgents = new Set();
+let allAgents = typeof AGENTS !== 'undefined' ? AGENTS.filter(a => a.id !== 'dba000') : [];
+
+// ── LOAD ──────────────────────────────────────────────────────
+function loadRecords() {
+  try { records = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch(e) { records = []; }
+  try { prodScores = JSON.parse(localStorage.getItem(PROD_KEY) || '{}'); } catch(e) { prodScores = {}; }
+}
+
+function saveRecords() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+}
+
+// ── SCORE CALCULATION ─────────────────────────────────────────
+// Score = (attendance × 40) + (recruits × 35) + (production_pts_normalized × 25)
+// All normalized to 0-100 scale
+function calcScores() {
+  const counts = {};
+  allAgents.forEach(a => { counts[a.id] = { attend: 0, recruits: 0, pts: 0, apps: 0 }; });
+
+  // Attendance from records
+  records.forEach(r => {
+    if (!counts[r.agentId]) counts[r.agentId] = { attend: 0, recruits: 0, pts: 0, apps: 0 };
+    counts[r.agentId].attend++;
+  });
+
+  // Production from stored scores
+  Object.entries(prodScores).forEach(([id, s]) => {
+    if (!counts[id]) counts[id] = { attend: 0, recruits: 0, pts: 0, apps: 0 };
+    counts[id].recruits = s.recruits || 0;
+    counts[id].pts      = s.pts || 0;
+    counts[id].apps     = s.apps || 0;
+  });
+
+  // Normalize
+  const maxAttend   = Math.max(1, ...Object.values(counts).map(c => c.attend));
+  const maxRecruits = Math.max(1, ...Object.values(counts).map(c => c.recruits));
+  const maxPts      = Math.max(1, ...Object.values(counts).map(c => c.pts));
+
+  const scored = allAgents.map(a => {
+    const c = counts[a.id] || { attend: 0, recruits: 0, pts: 0, apps: 0 };
+    const normAttend   = c.attend   / maxAttend   * 100;
+    const normRecruits = c.recruits / maxRecruits * 100;
+    const normPts      = c.pts      / maxPts      * 100;
+    const score = Math.round(normAttend * 0.40 + normRecruits * 0.35 + normPts * 0.25);
+    return { ...a, ...c, maxAttend, maxRecruits, maxPts, score };
+  });
+
+  return scored;
+}
+
+// ── RENDER TABLE ──────────────────────────────────────────────
+function renderTable() {
+  const q = (document.getElementById('search-input')?.value || '').toLowerCase();
+  const roleF = document.getElementById('filter-role')?.value || '';
+  const uplineF = document.getElementById('filter-upline')?.value || '';
+
+  let data = calcScores().filter(a => {
+    if (roleF && a.role !== roleF) return false;
+    if (uplineF && a.uplineId !== uplineF) return false;
+    if (q && !`${a.name} ${a.id}`.toLowerCase().includes(q)) return false;
+    return true;
+  });
+
+  // Sort
+  const dir = sortDir === 'desc' ? -1 : 1;
+  data.sort((a, b) => {
+    const map = { score:'score', attendance:'attend', production:'pts', recruits:'recruits', name:'name' };
+    const key = map[currentSort] || 'score';
+    if (key === 'name') return dir * a.name.localeCompare(b.name);
+    return dir * ((b[key]||0) - (a[key]||0));
+  });
+
+  // Stats
+  const allScored = calcScores();
+  document.getElementById('stat-total').textContent   = allAgents.length;
+  document.getElementById('stat-active').textContent  = allScored.filter(a=>a.score>0).length;
+  document.getElementById('stat-meetings').textContent = records.length;
+  const topAttend = Math.max(0,...allScored.map(a=>a.attend));
+  const topAgent  = allScored.find(a=>a.attend===topAttend);
+  document.getElementById('stat-top-attend').textContent = topAgent ? `${topAgent.attend} (${topAgent.name.split(' ')[0]})` : '—';
+
+  const today = new Date().toISOString().slice(0,10);
+  const attendedToday = new Set(records.filter(r => r.date === today).map(r => r.agentId));
+
+  const tbody = document.getElementById('lb-tbody');
+  if (!data.length) {
+    tbody.innerHTML = '';
+    document.getElementById('lb-empty').style.display = 'block';
+    return;
+  }
+  document.getElementById('lb-empty').style.display = 'none';
+
+  tbody.innerHTML = data.map((a, i) => {
+    const rank = i + 1;
+    const rankCls = rank <= 3 ? `top3-${rank}` : '';
+    const rankDisplay = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
+    const rankNumCls  = rank <= 3 ? `rank-${rank}` : '';
+
+    const initials = a.name.split(' ').map(p=>p[0]||'').join('').slice(0,2).toUpperCase();
+
+    // Attendance bar
+    const attendPct = a.maxAttend > 0 ? Math.round(a.attend / a.maxAttend * 100) : 0;
+    // Recruits bar
+    const recPct    = a.maxRecruits > 0 ? Math.round(a.recruits / a.maxRecruits * 100) : 0;
+    // Production bar
+    const prodPct   = a.maxPts > 0 ? Math.round(a.pts / a.maxPts * 100) : 0;
+
+    // Score badge
+    let sbCls = 'sb-low', sbLabel = 'New';
+    if      (a.score >= 75) { sbCls='sb-elite'; sbLabel='Elite'; }
+    else if (a.score >= 50) { sbCls='sb-high';  sbLabel='Active'; }
+    else if (a.score >= 20) { sbCls='sb-mid';   sbLabel='Growing'; }
+
+    const isToday = attendedToday.has(a.id);
+
+    return `<tr class="${rankCls}">
+      <td><span class="rank-num ${rankNumCls}">${rankDisplay}</span></td>
+      <td>
+        <div class="agent-cell">
+          <div class="agent-avatar">${initials}</div>
+          <div>
+            <div class="agent-name">${a.name}</div>
+            <div class="agent-id">${a.id} · ${a.phpId||'—'}</div>
+          </div>
+        </div>
+      </td>
+      <td>
+        <div class="bar-wrap">
+          <div class="bar-bg"><div class="bar-fill bar-attend" style="width:${attendPct}%"></div></div>
+          <span class="bar-val" style="color:#5dade2;">${a.attend}</span>
+        </div>
+      </td>
+      <td>
+        <div class="bar-wrap">
+          <div class="bar-bg"><div class="bar-fill bar-prod" style="width:${recPct}%"></div></div>
+          <span class="bar-val" style="color:var(--gold);">${a.recruits}</span>
+        </div>
+      </td>
+      <td>
+        <div class="bar-wrap">
+          <div class="bar-bg"><div class="bar-fill bar-score" style="width:${prodPct}%"></div></div>
+          <span class="bar-val" style="color:var(--green);">${a.pts>0?a.pts.toLocaleString():'—'}</span>
+        </div>
+      </td>
+      <td>
+        <span class="score-badge ${sbCls}">${a.score}</span>
+      </td>
+      <td>
+        <button class="mark-btn ${isToday?'marked':''}"
+          onclick="quickMark('${a.id}','${a.name.replace(/'/g,'')}')"
+          title="${isToday?'Marked as attended today — click to undo':'Mark as attended today'}">
+          ${isToday?'✓ Attended':'+ Mark'}
+        </button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ── QUICK MARK ────────────────────────────────────────────────
+function quickMark(agentId, agentName) {
+  const today = new Date().toISOString().slice(0,10);
+  const existing = records.findIndex(r => r.agentId===agentId && r.date===today && r.type==='Quick Mark');
+
+  if (existing >= 0) {
+    records.splice(existing, 1);
+    toast(`Removed today's mark for ${agentName.split(' ')[0]}`);
+  } else {
+    records.push({ agentId, agentName, type: 'Quick Mark', date: today, notes: '' });
+    toast(`✓ Marked ${agentName.split(' ')[0]} as attended today`);
+  }
+  saveRecords();
+  renderTable();
+}
+
+// ── RECORD PANEL ──────────────────────────────────────────────
+function toggleRecordPanel() {
+  recordPanelOpen = !recordPanelOpen;
+  const panel = document.getElementById('record-panel');
+  panel.classList.toggle('open', recordPanelOpen);
+  if (recordPanelOpen) {
+    document.getElementById('attend-date').value = new Date().toISOString().slice(0,10);
+    checkedAgents.clear();
+    renderAgentChecklist();
+    panel.scrollIntoView({ behavior:'smooth', block:'start' });
+  }
+}
+
+function selectMeetingType(el) {
+  document.querySelectorAll('.mtype').forEach(m => m.classList.remove('active'));
+  el.classList.add('active');
+  selectedMeetingType = el.dataset.type;
+}
+
+function renderAgentChecklist() {
+  const q = (document.getElementById('agent-search-input')?.value || '').toLowerCase();
+  const filtered = allAgents.filter(a => !q || a.name.toLowerCase().includes(q));
+  const today = document.getElementById('attend-date')?.value;
+
+  // Count per agent
+  const attendCounts = {};
+  records.forEach(r => { attendCounts[r.agentId] = (attendCounts[r.agentId]||0) + 1; });
+
+  document.getElementById('agent-checklist').innerHTML = filtered.map(a => {
+    const checked = checkedAgents.has(a.id);
+    return `<div class="ac-item ${checked?'checked':''}" onclick="toggleAgentCheck('${a.id}')">
+      <div class="ac-cb">${checked?'✓':''}</div>
+      <span class="ac-name">${a.name}</span>
+      <span class="ac-count">${attendCounts[a.id]||0} meetings</span>
+    </div>`;
+  }).join('');
+
+  document.getElementById('checked-count').textContent = `${checkedAgents.size} selected`;
+}
+
+function filterAgentChecklist() { renderAgentChecklist(); }
+
+function toggleAgentCheck(agentId) {
+  if (checkedAgents.has(agentId)) checkedAgents.delete(agentId);
+  else checkedAgents.add(agentId);
+  renderAgentChecklist();
+}
+
+function saveAttendance() {
+  if (!checkedAgents.size) { toast('⚠ No agents selected'); return; }
+  const date = document.getElementById('attend-date').value;
+  const notes = document.getElementById('attend-notes').value.trim();
+  if (!date) { toast('⚠ Select a date'); return; }
+
+  let added = 0;
+  checkedAgents.forEach(agentId => {
+    // Avoid exact duplicates
+    const dup = records.some(r => r.agentId===agentId && r.type===selectedMeetingType && r.date===date);
+    if (!dup) {
+      const agent = allAgents.find(a => a.id === agentId);
+      records.push({ agentId, agentName: agent?.name||agentId, type: selectedMeetingType, date, notes });
+      added++;
+    }
+  });
+
+  saveRecords();
+  toast(`✓ ${added} attendance records saved for ${selectedMeetingType}`);
+  toggleRecordPanel();
+  renderTable();
+
+  // Also push to Monday.com BOM Attendance board
+  pushAttendanceToMonday(date, selectedMeetingType, notes, [...checkedAgents]);
+}
+
+async function pushAttendanceToMonday(date, type, notes, agentIds) {
+  try {
+    const aliases = agentIds.slice(0, 20).map((agentId, i) => {
+      const agent = allAgents.find(a => a.id === agentId);
+      const name = (agent?.name||agentId).replace(/"/g,'');
+      const cv = JSON.stringify(JSON.stringify({ date4: { date }, text: notes }));
+      return `a${i}: create_item(board_id: 18416040867, item_name: "${name} — ${type} ${date}", column_values: ${cv}) { id }`;
+    }).join('\n  ');
+    await mondayQuery(`mutation {\n  ${aliases}\n}`);
+    console.log('[Leaderboard] Pushed attendance to Monday');
+  } catch(e) {
+    console.warn('[Leaderboard] Monday push failed (local records saved):', e.message);
+  }
+}
+
+// ── SYNC FROM MONDAY ──────────────────────────────────────────
+async function syncFromMonday() {
+  const btn = document.getElementById('sync-btn');
+  btn.textContent = '↺ Syncing…';
+  btn.style.opacity = '.6';
+
+  try {
+    // Pull from BOM Attendance board
+    const res = await mondayQuery(`{
+      boards(ids: 18416040867) {
+        items_page(limit: 200) {
+          items {
+            id name
+            column_values { id text }
+          }
+        }
+      }
+    }`);
+
+    const items = res?.data?.boards?.[0]?.items_page?.items || [];
+    let imported = 0;
+
+    items.forEach(item => {
+      const cv = {};
+      item.column_values.forEach(c => { if(c.text) cv[c.id] = c.text; });
+      // Try to match agent by name
+      const parts = item.name.split(' — ');
+      const agentName = parts[0]?.trim();
+      const agent = allAgents.find(a => a.name.toLowerCase() === agentName?.toLowerCase());
+      if (!agent) return;
+
+      const date = cv['date4'] || cv['date_mm2t7d90'] || '';
+      const type = cv['text'] || 'BOM';
+      const dup = records.some(r => r.agentId===agent.id && r.date===date && r.type===type);
+      if (!dup && date) {
+        records.push({ agentId: agent.id, agentName: agent.name, type, date, notes: '' });
+        imported++;
+      }
+    });
+
+    saveRecords();
+    toast(`✓ Synced ${imported} new attendance records from Monday`);
+    renderTable();
+  } catch(e) {
+    toast('⚠ Sync failed: ' + e.message);
+  }
+
+  btn.textContent = '↺ Sync';
+  btn.style.opacity = '';
+}
+
+// ── SORT ──────────────────────────────────────────────────────
+function setSort(key, el) {
+  if (currentSort === key) sortDir = sortDir === 'desc' ? 'asc' : 'desc';
+  else { currentSort = key; sortDir = 'desc'; }
+  document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('th').forEach(th => { th.classList.remove('sort-asc','sort-desc'); });
+  if (el) el.classList.add('active');
+  const thEl = document.querySelector(`th[onclick*="${key}"]`) || document.querySelector(`[data-sort="${key}"]`);
+  if (thEl) thEl.classList.add(sortDir === 'asc' ? 'sort-asc' : 'sort-desc');
+  renderTable();
+}
+
+// ── PRODUCTION SCORE UPDATE ───────────────────────────────────
+// Called externally or via URL param
+function updateProductionScore(agentId, recruits, pts, apps) {
+  if (!prodScores[agentId]) prodScores[agentId] = {};
+  prodScores[agentId] = { recruits: recruits||0, pts: pts||0, apps: apps||0 };
+  localStorage.setItem(PROD_KEY, JSON.stringify(prodScores));
+  renderTable();
+}
+
+// ── UPLINE FILTER POPULATION ──────────────────────────────────
+function populateUplineFilter() {
+  const mds = allAgents.filter(a => ['marketing_director','admin','agency_builder'].includes(a.role));
+  const sel = document.getElementById('filter-upline');
+  mds.forEach(md => {
+    const opt = document.createElement('option');
+    opt.value = md.id;
+    opt.textContent = md.name;
+    sel.appendChild(opt);
+  });
+}
+
+// ── TOAST ─────────────────────────────────────────────────────
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+// ── INIT ──────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  loadRecords();
+  populateUplineFilter();
+  renderTable();
+
+  // Demo production scores if none exist
+  if (Object.keys(prodScores).length === 0) {
+    const demo = {
+      obi001: {recruits:9, pts:9200, apps:9},
+      jen001: {recruits:7, pts:7600, apps:8},
+      deigar526: {recruits:3, pts:3000, apps:3},
+      romcru001: {recruits:1, pts:1200, apps:1},
+      fidorj220: {recruits:5, pts:4800, apps:5},
+      emmoke796: {recruits:1, pts:900, apps:1},
+      ninpac400: {recruits:3, pts:2800, apps:3},
+    };
+    Object.entries(demo).forEach(([id, s]) => updateProductionScore(id, s.recruits, s.pts, s.apps));
+  }
+});
+</script>
+</body>
+</html>
