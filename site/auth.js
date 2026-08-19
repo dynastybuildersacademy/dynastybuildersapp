@@ -192,1519 +192,2209 @@ const MONDAY_ORG_KEY = 'eyJhbGciOiJIUzI1NiJ9.eyJ0aWQiOjY1Nzg0OTc3NSwiYWFpIjoxMSw
 //   3. Add or update: top25BoardId: "XXXXXXXXXX" in their entry below
 //   4. Deploy — the agent will load their board automatically on next login
 //   Agents without a top25BoardId fall back to the template board (18419015866)
+// Last synced from DBA Agent Roster (board 18411252280): 2026-08-18
 // ─────────────────────────────────────────────────────────────────────────────
 const AGENTS = [
   {
-    id: "dba000", name: "DBA Super Admin",
-    pin: "0000", role: "super_admin",
-    phpId: "", phone: "",
-    email: "admin@dynastybuildersapp.com",
-    licenseStates: [], enrollmentDate: "2022-01-01", uplineId: null
-  },
-  {
     id: "obi001", name: "Obi Iroezi",
-    pin: "1111", role: "admin",
-    phpId: "10146", phone: "310-995-6507",
-    email: "obi@dynastybuildersapp.com",
-    licenseStates: ["CA","TX"], enrollmentDate: "2022-01-01", top25BoardId: "18419015866", uplineId: null
+    pin: "1111", role: "admin", level: 100,
+    phpId: "10146", phone: "3109956507",
+    email: "obi@yourdynastybuilder.com",
+    top25BoardId: "18419015866",
+    licenseStates: ["CA", "TX"],
+    enrollmentDate: "2022-01-01",
+    uplineId: ""
   },
   {
     id: "jen001", name: "Jen Iroezi",
-    pin: "2222", role: "agency_builder",
-    phpId: "10147", phone: "310-995-6508",
-    email: "jen@dynastybuildersapp.com",
-    licenseStates: ["CA"], enrollmentDate: "2022-01-01", top25BoardId: "8052087599", uplineId: "obi001"
+    pin: "1111", role: "agency_builder", level: 100,
+    phpId: "10147", phone: "3109956508",
+    email: "jen@yourdynastybuilder.com",
+    top25BoardId: "8052087599",
+    licenseStates: ["CA"],
+    enrollmentDate: "2022-01-01",
+    uplineId: "obi001"
   },
   {
-    id: "mag001", name: "Magdalene O.",
-    pin: "3333", role: "marketing_director",
-    phpId: "10200", phone: "", email: "",
-    licenseStates: ["TX"], enrollmentDate: "2022-06-01", top25BoardId: "8270052654", uplineId: "obi001"
+    id: "mag001", name: "Magdalene Ibezim",
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "10200", phone: "",
+    email: "",
+    top25BoardId: "8270052654",
+    licenseStates: ["TX"],
+    enrollmentDate: "2022-06-01",
+    uplineId: "obi001"
   },
   {
-    id: "chi001", name: "Chidozie N.",
-    pin: "4444", role: "director",
-    phpId: "10301", phone: "", email: "",
-    licenseStates: ["TX"], enrollmentDate: "2023-01-15", uplineId: "mag001"
+    id: "sha001", name: "Shantesa Archie",
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "10401", phone: "",
+    email: "",
+    top25BoardId: "",
+    licenseStates: ["TX"],
+    enrollmentDate: "2025-01-10",
+    uplineId: "chi001"
+  },
+  {
+    id: "dba000", name: "DBA Super Admin",
+    pin: "1111", role: "super_admin", level: 100,
+    phpId: "", phone: "",
+    email: "admin@yourdynastybuilder.com",
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2022-01-01",
+    uplineId: ""
   },
   {
     id: "bli001", name: "Blessing Ikejemba",
-    pin: "1234", role: "marketing_director",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "", phone: "",
     email: "",
-    licenseStates: [], enrollmentDate: "2024-01-01", uplineId: "obi001"
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-01-01",
+    uplineId: "obi001"
   },
   {
     id: "emo001", name: "Emeka Okereke",
-    pin: "1235", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "", phone: "",
     email: "",
-    licenseStates: [], enrollmentDate: "2025-01-01", uplineId: "obi001"
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-01-01",
+    uplineId: "obi001"
   },
   {
     id: "fri001", name: "Francis Ikeotuonye",
-    pin: "1236", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "", phone: "",
     email: "",
-    licenseStates: [], enrollmentDate: "2025-01-01", uplineId: "obi001"
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-01-01",
+    uplineId: "obi001"
+  },
+  {
+    id: "alecas487", name: "Alex Castro",
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "", phone: "7142091524",
+    email: "alex@authorityfactory88.com",
+    top25BoardId: "",
+    licenseStates: ["CA"],
+    enrollmentDate: "2024-06-05",
+    uplineId: "bli001"
   },
   {
     id: "joymoj126", name: "Joy Mojokwu",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1412126", phone: "9096822392",
     email: "mokogwuj@gmail.com",
-    licenseStates: [], enrollmentDate: "2026-06-07",
-    uplineId: "mauony491"
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2026-06-07",
+    uplineId: ""
   },
   {
     id: "franwa448", name: "Francis Nwadiba",
-    pin: "1111", role: "trainee",
-    phpId: "1411448", phone: "4244452758",
-    email: "meetfarco2020@gmail.com",
-    licenseStates: [], enrollmentDate: "2026-06-06",
-    uplineId: "fidorj220"
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "1412126", phone: "9096822392",
+    email: "mokogwuj@gmail.com",
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2026-06-06",
+    uplineId: ""
   },
   {
     id: "virosi239", name: "Virginia Osita",
-    pin: "1111", role: "trainee",
-    phpId: "1411239", phone: "8328882672",
-    email: "osita.virginia@yahoo.com",
-    licenseStates: [], enrollmentDate: "2026-06-05",
-    uplineId: "ireibe452"
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "1411448", phone: "4244452758",
+    email: "meetfarco2020@gmail.com",
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2026-06-05",
+    uplineId: ""
   },
   {
     id: "marrod050", name: "Marcela Rodriguez",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1411050", phone: "3236749258",
     email: "marcyrodriguez808@gmail.com",
-    licenseStates: [], enrollmentDate: "2026-06-04",
-    uplineId: null
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2026-06-04",
+    uplineId: ""
   },
   {
     id: "jawsal547", name: "Jawad Salaam",
-    pin: "1111", role: "trainee",
-    phpId: "1408547", phone: "3108620454",
-    email: "jawadsalaam@hotmail.com",
-    licenseStates: [], enrollmentDate: "2026-05-31",
-    uplineId: "tortsa743"
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "1411050", phone: "3236749258",
+    email: "marcyrodriguez808@gmail.com",
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2026-05-31",
+    uplineId: ""
   },
   {
     id: "emmoke796", name: "Emmanuel Okereke",
-    top25BoardId: "18414813028", pin: "1111", role: "trainee",
-    phpId: "1405796", phone: "3232372009",
-    email: "michaelokereke002@gmail.com",
-    licenseStates: [], enrollmentDate: "2026-05-23",
-    uplineId: "liluzo343"
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "1408547", phone: "3108620454",
+    email: "jawadsalaam@hotmail.com",
+    top25BoardId: "18414813028",
+    licenseStates: [],
+    enrollmentDate: "2026-05-23",
+    uplineId: ""
   },
   {
     id: "judaka326", name: "Jude Akalawu",
-    pin: "1111", role: "trainee",
-    phpId: "1404326", phone: "3104046508",
-    email: "phpdynastybuilders@gmail.com",
-    licenseStates: [], enrollmentDate: "2026-05-17",
-    uplineId: "liluzo343"
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "1405796", phone: "3232372009",
+    email: "michaelokereke002@gmail.com",
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2026-05-17",
+    uplineId: ""
   },
   {
     id: "fidorj220", name: "Fidelis Orji",
-    top25BoardId: "18415187026", pin: "1111", role: "trainee",
-    phpId: "1404220", phone: "4243812069",
-    email: "orjifidelischinweike@gmail.com",
-    licenseStates: [], enrollmentDate: "2026-05-17",
-    uplineId: "jacaba757"
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "1404326", phone: "3104046508",
+    email: "phpdynastybuilders@gmail.com",
+    top25BoardId: "18415187026",
+    licenseStates: [],
+    enrollmentDate: "2026-05-17",
+    uplineId: ""
   },
   {
     id: "managu956", name: "Manuel Aguilar",
-    pin: "1111", role: "trainee",
-    phpId: "1403956", phone: "5624864431",
-    email: "aguilarmanuel245482@gmail.com",
-    licenseStates: [], enrollmentDate: "2026-05-16",
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "1404220", phone: "4243812069",
+    email: "orjifidelischinweike@gmail.com",
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2026-05-16",
     uplineId: "obi001"
   },
   {
     id: "babola634", name: "Babatunde Olaide",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1403634", phone: "8184663998",
     email: "olaa.may27@gmail.com",
-    licenseStates: [], enrollmentDate: "2026-05-16",
-    uplineId: "liluzo343"
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2026-05-16",
+    uplineId: ""
   },
   {
     id: "andwil788", name: "Andrew Williams",
-    pin: "1111", role: "trainee",
-    phpId: "1402788", phone: "5623596245",
-    email: "andrewbwilliams41@gmail.com",
-    licenseStates: [], enrollmentDate: "2026-05-13",
-    uplineId: "tortsa743"
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "1403634", phone: "8184663998",
+    email: "olaa.may27@gmail.com",
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2026-05-13",
+    uplineId: ""
   },
   {
     id: "anglew957", name: "Angela Lewis",
-    pin: "1111", role: "trainee",
-    phpId: "1401957", phone: "3108660176",
-    email: "poetry8638@gmail.com",
-    licenseStates: [], enrollmentDate: "2026-05-08",
-    uplineId: null
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "1402788", phone: "5623596245",
+    email: "andrewbwilliams41@gmail.com",
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2026-05-08",
+    uplineId: ""
   },
   {
     id: "mauony491", name: "Maureen Onyia-Ekwuazi",
-    pin: "1111", role: "trainee",
-    phpId: "1401491", phone: "4243474306",
-    email: "monicaonyia23@gmail.com",
-    licenseStates: [], enrollmentDate: "2026-05-05",
-    uplineId: "ireibe452"
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "1401957", phone: "3108660176",
+    email: "poetry8638@gmail.com",
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2026-05-05",
+    uplineId: ""
   },
   {
     id: "ireibe452", name: "Irene Ibekwe",
-    pin: "1111", role: "trainee",
-    phpId: "1401452", phone: "8322891880",
-    email: "ireneibekwe1616@yahoo.com",
-    licenseStates: [], enrollmentDate: "2026-05-05",
-    uplineId: null
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "1401491", phone: "4243474306",
+    email: "monicaonyia23@gmail.com",
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2026-05-05",
+    uplineId: ""
   },
   {
     id: "danjho261", name: "Daniella Jhonson",
-    pin: "1111", role: "trainee",
-    phpId: "1401261", phone: "4242534292",
-    email: "jhonsonscorporategroup@gmail.com",
-    licenseStates: [], enrollmentDate: "2026-05-02",
-    top25BoardId: "18411670330", uplineId: "tortsa743"
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "1401452", phone: "8322891880",
+    email: "ireneibekwe1616@yahoo.com",
+    top25BoardId: "18411670330",
+    licenseStates: [],
+    enrollmentDate: "2026-05-02",
+    uplineId: ""
   },
   {
     id: "conchu516", name: "Conleth Chukwu",
-    top25BoardId: "18412529902", pin: "1111", role: "trainee",
-    phpId: "1400516", phone: "3234036017",
-    email: "marymadona74@gmail.com",
-    licenseStates: [], enrollmentDate: "2026-05-01",
-    uplineId: "liluzo343"
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "1401261", phone: "4242534292",
+    email: "jhonsonscorporategroup@gmail.com",
+    top25BoardId: "18412529902",
+    licenseStates: [],
+    enrollmentDate: "2026-05-01",
+    uplineId: ""
   },
   {
     id: "reguri510", name: "Regina Urigwe",
-    pin: "1111", role: "trainee",
-    phpId: "1400510", phone: "4042711895",
-    email: "reginaurigwe@gmail.com",
-    licenseStates: [], enrollmentDate: "2026-05-01",
-    uplineId: "liluzo343"
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "1400516", phone: "3234036017",
+    email: "marymadona74@gmail.com",
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2026-05-01",
+    uplineId: ""
   },
   {
     id: "liluzo343", name: "Lilly Uzondu-Umeojiako",
-    pin: "1111", role: "trainee",
-    phpId: "1397343", phone: "3235348102",
-    email: "ifylili12@gmail.com",
-    licenseStates: [], enrollmentDate: "2026-04-10",
-    uplineId: "jacaba757"
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "1400510", phone: "4042711895",
+    email: "reginaurigwe@gmail.com",
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2026-04-10",
+    uplineId: ""
   },
   {
     id: "godchu897", name: "Godis Chukwukere",
-    pin: "1111", role: "trainee",
-    phpId: "1395897", phone: "3018757073",
-    email: "godischukwukere@engineer.com",
-    licenseStates: [], enrollmentDate: "2026-04-01",
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "1397343", phone: "3235348102",
+    email: "ifylili12@gmail.com",
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2026-04-01",
     uplineId: "goonwa076"
   },
   {
     id: "joytor331", name: "Joy Toritseju",
-    pin: "1111", role: "trainee",
-    phpId: "1395331", phone: "4422493723",
-    email: "joytoritseju2005@gmail.com",
-    licenseStates: [], enrollmentDate: "2026-03-31",
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "1395897", phone: "3018757073",
+    email: "godischukwukere@engineer.com",
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2026-03-31",
     uplineId: "goonwa076"
   },
   {
     id: "miabow031", name: "Mia Bowie",
-    pin: "1111", role: "trainee",
-    phpId: "1394031", phone: "7202897247",
-    email: "ms.bg303@gmail.com",
-    licenseStates: [], enrollmentDate: "2026-03-23",
-    uplineId: null
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "1395331", phone: "4422493723",
+    email: "joytoritseju2005@gmail.com",
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2026-03-23",
+    uplineId: ""
   },
   {
     id: "matbec358", name: "Matthew Beck",
-    pin: "1111", role: "trainee",
-    phpId: "1391358", phone: "9167928875",
-    email: "matt@mattaffiliate.com",
-    licenseStates: [], enrollmentDate: "2026-03-10",
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "1394031", phone: "7202897247",
+    email: "ms.bg303@gmail.com",
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2026-03-10",
     uplineId: "obi001"
   },
   {
     id: "winmum345", name: "Winny Mumbarhi",
-    pin: "1111", role: "trainee",
-    phpId: "1391345", phone: "7205885175",
-    email: "mumbarhiwinny@gmail.com",
-    licenseStates: [], enrollmentDate: "2026-03-10",
-    uplineId: "herbet122"
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "1391358", phone: "9167928875",
+    email: "matt@mattaffiliate.com",
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2026-03-10",
+    uplineId: ""
   },
   {
     id: "josker926", name: "Josephine Kerian",
-    pin: "1111", role: "trainee",
-    phpId: "1390926", phone: "2407580235",
-    email: "josephinekerian@gmail.com",
-    licenseStates: [], enrollmentDate: "2026-03-08",
-    uplineId: "geonwa339"
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "1391345", phone: "7205885175",
+    email: "mumbarhiwinny@gmail.com",
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2026-03-08",
+    uplineId: ""
   },
   {
     id: "elinwo056", name: "Elie Nwokorie",
-    pin: "1111", role: "trainee",
-    phpId: "1385056", phone: "3108083201",
-    email: "elieolu14@gmail.com",
-    licenseStates: [], enrollmentDate: "2026-02-15",
-    uplineId: null
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "1390926", phone: "2407580235",
+    email: "josephinekerian@gmail.com",
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2026-02-15",
+    uplineId: ""
   },
   {
     id: "chinwo043", name: "Chidinma Nwokorie",
-    pin: "1111", role: "trainee",
-    phpId: "1385043", phone: "3108192771",
-    email: "andienwokorie@gmail.com",
-    licenseStates: [], enrollmentDate: "2026-02-15",
-    uplineId: null
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "1385056", phone: "3108083201",
+    email: "elieolu14@gmail.com",
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2026-02-15",
+    uplineId: ""
   },
   {
     id: "ijeokp039", name: "Ijeoma Okpara",
-    pin: "1111", role: "trainee",
-    phpId: "1385039", phone: "3232829986",
-    email: "ijokpara@hotmail.com",
-    licenseStates: [], enrollmentDate: "2026-02-15",
-    uplineId: null
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "1385043", phone: "3108192771",
+    email: "andienwokorie@gmail.com",
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2026-02-15",
+    uplineId: ""
   },
   {
     id: "keleke297", name: "Kelechi Ekeanyanwu",
-    pin: "1111", role: "trainee",
-    phpId: "1381297", phone: "7204486194",
-    email: "kelechi_21@yahoo.com",
-    licenseStates: [], enrollmentDate: "2026-02-05",
-    uplineId: "bleeke611"
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "1385039", phone: "3232829986",
+    email: "ijokpara@hotmail.com",
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2026-02-05",
+    uplineId: ""
   },
   {
     id: "aimeig458", name: "Aimanose Eigbedion",
-    pin: "1111", role: "trainee",
-    phpId: "1380458", phone: "5736474228",
-    email: "eigbediona@gmail.com",
-    licenseStates: [], enrollmentDate: "2026-02-01",
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "1381297", phone: "7204486194",
+    email: "kelechi_21@yahoo.com",
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2026-02-01",
     uplineId: "obi001"
   },
   {
     id: "yalshe002", name: "Yaleca Shelby",
-    pin: "1111", role: "trainee",
-    phpId: "1380002", phone: "7202121053",
-    email: "tymeless14@gmail.com",
-    licenseStates: [], enrollmentDate: "2026-02-01",
-    uplineId: null
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "1380458", phone: "5736474228",
+    email: "eigbediona@gmail.com",
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2026-02-01",
+    uplineId: ""
   },
   {
     id: "teamik798", name: "Tea Mikadze",
-    pin: "1111", role: "trainee",
-    phpId: "1379798", phone: "2137715590",
-    email: "teamikadze76@gmail.com",
-    licenseStates: [], enrollmentDate: "2026-01-31",
-    top25BoardId: "18412529902", uplineId: "tortsa743"
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "1380002", phone: "7202121053",
+    email: "tymeless14@gmail.com",
+    top25BoardId: "18412529902",
+    licenseStates: [],
+    enrollmentDate: "2026-01-31",
+    uplineId: ""
   },
   {
     id: "torsha095", name: "Tornike Shalikashvili",
-    pin: "1111", role: "trainee",
-    phpId: "1379095", phone: "7169943753",
-    email: "tornikeshalikashvili91@gmail.com",
-    licenseStates: [], enrollmentDate: "2026-01-29",
-    uplineId: "tortsa743"
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "1379798", phone: "2137715590",
+    email: "teamikadze76@gmail.com",
+    top25BoardId: "18411670429",
+    licenseStates: [],
+    enrollmentDate: "2026-01-29",
+    uplineId: ""
   },
   {
     id: "teajoh786", name: "Teairra Johnson",
-    pin: "1111", role: "trainee",
-    phpId: "1377786", phone: "6264097166",
-    email: "teairra.fields@yahoo.com",
-    licenseStates: [], enrollmentDate: "2026-01-17",
-    uplineId: "ramash421"
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "1379095", phone: "7169943753",
+    email: "tornikeshalikashvili91@gmail.com",
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2026-01-17",
+    uplineId: ""
   },
   {
     id: "ninpac400", name: "Nino Pachulia",
-    pin: "1111", role: "trainee",
-    phpId: "1376400", phone: "9084337138",
-    email: "n.pachulia@yahoo.com",
-    licenseStates: [], enrollmentDate: "2026-01-10",
-    top25BoardId: "18411670429", uplineId: "tortsa743"
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "1377786", phone: "6264097166",
+    email: "teairra.fields@yahoo.com",
+    top25BoardId: "18411670429",
+    licenseStates: [],
+    enrollmentDate: "2026-01-10",
+    uplineId: ""
   },
   {
     id: "tortsa743", name: "Tornike Tsagareishvili",
-    pin: "1111", role: "field_associate",
-    phpId: "1374743", phone: "3109935746",
-    email: "tsagarat010@gmail.com",
-    licenseStates: [], enrollmentDate: "2025-12-31",
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "1376400", phone: "9084337138",
+    email: "n.pachulia@yahoo.com",
     top25BoardId: "18394078194",
+    licenseStates: [],
+    enrollmentDate: "2025-12-31",
     uplineId: "obi001"
   },
   {
     id: "uzoama613", name: "Uzoma Amaefula",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1374613", phone: "9517503727",
     email: "uzobeeke@yahoo.com",
-    licenseStates: [], enrollmentDate: "2025-12-31",
-    uplineId: "emmnwo473"
+    top25BoardId: "18400160335",
+    licenseStates: [],
+    enrollmentDate: "2025-12-31",
+    uplineId: ""
   },
   {
     id: "chimgb387", name: "Chimezie Mgbobile",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1374387", phone: "5014787215",
     email: "brightstonex@gmail.com",
-    licenseStates: [], enrollmentDate: "2025-12-30",
-    uplineId: "emmnwo473"
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-12-30",
+    uplineId: ""
   },
   {
     id: "abetil877", name: "Abebe Tilahuun",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1373877", phone: "7202263559",
     email: "abexcool@gmail.com",
-    licenseStates: [], enrollmentDate: "2025-12-24",
-    uplineId: null
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-12-24",
+    uplineId: ""
   },
   {
     id: "kenxiv533", name: "Kennedy Xivir",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1373533", phone: "3232523415",
     email: "xivirkennedy170@gmail.com",
-    licenseStates: [], enrollmentDate: "2025-12-20",
-    uplineId: "ramash421"
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-12-20",
+    uplineId: ""
   },
   {
     id: "apryou832", name: "April Young",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1371832", phone: "3106219145",
     email: "aprilyoung123@yahoo.com",
-    licenseStates: [], enrollmentDate: "2025-12-06",
-    top25BoardId: "18400160335", uplineId: "onoedo636"
+    top25BoardId: "18400160335",
+    licenseStates: [],
+    enrollmentDate: "2025-12-06",
+    uplineId: ""
   },
   {
     id: "dawmen649", name: "Dawit Mengisteab",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1370649", phone: "7203277241",
     email: "dmengisteab757@gmail.com",
-    licenseStates: [], enrollmentDate: "2025-11-30",
-    uplineId: null
+    top25BoardId: "18216452519",
+    licenseStates: [],
+    enrollmentDate: "2025-11-30",
+    uplineId: ""
   },
   {
     id: "bolbal574", name: "Bolanle Balogun",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1369574", phone: "9256588420",
     email: "bolajioye@yahoo.com",
-    licenseStates: [], enrollmentDate: "2025-11-20",
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-11-20",
     uplineId: "obi001"
   },
   {
     id: "melpad946", name: "Melissa Padilla",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1368946", phone: "6268402591",
     email: "meli891026@gmail.com",
-    licenseStates: [], enrollmentDate: "2025-11-15",
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-11-15",
     uplineId: "obi001"
   },
   {
     id: "arimuh040", name: "Arif Muhammad",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1366040", phone: "3235341358",
     email: "arif.shakir51@gmail.com",
-    licenseStates: [], enrollmentDate: "2025-10-29",
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-10-29",
     uplineId: "obi001"
   },
   {
     id: "marleo994", name: "Mark Ponce De Leon",
-    pin: "1111", role: "associate",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1364994", phone: "5623505181",
     email: "markjpdl@hotmail.com",
-    licenseStates: [], enrollmentDate: "2025-10-17",
-    top25BoardId: "18426534536", uplineId: "obi001"
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-10-17",
+    uplineId: "obi001"
   },
   {
     id: "steben289", name: "Stephan Bennett",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1364289", phone: "4065798030",
     email: "insurewithbennett@gmail.com",
-    licenseStates: [], enrollmentDate: "2025-10-16",
-    uplineId: null
+    top25BoardId: "18410267607",
+    licenseStates: [],
+    enrollmentDate: "2025-10-16",
+    uplineId: ""
   },
   {
     id: "titikh526", name: "Titilope Ikhile",
-    top25BoardId: "18417763345", pin: "1111", role: "associate",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1363526", phone: "9252340575",
     email: "titilope@gmail.com",
-    licenseStates: [], enrollmentDate: "2025-10-12",
+    top25BoardId: "18417763345",
+    licenseStates: [],
+    enrollmentDate: "2025-10-12",
     uplineId: "obi001"
   },
   {
     id: "jahsta022", name: "Jahnel Stamp",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1362022", phone: "6123666259",
     email: "jahnel3059@gmail.com",
-    licenseStates: [], enrollmentDate: "2025-10-01",
-    top25BoardId: "18410267607", uplineId: "onoedo636"
+    top25BoardId: "18410267607",
+    licenseStates: [],
+    enrollmentDate: "2025-10-01",
+    uplineId: ""
   },
   {
     id: "emeuba208", name: "Emeka Ubachunwa",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1361208", phone: "4245673571",
     email: "mekss2001@yahoo.com",
-    licenseStates: [], enrollmentDate: "2025-10-01",
+    top25BoardId: "10003269761",
+    licenseStates: [],
+    enrollmentDate: "2025-10-01",
     uplineId: "cosaba718"
   },
   {
     id: "oumtin108", name: "Oumar Tine",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1360108", phone: "3233290367",
     email: "tineoumar61@gmail.com",
-    licenseStates: [], enrollmentDate: "2025-09-24",
-    uplineId: "onoedo636"
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-09-24",
+    uplineId: ""
   },
   {
     id: "chrgod663", name: "Christal Godfrey",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1359663", phone: "3239796096",
     email: "godfreychristal977@gmail.com",
-    licenseStates: [], enrollmentDate: "2025-09-20",
-    uplineId: "onoedo636"
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-09-20",
+    uplineId: ""
   },
   {
     id: "sopgon304", name: "Sophia Gonzalez",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1357304", phone: "8182569669",
     email: "sophiegg101@gmail.com",
-    licenseStates: [], enrollmentDate: "2025-09-12",
-    uplineId: "amairu592"
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-09-12",
+    uplineId: ""
   },
   {
     id: "nenuko241", name: "Nene Uko",
-    pin: "1111", role: "field_associate",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1357241", phone: "3102201299",
     email: "neneukocoach@gmail.com",
-    licenseStates: [], enrollmentDate: "2025-09-11",
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-09-11",
     uplineId: "goonwa076"
   },
   {
     id: "ranbro949", name: "Randall Brownfield",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1356949", phone: "7605243708",
     email: "mmarandall84@gmail.com",
-    licenseStates: [], enrollmentDate: "2025-09-10",
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-09-10",
     uplineId: "obi001"
   },
   {
     id: "aslfer937", name: "Asley Fernandes",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1355937", phone: "8322937321",
     email: "asleyferns@gmail.com",
-    licenseStates: [], enrollmentDate: "2025-09-05",
-    uplineId: null
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-09-05",
+    uplineId: ""
   },
   {
     id: "steudo121", name: "Stella Udoh",
-    top25BoardId: "18426825795", pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1355121", phone: "4244503394",
     email: "perfection4stella@gmail.com",
-    licenseStates: [], enrollmentDate: "2025-09-01",
+    top25BoardId: "18426825795",
+    licenseStates: [],
+    enrollmentDate: "2025-09-01",
     uplineId: "cosaba718"
   },
   {
     id: "fraaba441", name: "Francis Abanobi",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1354441", phone: "5627374966",
     email: "francisabanobi11@gmail.com",
-    licenseStates: [], enrollmentDate: "2025-08-31",
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-08-31",
     uplineId: "cosaba718"
   },
   {
     id: "esooro893", name: "Esohe Oronsaye",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1353893", phone: "9516409080",
     email: "taiyeojeikere@aol.com",
-    licenseStates: [], enrollmentDate: "2025-08-29",
-    uplineId: "taioje599"
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-08-29",
+    uplineId: ""
   },
   {
     id: "katsal890", name: "Kate Salami",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1353890", phone: "9516624678",
     email: "taiyeojeikere@gmail.ccom",
-    licenseStates: [], enrollmentDate: "2025-08-29",
-    uplineId: "taioje599"
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-08-29",
+    uplineId: ""
   },
   {
     id: "jacaba757", name: "Jacinta Abanobi",
-    pin: "1111", role: "director",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1353757", phone: "5625896701",
     email: "zaramekpere048@gmail.com",
-    licenseStates: [], enrollmentDate: "2025-08-29",
-    top25BoardId: "10003269761", uplineId: "cosaba718"
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-08-29",
+    uplineId: "cosaba718"
   },
   {
     id: "cosaba718", name: "Cosmas Abanobi",
-    pin: "1111", role: "director",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1353718", phone: "5622664286",
     email: "cosmasabanobi046@gmail.com",
-    licenseStates: [], enrollmentDate: "2025-08-28",
-    top25BoardId: "9933217087", uplineId: "goonwa076"
+    top25BoardId: "9933217087",
+    licenseStates: [],
+    enrollmentDate: "2025-08-28",
+    uplineId: "goonwa076"
   },
   {
     id: "flonwa701", name: "Florence Nwana",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1353701", phone: "5622159121",
     email: "florencenwana@yahoo.com",
-    licenseStates: [], enrollmentDate: "2025-08-28",
-    uplineId: "glookh486"
+    top25BoardId: "8994331783",
+    licenseStates: [],
+    enrollmentDate: "2025-08-28",
+    uplineId: ""
   },
   {
     id: "taomor024", name: "Taofikat Morakinyo",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1353024", phone: "9739543140",
     email: "morakinyot1@gmail.com",
-    licenseStates: [], enrollmentDate: "2025-08-23",
-    uplineId: "amairu592"
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-08-23",
+    uplineId: ""
   },
   {
     id: "adosep242", name: "Adorina Kouriel Seperghan",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1352242", phone: "2092770768",
     email: "ado0at@yahoo.com",
-    licenseStates: [], enrollmentDate: "2025-08-19",
-    uplineId: "ramash421"
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-08-19",
+    uplineId: ""
   },
   {
     id: "rongou178", name: "Ronita Gouryal",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1352178", phone: "2095317594",
     email: "rgouriyal@outlook.com",
-    licenseStates: [], enrollmentDate: "2025-08-18",
-    uplineId: "ramash421"
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-08-18",
+    uplineId: ""
   },
   {
     id: "rymard750", name: "Rymond Samonia Ardeshai",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1351750", phone: "8186973249",
     email: "rymond.sa@gmail.com",
-    licenseStates: [], enrollmentDate: "2025-08-16",
-    uplineId: "ramash421"
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-08-16",
+    uplineId: ""
   },
   {
     id: "tarpro557", name: "Taryn Provinchain",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1348557", phone: "4247506026",
     email: "tarynnn13@gmail.com",
-    licenseStates: [], enrollmentDate: "2025-07-30",
-    uplineId: null
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-07-30",
+    uplineId: ""
   },
   {
     id: "olueji935", name: "Oluchi Ejike",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1347935", phone: "3233201750",
     email: "ejike.oluchi@yahoo.co.uk",
-    licenseStates: [], enrollmentDate: "2025-07-25",
-    uplineId: "jusoko818"
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-07-25",
+    uplineId: ""
   },
   {
     id: "latcha805", name: "Latiff Chagpar",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1347805", phone: "7147469810",
     email: "lchagpar@gmail.com",
-    licenseStates: [], enrollmentDate: "2025-07-24",
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-07-24",
     uplineId: "obi001"
   },
   {
     id: "feloju853", name: "Felicia Ojukwu",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1346853", phone: "9092435197",
     email: "chidiogo@yahoo.com",
-    licenseStates: [], enrollmentDate: "2025-07-17",
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-07-17",
     uplineId: "obi001"
   },
   {
     id: "emmnwo473", name: "Emmanuel Nwokeji",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1346473", phone: "4244565689",
     email: "necshagg@gmail.com",
-    licenseStates: [], enrollmentDate: "2025-07-16",
-    uplineId: null
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-07-16",
+    uplineId: ""
   },
   {
     id: "susuka198", name: "Susan Ukaegbu",
-    pin: "1111", role: "associate",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1344198", phone: "3235930896",
     email: "susan90247@gmail.com",
-    licenseStates: [], enrollmentDate: "2025-07-01",
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-07-01",
     uplineId: "goonwa076"
   },
   {
     id: "prieme780", name: "Princess Emeruwa",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1343780", phone: "3108485821",
     email: "princessemeruwa219@gmail.com",
-    licenseStates: [], enrollmentDate: "2025-07-01",
-    uplineId: "maroko654"
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-07-01",
+    uplineId: ""
   },
   {
     id: "lyndia091", name: "Lynette Diarra",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1343091", phone: "7206090928",
     email: "weareyoung2557@gmail.com",
-    licenseStates: [], enrollmentDate: "2025-06-26",
-    uplineId: null
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-06-26",
+    uplineId: ""
   },
   {
     id: "nafafs398", name: "Nafiseh Afshari",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1342398", phone: "7209341811",
     email: "afshar.na1988@gmail.com",
-    licenseStates: [], enrollmentDate: "2025-06-19",
-    uplineId: null
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-06-19",
+    uplineId: ""
   },
   {
     id: "vanvan673", name: "Vander Vanzinetti",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1341673", phone: "9493101885",
     email: "ayovander@gmail.com",
-    licenseStates: [], enrollmentDate: "2025-06-12",
-    uplineId: "maroko654"
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-06-12",
+    uplineId: ""
   },
   {
     id: "nicmor638", name: "Nicole Moreno",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1340638", phone: "8189345411",
     email: "nicolemoren0@icloud.com",
-    licenseStates: [], enrollmentDate: "2025-06-04",
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-06-04",
     uplineId: "obi001"
   },
   {
     id: "chieli576", name: "Chidinma Elias-Ohuabunwa",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1340576", phone: "4089905057",
     email: "chidinmaelias88@gmail.com",
-    licenseStates: [], enrollmentDate: "2025-06-03",
-    uplineId: "amairu592"
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-06-03",
+    uplineId: ""
   },
   {
     id: "briabe536", name: "Bright Abengowe",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1340536", phone: "3235349745",
     email: "brightabengowe113@gmail.com",
-    licenseStates: [], enrollmentDate: "2025-06-03",
-    uplineId: "amairu592"
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-06-03",
+    uplineId: ""
   },
   {
     id: "goonwa076", name: "Goodluck Nwaka",
-    pin: "1111", role: "director",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1338076", phone: "3107069461",
     email: "cnwaka043@gmail.com",
-    licenseStates: [], enrollmentDate: "2025-05-17",
-    uplineId: null
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-05-17",
+    uplineId: ""
   },
   {
     id: "edeash642", name: "Edessa Ashourkarim",
-    pin: "1111", role: "associate",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1337642", phone: "8185719289",
     email: "edessab@gmail.com",
-    licenseStates: [], enrollmentDate: "2025-05-15",
-    uplineId: "ramash421"
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-05-15",
+    uplineId: ""
   },
   {
     id: "marand462", name: "Martin Andernians",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1337462", phone: "7477451438",
     email: "martinandernians1983@gmail.com",
-    licenseStates: [], enrollmentDate: "2025-05-14",
-    uplineId: "ramash421"
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-05-14",
+    uplineId: ""
   },
   {
     id: "radhar952", name: "Radiant Harrison",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1334952", phone: "4044681348",
     email: "radiantharrison21@gmail.com",
-    licenseStates: [], enrollmentDate: "2025-05-01",
-    uplineId: "edrhar102"
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-05-01",
+    uplineId: ""
   },
   {
     id: "glookh486", name: "Glory Okhilua",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1334486", phone: "3239845866",
     email: "aronoglory@yahoo.com",
-    licenseStates: [], enrollmentDate: "2025-04-30",
-    uplineId: "anteme387"
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-04-30",
+    uplineId: ""
   },
   {
     id: "govtak976", name: "Govargiz Ebrahimi Dizaj Takyeh",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1333976", phone: "8184168314",
     email: "givoebrahimi@yahoo.com",
-    licenseStates: [], enrollmentDate: "2025-04-28",
-    uplineId: "ramash421"
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-04-28",
+    uplineId: ""
   },
   {
     id: "ramash421", name: "Ramel Ashourkarim",
-    pin: "1111", role: "field_associate",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1332421", phone: "8182701275",
     email: "ramela87@yahoo.com",
-    licenseStates: [], enrollmentDate: "2025-04-16",
-    top25BoardId: "8994331783", uplineId: null
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-04-16",
+    uplineId: ""
   },
   {
     id: "daismi741", name: "DaiSean Smith",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1331741", phone: "9514784268",
     email: "daiseansmith321@icloud.com",
-    licenseStates: [], enrollmentDate: "2025-04-12",
-    uplineId: "aribar814"
+    top25BoardId: "9122818834",
+    licenseStates: [],
+    enrollmentDate: "2025-04-12",
+    uplineId: ""
   },
   {
     id: "abrram382", name: "Abraham Ramos",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1331382", phone: "3232291808",
     email: "ramosabraham889@gmail.com",
-    licenseStates: [], enrollmentDate: "2025-04-11",
-    uplineId: "aribar814"
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-04-11",
+    uplineId: ""
   },
   {
     id: "anteme387", name: "Anthonia Emechete",
-    pin: "1111", role: "field_associate",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1330387", phone: "3103468485",
     email: "ifyoki@yahoo.com",
-    licenseStates: [], enrollmentDate: "2025-04-02",
-    uplineId: null
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-04-02",
+    uplineId: ""
   },
   {
     id: "petlaa358", name: "Peter Laabs",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1330358", phone: "6266580695",
     email: "laabspeter2@gmail.com",
-    licenseStates: [], enrollmentDate: "2025-04-02",
-    uplineId: "taymat304"
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-04-02",
+    uplineId: ""
   },
   {
     id: "mamdio324", name: "Mamadou Diop",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1330324", phone: "6469837286",
     email: "mouhakara1996@gmail.com",
-    licenseStates: [], enrollmentDate: "2025-04-02",
-    uplineId: "onoedo636"
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-04-02",
+    uplineId: ""
   },
   {
     id: "maktas475", name: "Makayla Tasker",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1329475", phone: "3104806987",
     email: "tmakayla1030@gmail.com",
-    licenseStates: [], enrollmentDate: "2025-03-31",
-    uplineId: "amairu592"
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-03-31",
+    uplineId: ""
   },
   {
     id: "taymat304", name: "Taylonee Matthews",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1329304", phone: "2137169284",
     email: "taylonee.matthews@icloud.com",
-    licenseStates: [], enrollmentDate: "2025-03-30",
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-03-30",
     uplineId: "obi001"
   },
   {
     id: "aribar814", name: "Ariel Barrera",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1328814", phone: "3107402395",
     email: "arielbarrera903@gmail.com",
-    licenseStates: [], enrollmentDate: "2025-03-26",
-    top25BoardId: "9122818834", uplineId: "obi001"
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-03-26",
+    uplineId: "obi001"
   },
   {
     id: "desesp804", name: "Destiny Espinoza",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1327804", phone: "9099775163",
     email: "destiny.159793@icloud.com",
-    licenseStates: [], enrollmentDate: "2025-03-20",
-    uplineId: "taioje599"
+    top25BoardId: "8325616671",
+    licenseStates: [],
+    enrollmentDate: "2025-03-20",
+    uplineId: ""
   },
   {
     id: "onyagb716", name: "Onyinyechukwu Agbo",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1326716", phone: "6267317090",
     email: "onyiagbo95@gmail.com",
-    licenseStates: [], enrollmentDate: "2025-03-15",
-    uplineId: "amairu592"
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-03-15",
+    uplineId: ""
   },
   {
     id: "walbuc961", name: "Walter Buchanan",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1324961", phone: "6263943609",
     email: "wbuchanan.gr@gmail.com",
-    licenseStates: [], enrollmentDate: "2025-03-03",
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-03-03",
     uplineId: "obi001"
   },
   {
     id: "chiikw857", name: "Chigozie Ikwueze",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1323857", phone: "8176091115",
     email: "chigozie_ikwueze011@yahoo.com",
-    licenseStates: [], enrollmentDate: "2025-03-01",
-    uplineId: "amairu592"
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-03-01",
+    uplineId: ""
   },
   {
     id: "linrad767", name: "Linda Guerra Rada",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1318767", phone: "6319921010",
     email: "lindaguerrarada@gmail.com",
-    licenseStates: [], enrollmentDate: "2025-02-05",
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-02-05",
     uplineId: "obi001"
   },
   {
     id: "shasca360", name: "Shania Scarbrough",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1318360", phone: "4043874506",
     email: "shania383xx@gmail.com",
-    licenseStates: [], enrollmentDate: "2025-02-01",
-    uplineId: "sarmor601"
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-02-01",
+    uplineId: ""
   },
   {
     id: "onoedo636", name: "Onochie Edozie",
-    pin: "1111", role: "field_associate",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1316636", phone: "4244565890",
     email: "onochiegeorge1@gmail.com",
-    licenseStates: [], enrollmentDate: "2025-01-24",
-    top25BoardId: "8325616671", uplineId: "maroko654"
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-01-24",
+    uplineId: ""
   },
   {
     id: "kemscu310", name: "Kemar Sculley",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1315310", phone: "7177798236",
     email: "kemarsculley@gmail.com",
-    licenseStates: [], enrollmentDate: "2025-01-15",
-    uplineId: "tyrjam978"
+    top25BoardId: "8270851734",
+    licenseStates: [],
+    enrollmentDate: "2025-01-15",
+    uplineId: ""
   },
   {
     id: "stefro032", name: "Steve Frost",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1314032", phone: "2192526194",
     email: "frost.stevew@gmail.com",
-    licenseStates: [], enrollmentDate: "2025-01-07",
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-01-07",
     uplineId: "obi001"
   },
   {
     id: "herbet122", name: "Herve Betonga",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1313122", phone: "8594449279",
     email: "hervebetonga@gmail.com",
-    licenseStates: [], enrollmentDate: "2025-01-01",
-    uplineId: null
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-01-01",
+    uplineId: ""
   },
   {
     id: "eluoch947", name: "Eluemunor Ochonogor",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1312947", phone: "4709836368",
     email: "oeluemunor@yahoo.com",
-    licenseStates: [], enrollmentDate: "2025-01-01",
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-01-01",
     uplineId: "obi001"
   },
   {
     id: "joseph673", name: "Joseph Ephias",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1312673", phone: "8058643075",
     email: "josephguzman04@icloud.com",
-    licenseStates: [], enrollmentDate: "2024-12-31",
-    uplineId: null
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-12-31",
+    uplineId: ""
   },
   {
     id: "bleeke611", name: "Blessing Ekeanyanwu",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1308611", phone: "3038858080",
     email: "osonduamadi@comcast.net",
-    licenseStates: [], enrollmentDate: "2024-11-23",
-    uplineId: null
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-11-23",
+    uplineId: ""
   },
   {
     id: "jallig406", name: "Jalen Liggins",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1307406", phone: "2136787604",
     email: "jalenbliggins@gmail.com",
-    licenseStates: [], enrollmentDate: "2024-11-15",
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-11-15",
     uplineId: "obi001"
   },
   {
     id: "georob122", name: "Georkira Robinson",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1307122", phone: "8503714638",
     email: "gkrobinson06@gmail.com",
-    licenseStates: [], enrollmentDate: "2024-11-12",
-    uplineId: "sarmor601"
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-11-12",
+    uplineId: ""
   },
   {
     id: "jusoko818", name: "Justina Okonkwo",
-    pin: "1111", role: "associate",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1303818", phone: "3239447729",
     email: "ejike.justina@yahoo.com",
-    licenseStates: [], enrollmentDate: "2024-11-01",
-    uplineId: "maroko654"
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-11-01",
+    uplineId: ""
   },
   {
     id: "bialop382", name: "Bianca R Lopez",
-    pin: "1111", role: "field_associate",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1303382", phone: "7204733200",
     email: "bianca.r.lopez80@gmail.com",
-    licenseStates: [], enrollmentDate: "2024-10-31",
-    uplineId: null
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-10-31",
+    uplineId: ""
   },
   {
     id: "franwa742", name: "Frank Nwaneri",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1302742", phone: "7022839782",
     email: "franeriq01@yahoo.com",
-    licenseStates: [], enrollmentDate: "2024-10-29",
-    uplineId: null
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-10-29",
+    uplineId: ""
   },
   {
     id: "gabzel675", name: "Gabriel Augusto Guerrero Zelaya",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1302675", phone: "7203131789",
     email: "gabrielguerrero931@gmail.com",
-    licenseStates: [], enrollmentDate: "2024-10-28",
-    uplineId: null
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-10-28",
+    uplineId: ""
   },
   {
     id: "amairu592", name: "Amaka Iruobe",
-    pin: "1111", role: "field_associate",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1301592", phone: "7024902725",
     email: "amaka.i.phpagency@gmail.com",
-    licenseStates: [], enrollmentDate: "2024-10-19",
-    top25BoardId: "8270851734", uplineId: null
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-10-19",
+    uplineId: ""
   },
   {
     id: "adefag179", name: "Aderinsola Fagbamila",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1301179", phone: "3039998779",
     email: "fagbamilaaderinsola@yahoo.com",
-    licenseStates: [], enrollmentDate: "2024-10-16",
-    uplineId: null
+    top25BoardId: "8596152528",
+    licenseStates: [],
+    enrollmentDate: "2024-10-16",
+    uplineId: ""
   },
   {
     id: "taioje599", name: "Taiye Ojeikere",
-    pin: "1111", role: "field_associate",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1297599", phone: "9092014792",
     email: "taiyeojeikere@gmail.com",
-    licenseStates: [], enrollmentDate: "2024-09-30",
-    uplineId: null
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-09-30",
+    uplineId: ""
   },
   {
     id: "iheulu967", name: "Iheanacho Ulu",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1296967", phone: "3104670357",
     email: "achoulu@gmail.com",
-    licenseStates: [], enrollmentDate: "2024-09-26",
-    uplineId: "vanudo398"
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-09-26",
+    uplineId: ""
   },
   {
     id: "tyrjam978", name: "Tyrone James",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1295978", phone: "7175519965",
     email: "jamestyrone219@gmail.com",
-    licenseStates: [], enrollmentDate: "2024-09-17",
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-09-17",
     uplineId: "obi001"
   },
   {
     id: "shihou242", name: "Shila Houshmand",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1294242", phone: "9495545346",
     email: "shilahoushmand33@gmail.com",
-    licenseStates: [], enrollmentDate: "2024-09-07",
-    uplineId: null
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-09-07",
+    uplineId: ""
   },
   {
     id: "chomor979", name: "Chosa Morris",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1293979", phone: "6785008402",
     email: "chosamorris578@gmail.com",
-    licenseStates: [], enrollmentDate: "2024-09-06",
-    uplineId: "sarmor601"
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-09-06",
+    uplineId: ""
   },
   {
     id: "chrfeo955", name: "Christopher M Feola",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1293955", phone: "3527373889",
     email: "83mx63toyota@gmail.com",
-    licenseStates: [], enrollmentDate: "2024-09-06",
-    uplineId: null
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-09-06",
+    uplineId: ""
   },
   {
     id: "elimor645", name: "Elijah Morris",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1293645", phone: "6788533035",
     email: "elijahmorris40@gmail.com",
-    licenseStates: [], enrollmentDate: "2024-09-05",
-    uplineId: "sarmor601"
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-09-05",
+    uplineId: ""
   },
   {
     id: "edrhar102", name: "Edrinna Harrison",
-    pin: "1111", role: "field_associate",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1293102", phone: "4046030690",
     email: "edrinnaharrison20@gmail.com",
-    licenseStates: [], enrollmentDate: "2024-09-01",
-    top25BoardId: "8596152528", uplineId: null
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-09-01",
+    uplineId: ""
   },
   {
     id: "jashar069", name: "Jasmine Harris",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1293069", phone: "9016612049",
     email: "harrisjasmine966@gmail.com",
-    licenseStates: [], enrollmentDate: "2024-09-01",
-    uplineId: null
+    top25BoardId: "8270844063",
+    licenseStates: [],
+    enrollmentDate: "2024-09-01",
+    uplineId: ""
   },
   {
     id: "shasha662", name: "Shadian Shaw",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1292662", phone: "5164102735",
     email: "shawshadian271@gmail.com",
-    licenseStates: [], enrollmentDate: "2024-09-01",
-    uplineId: "coltho757"
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-09-01",
+    uplineId: ""
   },
   {
     id: "steige063", name: "Stephanie Ige",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1292063", phone: "9014856805",
     email: "slige70@gmail.com",
-    licenseStates: [], enrollmentDate: "2024-08-31",
-    uplineId: null
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-08-31",
+    uplineId: ""
   },
   {
     id: "lacpic522", name: "LaChance Pickett",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1291522", phone: "7207750511",
     email: "lachancepickett1@gmail.com",
-    licenseStates: [], enrollmentDate: "2024-08-29",
-    uplineId: null
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-08-29",
+    uplineId: ""
   },
   {
     id: "vanudo398", name: "Vanessa Udom",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1290398", phone: "3472338678",
     email: "vanessaudom@yahoo.com",
-    licenseStates: [], enrollmentDate: "2024-08-21",
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-08-21",
     uplineId: "obi001"
   },
   {
     id: "danwhi414", name: "Daniel White",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1288414", phone: "7206361612",
     email: "d73639@gmail.com",
-    licenseStates: [], enrollmentDate: "2024-08-03",
-    uplineId: "julpac408"
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-08-03",
+    uplineId: ""
   },
   {
     id: "julpac408", name: "Julia Pacheco",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1288408", phone: "7028011120",
     email: "juliadp2054@gmail.com",
-    licenseStates: [], enrollmentDate: "2024-08-03",
-    uplineId: null
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-08-03",
+    uplineId: ""
   },
   {
     id: "simogb575", name: "Simon Ogbonna",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1287575", phone: "4243106996",
     email: "sirchinaka2020@gmail.com",
-    licenseStates: [], enrollmentDate: "2024-07-31",
-    uplineId: null
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-07-31",
+    uplineId: ""
   },
   {
     id: "bregon200", name: "Brenda Gonzalez",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1286200", phone: "7209780300",
     email: "gonzalezsbee@gmail.com",
-    licenseStates: [], enrollmentDate: "2024-07-19",
-    uplineId: null
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-07-19",
+    uplineId: ""
   },
   {
     id: "coremm611", name: "Corliss Emmanuel",
-    pin: "1111", role: "associate",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1284611", phone: "3239630107",
     email: "corlissemmanuel@icloud.com",
-    licenseStates: [], enrollmentDate: "2024-07-10",
-    uplineId: "egbbev353"
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-07-10",
+    uplineId: ""
   },
   {
     id: "tifhaw038", name: "Tiffiney Hawkins",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1284038", phone: "2139441496",
     email: "s.hawkins.t@gmail.com",
-    licenseStates: [], enrollmentDate: "2024-07-05",
-    uplineId: null
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-07-05",
+    uplineId: ""
   },
   {
     id: "sonash119", name: "Sonita Ashu",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1283119", phone: "3109162890",
     email: "ngozisonita@yahoo.com",
-    licenseStates: [], enrollmentDate: "2024-07-01",
-    uplineId: "olupin485"
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-07-01",
+    uplineId: ""
   },
   {
     id: "maroko654", name: "Maryjane Okonkwo",
-    pin: "1111", role: "associate",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1282654", phone: "3233748331",
     email: "benardmaryjane@gmail.com",
-    licenseStates: [], enrollmentDate: "2024-06-30",
-    top25BoardId: "8270844063", uplineId: null
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-06-30",
+    uplineId: ""
   },
   {
     id: "pauaho864", name: "Paule Ahoudjo",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1280864", phone: "2148624826",
     email: "hahoudjo@yahoo.com",
-    licenseStates: [], enrollmentDate: "2024-06-19",
-    uplineId: "coltho757"
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-06-19",
+    uplineId: ""
   },
   {
     id: "nnaude801", name: "Nnamdi Udengwu",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1279801", phone: "3105054086",
     email: "udengwumathiasnnamdi16@gmail.com",
-    licenseStates: [], enrollmentDate: "2024-06-16",
-    uplineId: null
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-06-16",
+    uplineId: ""
   },
   {
     id: "donade473", name: "Donald Adedokun",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1279473", phone: "4244750720",
     email: "realdsoja247@gmail.com",
-    licenseStates: [], enrollmentDate: "2024-06-16",
-    uplineId: "olupin485"
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-06-16",
+    uplineId: ""
   },
   {
     id: "megwoo547", name: "Megan Woods",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1277547", phone: "8177076049",
     email: "mnwoods89@gmail.com",
-    licenseStates: [], enrollmentDate: "2024-06-07",
-    uplineId: null
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-06-07",
+    uplineId: ""
   },
   {
     id: "leshin227", name: "Lesia Hinds",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1277227", phone: "2142082258",
     email: "lesiahi2@gmail.com",
-    licenseStates: [], enrollmentDate: "2024-06-06",
-    uplineId: "coltho757"
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-06-06",
+    uplineId: ""
   },
   {
     id: "kaylov993", name: "Kayla Love",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1274993", phone: "5109935301",
     email: "kokolovecare@gmail.com",
-    licenseStates: [], enrollmentDate: "2024-05-31",
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-05-31",
     uplineId: "obi001"
   },
   {
     id: "darcob976", name: "Darin Cobb",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1268976", phone: "8503339523",
     email: "dcobb1510@yahoo.com",
-    licenseStates: [], enrollmentDate: "2024-04-29",
-    uplineId: "coltho757"
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-04-29",
+    uplineId: ""
   },
   {
     id: "dwaarz803", name: "Dwayne Arzu",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1267803", phone: "9512752284",
     email: "dkeona@yahoo.com",
-    licenseStates: [], enrollmentDate: "2024-04-20",
-    uplineId: "egbbev353"
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-04-20",
+    uplineId: ""
   },
   {
     id: "juatir779", name: "Juan Moreno Tirado",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1267779", phone: "6264131913",
     email: "rm5125640@gmail.com",
-    licenseStates: [], enrollmentDate: "2024-04-20",
-    uplineId: "coltho757"
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-04-20",
+    uplineId: ""
   },
   {
     id: "sarmor601", name: "Sarah Morris",
-    pin: "1111", role: "associate",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1267601", phone: "6787498167",
     email: "sarahmorris5966@gmail.com",
-    licenseStates: [], enrollmentDate: "2024-04-19",
-    uplineId: null
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-04-19",
+    uplineId: ""
   },
   {
     id: "rikmit353", name: "Rika Mitchell",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1264353", phone: "7208378667",
     email: "rikamitchell@yahoo.com",
-    licenseStates: [], enrollmentDate: "2024-04-02",
-    uplineId: null
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-04-02",
+    uplineId: ""
   },
   {
     id: "okuuju022", name: "Okuny Ujulu",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1264022", phone: "7206923414",
     email: "okunyujulu4@gmail.com",
-    licenseStates: [], enrollmentDate: "2024-04-01",
-    uplineId: null
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-04-01",
+    uplineId: ""
   },
   {
     id: "elilot864", name: "Elizabeth Lott",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1262864", phone: "7206623227",
     email: "elizabethlott44@gmail.com",
-    licenseStates: [], enrollmentDate: "2024-03-31",
-    uplineId: null
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-03-31",
+    uplineId: ""
   },
   {
     id: "olupin485", name: "Olubunmi Pinmiloye",
-    pin: "1111", role: "field_associate",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1261485", phone: "3109978106",
     email: "bunmide16@gmail.com",
-    licenseStates: [], enrollmentDate: "2024-03-27",
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-03-27",
     uplineId: "obi001"
   },
   {
     id: "verlop742", name: "Veronica Lopez",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1259742", phone: "3236275380",
     email: "vlopez2011@att.net",
-    licenseStates: [], enrollmentDate: "2024-03-16",
-    uplineId: null
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-03-16",
+    uplineId: ""
   },
   {
     id: "oluodu101", name: "Oluwarotimi Odubanjo",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1259101", phone: "6824009935",
     email: "lanrewajuodu@gmail.com",
-    licenseStates: [], enrollmentDate: "2024-03-16",
-    uplineId: "coltho757"
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-03-16",
+    uplineId: ""
   },
   {
     id: "triloc087", name: "Trinity Lockett",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1258087", phone: "2567706381",
     email: "julecasey71@gmail.com",
-    licenseStates: [], enrollmentDate: "2024-03-16",
-    uplineId: null
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-03-16",
+    uplineId: ""
   },
   {
     id: "bonjoh952", name: "BONARD JOHNSON",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1253952", phone: "5623405811",
     email: "bonardsrjohnson@gmail.com",
-    licenseStates: [], enrollmentDate: "2024-03-06",
-    uplineId: "coltho757"
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-03-06",
+    uplineId: ""
   },
   {
     id: "ayaegb397", name: "Aya Egbuho",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1253397", phone: "3106428224",
     email: "ayaegbuho@gmail.com",
-    licenseStates: [], enrollmentDate: "2024-03-03",
-    uplineId: null
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-03-03",
+    uplineId: ""
   },
   {
     id: "josjen451", name: "Josephine Jenkins",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1252451", phone: "3344501789",
     email: "josephinejenkins13@gmail.com",
-    licenseStates: [], enrollmentDate: "2024-03-01",
-    uplineId: null
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-03-01",
+    uplineId: ""
   },
   {
     id: "wiljoh348", name: "Willie Johnson",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1251348", phone: "3233389284",
     email: "babydlow3011@gmail.com",
-    licenseStates: [], enrollmentDate: "2024-02-29",
-    uplineId: null
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-02-29",
+    uplineId: ""
   },
   {
     id: "unachi966", name: "Unachukwu R Chidiebere",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1249966", phone: "7206305552",
     email: "remigiuschidiebereu@gmail.com",
-    licenseStates: [], enrollmentDate: "2024-02-25",
-    uplineId: null
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-02-25",
+    uplineId: ""
   },
   {
     id: "jacfar867", name: "Jacqueline Farquharson",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1248867", phone: "3524459963",
     email: "jfarqu@yahoo.com",
-    licenseStates: [], enrollmentDate: "2024-02-16",
-    uplineId: null
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-02-16",
+    uplineId: ""
   },
   {
     id: "monly802", name: "Monica Ly",
-    pin: "1111", role: "field_associate",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1246802", phone: "2132906180",
     email: "monica.ly@pm.me",
-    licenseStates: [], enrollmentDate: "2024-02-14",
-    uplineId: "coltho757"
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-02-14",
+    uplineId: ""
   },
   {
     id: "suzbri214", name: "Suzette Bridgemahon",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1246214", phone: "2532308645",
     email: "skbridgemahon@gmail.com",
-    licenseStates: [], enrollmentDate: "2024-02-11",
-    uplineId: null
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-02-11",
+    uplineId: ""
   },
   {
     id: "egbbev353", name: "Egbert Bevans",
-    pin: "1111", role: "field_associate",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1245353", phone: "3107523520",
     email: "ebevansphp@gmail.com",
-    licenseStates: [], enrollmentDate: "2024-02-07",
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-02-07",
     uplineId: "obi001"
   },
   {
     id: "mankor240", name: "Many Kormany",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1244240", phone: "7025964289",
     email: "manykormany@gmail.com",
-    licenseStates: [], enrollmentDate: "2024-02-01",
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-02-01",
     uplineId: "obi001"
   },
   {
     id: "josgoe821", name: "Josiah Goering",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1243821", phone: "7202107877",
     email: "josiahgoering21@gmail.com",
-    licenseStates: [], enrollmentDate: "2024-01-31",
-    uplineId: null
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-01-31",
+    uplineId: ""
   },
   {
     id: "hartop516", name: "Harut Topchyan",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1242516", phone: "8186674915",
     email: "harut.topchyan@yahoo.com",
-    licenseStates: [], enrollmentDate: "2024-01-20",
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-01-20",
     uplineId: "obi001"
   },
   {
     id: "coltho757", name: "COLLETTE THOMPSON",
-    pin: "1111", role: "associate",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1240757", phone: "3239448909",
     email: "collettecampbell437@gmail.com",
-    licenseStates: [], enrollmentDate: "2024-01-11",
-    uplineId: null
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-01-11",
+    uplineId: ""
   },
   {
     id: "lorhar732", name: "Lorenzo Harper",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1240732", phone: "3034080621",
     email: "harperlorenzo9@yahoo.com",
-    licenseStates: [], enrollmentDate: "2024-01-11",
-    uplineId: null
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-01-11",
+    uplineId: ""
   },
   {
     id: "geonwa339", name: "George Nwaeke",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1240339", phone: "3239966935",
     email: "georgrnwaeke110@gmail.com",
-    licenseStates: [], enrollmentDate: "2024-01-08",
-    uplineId: null
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2024-01-08",
+    uplineId: ""
   },
   {
     id: "chiakp183", name: "Chidera Akpudiogwu",
-    top25BoardId: "18418856132", pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1239183", phone: "3102615430",
     email: "sherisweetlove557@gmail.com",
-    licenseStates: [], enrollmentDate: "2024-01-01",
-    uplineId: null
+    top25BoardId: "18418856132",
+    licenseStates: [],
+    enrollmentDate: "2024-01-01",
+    uplineId: ""
   },
   {
     id: "zoehamo746", name: "Zoe Hammond",
-    pin: "1111", role: "trainee",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "", phone: "3145374746",
     email: "zmonyettr@gmail.com",
-    licenseStates: [], enrollmentDate: "2026-06-06",
-    uplineId: null
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2026-06-06",
+    uplineId: ""
   },
   {
     id: "britmal001", name: "Brittany C. Malbry",
-    pin: "1111", role: "producing_md",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "", phone: "5626068592",
     email: "Brittanycaseyl.Phpagency@gmail.com",
     top25BoardId: "",
-    licenseStates: [], enrollmentDate: "2026-06-12",
+    licenseStates: [],
+    enrollmentDate: "2026-06-12",
     uplineId: "obi001"
   },
   {
     id: "romcru001", name: "Romeo Cruz",
-    pin: "1111", role: "trainee",
-    phpId: "", phone: "3107339994",
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "1422030", phone: "3107339994",
     email: "romeocruz211@gmail.com",
     top25BoardId: "18426535441",
-    licenseStates: [], enrollmentDate: "2026-06-13",
+    licenseStates: [],
+    enrollmentDate: "2026-06-13",
     uplineId: "obi001"
   },
   {
     id: "ifenk001", name: "Ifeyinwa Nkpolara",
-    pin: "1111", role: "licensing_coach",
+    pin: "1111", role: "trainee", level: 20,
     phpId: "", phone: "2138875978",
     email: "phpdynastylicensing@gmail.com",
     top25BoardId: "",
-    licenseStates: [], enrollmentDate: "2026-06-15",
+    licenseStates: [],
+    enrollmentDate: "2026-06-15",
     uplineId: "obi001"
   },
   {
-    id: "anuele794", name: "Anulika Eleodi", phpId: "794123", pin: "1111",
-    role: "director", level: 40,
-    phone: "3108003536", email: "anulieleodi@gmail.com",
-    top25BoardId: "", licenseStates: [], enrollmentDate: "2019-05-13",
+    id: "mag001", name: "Magdalene O.",
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "10200", phone: "",
+    email: "",
+    top25BoardId: "8270052654",
+    licenseStates: ["TX"],
+    enrollmentDate: "2022-06-01",
     uplineId: "obi001"
   },
   {
-    id: "olaoje288", name: "Ola E. Ojeikere", phpId: "288823", pin: "1111",
-    role: "director", level: 40,
-    phone: "3104002514", email: "ojeikere77@gmail.com",
-    top25BoardId: "", licenseStates: [], enrollmentDate: "2019-07-03",
-    uplineId: "anuele794"
+    id: "chi001", name: "Chidozie N.",
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "10301", phone: "",
+    email: "",
+    top25BoardId: "18414813028",
+    licenseStates: ["TX"],
+    enrollmentDate: "2023-01-15",
+    uplineId: "mag001"
   },
   {
-    id: "sornas052", name: "Soroush Nasirzadeh", phpId: "52906", pin: "1111",
-    role: "director", level: 40,
-    phone: "8182679155", email: "soroush.nasirzadeh@gmail.com",
-    top25BoardId: "", licenseStates: [], enrollmentDate: "2016-08-17",
-    uplineId: "olaoje288"
+    id: "jac001", name: "Jacinta U.",
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "10402", phone: "",
+    email: "",
+    top25BoardId: "",
+    licenseStates: ["TX"],
+    enrollmentDate: "2023-06-01",
+    uplineId: "chi001"
   },
   {
-    id: "vicunk001", name: "Vicky", phpId: "", pin: "1111",
-    role: "director", level: 40,
-    phone: "", email: "",
-    top25BoardId: "7913240558", licenseStates: [], enrollmentDate: "",
+    id: "cos001", name: "Cosmas E.",
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "10501", phone: "",
+    email: "",
+    top25BoardId: "",
+    licenseStates: ["TX"],
+    enrollmentDate: "2023-09-01",
+    uplineId: ""
+  },
+  {
+    id: "gio001", name: "Gio M.",
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "10502", phone: "",
+    email: "",
+    top25BoardId: "",
+    licenseStates: ["TX"],
+    enrollmentDate: "2023-08-01",
+    uplineId: "mag001"
+  },
+  {
+    id: "nin001", name: "Nina R.",
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "10601", phone: "",
+    email: "",
+    top25BoardId: "",
+    licenseStates: ["TX"],
+    enrollmentDate: "2024-02-01",
+    uplineId: ""
+  },
+  {
+    id: "and001", name: "Andrew T.",
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "10602", phone: "",
+    email: "",
+    top25BoardId: "",
+    licenseStates: ["TX"],
+    enrollmentDate: "2024-03-01",
+    uplineId: ""
+  },
+  {
+    id: "mau001", name: "Maureen I.",
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "10701", phone: "",
+    email: "",
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-03-01",
+    uplineId: "chi001"
+  },
+  {
+    id: "lil001", name: "Lily A.",
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "10702", phone: "",
+    email: "",
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2025-04-01",
+    uplineId: ""
+  },
+  {
+    id: "anuele794", name: "Anulika Eleodi",
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "794123", phone: "3108003536",
+    email: "anulieleodi@gmail.com",
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2019-05-13",
     uplineId: "obi001"
   },
   {
-    id: "rosanu417", name: "Rose Anuarita", phpId: "", pin: "1111",
-    role: "director", level: 40,
-    phone: "", email: "",
-    top25BoardId: "18417943185", licenseStates: [], enrollmentDate: "",
+    id: "olaoje288", name: "Ola E. Ojeikere",
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "288823", phone: "3104002514",
+    email: "ojeikere77@gmail.com",
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2019-07-03",
+    uplineId: ""
+  },
+  {
+    id: "sornas052", name: "Soroush Nasirzadeh",
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "52906", phone: "8182679155",
+    email: "soroush.nasirzadeh@gmail.com",
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "2016-08-17",
+    uplineId: ""
+  },
+  {
+    id: "vicunk001", name: "Vicky",
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "", phone: "",
+    email: "",
+    top25BoardId: "7913240558",
+    licenseStates: [],
+    enrollmentDate: "",
     uplineId: "obi001"
   },
   {
-    id: "graofu633", name: "Grace Olufa", phpId: "", pin: "1111",
-    role: "director", level: 40,
-    phone: "", email: "",
-    top25BoardId: "18403963633", licenseStates: [], enrollmentDate: "",
+    id: "rosanu417", name: "Rose Anuarita",
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "", phone: "",
+    email: "",
+    top25BoardId: "18417943185",
+    licenseStates: [],
+    enrollmentDate: "",
     uplineId: "obi001"
   },
   {
-    id: "natvau738", name: "Nathaniel Vaughn", phpId: "", pin: "1111",
-    role: "director", level: 40,
-    phone: "", email: "",
-    top25BoardId: "18399753738", licenseStates: [], enrollmentDate: "",
+    id: "graofu633", name: "Grace Olufa",
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "", phone: "",
+    email: "",
+    top25BoardId: "18403963633",
+    licenseStates: [],
+    enrollmentDate: "",
     uplineId: "obi001"
   },
   {
-    id: "israuko828", name: "Israel Uko", phpId: "", pin: "1111",
-    role: "director", level: 40,
-    phone: "", email: "",
-    top25BoardId: "18020253828", licenseStates: [], enrollmentDate: "",
+    id: "natvau738", name: "Nathaniel Vaughn",
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "", phone: "",
+    email: "",
+    top25BoardId: "18399753738",
+    licenseStates: [],
+    enrollmentDate: "",
     uplineId: "obi001"
   },
   {
-    id: "danuko108", name: "Daniel Uko", phpId: "", pin: "1111",
-    role: "director", level: 40,
-    phone: "", email: "",
-    top25BoardId: "18397351108", licenseStates: [], enrollmentDate: "",
+    id: "israuko828", name: "Israel Uko",
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "", phone: "",
+    email: "",
+    top25BoardId: "18020253828",
+    licenseStates: [],
+    enrollmentDate: "",
     uplineId: "obi001"
   },
   {
-    id: "deigar526", name: "Deisy Garcia", phpId: "", pin: "1111",
-    role: "admin", level: 100,
-    phone: "", email: "",
-    top25BoardId: "18421487157", licenseStates: [], enrollmentDate: "",
+    id: "danuko108", name: "Daniel Uko",
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "", phone: "",
+    email: "",
+    top25BoardId: "18397351108",
+    licenseStates: [],
+    enrollmentDate: "",
     uplineId: "obi001"
+  },
+  {
+    id: "dchen05", name: "David Chen",
+    pin: "9988", role: "marketing_director", level: 100,
+    phpId: "", phone: "5553456789",
+    email: "",
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "",
+    uplineId: ""
+  },
+  {
+    id: "enguyen02", name: "Emily Nguyen",
+    pin: "1927", role: "director", level: 60,
+    phpId: "", phone: "5557654321",
+    email: "",
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "",
+    uplineId: ""
+  },
+  {
+    id: "mlee03", name: "Marcus Lee",
+    pin: "7654", role: "trainee", level: 20,
+    phpId: "", phone: "5559871234",
+    email: "",
+    top25BoardId: "",
+    licenseStates: [],
+    enrollmentDate: "",
+    uplineId: ""
+  },
+  {
+    id: "mohmus120", name: "Mohamed Musa",
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "1426120", phone: "7207869766",
+    email: "mohamed772600@icloud.com",
+    top25BoardId: "",
+    licenseStates: [], enrollmentDate: "",
+    uplineId: ""
+  },
+  {
+    id: "noatse417", name: "Noah Tsegaye",
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "1425417", phone: "3107285543",
+    email: "noahtsegaye27@gmail.com",
+    top25BoardId: "",
+    licenseStates: [], enrollmentDate: "",
+    uplineId: ""
+  },
+  {
+    id: "calsha154", name: "Calvin Shannon",
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "1425154", phone: "6789395883",
+    email: "calvin.shannon06@gmail.com",
+    top25BoardId: "",
+    licenseStates: [], enrollmentDate: "",
+    uplineId: ""
+  },
+  {
+    id: "iulsmo023", name: "Iuliia Smorodina",
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "1424023", phone: "5626176869",
+    email: "smorodinaiuliia@gmail.com",
+    top25BoardId: "",
+    licenseStates: [], enrollmentDate: "",
+    uplineId: ""
+  },
+  {
+    id: "marthi290", name: "Marcel Thiel",
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "1423290", phone: "3236290260",
+    email: "marceljthiel80@gmail.com",
+    top25BoardId: "18426534536",
+    licenseStates: [], enrollmentDate: "",
+    uplineId: ""
+  },
+  {
+    id: "harbal179", name: "Harley Secundino Baltazar",
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "1422179", phone: "3236183036",
+    email: "contactharley28@gmail.com",
+    top25BoardId: "",
+    licenseStates: [], enrollmentDate: "",
+    uplineId: ""
+  },
+  {
+    id: "dapuza145", name: "Daphne Uzayisenga",
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "1422145", phone: "3159920518",
+    email: "daphnaalana01@gmail.com",
+    top25BoardId: "",
+    licenseStates: [], enrollmentDate: "",
+    uplineId: ""
+  },
+  {
+    id: "pauuvi582", name: "Paulina Uvidia",
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "1418582", phone: "3238095958",
+    email: "puvidia@gmail.com",
+    top25BoardId: "",
+    licenseStates: [], enrollmentDate: "",
+    uplineId: ""
+  },
+  {
+    id: "morsin895", name: "Morgan Singleton",
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "1417895", phone: "3109456493",
+    email: "msingleton1333@gmail.com",
+    top25BoardId: "",
+    licenseStates: [], enrollmentDate: "",
+    uplineId: ""
+  },
+  {
+    id: "nnendu300", name: "Nneka Ndukwe",
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "1417300", phone: "5626206937",
+    email: "ekanvene@yahoo.com",
+    top25BoardId: "",
+    licenseStates: [], enrollmentDate: "",
+    uplineId: ""
+  },
+  {
+    id: "chiony786", name: "Chidera Onyekwere",
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "1416786", phone: "3102133833",
+    email: "chideraonyekwere129@gmail.com",
+    top25BoardId: "",
+    licenseStates: [], enrollmentDate: "",
+    uplineId: ""
+  },
+  {
+    id: "anarey760", name: "Ana Reyes",
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "1416760", phone: "3109386281",
+    email: "annaestrada437@yahoo.com",
+    top25BoardId: "",
+    licenseStates: [], enrollmentDate: "",
+    uplineId: ""
+  },
+  {
+    id: "jlywhi483", name: "JLynn Whitaker",
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "1415483", phone: "3104133995",
+    email: "whitakerjlynn@gmail.com",
+    top25BoardId: "",
+    licenseStates: [], enrollmentDate: "",
+    uplineId: ""
+  },
+  {
+    id: "yurnak867", name: "Yuri Nakatani",
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "1414867", phone: "4244439421",
+    email: "yurinakatani02@gmail.com",
+    top25BoardId: "",
+    licenseStates: [], enrollmentDate: "",
+    uplineId: ""
+  },
+  {
+    id: "cosuhu368", name: "Cosmas Uhuo",
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "1414368", phone: "6056419640",
+    email: "coscusanas@gmail.com",
+    top25BoardId: "",
+    licenseStates: [], enrollmentDate: "",
+    uplineId: ""
+  },
+  {
+    id: "maumye341", name: "Maureen Myers",
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "1414341", phone: "2135451057",
+    email: "cosmasabanobi088@gmail.com",
+    top25BoardId: "",
+    licenseStates: [], enrollmentDate: "",
+    uplineId: ""
+  },
+  {
+    id: "regofo333", name: "Regina Ofoedu",
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "1409333", phone: "3236217520",
+    email: "ofoeduoby@gmail.com",
+    top25BoardId: "",
+    licenseStates: [], enrollmentDate: "",
+    uplineId: ""
+  },
+  {
+    id: "twianu136", name: "Twishimye Anuarita",
+    pin: "1111", role: "director", level: 60,
+    phpId: "1409136", phone: "6022993207",
+    email: "shimyerose123@gmail.com",
+    top25BoardId: "",
+    licenseStates: [], enrollmentDate: "",
+    uplineId: ""
+  },
+  {
+    id: "maraje415", name: "Mariam Ajetunmobi",
+    pin: "1111", role: "trainee", level: 20,
+    phpId: "1404415", phone: "3107567228",
+    email: "maryamoriyomi26@gmail.com",
+    top25BoardId: "",
+    licenseStates: [], enrollmentDate: "",
+    uplineId: ""
   }
 ];
 

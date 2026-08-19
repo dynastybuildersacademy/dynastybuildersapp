@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Agent Roster Admin · DBA</title>
+<script src="auth.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{--bg:#0A1628;--s1:#112040;--s2:#1A3158;--gold:#C9A84C;--gold2:#E8C97A;--green:#2DCA73;--red:#C0392B;--text:#FAF6EE;--muted:#6B7C93;--border:rgba(201,168,76,.2);}
+body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(201,168,76,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(201,168,76,.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+
+/* TOPBAR */
+.topbar{background:rgba(10,22,40,.97);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px);}
+.brand{display:flex;align-items:center;gap:10px;padding:13px 0;border-right:1px solid var(--border);padding-right:18px;}
+.brand-hex{width:28px;height:28px;background:linear-gradient(135deg,var(--gold),var(--gold2));clip-path:polygon(50% 0%,100% 20%,100% 68%,50% 100%,0% 68%,0% 20%);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--bg);}
+.brand-text{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;line-height:1.1;}
+.brand-text span{color:var(--gold);}
+.brand-small{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);display:block;}
+.topbar-right{margin-left:auto;display:flex;gap:8px;}
+.t-btn{padding:6px 13px;border-radius:6px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);transition:all .15s;text-decoration:none;}
+.t-btn:hover{border-color:var(--gold);color:var(--gold);}
+.t-btn.primary{background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--bg);border-color:transparent;}
+
+/* LAYOUT */
+.content{max-width:1100px;margin:0 auto;padding:28px 24px;position:relative;z-index:1;}
+.card{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:22px;margin-bottom:18px;}
+.card-title{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.card-title::before{content:'';width:3px;height:12px;background:var(--gold);border-radius:2px;}
+
+/* TABS */
+.tabs{display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap;}
+.tab{padding:8px 18px;border-radius:8px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;cursor:pointer;border:1px solid var(--border);background:var(--s2);color:var(--muted);transition:all .15s;}
+.tab.active{background:var(--gold);color:var(--bg);border-color:var(--gold);}
+.tab-pane{display:none;}.tab-pane.active{display:block;}
+
+/* FORM */
+.field{margin-bottom:14px;}
+.field label{display:block;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;}
+.field input,.field select{width:100%;background:var(--s2);border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'Barlow',sans-serif;font-size:13px;outline:none;transition:border-color .2s;}
+.field input:focus,.field select:focus{border-color:var(--gold);}
+.field select option{background:var(--s1);}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+@media(max-width:600px){.row2,.row3{grid-template-columns:1fr;}}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 18px;border-radius:8px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;cursor:pointer;border:none;transition:all .2s;letter-spacing:.04em;}
+.btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--bg);}
+.btn-gold:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(201,168,76,.3);}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--muted);}
+.btn-ghost:hover{border-color:var(--gold);color:var(--gold);}
+.btn-green{background:linear-gradient(135deg,var(--green),#1a8a47);color:#fff;}
+.btn-danger{background:rgba(192,57,43,.15);border:1px solid rgba(192,57,43,.3);color:var(--red);}
+
+/* AGENT TABLE */
+.agent-table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:10px;}
+.agent-table{width:100%;border-collapse:collapse;font-size:12px;}
+.agent-table th{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:8px 12px;border-bottom:1px solid var(--border);background:var(--s2);text-align:left;white-space:nowrap;}
+.agent-table td{padding:8px 12px;border-bottom:1px solid rgba(26,49,88,.6);vertical-align:middle;}
+.agent-table tr:last-child td{border-bottom:none;}
+.agent-table tr:hover td{background:rgba(201,168,76,.03);}
+.pill{display:inline-flex;padding:2px 8px;border-radius:8px;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;}
+.pill-gold{background:rgba(201,168,76,.12);color:var(--gold);border:1px solid rgba(201,168,76,.25);}
+.pill-green{background:rgba(45,202,115,.1);color:var(--green);border:1px solid rgba(45,202,115,.25);}
+.pill-muted{background:rgba(107,124,147,.1);color:var(--muted);border:1px solid var(--border);}
+.pill-blue{background:rgba(52,152,219,.1);color:#5dade2;border:1px solid rgba(52,152,219,.25);}
+
+/* UPLOAD */
+.drop-zone{border:2px dashed var(--border);border-radius:10px;padding:36px 24px;text-align:center;cursor:pointer;transition:all .2s;}
+.drop-zone:hover,.drop-zone.drag{border-color:var(--gold);background:rgba(201,168,76,.04);}
+.drop-zone .dz-icon{font-size:32px;margin-bottom:10px;}
+.drop-zone .dz-title{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;margin-bottom:4px;}
+.drop-zone .dz-hint{font-size:12px;color:var(--muted);}
+
+/* SYNC */
+.sync-result{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:14px;font-family:'DM Mono',monospace;font-size:11px;line-height:1.9;max-height:300px;overflow-y:auto;margin-top:12px;display:none;}
+.sync-ok{color:var(--green);}
+.sync-warn{color:var(--gold);}
+.sync-err{color:var(--red);}
+
+/* SEARCH */
+.search-bar{position:relative;margin-bottom:14px;}
+.search-bar input{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:9px 12px 9px 36px;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;outline:none;}
+.search-bar input:focus{border-color:var(--gold);}
+.search-bar .si{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px;}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--s1);border:1px solid var(--gold);border-radius:10px;padding:11px 18px;font-size:13px;transform:translateY(60px);opacity:0;transition:all .3s;z-index:999;color:var(--gold2);font-family:'DM Mono',monospace;}
+.toast.show{transform:translateY(0);opacity:1;}
+
+/* BADGE */
+.board-badge{display:inline-flex;padding:1px 7px;border-radius:6px;font-family:'DM Mono',monospace;font-size:10px;background:rgba(45,202,115,.1);color:var(--green);border:1px solid rgba(45,202,115,.25);}
+.no-board{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);}
+</style>
+</head>
+<body>
+<script>AUTH.require('roster-admin.html');</script>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-hex">⬡</div>
+    <div class="brand-text">Dynasty <span>Roster</span><span class="brand-small">Admin · Agent Management</span></div>
+  </div>
+  <div class="topbar-right">
+    <a href="hub.html" class="t-btn">← Hub</a>
+    <button class="t-btn primary" onclick="syncFromMonday()">↺ Sync from Monday</button>
+  </div>
+</div>
+
+<div class="content">
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('roster',this)">👥 Agent Roster</button>
+    <button class="tab" onclick="switchTab('add',this)">➕ Add Agent</button>
+    <button class="tab" onclick="switchTab('upload',this)">📤 Bulk Upload</button>
+    <button class="tab" onclick="switchTab('boards',this)">📋 Board Assignments</button>
+  </div>
+
+  <!-- ── ROSTER TAB ── -->
+  <div class="tab-pane active" id="pane-roster">
+    <div class="card">
+      <div class="card-title">Agent Roster <span id="roster-count" style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;margin-left:8px;"></span></div>
+      <div class="search-bar">
+        <span class="si">🔍</span>
+        <input type="text" id="roster-search" placeholder="Search by name, ID, phone, email…" oninput="renderRoster()">
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+        <select id="filter-role" onchange="renderRoster()" style="background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-family:'DM Mono',monospace;font-size:11px;outline:none;">
+          <option value="">All Roles</option>
+          <option value="admin">Admin</option>
+          <option value="marketing_director">Marketing Director</option>
+          <option value="agency_builder">Agency Builder</option>
+          <option value="director">Director</option>
+          <option value="trainee">Trainee</option>
+        </select>
+        <select id="filter-board" onchange="renderRoster()" style="background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-family:'DM Mono',monospace;font-size:11px;outline:none;">
+          <option value="">All Board Status</option>
+          <option value="assigned">Has Board</option>
+          <option value="unassigned">No Board</option>
+        </select>
+        <button class="btn btn-ghost" onclick="exportCSV()" style="padding:6px 13px;font-size:11px;">⬇ Export CSV</button>
+      </div>
+      <div class="agent-table-wrap">
+        <table class="agent-table">
+          <thead>
+            <tr>
+              <th>Name</th><th>ID</th><th>PIN</th><th>Role</th>
+              <th>Phone</th><th>Email</th><th>Top 25 Board</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="roster-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ADD AGENT TAB ── -->
+  <div class="tab-pane" id="pane-add">
+    <div class="card">
+      <div class="card-title">Add New Agent</div>
+      <div class="row2">
+        <div class="field"><label>First Name</label><input type="text" id="add-first" placeholder="First"></div>
+        <div class="field"><label>Last Name</label><input type="text" id="add-last" placeholder="Last"></div>
+      </div>
+      <div class="row3">
+        <div class="field"><label>PHP Agent ID</label><input type="text" id="add-phpid" placeholder="e.g. 1353718"></div>
+        <div class="field"><label>Login PIN (4 digits)</label><input type="text" id="add-pin" placeholder="1234" maxlength="4" oninput="this.value=this.value.replace(/\D/g,'')"></div>
+        <div class="field"><label>Role</label>
+          <select id="add-role">
+            <option value="trainee">Trainee</option>
+            <option value="director">Director / Field Associate</option>
+            <option value="marketing_director">Marketing Director</option>
+            <option value="agency_builder">Agency Builder</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Phone</label><input type="tel" id="add-phone" placeholder="3105551234"></div>
+        <div class="field"><label>Email</label><input type="email" id="add-email" placeholder="agent@email.com"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Upline Agent ID</label><input type="text" id="add-upline" placeholder="e.g. obi001"></div>
+        <div class="field"><label>Top 25 Board ID (Monday)</label><input type="text" id="add-board" placeholder="e.g. 18419015866"></div>
+      </div>
+      <div class="field"><label>License States</label><input type="text" id="add-states" placeholder="CA, TX, NY"></div>
+      <div style="display:flex;gap:10px;margin-top:6px;">
+        <button class="btn btn-ghost" onclick="generatePin()">🎲 Generate PIN</button>
+        <button class="btn btn-gold" onclick="addAgent()" style="flex:1;justify-content:center;">✓ Add Agent to Roster</button>
+      </div>
+      <div id="add-result" style="margin-top:12px;font-family:'DM Mono',monospace;font-size:12px;"></div>
+    </div>
+  </div>
+
+  <!-- ── BULK UPLOAD TAB ── -->
+  <div class="tab-pane" id="pane-upload">
+    <div class="card">
+      <div class="card-title">Bulk Upload from CSV</div>
+      <div class="drop-zone" id="upload-zone"
+        onclick="document.getElementById('csv-input').click()"
+        ondragover="event.preventDefault();this.classList.add('drag')"
+        ondragleave="this.classList.remove('drag')"
+        ondrop="handleDrop(event)">
+        <div class="dz-icon">📄</div>
+        <div class="dz-title">Drop CSV file here or tap to upload</div>
+        <div class="dz-hint">Columns: name, phpId, pin, role, phone, email, uplineId, top25BoardId</div>
+      </div>
+      <input id="csv-input" type="file" accept=".csv" style="display:none" onchange="handleCSV(this.files[0])">
+      <div style="margin-top:14px;display:flex;gap:10px;">
+        <button class="btn btn-ghost" onclick="downloadTemplate()">⬇ Download Template</button>
+      </div>
+      <div class="sync-result" id="upload-result"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Sync from Monday.com</div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.7;">Pull the latest agent data directly from the DBA Agent Roster board on Monday.com. This updates phone numbers, emails, and roles for existing agents, and adds any new agents found.</p>
+      <button class="btn btn-gold" onclick="syncFromMonday()" style="width:100%;justify-content:center;">↺ Sync from DBA Agent Roster (Monday)</button>
+      <div class="sync-result" id="sync-result"></div>
+    </div>
+  </div>
+
+  <!-- ── BOARD ASSIGNMENTS TAB ── -->
+  <div class="tab-pane" id="pane-boards">
+    <div class="card">
+      <div class="card-title">Top 25 Board Assignments</div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.7;">Assign each agent their personal Top 25 Monday.com board. Get the board ID from the Monday.com URL: <code style="background:rgba(201,168,76,.1);padding:2px 6px;border-radius:4px;font-size:11px;">/boards/XXXXXXXXXX</code></p>
+      <div class="search-bar">
+        <span class="si">🔍</span>
+        <input type="text" id="board-search" placeholder="Search agents…" oninput="renderBoardTable()">
+      </div>
+      <div class="agent-table-wrap">
+        <table class="agent-table">
+          <thead><tr><th>Agent</th><th>ID</th><th>Role</th><th>Top 25 Board ID</th><th>Save</th></tr></thead>
+          <tbody id="board-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── STATE ─────────────────────────────────────────────────────
+let agentList = typeof AGENTS !== 'undefined' ? [...AGENTS] : [];
+
+// ── TAB ───────────────────────────────────────────────────────
+function switchTab(name, el) {
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('pane-'+name).classList.add('active');
+  el.classList.add('active');
+  if (name === 'roster') renderRoster();
+  if (name === 'boards') renderBoardTable();
+}
+
+// ── ROLE DISPLAY ──────────────────────────────────────────────
+function rolePill(role) {
+  const map = {
+    admin: ['pill-gold','Admin'],
+    super_admin: ['pill-gold','Super Admin'],
+    agency_builder: ['pill-blue','Agency Builder'],
+    marketing_director: ['pill-green','MD'],
+    director: ['pill-blue','Director'],
+    trainee: ['pill-muted','Trainee'],
+  };
+  const [cls, label] = map[role] || ['pill-muted', role];
+  return `<span class="pill ${cls}">${label}</span>`;
+}
+
+// ── ROSTER ────────────────────────────────────────────────────
+function renderRoster() {
+  const q = (document.getElementById('roster-search')?.value||'').toLowerCase();
+  const roleF = document.getElementById('filter-role')?.value||'';
+  const boardF = document.getElementById('filter-board')?.value||'';
+
+  const filtered = agentList.filter(a => {
+    if (roleF && a.role !== roleF) return false;
+    if (boardF === 'assigned' && !a.top25BoardId) return false;
+    if (boardF === 'unassigned' && a.top25BoardId) return false;
+    if (q) {
+      const searchable = `${a.name} ${a.id} ${a.phone||''} ${a.email||''} ${a.phpId||''}`.toLowerCase();
+      if (!searchable.includes(q)) return false;
+    }
+    return true;
+  });
+
+  document.getElementById('roster-count').textContent = `${filtered.length} of ${agentList.length}`;
+
+  document.getElementById('roster-tbody').innerHTML = filtered.map(a => `
+    <tr>
+      <td><strong>${a.name}</strong></td>
+      <td><span style="font-family:'DM Mono',monospace;font-size:10px;">${a.id}</span></td>
+      <td><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--gold);">${a.pin||'—'}</span></td>
+      <td>${rolePill(a.role)}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:11px;">${a.phone||'—'}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:11px;">${a.email||'—'}</td>
+      <td>${a.top25BoardId
+        ? `<span class="board-badge">${a.top25BoardId}</span>`
+        : `<span class="no-board">No board</span>`}</td>
+      <td>
+        <button class="btn btn-ghost" style="padding:4px 10px;font-size:11px;" onclick="editAgent('${a.id}')">✏ Edit</button>
+      </td>
+    </tr>`).join('');
+}
+
+// ── BOARD TABLE ───────────────────────────────────────────────
+function renderBoardTable() {
+  const q = (document.getElementById('board-search')?.value||'').toLowerCase();
+  const filtered = agentList.filter(a =>
+    !q || a.name.toLowerCase().includes(q) || a.id.includes(q)
+  );
+
+  document.getElementById('board-tbody').innerHTML = filtered.map(a => `
+    <tr>
+      <td><strong>${a.name}</strong></td>
+      <td style="font-family:'DM Mono',monospace;font-size:10px;">${a.id}</td>
+      <td>${rolePill(a.role)}</td>
+      <td>
+        <input type="text" value="${a.top25BoardId||''}"
+          id="board-input-${a.id}"
+          placeholder="Board ID"
+          style="width:160px;background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:5px 9px;color:var(--text);font-family:'DM Mono',monospace;font-size:11px;outline:none;">
+      </td>
+      <td>
+        <button class="btn btn-ghost" style="padding:5px 10px;font-size:11px;" onclick="saveBoard('${a.id}')">Save</button>
+      </td>
+    </tr>`).join('');
+}
+
+function saveBoard(agentId) {
+  const input = document.getElementById('board-input-'+agentId);
+  const val = input?.value.trim();
+  if (val && !/^\d+$/.test(val)) { toast('⚠ Board ID must be numeric'); return; }
+  const agent = agentList.find(a => a.id === agentId);
+  if (agent) {
+    agent.top25BoardId = val;
+    input.style.borderColor = 'var(--green)';
+    setTimeout(() => input.style.borderColor = '', 1500);
+    toast(`✓ Board saved for ${agent.name}`);
+    saveToLocalStorage();
+  }
+}
+
+// ── ADD AGENT ─────────────────────────────────────────────────
+function generatePin() {
+  document.getElementById('add-pin').value = Math.floor(1000+Math.random()*9000);
+}
+
+function makeAgentId(first, last) {
+  const f = (first||'').toLowerCase().replace(/[^a-z]/g,'').slice(0,3);
+  const l = (last||'').toLowerCase().replace(/[^a-z]/g,'').slice(0,3);
+  const n = Math.floor(100+Math.random()*900);
+  let id = `${f}${l}${n}`;
+  while (agentList.some(a => a.id === id)) {
+    id = `${f}${l}${Math.floor(100+Math.random()*900)}`;
+  }
+  return id;
+}
+
+function addAgent() {
+  const first = document.getElementById('add-first').value.trim();
+  const last = document.getElementById('add-last').value.trim();
+  if (!first || !last) { toast('⚠ Name required'); return; }
+
+  const pin = document.getElementById('add-pin').value.trim() || String(Math.floor(1000+Math.random()*9000));
+  if (!/^\d{4}$/.test(pin)) { toast('⚠ PIN must be 4 digits'); return; }
+
+  const id = makeAgentId(first, last);
+  const role = document.getElementById('add-role').value;
+  const level = {admin:100,agency_builder:100,marketing_director:80,director:60,trainee:20}[role]||20;
+
+  const agent = {
+    id, name: `${first} ${last}`, pin, role, level,
+    phpId: document.getElementById('add-phpid').value.trim(),
+    phone: document.getElementById('add-phone').value.trim().replace(/\D/g,''),
+    email: document.getElementById('add-email').value.trim(),
+    top25BoardId: document.getElementById('add-board').value.trim(),
+    licenseStates: document.getElementById('add-states').value.split(',').map(s=>s.trim()).filter(Boolean),
+    enrollmentDate: new Date().toISOString().slice(0,10),
+    uplineId: document.getElementById('add-upline').value.trim(),
+  };
+
+  agentList.push(agent);
+  saveToLocalStorage();
+
+  document.getElementById('add-result').innerHTML =
+    `<span style="color:var(--green);">✓ Agent added!</span><br>
+    <strong>Login ID:</strong> <code style="color:var(--gold);">${id}</code> &nbsp;
+    <strong>PIN:</strong> <code style="color:var(--gold);">${pin}</code><br>
+    Share these credentials with ${first}.`;
+
+  toast(`✓ ${first} ${last} added — ID: ${id}`);
+
+  // Clear form
+  ['add-first','add-last','add-phpid','add-pin','add-phone','add-email','add-upline','add-board','add-states']
+    .forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+}
+
+// ── EDIT AGENT ────────────────────────────────────────────────
+function editAgent(agentId) {
+  const agent = agentList.find(a => a.id === agentId);
+  if (!agent) return;
+  switchTab('add', document.querySelector('.tab'));
+  document.querySelector('[onclick*="add"]').classList.add('active');
+  document.getElementById('pane-add').classList.add('active');
+  document.getElementById('pane-roster').classList.remove('active');
+
+  const parts = agent.name.split(' ');
+  document.getElementById('add-first').value = parts[0]||'';
+  document.getElementById('add-last').value = parts.slice(1).join(' ')||'';
+  document.getElementById('add-pin').value = agent.pin||'';
+  document.getElementById('add-phpid').value = agent.phpId||'';
+  document.getElementById('add-phone').value = agent.phone||'';
+  document.getElementById('add-email').value = agent.email||'';
+  document.getElementById('add-upline').value = agent.uplineId||'';
+  document.getElementById('add-board').value = agent.top25BoardId||'';
+  document.getElementById('add-states').value = (agent.licenseStates||[]).join(', ');
+  document.getElementById('add-role').value = agent.role||'trainee';
+  document.getElementById('add-result').innerHTML = `<span style="color:var(--muted);">Editing ${agent.name} (${agentId})</span>`;
+}
+
+// ── BULK UPLOAD ───────────────────────────────────────────────
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('upload-zone').classList.remove('drag');
+  const file = e.dataTransfer.files[0];
+  if (file) handleCSV(file);
+}
+
+function handleCSV(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => parseCSV(e.target.result);
+  reader.readAsText(file);
+}
+
+function parseCSV(text) {
+  const lines = text.split('\n').filter(l=>l.trim());
+  const headers = lines[0].split(',').map(h=>h.trim().toLowerCase().replace(/[^a-z]/g,''));
+  const results = {added:0, updated:0, errors:[]};
+  const log = [];
+
+  for (let i = 1; i < lines.length; i++) {
+    const vals = lines[i].split(',').map(v=>v.trim().replace(/^"|"$/g,''));
+    const row = {};
+    headers.forEach((h,j) => row[h] = vals[j]||'');
+
+    if (!row.name && !row.firstname) { results.errors.push(`Line ${i+1}: no name`); continue; }
+
+    const name = row.name || `${row.firstname||''} ${row.lastname||''}`.trim();
+    const id = row.id || row.agentid || makeAgentId(name.split(' ')[0], name.split(' ')[1]||'');
+    const existing = agentList.find(a => a.id === id || a.name.toLowerCase() === name.toLowerCase());
+
+    if (existing) {
+      if (row.phone) existing.phone = row.phone.replace(/\D/g,'');
+      if (row.email) existing.email = row.email;
+      if (row.pin) existing.pin = row.pin;
+      if (row.top25boardid || row.board) existing.top25BoardId = row.top25boardid||row.board;
+      if (row.role) existing.role = row.role;
+      results.updated++;
+      log.push(`<span class="sync-warn">~ Updated: ${name}</span>`);
+    } else {
+      agentList.push({
+        id, name,
+        pin: row.pin||String(Math.floor(1000+Math.random()*9000)),
+        role: row.role||'trainee', level: 20,
+        phpId: row.phpid||'',
+        phone: (row.phone||'').replace(/\D/g,''),
+        email: row.email||'',
+        top25BoardId: row.top25boardid||row.board||'',
+        licenseStates: (row.states||'').split(',').map(s=>s.trim()).filter(Boolean),
+        enrollmentDate: row.enrolled||new Date().toISOString().slice(0,10),
+        uplineId: row.uplineid||row.upline||'',
+      });
+      results.added++;
+      log.push(`<span class="sync-ok">+ Added: ${name} (${id})</span>`);
+    }
+  }
+
+  saveToLocalStorage();
+  const resultEl = document.getElementById('upload-result');
+  resultEl.style.display = 'block';
+  resultEl.innerHTML = `<strong>✓ Done:</strong> ${results.added} added, ${results.updated} updated, ${results.errors.length} errors<br><br>` + log.join('<br>');
+  toast(`✓ CSV: ${results.added} added, ${results.updated} updated`);
+  renderRoster();
+}
+
+function downloadTemplate() {
+  const csv = 'name,phpId,pin,role,phone,email,uplineId,top25BoardId,states,enrolled\nJohn Smith,1234567,1234,trainee,3105551234,john@email.com,obi001,,CA,2026-01-01';
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = 'dba_agent_template.csv';
+  a.click();
+}
+
+// ── SYNC FROM MONDAY ──────────────────────────────────────────
+async function syncFromMonday() {
+  const resultEl = document.getElementById('sync-result');
+  resultEl.style.display = 'block';
+  resultEl.innerHTML = '<span class="sync-warn">↺ Syncing from DBA Agent Roster…</span>';
+
+  try {
+    const res = await mondayQuery(`{
+      boards(ids: 18411252280) {
+        items_page(limit: 500) {
+          items {
+            id name
+            column_values { id text }
+          }
+        }
+      }
+    }`);
+
+    const items = res?.data?.boards?.[0]?.items_page?.items || [];
+    if (!items.length) throw new Error('No items returned from Monday');
+
+    let added=0, updated=0;
+    const log = [];
+
+    for (const item of items) {
+      const cv = {};
+      item.column_values.forEach(c => { if(c.text) cv[c.id] = c.text; });
+
+      const agentId = cv['text_mm2ywfgz'];
+      if (!agentId) continue;
+
+      const phone = (cv['phone_mm2y40ty']||'').replace(/^\+1/,'').replace(/\D/g,'');
+      const email = cv['email_mm2yhmaf']||'';
+      const phpId = cv['text_mm3y6pz4']||'';
+      const pin   = cv['text_mm2y48hb']||'1111';
+
+      const existing = agentList.find(a => a.id === agentId);
+      if (existing) {
+        let changed = false;
+        if (phone && !existing.phone) { existing.phone = phone; changed = true; }
+        if (email && !existing.email) { existing.email = email; changed = true; }
+        if (phpId && !existing.phpId) { existing.phpId = phpId; changed = true; }
+        if (pin && pin !== '1111' && !existing.pin) { existing.pin = pin; changed = true; }
+        if (changed) { updated++; log.push(`<span class="sync-warn">~ Updated: ${item.name}</span>`); }
+      } else {
+        const roleRaw = cv['color_mm2yz16x']||'Other';
+        const roleMap = {'Marketing Director':'marketing_director','Field Associate':'director','Trainee':'trainee','Other':'trainee'};
+        const role = roleMap[roleRaw]||'trainee';
+        agentList.push({
+          id: agentId, name: item.name, pin, role, level: 20,
+          phpId, phone, email, top25BoardId: '',
+          licenseStates: [], enrollmentDate: cv['date_mm3yvrwg']||'',
+          uplineId: ''
+        });
+        added++;
+        log.push(`<span class="sync-ok">+ Added: ${item.name} (${agentId})</span>`);
+      }
+    }
+
+    saveToLocalStorage();
+    resultEl.innerHTML = `<strong>✓ Sync complete:</strong> ${added} added, ${updated} updated<br><br>` + log.join('<br>');
+    toast(`✓ Synced: ${added} added, ${updated} updated`);
+    renderRoster();
+
+  } catch(e) {
+    resultEl.innerHTML = `<span class="sync-err">✗ Sync failed: ${e.message}</span>`;
+    toast('✗ Sync failed: ' + e.message);
+  }
+}
+
+// ── PERSIST ───────────────────────────────────────────────────
+function saveToLocalStorage() {
+  try {
+    localStorage.setItem('dba_agent_overrides', JSON.stringify(agentList));
+  } catch(e) {}
+}
+
+// ── EXPORT ────────────────────────────────────────────────────
+function exportCSV() {
+  const rows = [['name','id','pin','role','phpId','phone','email','top25BoardId','uplineId','states']];
+  agentList.forEach(a => rows.push([
+    a.name, a.id, a.pin||'', a.role, a.phpId||'', a.phone||'', a.email||'',
+    a.top25BoardId||'', a.uplineId||'', (a.licenseStates||[]).join('|')
+  ]));
+  const csv = rows.map(r => r.map(v => `"${v}"`).join(',')).join('\n');
+  const link = document.createElement('a');
+  link.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  link.download = `dba_agents_${new Date().toISOString().slice(0,10)}.csv`;
+  link.click();
+  toast('✓ CSV exported');
+}
+
+// ── TOAST ─────────────────────────────────────────────────────
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+// ── INIT ──────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  // Merge any localStorage overrides
+  try {
+    const overrides = JSON.parse(localStorage.getItem('dba_agent_overrides')||'[]');
+    if (overrides.length > agentList.length) agentList = overrides;
+  } catch(e) {}
+  renderRoster();
+});
+</script>
+</body>
+</html>
