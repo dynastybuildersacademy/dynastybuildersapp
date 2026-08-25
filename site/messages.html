@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Team Messages · DBA</title>
+<script src="auth.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0A1628;--s1:#112040;--s2:#1A3158;--s3:#223060;
+  --gold:#C9A84C;--gold2:#E8C97A;
+  --green:#2DCA73;--red:#C0392B;--blue:#3498DB;
+  --text:#FAF6EE;--muted:#6B7C93;--border:rgba(201,168,76,.18);
+  --wa:#25D366;--sms:#5AC8FA;--em:#E67E22;
+}
+body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh;display:flex;flex-direction:column;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(201,168,76,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(201,168,76,.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+
+/* TOPBAR */
+.topbar{background:rgba(10,22,40,.97);border-bottom:1px solid var(--border);padding:0 0 0 20px;display:flex;align-items:center;gap:0;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px);flex-shrink:0;}
+.brand{display:flex;align-items:center;gap:10px;padding:12px 18px 12px 0;border-right:1px solid var(--border);}
+.brand-hex{width:26px;height:26px;background:linear-gradient(135deg,var(--gold),var(--gold2));clip-path:polygon(50% 0%,100% 20%,100% 68%,50% 100%,0% 68%,0% 20%);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:var(--bg);}
+.brand-text{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;line-height:1.1;}
+.brand-text span{color:var(--gold);}
+.brand-sub{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);display:block;}
+.tb-tabs{display:flex;gap:0;flex:1;height:100%;}
+.tb-tab{padding:0 20px;height:48px;display:flex;align-items:center;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:.04em;cursor:pointer;border:none;background:transparent;color:var(--muted);border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap;}
+.tb-tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+.tb-tab:hover:not(.active){color:var(--text);}
+.topbar-right{margin-left:auto;display:flex;gap:8px;padding-right:20px;}
+.t-btn{padding:6px 12px;border-radius:6px;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);transition:all .15s;text-decoration:none;}
+.t-btn:hover{border-color:var(--gold);color:var(--gold);}
+.t-btn.primary{background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--bg);border-color:transparent;}
+
+/* LAYOUT */
+.app-shell{flex:1;display:flex;height:calc(100vh - 49px);overflow:hidden;position:relative;z-index:1;}
+
+/* SIDEBAR */
+.sidebar{width:300px;flex-shrink:0;border-right:1px solid var(--border);display:flex;flex-direction:column;background:var(--s1);}
+.sidebar-search{padding:12px;}
+.sidebar-search input{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:8px 12px 8px 32px;color:var(--text);font-family:'DM Mono',monospace;font-size:11px;outline:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%236B7C93' viewBox='0 0 20 20'%3E%3Cpath d='M9 3a6 6 0 100 12A6 6 0 009 3zm-8 6a8 8 0 1114.32 4.906l4.387 4.387-1.414 1.414-4.387-4.387A8 8 0 011 9z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:10px center;background-size:14px;}
+.sidebar-search input:focus{border-color:var(--gold);}
+.thread-list{flex:1;overflow-y:auto;}
+.thread-item{display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;border-bottom:1px solid rgba(26,49,88,.4);transition:background .12s;}
+.thread-item:hover{background:rgba(201,168,76,.04);}
+.thread-item.active{background:rgba(201,168,76,.08);border-left:3px solid var(--gold);}
+.thread-item.unread .t-name{font-weight:700;color:var(--text);}
+.thread-item.unread .t-preview{color:var(--muted);}
+.t-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--s2),var(--s3));border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:var(--gold);flex-shrink:0;position:relative;}
+.t-avatar.group{border-radius:10px;}
+.t-avatar .online-dot{position:absolute;bottom:1px;right:1px;width:9px;height:9px;border-radius:50%;background:var(--green);border:2px solid var(--s1);}
+.t-body{flex:1;min-width:0;}
+.t-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text);}
+.t-preview{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;}
+.t-meta{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;}
+.t-time{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);}
+.t-badge{width:18px;height:18px;border-radius:50%;background:var(--gold);color:var(--bg);font-size:9px;font-weight:800;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;}
+
+/* MAIN CHAT AREA */
+.chat-main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.chat-header{padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;background:var(--s1);flex-shrink:0;}
+.chat-header .ch-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--s2),var(--s3));border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;color:var(--gold);}
+.chat-header .ch-name{font-size:14px;font-weight:700;}
+.chat-header .ch-sub{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-top:1px;}
+.chat-header .ch-actions{margin-left:auto;display:flex;gap:8px;}
+.ch-btn{padding:6px 12px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;transition:all .15s;text-decoration:none;}
+.ch-btn:hover{border-color:var(--gold);color:var(--gold);}
+.ch-btn.wa{border-color:rgba(37,211,102,.3);color:var(--wa);}
+.ch-btn.wa:hover{background:rgba(37,211,102,.08);}
+.ch-btn.sms{border-color:rgba(90,200,250,.3);color:var(--sms);}
+.ch-btn.sms:hover{background:rgba(90,200,250,.08);}
+.ch-btn.em{border-color:rgba(230,126,34,.3);color:var(--em);}
+.ch-btn.em:hover{background:rgba(230,126,34,.08);}
+
+/* MESSAGES */
+.messages-area{flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:12px;}
+.msg-row{display:flex;gap:9px;align-items:flex-end;}
+.msg-row.mine{flex-direction:row-reverse;}
+.msg-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--s2),var(--s3));border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:800;color:var(--gold);flex-shrink:0;}
+.msg-bubble{max-width:68%;padding:9px 13px;border-radius:14px;font-size:13px;line-height:1.6;position:relative;}
+.msg-row:not(.mine) .msg-bubble{background:var(--s2);border-bottom-left-radius:4px;}
+.msg-row.mine .msg-bubble{background:linear-gradient(135deg,rgba(201,168,76,.2),rgba(201,168,76,.12));border:1px solid rgba(201,168,76,.2);border-bottom-right-radius:4px;color:var(--text);}
+.msg-meta{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);margin-top:4px;text-align:right;}
+.msg-row:not(.mine) .msg-meta{text-align:left;}
+.msg-sender{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;color:var(--gold);margin-bottom:3px;}
+.msg-channel{display:inline-flex;align-items:center;gap:3px;padding:1px 5px;border-radius:4px;font-size:9px;font-family:'DM Mono',monospace;margin-left:5px;opacity:.7;}
+.msg-channel.wa{background:rgba(37,211,102,.12);color:var(--wa);}
+.msg-channel.sms{background:rgba(90,200,250,.12);color:var(--sms);}
+.msg-channel.em{background:rgba(230,126,34,.12);color:var(--em);}
+.msg-channel.app{background:rgba(201,168,76,.1);color:var(--gold);}
+.date-divider{text-align:center;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);padding:4px 0;}
+.date-divider span{background:var(--bg);padding:2px 12px;border-radius:10px;border:1px solid var(--border);}
+
+/* COMPOSE */
+.compose-area{border-top:1px solid var(--border);background:var(--s1);flex-shrink:0;}
+.compose-toolbar{display:flex;gap:6px;padding:10px 14px 0;border-bottom:1px solid var(--border);}
+.compose-channel{padding:5px 11px;border-radius:16px;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;cursor:pointer;border:1.5px solid var(--border);background:transparent;color:var(--muted);transition:all .15s;display:flex;align-items:center;gap:5px;}
+.compose-channel:hover,.compose-channel.active{border-color:currentColor;}
+.compose-channel.app.active{background:rgba(201,168,76,.1);color:var(--gold);border-color:var(--gold);}
+.compose-channel.wa.active{background:rgba(37,211,102,.08);color:var(--wa);border-color:var(--wa);}
+.compose-channel.sms.active{background:rgba(90,200,250,.08);color:var(--sms);border-color:var(--sms);}
+.compose-channel.em.active{background:rgba(230,126,34,.08);color:var(--em);border-color:var(--em);}
+.compose-row{display:flex;align-items:flex-end;gap:10px;padding:12px 14px;}
+.compose-input{flex:1;background:var(--s2);border:1.5px solid var(--border);border-radius:10px;padding:10px 13px;color:var(--text);font-family:'Barlow',sans-serif;font-size:13px;outline:none;resize:none;min-height:44px;max-height:120px;line-height:1.5;transition:border-color .2s;}
+.compose-input:focus{border-color:var(--gold);}
+.send-btn{width:40px;height:40px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--bg);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;transition:all .2s;}
+.send-btn:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(201,168,76,.3);}
+.send-btn:disabled{opacity:.4;cursor:default;transform:none;}
+
+/* COMPOSE EXTERNAL PREVIEW */
+.ext-preview{padding:8px 14px 0;display:none;}
+.ext-preview.show{display:block;}
+.ext-note{font-size:11px;color:var(--muted);line-height:1.6;font-style:italic;}
+
+/* NEW MESSAGE MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);display:none;}
+.modal-bg.open{display:flex;}
+.modal{background:var(--s1);border:1px solid var(--border);border-radius:14px;width:100%;max-width:540px;overflow:hidden;}
+.modal-hdr{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.modal-title{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;color:var(--gold);}
+.modal-close{background:transparent;border:none;color:var(--muted);font-size:20px;cursor:pointer;line-height:1;}
+.modal-body{padding:18px 20px;display:flex;flex-direction:column;gap:14px;}
+.field label{display:block;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;}
+.field input,.field select,.field textarea{width:100%;background:var(--s2);border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'Barlow',sans-serif;font-size:13px;outline:none;transition:border-color .2s;}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--gold);}
+.field select option{background:var(--s1);}
+.field textarea{resize:vertical;min-height:80px;}
+.recipient-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px;}
+.rtag{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:12px;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.25);font-size:12px;color:var(--gold);}
+.rtag .rtag-del{cursor:pointer;opacity:.7;font-size:10px;}
+.rtag .rtag-del:hover{opacity:1;}
+.recipient-input{background:transparent;border:none;outline:none;color:var(--text);font-family:'Barlow',sans-serif;font-size:13px;flex:1;min-width:120px;}
+.recipient-wrap{background:var(--s2);border:1.5px solid var(--border);border-radius:8px;padding:7px 12px;display:flex;flex-wrap:wrap;gap:5px;cursor:text;transition:border-color .2s;}
+.recipient-wrap:focus-within{border-color:var(--gold);}
+.recipient-dropdown{position:absolute;top:100%;left:0;right:0;background:var(--s1);border:1px solid var(--border);border-radius:8px;max-height:200px;overflow-y:auto;z-index:10;display:none;margin-top:4px;}
+.recipient-dropdown.show{display:block;}
+.rd-item{padding:8px 12px;cursor:pointer;font-size:13px;transition:background .12s;}
+.rd-item:hover{background:rgba(201,168,76,.06);}
+.rd-item .rd-sub{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);}
+.channel-select{display:flex;gap:8px;flex-wrap:wrap;}
+.cs-opt{padding:8px 14px;border-radius:8px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;cursor:pointer;border:1.5px solid var(--border);background:transparent;color:var(--muted);transition:all .15s;display:flex;align-items:center;gap:5px;}
+.cs-opt.active.app{background:rgba(201,168,76,.1);color:var(--gold);border-color:var(--gold);}
+.cs-opt.active.wa{background:rgba(37,211,102,.08);color:var(--wa);border-color:var(--wa);}
+.cs-opt.active.sms{background:rgba(90,200,250,.08);color:var(--sms);border-color:var(--sms);}
+.cs-opt.active.em{background:rgba(230,126,34,.08);color:var(--em);border-color:var(--em);}
+.modal-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:10px;}
+.btn-send-modal{flex:1;padding:11px;border-radius:8px;border:none;background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--bg);font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;cursor:pointer;transition:all .2s;}
+.btn-send-modal:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(201,168,76,.3);}
+.btn-cancel-modal{padding:11px 16px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;cursor:pointer;}
+
+/* EMPTY STATE */
+.empty-chat{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--muted);text-align:center;padding:40px;}
+.empty-chat .e-ico{font-size:44px;opacity:.4;}
+.empty-chat .e-title{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--text);}
+
+/* BROADCAST BANNER */
+.broadcast-banner{background:linear-gradient(90deg,rgba(201,168,76,.1),rgba(201,168,76,.05));border-bottom:1px solid rgba(201,168,76,.2);padding:8px 18px;display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted);}
+.broadcast-banner strong{color:var(--gold);}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--s1);border:1px solid var(--gold);border-radius:10px;padding:11px 18px;font-size:13px;transform:translateY(60px);opacity:0;transition:all .3s;z-index:999;color:var(--gold2);font-family:'DM Mono',monospace;}
+.toast.show{transform:translateY(0);opacity:1;}
+
+/* RESPONSIVE */
+@media(max-width:640px){
+  .sidebar{display:none;}
+  .sidebar.mobile-show{display:flex;position:absolute;left:0;top:0;bottom:0;z-index:50;width:85%;}
+}
+</style>
+</head>
+<body>
+<script>AUTH.require('messages.html');</script>
+
+<!-- NEW MESSAGE MODAL -->
+<div class="modal-bg" id="new-msg-modal">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title">✉ New Message</div>
+      <button class="modal-close" onclick="closeNewMsg()">×</button>
+    </div>
+    <div class="modal-body">
+      <!-- Recipients -->
+      <div class="field" style="position:relative;">
+        <label>To</label>
+        <div class="recipient-wrap" id="recipient-wrap" onclick="document.getElementById('recipient-input').focus()">
+          <div class="recipient-tags" id="recipient-tags"></div>
+          <input type="text" class="recipient-input" id="recipient-input"
+            placeholder="Search agent name…" oninput="searchRecipients(this.value)" onkeydown="recipientKeydown(event)">
+        </div>
+        <div class="recipient-dropdown" id="recipient-dropdown"></div>
+      </div>
+
+      <!-- Channel -->
+      <div class="field">
+        <label>Send via</label>
+        <div class="channel-select">
+          <button class="cs-opt app active" data-ch="app" onclick="selectNewChannel(this)">⬡ In-App</button>
+          <button class="cs-opt wa" data-ch="wa" onclick="selectNewChannel(this)">💬 WhatsApp</button>
+          <button class="cs-opt sms" data-ch="sms" onclick="selectNewChannel(this)">📱 SMS</button>
+          <button class="cs-opt em" data-ch="em" onclick="selectNewChannel(this)">📧 Email</button>
+        </div>
+      </div>
+
+      <!-- Subject (email only) -->
+      <div class="field" id="subject-field" style="display:none;">
+        <label>Subject</label>
+        <input type="text" id="new-subject" placeholder="Message subject…">
+      </div>
+
+      <!-- Message -->
+      <div class="field">
+        <label>Message</label>
+        <textarea id="new-message" rows="4" placeholder="Type your message…"></textarea>
+      </div>
+
+      <!-- Group select -->
+      <div class="field">
+        <label>Or message an entire group</label>
+        <select id="group-select" onchange="selectGroup(this.value)">
+          <option value="">— Select group —</option>
+          <option value="all">📢 All Agents</option>
+          <option value="active">⚡ Active Agents (w/ boards)</option>
+          <option value="md">🏆 Marketing Directors</option>
+          <option value="directors">🎯 Directors</option>
+          <option value="trainees">👥 Trainees</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel-modal" onclick="closeNewMsg()">Cancel</button>
+      <button class="btn-send-modal" onclick="sendNewMessage()">Send Message →</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-hex">⬡</div>
+    <div class="brand-text">Dynasty <span>Messages</span><span class="brand-sub">Team Communication</span></div>
+  </div>
+  <div class="tb-tabs">
+    <button class="tb-tab active" onclick="switchView('inbox',this)">💬 Inbox</button>
+    <button class="tb-tab" onclick="switchView('broadcast',this)">📢 Broadcast</button>
+    <button class="tb-tab" onclick="switchView('templates',this)">📋 Templates</button>
+  </div>
+  <div class="topbar-right">
+    <button class="t-btn primary" onclick="openNewMsg()">✏ New Message</button>
+    <a href="hub.html" class="t-btn">← Hub</a>
+  </div>
+</div>
+
+<!-- APP SHELL -->
+<div class="app-shell">
+
+  <!-- SIDEBAR: thread list -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-search">
+      <input type="text" id="thread-search" placeholder="Search messages…" oninput="filterThreads()">
+    </div>
+    <div class="thread-list" id="thread-list">
+      <div style="padding:24px;text-align:center;color:var(--muted);font-size:12px;">Loading…</div>
+    </div>
+  </div>
+
+  <!-- MAIN: chat or empty -->
+  <div class="chat-main" id="chat-main">
+    <div class="empty-chat" id="empty-chat">
+      <div class="e-ico">💬</div>
+      <div class="e-title">Select a conversation</div>
+      <p style="font-size:13px;">or start a new message</p>
+      <button class="t-btn primary" style="margin-top:8px;" onclick="openNewMsg()">✏ New Message</button>
+    </div>
+
+    <!-- Active conversation (hidden until selected) -->
+    <div id="active-conv" style="display:none;flex:1;display:none;flex-direction:column;overflow:hidden;">
+      <div class="chat-header" id="chat-header"></div>
+      <div class="messages-area" id="messages-area"></div>
+      <div class="compose-area">
+        <div class="compose-toolbar">
+          <button class="compose-channel app active" data-ch="app" onclick="setChannel(this)">⬡ In-App</button>
+          <button class="compose-channel wa" data-ch="wa" onclick="setChannel(this)">💬 WhatsApp</button>
+          <button class="compose-channel sms" data-ch="sms" onclick="setChannel(this)">📱 SMS</button>
+          <button class="compose-channel em" data-ch="em" onclick="setChannel(this)">📧 Email</button>
+        </div>
+        <div class="ext-preview" id="ext-preview">
+          <div class="ext-note" id="ext-note"></div>
+        </div>
+        <div class="compose-row">
+          <textarea class="compose-input" id="compose-input" placeholder="Message…" rows="1"
+            oninput="autoResize(this)" onkeydown="composeKeydown(event)"></textarea>
+          <button class="send-btn" onclick="sendReply()" id="send-btn">➤</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── STATE ─────────────────────────────────────────────────────
+const STORAGE_KEY = 'dba_messages_v1';
+const session = AUTH.getSession();
+const allAgents = typeof AGENTS !== 'undefined' ? AGENTS.filter(a => a.id !== 'dba000') : [];
+
+let threads = [];       // { id, participants[], lastMsg, unread, messages[] }
+let activeThread = null;
+let composeCh = 'app';  // app | wa | sms | em
+let newMsgCh = 'app';
+let newRecipients = []; // { id, name, phone, email }
+
+// ── STORAGE ───────────────────────────────────────────────────
+function loadMessages() {
+  try { threads = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch(e) { threads = []; }
+}
+function saveMessages() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(threads));
+}
+
+// ── THREAD HELPERS ────────────────────────────────────────────
+function getOrCreateThread(agentIds) {
+  const key = [...agentIds, session.agentId].sort().join(',');
+  let t = threads.find(t => t.key === key);
+  if (!t) {
+    const participants = agentIds.map(id => allAgents.find(a => a.id === id)).filter(Boolean);
+    t = { id: Date.now().toString(), key, participants, messages: [], unread: 0, lastMsg: '', lastTime: null };
+    threads.unshift(t);
+  }
+  return t;
+}
+
+function threadDisplayName(t) {
+  if (t.name) return t.name; // broadcast
+  const others = t.participants.filter(p => p.id !== session.agentId);
+  if (!others.length) return 'Self';
+  if (others.length === 1) return others[0].name;
+  return others.slice(0,2).map(a=>a.name.split(' ')[0]).join(', ') + (others.length>2?` +${others.length-2}`:'');
+}
+
+function threadInitials(t) {
+  if (t.name) return t.name[0];
+  const others = t.participants.filter(p => p.id !== session.agentId);
+  if (!others.length) return '?';
+  if (others.length === 1) return others[0].name.split(' ').map(p=>p[0]).join('').slice(0,2).toUpperCase();
+  return '👥';
+}
+
+function relTime(ts) {
+  if (!ts) return '';
+  const diff = Date.now() - new Date(ts).getTime();
+  if (diff < 60000) return 'now';
+  if (diff < 3600000) return Math.floor(diff/60000) + 'm';
+  if (diff < 86400000) return Math.floor(diff/3600000) + 'h';
+  return new Date(ts).toLocaleDateString('en-US',{month:'short',day:'numeric'});
+}
+
+// ── RENDER THREADS ────────────────────────────────────────────
+function renderThreadList(query='') {
+  const q = query.toLowerCase();
+  const filtered = threads.filter(t =>
+    !q || threadDisplayName(t).toLowerCase().includes(q) ||
+    (t.lastMsg||'').toLowerCase().includes(q)
+  );
+
+  if (!filtered.length) {
+    document.getElementById('thread-list').innerHTML =
+      '<div style="padding:24px;text-align:center;color:var(--muted);font-size:12px;">No conversations yet.<br>Start by sending a new message.</div>';
+    return;
+  }
+
+  document.getElementById('thread-list').innerHTML = filtered.map(t => {
+    const isActive = activeThread?.id === t.id;
+    const isGroup = t.participants.length > 2 || t.name;
+    const ini = threadInitials(t);
+    const num = typeof ini === 'string' && ini.length <= 2 ? ini : '👥';
+    return `<div class="thread-item ${isActive?'active':''} ${t.unread?'unread':''}" onclick="openThread('${t.id}')">
+      <div class="t-avatar ${isGroup?'group':''}">${num}</div>
+      <div class="t-body">
+        <div class="t-name">${threadDisplayName(t)}</div>
+        <div class="t-preview">${t.lastMsg||'No messages yet'}</div>
+      </div>
+      <div class="t-meta">
+        <span class="t-time">${relTime(t.lastTime)}</span>
+        ${t.unread ? `<span class="t-badge">${t.unread}</span>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function filterThreads() {
+  renderThreadList(document.getElementById('thread-search').value);
+}
+
+// ── OPEN THREAD ───────────────────────────────────────────────
+function openThread(threadId) {
+  activeThread = threads.find(t => t.id === threadId);
+  if (!activeThread) return;
+  activeThread.unread = 0;
+  saveMessages();
+
+  const others = activeThread.participants.filter(p => p.id !== session.agentId);
+  const firstName = others[0]?.name || 'Group';
+  const ini = threadInitials(activeThread);
+
+  // Header
+  const actions = others.length === 1 ? buildExternalButtons(others[0]) : '';
+  document.getElementById('chat-header').innerHTML = `
+    <div class="ch-avatar">${ini}</div>
+    <div>
+      <div class="ch-name">${threadDisplayName(activeThread)}</div>
+      <div class="ch-sub">${others.map(a=>a.role).filter((v,i,a)=>a.indexOf(v)===i).join(' · ')||'Agent'}</div>
+    </div>
+    <div class="ch-actions">${actions}</div>`;
+
+  renderMessages();
+
+  // Show active conv
+  document.getElementById('empty-chat').style.display = 'none';
+  const ac = document.getElementById('active-conv');
+  ac.style.display = 'flex';
+  ac.style.flexDirection = 'column';
+  ac.style.overflow = 'hidden';
+  ac.style.flex = '1';
+
+  renderThreadList(document.getElementById('thread-search').value);
+
+  // Scroll to bottom
+  setTimeout(() => {
+    const ma = document.getElementById('messages-area');
+    ma.scrollTop = ma.scrollHeight;
+  }, 50);
+}
+
+function buildExternalButtons(agent) {
+  const phone = (agent.phone||'').replace(/\D/g,'');
+  const email = agent.email||'';
+  let btns = '';
+  if (phone) {
+    const waUrl = `https://wa.me/1${phone}`;
+    const smsUrl = `sms:+1${phone}`;
+    btns += `<a class="ch-btn wa" href="${waUrl}" target="_blank">💬 WhatsApp</a>`;
+    btns += `<a class="ch-btn sms" href="${smsUrl}">📱 SMS</a>`;
+  }
+  if (email) {
+    btns += `<a class="ch-btn em" href="mailto:${email}">📧 Email</a>`;
+  }
+  return btns;
+}
+
+// ── RENDER MESSAGES ───────────────────────────────────────────
+function renderMessages() {
+  const msgs = activeThread?.messages || [];
+  const area = document.getElementById('messages-area');
+
+  if (!msgs.length) {
+    area.innerHTML = '<div class="date-divider"><span>No messages yet — say hi 👋</span></div>';
+    return;
+  }
+
+  let html = '';
+  let lastDate = '';
+
+  msgs.forEach(m => {
+    const d = new Date(m.ts).toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+    if (d !== lastDate) {
+      html += `<div class="date-divider"><span>${d}</span></div>`;
+      lastDate = d;
+    }
+    const mine = m.senderId === session.agentId;
+    const ini = m.senderName?.split(' ').map(p=>p[0]).join('').slice(0,2).toUpperCase() || '?';
+    const chBadge = m.channel && m.channel !== 'app'
+      ? `<span class="msg-channel ${m.channel}">${m.channel==='wa'?'💬 WA':m.channel==='sms'?'📱 SMS':'📧 Email'}</span>` : '';
+    const timeStr = new Date(m.ts).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+
+    html += `<div class="msg-row ${mine?'mine':''}">
+      ${!mine ? `<div class="msg-avatar">${ini}</div>` : ''}
+      <div>
+        ${!mine ? `<div class="msg-sender">${m.senderName}${chBadge}</div>` : ''}
+        <div class="msg-bubble">${escHTML(m.text)}</div>
+        <div class="msg-meta">${timeStr}${mine?chBadge:''}</div>
+      </div>
+    </div>`;
+  });
+
+  area.innerHTML = html;
+  area.scrollTop = area.scrollHeight;
+}
+
+function escHTML(s) {
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+}
+
+// ── COMPOSE ───────────────────────────────────────────────────
+function setChannel(el) {
+  document.querySelectorAll('.compose-channel').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  composeCh = el.dataset.ch;
+
+  const preview = document.getElementById('ext-preview');
+  const note = document.getElementById('ext-note');
+
+  if (composeCh === 'app') {
+    preview.classList.remove('show');
+  } else {
+    preview.classList.add('show');
+    const others = activeThread?.participants.filter(p => p.id !== session.agentId) || [];
+    const agent = others[0];
+    if (composeCh === 'wa') {
+      const phone = (agent?.phone||'').replace(/\D/g,'');
+      note.innerHTML = phone
+        ? `Will open WhatsApp to <strong>${agent.name}</strong> (+1 ${phone}). Your message will be pre-filled.`
+        : `⚠ No phone number on file for this agent.`;
+    } else if (composeCh === 'sms') {
+      const phone = (agent?.phone||'').replace(/\D/g,'');
+      note.innerHTML = phone
+        ? `Will open your SMS app to send to <strong>${agent.name}</strong> (+1 ${phone}).`
+        : `⚠ No phone number on file for this agent.`;
+    } else if (composeCh === 'em') {
+      note.innerHTML = agent?.email
+        ? `Will send email to <strong>${agent.name}</strong> at <strong>${agent.email}</strong>.`
+        : `⚠ No email on file for this agent.`;
+    }
+  }
+}
+
+function composeKeydown(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendReply(); }
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+async function sendReply() {
+  const input = document.getElementById('compose-input');
+  const text = input.value.trim();
+  if (!text || !activeThread) return;
+
+  const msg = {
+    id: Date.now().toString(),
+    senderId: session.agentId,
+    senderName: session.name,
+    text,
+    ts: new Date().toISOString(),
+    channel: composeCh
+  };
+
+  // Handle external channels
+  if (composeCh !== 'app') {
+    const others = activeThread.participants.filter(p => p.id !== session.agentId);
+    const agent = others[0];
+    if (agent) launchExternal(composeCh, agent, text);
+    // Still log it in-app
+    msg.channel = composeCh;
+  }
+
+  activeThread.messages.push(msg);
+  activeThread.lastMsg = text.slice(0,60);
+  activeThread.lastTime = msg.ts;
+  saveMessages();
+
+  input.value = '';
+  input.style.height = 'auto';
+  renderMessages();
+  renderThreadList(document.getElementById('thread-search').value);
+}
+
+function launchExternal(ch, agent, text) {
+  const phone = (agent.phone||'').replace(/\D/g,'');
+  const encoded = encodeURIComponent(text);
+  if (ch === 'wa' && phone) {
+    window.open(`https://wa.me/1${phone}?text=${encoded}`, '_blank');
+  } else if (ch === 'sms' && phone) {
+    window.open(`sms:+1${phone}&body=${encoded}`);
+  } else if (ch === 'em' && agent.email) {
+    window.open(`mailto:${agent.email}?subject=DBA%20Team%20Message&body=${encoded}`);
+  }
+}
+
+// ── NEW MESSAGE ───────────────────────────────────────────────
+function openNewMsg() {
+  newRecipients = [];
+  newMsgCh = 'app';
+  document.getElementById('recipient-tags').innerHTML = '';
+  document.getElementById('recipient-input').value = '';
+  document.getElementById('new-message').value = '';
+  document.getElementById('new-subject').value = '';
+  document.getElementById('group-select').value = '';
+  document.getElementById('subject-field').style.display = 'none';
+  document.querySelectorAll('.cs-opt').forEach(b => { b.classList.remove('active'); });
+  document.querySelector('.cs-opt.app').classList.add('active');
+  document.getElementById('new-msg-modal').classList.add('open');
+  document.getElementById('recipient-input').focus();
+}
+
+function closeNewMsg() {
+  document.getElementById('new-msg-modal').classList.remove('open');
+  document.getElementById('recipient-dropdown').classList.remove('show');
+}
+
+function selectNewChannel(el) {
+  document.querySelectorAll('.cs-opt').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  newMsgCh = el.dataset.ch;
+  document.getElementById('subject-field').style.display = newMsgCh === 'em' ? 'block' : 'none';
+}
+
+function searchRecipients(q) {
+  const dd = document.getElementById('recipient-dropdown');
+  if (!q.trim()) { dd.classList.remove('show'); return; }
+  const matches = allAgents
+    .filter(a => a.id !== session.agentId && a.name.toLowerCase().includes(q.toLowerCase()))
+    .filter(a => !newRecipients.find(r => r.id === a.id))
+    .slice(0, 8);
+
+  dd.innerHTML = matches.map(a => `
+    <div class="rd-item" onclick="addRecipient('${a.id}')">
+      ${a.name}
+      <div class="rd-sub">${a.role} · ${a.phone||a.email||'no contact'}</div>
+    </div>`).join('') || '<div class="rd-item" style="color:var(--muted);">No agents found</div>';
+  dd.classList.add('show');
+}
+
+function addRecipient(agentId) {
+  const agent = allAgents.find(a => a.id === agentId);
+  if (!agent || newRecipients.find(r => r.id === agentId)) return;
+  newRecipients.push(agent);
+  renderRecipientTags();
+  document.getElementById('recipient-input').value = '';
+  document.getElementById('recipient-dropdown').classList.remove('show');
+}
+
+function removeRecipient(agentId) {
+  newRecipients = newRecipients.filter(r => r.id !== agentId);
+  renderRecipientTags();
+}
+
+function renderRecipientTags() {
+  document.getElementById('recipient-tags').innerHTML = newRecipients.map(r =>
+    `<span class="rtag">${r.name.split(' ')[0]}<span class="rtag-del" onclick="removeRecipient('${r.id}')">×</span></span>`
+  ).join('');
+}
+
+function recipientKeydown(e) {
+  if (e.key === 'Escape') document.getElementById('recipient-dropdown').classList.remove('show');
+}
+
+function selectGroup(val) {
+  if (!val) { newRecipients = []; renderRecipientTags(); return; }
+  let group = [];
+  if (val === 'all') group = allAgents.filter(a => a.id !== session.agentId);
+  else if (val === 'active') group = allAgents.filter(a => a.top25BoardId && a.id !== session.agentId);
+  else if (val === 'md') group = allAgents.filter(a => a.role === 'marketing_director');
+  else if (val === 'directors') group = allAgents.filter(a => a.role === 'director' || a.role === 'marketing_director');
+  else if (val === 'trainees') group = allAgents.filter(a => a.role === 'trainee');
+  newRecipients = group;
+  renderRecipientTags();
+}
+
+async function sendNewMessage() {
+  const text = document.getElementById('new-message').value.trim();
+  const subject = document.getElementById('new-subject').value.trim();
+  if (!text) { toast('⚠ Enter a message'); return; }
+  if (!newRecipients.length) { toast('⚠ Select at least one recipient'); return; }
+
+  if (newMsgCh === 'app') {
+    // In-app: create/open thread
+    if (newRecipients.length === 1) {
+      const t = getOrCreateThread([newRecipients[0].id]);
+      const msg = { id: Date.now().toString(), senderId: session.agentId, senderName: session.name, text, ts: new Date().toISOString(), channel: 'app' };
+      t.messages.push(msg);
+      t.lastMsg = text.slice(0,60);
+      t.lastTime = msg.ts;
+      saveMessages();
+      closeNewMsg();
+      openThread(t.id);
+    } else {
+      // Group message
+      const t = getOrCreateThread(newRecipients.map(r=>r.id));
+      t.name = `Group (${newRecipients.length+1})`;
+      const msg = { id: Date.now().toString(), senderId: session.agentId, senderName: session.name, text, ts: new Date().toISOString(), channel: 'app' };
+      t.messages.push(msg);
+      t.lastMsg = text.slice(0,60);
+      t.lastTime = msg.ts;
+      saveMessages();
+      closeNewMsg();
+      openThread(t.id);
+    }
+    toast(`✓ Message sent in-app`);
+  } else if (newMsgCh === 'wa') {
+    // Open WhatsApp for each recipient
+    newRecipients.forEach(r => {
+      const phone = (r.phone||'').replace(/\D/g,'');
+      if (phone) window.open(`https://wa.me/1${phone}?text=${encodeURIComponent(text)}`, '_blank');
+    });
+    toast(`✓ WhatsApp opened for ${newRecipients.length} agent(s)`);
+    closeNewMsg();
+  } else if (newMsgCh === 'sms') {
+    if (newRecipients.length === 1) {
+      const phone = (newRecipients[0].phone||'').replace(/\D/g,'');
+      if (phone) window.open(`sms:+1${phone}&body=${encodeURIComponent(text)}`);
+    } else {
+      // Multi-SMS: open one at a time
+      newRecipients.forEach((r,i) => {
+        const phone = (r.phone||'').replace(/\D/g,'');
+        if (phone) setTimeout(() => window.open(`sms:+1${phone}&body=${encodeURIComponent(text)}`), i*300);
+      });
+    }
+    toast(`✓ SMS opened for ${newRecipients.length} agent(s)`);
+    closeNewMsg();
+  } else if (newMsgCh === 'em') {
+    const emails = newRecipients.map(r=>r.email).filter(Boolean).join(',');
+    const subj = subject || 'DBA Team Message';
+    window.open(`mailto:${emails}?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(text)}`);
+    toast(`✓ Email client opened for ${newRecipients.filter(r=>r.email).length} agent(s)`);
+    closeNewMsg();
+  }
+}
+
+// ── BROADCAST VIEW ────────────────────────────────────────────
+function switchView(view, el) {
+  document.querySelectorAll('.tb-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  if (view === 'broadcast') {
+    openNewMsg();
+    document.getElementById('group-select').value = 'all';
+    selectGroup('all');
+  } else if (view === 'templates') {
+    showTemplates();
+  }
+}
+
+function showTemplates() {
+  _templates = [
+  // assigned below
+  ];
+  const TEMPLATES = _templates = [
+    { name:'🔥 Weekly Motivation', text:'Team — another great week ahead. Remember: every call is a chance to change someone\'s life. Let\'s get after it! 💪 — {name}' },
+    { name:'📋 BOM Reminder', text:'Reminder: BOM is [DATE] at [TIME]. See you there! Make sure to bring a guest. Your future self will thank you. — {name}' },
+    { name:'🏆 Congratulations', text:'Huge congrats to [AGENT] for [ACHIEVEMENT]! This is what it looks like when you put in the work. Keep inspiring the team! 🎉' },
+    { name:'📈 Production Push', text:'Team — we\'re in the final stretch of [PERIOD]. Let\'s close strong. Every app counts. Who\'s submitting today? Drop your name below 👇' },
+    { name:'📚 Book Club Reminder', text:'Don\'t forget — Book Club is Thursday at 8AM! Zoom: 336 542 2294, Password: 203824. Bring your coffee ☕ and your thoughts.' },
+    { name:'👥 Recruiting Push', text:'Who do you know that needs a change? Now is the time to invite them to a BOM or a 1-on-1. Every referral matters. Let\'s build this team together!' },
+  ];
+
+  document.getElementById('empty-chat').innerHTML = `
+    <div class="e-ico">📋</div>
+    <div class="e-title">Message Templates</div>
+    <p style="font-size:12px;margin-bottom:16px;">Click a template to use it</p>
+    <div style="display:flex;flex-direction:column;gap:8px;width:100%;max-width:480px;text-align:left;">
+      ${TEMPLATES.map((t,i) => `
+        <div class="tmpl-card" data-idx="${i}"
+          style="background:var(--s1);border:1px solid var(--border);border-radius:9px;padding:12px 14px;cursor:pointer;transition:border-color .15s;">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:var(--gold);margin-bottom:4px;">${t.name}</div>
+          <div style="font-size:12px;color:var(--muted);line-height:1.6;">${t.text.replace(/{name}/g, session.name||'').slice(0,100)}…</div>
+        </div>`).join('')}
+    </div>`;
+  document.getElementById('empty-chat').style.display = 'flex';
+  document.getElementById('active-conv').style.display = 'none';
+  activeThread = null;
+  renderThreadList();
+}
+
+function escAttr(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/'/g,'&#39;').replace(/"/g,'&quot;'); }
+
+// Stored reference for templates (set by showTemplates)
+let _templates = [];
+function useTemplate(idx) {
+  const t = _templates[idx];
+  if (!t) return;
+  openNewMsg();
+  const filled = t.text.replace(/{name}/g, session.name||'');
+  setTimeout(() => { document.getElementById('new-message').value = filled; }, 100);
+}
+
+// ── CLOSE MODAL ON BACKDROP ───────────────────────────────────
+document.getElementById('new-msg-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('new-msg-modal')) closeNewMsg();
+});
+// Template card delegation
+document.addEventListener('click', e => {
+  const card = e.target.closest('.tmpl-card');
+  if (card) { useTemplate(parseInt(card.dataset.idx)); return; }
+});
+document.addEventListener('mouseover', e => {
+  const card = e.target.closest('.tmpl-card');
+  if (card) card.style.borderColor = 'var(--gold)';
+});
+document.addEventListener('mouseout', e => {
+  const card = e.target.closest('.tmpl-card');
+  if (card) card.style.borderColor = 'var(--border)';
+});
+document.addEventListener('click', e => {
+  if (!e.target.closest('#recipient-wrap') && !e.target.closest('#recipient-dropdown')) {
+    document.getElementById('recipient-dropdown').classList.remove('show');
+  }
+});
+
+// ── TOAST ─────────────────────────────────────────────────────
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── INIT ──────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  if (!session) return;
+  loadMessages();
+
+  // Seed a welcome thread from Obi if empty
+  if (!threads.length) {
+    const obi = allAgents.find(a => a.id === 'obi001');
+    if (obi && obi.id !== session.agentId) {
+      const t = getOrCreateThread(['obi001']);
+      t.messages.push({
+        id: '1', senderId: 'obi001', senderName: obi.name,
+        text: 'Welcome to Dynasty Builders Academy! Use this inbox to message me or any team member directly. You can also send WhatsApp, SMS, or email right from here. Let\'s build! 💪',
+        ts: new Date(Date.now() - 3600000).toISOString(), channel: 'app'
+      });
+      t.lastMsg = 'Welcome to Dynasty Builders Academy!';
+      t.lastTime = t.messages[0].ts;
+      t.unread = 1;
+      saveMessages();
+    }
+  }
+
+  renderThreadList();
+});
+</script>
+</body>
+</html>
