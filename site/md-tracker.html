@@ -1,0 +1,1528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>MD Promotion Tracker · DBA</title>
+<script src="auth.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Barlow:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#08121F;--s1:#0F1E33;--s2:#172840;--s3:#1E3352;
+  --gold:#C9A84C;--gold2:#E8C97A;--green:#2DCA73;--red:#E74C3C;--blue:#3498DB;
+  --text:#FAF6EE;--muted:#6B7C93;--border:rgba(201,168,76,.18);
+}
+body{background:var(--bg);color:var(--text);font-family:"Barlow",sans-serif;min-height:100vh;}
+body::before{content:"";position:fixed;inset:0;
+  background-image:linear-gradient(rgba(201,168,76,.025) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(201,168,76,.025) 1px,transparent 1px);
+  background-size:40px 40px;pointer-events:none;z-index:0;}
+.topbar{background:rgba(8,18,31,.97);border-bottom:1px solid var(--border);padding:0 20px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:100;backdrop-filter:blur(14px);}
+.brand{display:flex;align-items:center;gap:9px;padding:12px 16px 12px 0;border-right:1px solid var(--border);}
+.brand-hex{width:28px;height:28px;background:linear-gradient(135deg,var(--gold),var(--gold2));clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:var(--bg);}
+.brand-name{font-family:"Barlow Condensed",sans-serif;font-size:15px;font-weight:900;}
+.brand-name em{color:var(--gold);font-style:normal;}
+.brand-sub{font-family:"DM Mono",monospace;font-size:9px;color:var(--muted);display:block;}
+.tb-right{margin-left:auto;display:flex;gap:8px;align-items:center;}
+.t-btn{padding:6px 12px;border-radius:6px;font-family:"Barlow Condensed",sans-serif;font-size:12px;font-weight:700;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);transition:all .15s;text-decoration:none;}
+.t-btn:hover{border-color:var(--gold);color:var(--gold);}
+.t-btn.primary{background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--bg);border-color:transparent;}
+.page{max-width:1100px;margin:0 auto;padding:28px 20px 80px;position:relative;z-index:1;}
+.run-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:24px;}
+.run-chip{padding:7px 14px;border-radius:20px;font-family:"Barlow Condensed",sans-serif;font-size:12px;font-weight:700;cursor:pointer;border:1px solid var(--border);background:var(--s2);color:var(--muted);transition:all .15s;white-space:nowrap;}
+.run-chip.active{background:rgba(201,168,76,.12);border-color:var(--gold);color:var(--gold);}
+.run-chip.add{border-style:dashed;}
+.run-chip.add:hover{border-color:var(--gold);color:var(--gold);}
+.tracker-header{background:var(--s1);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin-bottom:20px;position:relative;overflow:hidden;}
+.tracker-header::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--gold),var(--gold2),transparent);}
+.th-top{display:flex;align-items:flex-start;gap:20px;flex-wrap:wrap;margin-bottom:18px;}
+.th-name-wrap{flex:1;min-width:200px;}
+.th-agent-name{font-family:"Barlow Condensed",sans-serif;font-size:28px;font-weight:900;line-height:1;margin-bottom:4px;}
+.th-role{font-family:"DM Mono",monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:2px;}
+.th-run{font-family:"DM Mono",monospace;font-size:11px;color:var(--muted);}
+.th-totals{display:flex;gap:16px;flex-wrap:wrap;}
+.total-box{text-align:center;padding:12px 18px;background:var(--s2);border:1px solid var(--border);border-radius:10px;min-width:100px;}
+.total-val{font-family:"Barlow Condensed",sans-serif;font-size:30px;font-weight:900;line-height:1;}
+.total-val.blue{color:#5dade2;}
+.total-val.gold{color:var(--gold2);}
+.total-val.green{color:var(--green);}
+.total-lbl{font-family:"DM Mono",monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:3px;}
+.promo-progress{background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:14px 18px;}
+.pp-title{font-family:"DM Mono",monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+.pp-bars{display:flex;flex-direction:column;gap:8px;}
+.pp-row{display:flex;align-items:center;gap:10px;}
+.pp-lbl{font-family:"DM Mono",monospace;font-size:10px;color:var(--muted);width:90px;flex-shrink:0;}
+.pp-track{flex:1;height:8px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden;}
+.pp-fill{height:100%;border-radius:99px;transition:width .5s ease;}
+.pp-fill.recruits{background:linear-gradient(90deg,var(--blue),#5dade2);}
+.pp-fill.apps{background:linear-gradient(90deg,var(--gold),var(--gold2));}
+.pp-fill.points{background:linear-gradient(90deg,var(--green),#58d68d);}
+.pp-val{font-family:"DM Mono",monospace;font-size:11px;font-weight:500;width:90px;text-align:right;}
+.pp-val.done{color:var(--green);}
+.pp-val.prog{color:var(--gold2);}
+.month-tabs{display:flex;gap:6px;margin-bottom:16px;}
+.month-tab{flex:1;padding:9px;text-align:center;border-radius:9px;font-family:"Barlow Condensed",sans-serif;font-size:12px;font-weight:700;cursor:pointer;border:1px solid var(--border);background:var(--s2);color:var(--muted);transition:all .15s;}
+.month-tab.active{background:rgba(201,168,76,.1);border-color:var(--gold);color:var(--gold);}
+.mt-counts{font-family:"DM Mono",monospace;font-size:10px;margin-top:2px;display:block;}
+.tables-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;}
+@media(max-width:720px){.tables-grid{grid-template-columns:1fr;}}
+.table-card{background:var(--s1);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.tc-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--s2);}
+.tc-title{font-family:"Barlow Condensed",sans-serif;font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;}
+.tc-count{font-family:"DM Mono",monospace;font-size:10px;color:var(--gold);background:rgba(201,168,76,.1);padding:2px 8px;border-radius:8px;border:1px solid rgba(201,168,76,.2);}
+.data-table{width:100%;border-collapse:collapse;font-size:12px;}
+.data-table th{font-family:"DM Mono",monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:7px 10px;border-bottom:1px solid var(--border);text-align:left;white-space:nowrap;background:rgba(0,0,0,.2);}
+.data-table td{padding:7px 10px;border-bottom:1px solid rgba(26,49,88,.4);vertical-align:middle;}
+.data-table tbody tr:last-child td{border-bottom:none;}
+.data-table tbody tr:hover td{background:rgba(201,168,76,.03);}
+.row-num{font-family:"DM Mono",monospace;font-size:10px;color:var(--muted);width:22px;}
+.editable{background:transparent;border:none;color:inherit;font:inherit;width:100%;outline:none;padding:2px;}
+.editable:focus{background:rgba(201,168,76,.08);border-bottom:1px solid var(--gold);}
+.add-row-btn{width:100%;padding:10px;background:transparent;border:none;border-top:1px dashed rgba(201,168,76,.2);color:var(--muted);font-family:"Barlow Condensed",sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:.04em;}
+.add-row-btn:hover{background:rgba(201,168,76,.05);color:var(--gold);}
+.action-bar{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;}
+.act-btn{padding:8px 14px;border-radius:8px;font-family:"Barlow Condensed",sans-serif;font-size:12px;font-weight:700;cursor:pointer;border:1px solid var(--border);background:var(--s2);color:var(--muted);transition:all .15s;}
+.act-btn:hover{border-color:var(--gold);color:var(--gold);}
+.act-btn.danger{border-color:rgba(231,76,60,.3);color:var(--red);}
+.summary-card{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:18px 22px;margin-bottom:16px;}
+.sc-title{font-family:"Barlow Condensed",sans-serif;font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);margin-bottom:14px;}
+.sc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(6px);}
+.modal-bg.open{display:flex;}
+.modal{background:var(--s1);border:1px solid var(--border);border-radius:14px;width:100%;max-width:520px;overflow:hidden;}
+.modal-hdr{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.modal-title{font-family:"Barlow Condensed",sans-serif;font-size:16px;font-weight:800;color:var(--gold);}
+.modal-close{background:transparent;border:none;color:var(--muted);font-size:22px;cursor:pointer;line-height:1;}
+.modal-body{padding:20px;display:flex;flex-direction:column;gap:12px;}
+.field label{display:block;font-family:"DM Mono",monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;}
+.field input,.field select{width:100%;background:var(--s2);border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-family:"Barlow",sans-serif;font-size:13px;outline:none;}
+.field input:focus,.field select:focus{border-color:var(--gold);}
+.field select option{background:var(--s1);}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.modal-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:10px;}
+.btn-create{flex:1;padding:11px;border-radius:8px;border:none;background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--bg);font-family:"Barlow Condensed",sans-serif;font-size:14px;font-weight:800;cursor:pointer;}
+.btn-cancel{padding:11px 16px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:"Barlow Condensed",sans-serif;font-size:13px;font-weight:700;cursor:pointer;}
+.empty-state{text-align:center;padding:60px 20px;color:var(--muted);}
+.es-ico{font-size:40px;margin-bottom:12px;opacity:.4;}
+.es-title{font-family:"Barlow Condensed",sans-serif;font-size:20px;font-weight:700;color:var(--text);margin-bottom:6px;}
+.toast{position:fixed;bottom:20px;right:20px;background:var(--s1);border:1px solid var(--gold);border-radius:10px;padding:11px 18px;font-size:13px;transform:translateY(60px);opacity:0;transition:all .3s;z-index:999;color:var(--gold2);font-family:"DM Mono",monospace;}
+.toast.show{transform:translateY(0);opacity:1;}
+
+/* IMPORT MODAL */
+.import-tabs{display:flex;gap:0;margin-bottom:16px;border:1px solid var(--border);border-radius:8px;overflow:hidden;}
+.imp-tab{flex:1;padding:8px;text-align:center;font-family:"Barlow Condensed",sans-serif;font-size:11px;font-weight:700;
+  cursor:pointer;background:var(--s2);color:var(--muted);border:none;transition:all .15s;border-right:1px solid var(--border);}
+.imp-tab:last-child{border-right:none;}
+.imp-tab.active{background:rgba(201,168,76,.1);color:var(--gold);}
+.imp-pane{display:none;}.imp-pane.active{display:block;}
+.drop-zone{border:2px dashed var(--border);border-radius:9px;padding:22px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:10px;}
+.drop-zone:hover,.drop-zone.drag{border-color:var(--gold);background:rgba(201,168,76,.04);}
+.drop-zone .dz-ico{font-size:26px;margin-bottom:6px;}
+.drop-zone .dz-t{font-family:"Barlow Condensed",sans-serif;font-size:14px;font-weight:700;margin-bottom:3px;}
+.drop-zone .dz-h{font-size:11px;color:var(--muted);}
+.import-preview{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:12px;
+  font-family:"DM Mono",monospace;font-size:11px;line-height:1.8;margin-top:10px;display:none;}
+.imp-row{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid rgba(26,49,88,.3);}
+.imp-row:last-child{border-bottom:none;}
+.imp-key{color:var(--muted);}
+.imp-val{color:var(--gold2);font-weight:700;}
+.imp-val.green{color:var(--green);}
+.imp-val.blue{color:#5dade2;}
+.imp-merge-btn{width:100%;padding:10px;border-radius:8px;border:none;background:linear-gradient(135deg,var(--gold),var(--gold2));
+  color:var(--bg);font-family:"Barlow Condensed",sans-serif;font-size:14px;font-weight:800;cursor:pointer;margin-top:10px;}
+.imp-merge-btn:disabled{opacity:.45;cursor:default;}
+.tab-label{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:6px;
+  font-family:"DM Mono",monospace;font-size:9px;margin-left:6px;}
+.tab-personal{background:rgba(52,152,219,.1);color:#5dade2;border:1px solid rgba(52,152,219,.2);}
+.tab-nonmd{background:rgba(155,89,182,.1);color:#9b59b6;border:1px solid rgba(155,89,182,.2);}
+
+
+/* STRATEGY PANEL */
+.strategy-card{background:var(--s1);border:1px solid var(--border);border-radius:12px;margin-bottom:16px;overflow:hidden;}
+.strategy-card::before{content:"";display:block;height:2px;background:linear-gradient(90deg,#9B59B6,#3498DB,var(--gold));}
+.strategy-hdr{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+.strategy-hdr-left{display:flex;align-items:center;gap:10px;}
+.strat-title{font-family:"Barlow Condensed",sans-serif;font-size:14px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#9B59B6;}
+.strat-status{display:inline-flex;padding:3px 10px;border-radius:8px;font-family:"DM Mono",monospace;font-size:10px;font-weight:700;}
+.strat-status.on-track{background:rgba(45,202,115,.1);color:var(--green);border:1px solid rgba(45,202,115,.25);}
+.strat-status.behind{background:rgba(230,126,34,.1);color:var(--orange);border:1px solid rgba(230,126,34,.25);}
+.strat-status.critical{background:rgba(231,76,60,.1);color:var(--red);border:1px solid rgba(231,76,60,.25);}
+.strat-status.complete{background:rgba(255,215,0,.1);color:#FFD700;border:1px solid rgba(255,215,0,.25);}
+.strat-ai-btn{padding:6px 13px;border-radius:7px;border:none;background:rgba(155,89,182,.12);color:#9B59B6;font-family:"Barlow Condensed",sans-serif;font-size:12px;font-weight:700;cursor:pointer;border:1px solid rgba(155,89,182,.25);display:flex;align-items:center;gap:5px;transition:all .2s;}
+.strat-ai-btn:hover{background:rgba(155,89,182,.2);}
+.strat-ai-btn:disabled{opacity:.45;cursor:default;}
+
+/* NEED BARS */
+.need-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;padding:16px 20px;border-bottom:1px solid var(--border);}
+.need-box{background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:13px 15px;}
+.need-box.done{border-color:rgba(45,202,115,.3);background:rgba(45,202,115,.05);}
+.need-box.urgent{border-color:rgba(231,76,60,.3);background:rgba(231,76,60,.04);}
+.need-lbl{font-family:"DM Mono",monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+.need-progress{display:flex;align-items:baseline;gap:5px;margin-bottom:6px;}
+.need-have{font-family:"Barlow Condensed",sans-serif;font-size:24px;font-weight:900;line-height:1;}
+.need-of{font-family:"DM Mono",monospace;font-size:11px;color:var(--muted);}
+.need-bar{height:5px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden;margin-bottom:5px;}
+.need-fill{height:100%;border-radius:99px;transition:width .5s;}
+.need-remain{font-family:"DM Mono",monospace;font-size:10px;}
+.need-remain.done{color:var(--green);}
+.need-remain.behind{color:var(--orange);}
+.need-remain.urgent{color:var(--red);}
+
+/* PACE CALCULATOR */
+.pace-section{padding:14px 20px;border-bottom:1px solid var(--border);}
+.pace-title{font-family:"DM Mono",monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+.pace-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;}
+.pace-chip{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;text-align:center;}
+.pace-chip.highlight{border-color:var(--gold);background:rgba(201,168,76,.06);}
+.pace-val{font-family:"Barlow Condensed",sans-serif;font-size:18px;font-weight:800;color:var(--gold2);}
+.pace-lbl{font-family:"DM Mono",monospace;font-size:9px;color:var(--muted);margin-top:2px;letter-spacing:.06em;}
+
+/* AI STRATEGY SUGGESTIONS */
+.ai-strategy-body{padding:16px 20px;}
+.ai-thinking{display:flex;align-items:center;gap:8px;font-family:"DM Mono",monospace;font-size:11px;color:var(--muted);padding:10px 0;}
+.strategy-blocks{display:flex;flex-direction:column;gap:10px;}
+.strategy-block{background:var(--s2);border:1px solid var(--border);border-radius:9px;padding:13px 15px;}
+.sb-header{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
+.sb-icon{font-size:16px;}
+.sb-title{font-family:"Barlow Condensed",sans-serif;font-size:14px;font-weight:800;color:var(--text);}
+.sb-tag{display:inline-flex;padding:1px 7px;border-radius:6px;font-family:"DM Mono",monospace;font-size:9px;margin-left:auto;}
+.sb-tag.week{background:rgba(52,152,219,.1);color:#5dade2;border:1px solid rgba(52,152,219,.2);}
+.sb-tag.month{background:rgba(201,168,76,.1);color:var(--gold);border:1px solid rgba(201,168,76,.2);}
+.sb-tag.daily{background:rgba(45,202,115,.1);color:var(--green);border:1px solid rgba(45,202,115,.2);}
+.sb-body{font-size:12px;color:var(--muted);line-height:1.75;}
+.sb-body strong{color:var(--text);}
+.sb-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px;}
+.sb-act{padding:5px 11px;border-radius:6px;font-family:"Barlow Condensed",sans-serif;font-size:11px;font-weight:700;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);transition:all .15s;}
+.sb-act:hover{border-color:var(--gold);color:var(--gold);}
+
+/* MONTH BREAKDOWN CALLOUT */
+.month-callout{margin-top:10px;display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+.mc-item{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:7px;padding:8px 10px;text-align:center;}
+.mc-item.current-month{border-color:rgba(201,168,76,.3);background:rgba(201,168,76,.04);}
+.mc-val{font-family:"Barlow Condensed",sans-serif;font-size:15px;font-weight:800;color:var(--gold2);}
+.mc-lbl{font-family:"DM Mono",monospace;font-size:8px;color:var(--muted);letter-spacing:.06em;margin-top:1px;}
+
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+<script>AUTH.require("md-tracker.html");</script>
+
+<div class="modal-bg" id="new-run-modal">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title">🏆 New Promotion Run</div>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="field"><label>Agent</label>
+        <select id="nr-agent"><option value="">Select agent…</option></select></div>
+      <div class="field"><label>Current Level</label>
+        <select id="nr-level">
+          <option value="Trainee">Trainee</option>
+          <option value="Associate">Associate</option>
+          <option value="Field Associate" selected>Field Associate</option>
+          <option value="Director">Director</option>
+        </select></div>
+      <div class="row2">
+        <div class="field"><label>Run Start</label><input type="date" id="nr-start"></div>
+        <div class="field"><label>Duration (months)</label>
+          <select id="nr-duration">
+            <option value="1">1 Month</option>
+            <option value="2">2 Months</option>
+            <option value="3" selected>3 Months</option>
+          </select></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Recruits Target</label><input type="number" id="nr-tr" value="3" min="1"></div>
+        <div class="field"><label>Apps Target</label><input type="number" id="nr-ta" value="3" min="0" step="0.5"></div>
+      </div>
+      <div class="field"><label>Points Target</label><input type="number" id="nr-tp" value="3000" min="0"></div>
+      <div class="field">
+        <label>Which month are you currently in?</label>
+        <select id="nr-current-month">
+          <option value="0">Month 1 — Just starting</option>
+          <option value="1">Month 2 — Month 1 is behind me</option>
+          <option value="2">Month 3 — Final month</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Personal production % (your own apps vs team total)</label>
+        <select id="nr-personal-pct">
+          <option value="0.40">40% — Minimum recommended</option>
+          <option value="0.45">45%</option>
+          <option value="0.50" selected>50% — Standard</option>
+          <option value="0.60">60%</option>
+          <option value="0.70">70%</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-create" onclick="createRun()">✓ Start Run</button>
+    </div>
+  </div>
+</div>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-hex">⬡</div>
+    <div><div class="brand-name">Dynasty <em>MD Tracker</em></div>
+      <span class="brand-sub">Promotion Run · 3-Month Sprint</span></div>
+  </div>
+  <div class="tb-right">
+    <button class="t-btn primary" onclick="openModal()">+ New Run</button>
+    <button class="t-btn" onclick="exportRun()">⬇ Export</button>
+    <a href="hub.html" class="t-btn">← Hub</a>
+  </div>
+</div>
+
+<div class="page">
+  <div class="run-bar" id="run-bar"></div>
+
+  <div class="empty-state" id="empty-state">
+    <div class="es-ico">🏆</div>
+    <div class="es-title">No promotion runs yet</div>
+    <p style="font-size:13px;margin-bottom:16px;">Track an agent's 3-month MD promotion sprint — recruits, apps, and paid points.</p>
+    <button class="btn-create" style="border:none;padding:11px 24px;border-radius:9px;cursor:pointer;" onclick="openModal()">+ Start First Run</button>
+  </div>
+
+  <div id="tracker-view" style="display:none;">
+    <div class="tracker-header">
+      <div class="th-top">
+        <div class="th-name-wrap">
+          <div class="th-role" id="th-role"></div>
+          <div class="th-agent-name" id="th-agent-name"></div>
+          <div class="th-run" id="th-run"></div>
+        </div>
+        <div class="th-totals">
+          <div class="total-box"><div class="total-val blue" id="tot-r">0</div><div class="total-lbl">Recruits</div></div>
+          <div class="total-box"><div class="total-val gold" id="tot-a">0</div><div class="total-lbl">Apps</div></div>
+          <div class="total-box"><div class="total-val green" id="tot-p">0</div><div class="total-lbl">Points</div></div>
+        </div>
+      </div>
+      <div class="promo-progress">
+        <div class="pp-title">Progress toward promotion requirements</div>
+        <div class="pp-bars" id="pp-bars"></div>
+      </div>
+    </div>
+
+    <div class="month-tabs" id="month-tabs"></div>
+
+    <div class="action-bar">
+      <button class="act-btn" onclick="addRecruit()">+ Recruit</button>
+      <button class="act-btn" onclick="addApp()">+ Application</button>
+      <div style="flex:1;"></div>
+      <button class="act-btn" onclick="document.getElementById('import-modal').classList.add('open')" style="border-color:rgba(52,152,219,.3);color:var(--blue);">⬆ Import Data</button>
+      <button class="act-btn danger" onclick="deleteRun()">✕ Delete Run</button>
+    </div>
+
+    <div class="tables-grid">
+      <div class="table-card">
+        <div class="tc-header">
+          <div class="tc-title" style="color:#5dade2;">👥 Recruits</div>
+          <div class="tc-count" id="r-count">0</div>
+        </div>
+        <table class="data-table">
+          <thead><tr><th>#</th><th>Date</th><th>Name + PHP Code</th><th></th></tr></thead>
+          <tbody id="r-tbody"></tbody>
+        </table>
+        <button class="add-row-btn" onclick="addRecruit()">+ Add Recruit</button>
+      </div>
+
+      <div class="table-card">
+        <div class="tc-header">
+          <div class="tc-title" style="color:var(--gold);">📋 Applications &amp; Points</div>
+          <div class="tc-count" id="a-count">0</div>
+        </div>
+        <table class="data-table">
+          <thead><tr><th>#</th><th>Date</th><th>Policy #</th><th>Client Name</th><th>Apps</th><th>Points</th><th></th></tr></thead>
+          <tbody id="a-tbody"></tbody>
+        </table>
+        <button class="add-row-btn" onclick="addApp()">+ Add Application</button>
+      </div>
+    </div>
+
+    <div class="summary-card">
+      <div class="sc-title">3-Month Summary</div>
+      <div class="sc-grid" id="sum-grid"></div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const SK = "dba_md_tracker_v2";
+const TARGETS = {
+  "Trainee":{r:3,a:3,p:3000},
+  "Associate":{r:10,a:10,p:10000},
+  "Field Associate":{r:25,a:0,p:0},
+  "Director":{r:3,a:0,p:0}
+};
+let runs=[], activeId=null, activeMonth=0;
+
+function load(){try{runs=JSON.parse(localStorage.getItem(SK)||"[]");}catch(e){runs=[];}}
+function save(){localStorage.setItem(SK,JSON.stringify(runs));}
+function toast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),3000);}
+function fmtDate(s){try{return new Date(s+"T12:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});}catch(e){return s||"";}}
+function fmtPts(n){n=parseFloat(n)||0;return n>999?n.toLocaleString("en-US",{maximumFractionDigits:2}):n.toFixed(n%1?2:0);}
+
+function populateAgents(){
+  const sel=document.getElementById("nr-agent");
+  if(typeof AGENTS==="undefined")return;
+  AGENTS.filter(a=>a.id!=="dba000").sort((a,b)=>a.name.localeCompare(b.name)).forEach(a=>{
+    const o=document.createElement("option");
+    o.value=a.id;o.textContent=a.name+(a.phpId?" ("+a.phpId+")":"");
+    sel.appendChild(o);
+  });
+}
+
+function openModal(){document.getElementById("nr-start").value=new Date().toISOString().slice(0,10);document.getElementById("new-run-modal").classList.add("open");}
+function closeModal(){document.getElementById("new-run-modal").classList.remove("open");}
+
+function createRun(){
+  const agId=document.getElementById("nr-agent").value;
+  const level=document.getElementById("nr-level").value;
+  const start=document.getElementById("nr-start").value;
+  const months=parseInt(document.getElementById("nr-duration").value)||3;
+  if(!agId){toast("Select an agent");return;}
+  if(!start){toast("Set a start date");return;}
+  const agent=(typeof AGENTS!=="undefined")?AGENTS.find(a=>a.id===agId):null;
+  const sd=new Date(start+"T12:00:00");
+  const ed=new Date(sd);
+  ed.setMonth(ed.getMonth()+months);ed.setDate(ed.getDate()-1);
+  const lbls=[];
+  for(let i=0;i<months;i++){const d=new Date(sd);d.setMonth(d.getMonth()+i);lbls.push(d.toLocaleString("en-US",{month:"long",year:"numeric"}));}
+  const tDef=TARGETS[level]||{r:3,a:3,p:3000};
+  const run={
+    id:Date.now().toString(),
+    agentId:agId,agentName:agent?agent.name:agId,phpId:agent?agent.phpId:"",
+    level,startDate:start,endDate:ed.toISOString().slice(0,10),months,monthLabels:lbls,
+    targets:{r:parseInt(document.getElementById("nr-tr").value)||tDef.r,
+             a:parseFloat(document.getElementById("nr-ta").value)||tDef.a,
+             p:parseInt(document.getElementById("nr-tp").value)||tDef.p},
+    currentMonth:parseInt(document.getElementById("nr-current-month").value)||0,
+    personalPct:parseFloat(document.getElementById("nr-personal-pct").value)||0.5,
+    recruits:Array.from({length:months},()=>[]),
+    apps:Array.from({length:months},()=>[]),
+    created:new Date().toISOString()
+  };
+  runs.unshift(run);save();closeModal();renderBar();selectRun(run.id);
+  toast("Promotion run started for "+run.agentName);
+}
+
+function renderBar(){
+  const bar=document.getElementById("run-bar");
+  bar.innerHTML=runs.map(r=>{
+    const totR=r.recruits.flat().length;
+    const totA=r.apps.flat().reduce((s,a)=>s+(parseFloat(a.a)||0),0);
+    return `<button class="run-chip ${r.id===activeId?"active":""}" onclick="selectRun('${r.id}')">
+      ${r.agentName.split(" ")[0]} · ${(r.monthLabels[0]||"").split(" ")[0]}
+      <span style="font-family:DM Mono,monospace;font-size:9px;margin-left:4px;">${totR}R·${totA.toFixed(1)}A</span>
+    </button>`;
+  }).join("")+`<button class="run-chip add" onclick="openModal()">+ New Run</button>`;
+}
+
+function selectRun(id){
+  activeId=id;activeMonth=0;
+  document.getElementById("empty-state").style.display="none";
+  document.getElementById("tracker-view").style.display="block";
+  renderBar();renderAll();
+}
+
+function renderAll(){
+  const run=runs.find(r=>r.id===activeId);if(!run)return;
+  const allR=run.recruits.flat();
+  const allA=run.apps.flat();
+  const totR=allR.length;
+  const totA=allA.reduce((s,a)=>s+(parseFloat(a.a)||0),0);
+  const totP=allA.reduce((s,a)=>s+(parseFloat(a.p)||0),0);
+
+  document.getElementById("th-role").textContent=run.level.toUpperCase()+" · PROMOTION RUN";
+  document.getElementById("th-agent-name").textContent=run.agentName;
+  document.getElementById("th-run").textContent="PROMOTION RUN · "+fmtDate(run.startDate)+" – "+fmtDate(run.endDate)+" · PHP "+run.phpId;
+  document.getElementById("tot-r").textContent=totR;
+  document.getElementById("tot-a").textContent=totA%1===0?totA:totA.toFixed(2);
+  document.getElementById("tot-p").textContent=fmtPts(totP);
+
+  // Progress bars
+  const t=run.targets;
+  const bars=[{l:"Recruits",v:totR,m:t.r,c:"recruits"}];
+  if(t.a>0)bars.push({l:"Apps",v:totA,m:t.a,c:"apps"});
+  if(t.p>0)bars.push({l:"Points",v:totP,m:t.p,c:"points"});
+  document.getElementById("pp-bars").innerHTML=bars.map(b=>{
+    const pct=Math.min(100,Math.round(b.v/b.m*100));
+    const done=b.v>=b.m;
+    return `<div class="pp-row">
+      <span class="pp-lbl">${b.l}${done?" ✓":""}</span>
+      <div class="pp-track"><div class="pp-fill ${b.c}" style="width:${pct}%"></div></div>
+      <span class="pp-val ${done?"done":"prog"}">${fmtPts(b.v)} / ${fmtPts(b.m)}</span>
+    </div>`;
+  }).join("");
+
+  // Month tabs
+  document.getElementById("month-tabs").innerHTML=run.monthLabels.map((lbl,i)=>{
+    const rc=run.recruits[i]?.length||0;
+    const ac=(run.apps[i]||[]).reduce((s,a)=>s+(parseFloat(a.a)||0),0);
+    return `<button class="month-tab ${i===activeMonth?"active":""}" onclick="switchMonth(${i})">
+      ${lbl}<span class="mt-counts">${rc}R · ${ac.toFixed(1)}A</span>
+    </button>`;
+  }).join("");
+
+  renderRecruits(run);renderApps(run);renderSummary(run);
+}
+
+function switchMonth(i){activeMonth=i;renderAll();}
+
+function renderRecruits(run){
+  const rows=run.recruits[activeMonth]||[];
+  document.getElementById("r-count").textContent=run.recruits.flat().length+" total";
+  document.getElementById("r-tbody").innerHTML=rows.map((r,i)=>`
+    <tr><td class="row-num">${i+1}</td>
+    <td><input class="editable" value="${r.d||""}" placeholder="YYYY-MM-DD" onchange="updR(${activeMonth},${i},'d',this.value)" style="width:90px;font-family:DM Mono,monospace;font-size:10px;color:var(--muted);"></td>
+    <td><input class="editable" value="${r.n||""}" placeholder="Name + PHP Code" onchange="updR(${activeMonth},${i},'n',this.value)"></td>
+    <td><button onclick="delR(${activeMonth},${i})" style="background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:2px 5px;">×</button></td>
+    </tr>`).join("");
+}
+
+function addRecruit(){
+  const run=runs.find(r=>r.id===activeId);if(!run)return;
+  if(!run.recruits[activeMonth])run.recruits[activeMonth]=[];
+  run.recruits[activeMonth].push({d:new Date().toISOString().slice(0,10),n:""});
+  save();renderAll();
+}
+function updR(m,i,f,v){const run=runs.find(r=>r.id===activeId);if(run?.recruits[m]?.[i]){run.recruits[m][i][f]=v;save();renderAll();}}
+function delR(m,i){const run=runs.find(r=>r.id===activeId);if(run){run.recruits[m].splice(i,1);save();renderAll();toast("Recruit removed");}}
+
+function renderApps(run){
+  const rows=run.apps[activeMonth]||[];
+  const totA=run.apps.flat().reduce((s,a)=>s+(parseFloat(a.a)||0),0);
+  const totP=run.apps.flat().reduce((s,a)=>s+(parseFloat(a.p)||0),0);
+  document.getElementById("a-count").textContent=totA.toFixed(1)+" apps · "+fmtPts(totP)+" pts";
+  document.getElementById("a-tbody").innerHTML=rows.map((a,i)=>`
+    <tr><td class="row-num">${i+1}</td>
+    <td><input class="editable" value="${a.d||""}" placeholder="YYYY-MM-DD" onchange="updA(${activeMonth},${i},'d',this.value)" style="width:90px;font-family:DM Mono,monospace;font-size:10px;color:var(--muted);"></td>
+    <td><input class="editable" value="${a.pol||""}" placeholder="Policy #" onchange="updA(${activeMonth},${i},'pol',this.value)" style="font-family:DM Mono,monospace;font-size:10px;color:var(--gold);width:100px;"></td>
+    <td><input class="editable" value="${a.c||""}" placeholder="Client Name" onchange="updA(${activeMonth},${i},'c',this.value)"></td>
+    <td><input class="editable" type="number" step="0.25" value="${a.a||""}" placeholder="1" onchange="updA(${activeMonth},${i},'a',this.value)" style="width:44px;font-family:Barlow Condensed,sans-serif;font-size:14px;font-weight:700;color:var(--gold2);"></td>
+    <td><input class="editable" type="number" value="${a.p||""}" placeholder="0" onchange="updA(${activeMonth},${i},'p',this.value)" style="width:70px;font-family:Barlow Condensed,sans-serif;font-size:13px;font-weight:700;color:var(--green);"></td>
+    <td><button onclick="delA(${activeMonth},${i})" style="background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:2px 5px;">×</button></td>
+    </tr>`).join("");
+}
+
+function addApp(){
+  const run=runs.find(r=>r.id===activeId);if(!run)return;
+  if(!run.apps[activeMonth])run.apps[activeMonth]=[];
+  run.apps[activeMonth].push({d:new Date().toISOString().slice(0,10),pol:"",c:"",a:1,p:0});
+  save();renderAll();
+}
+function updA(m,i,f,v){const run=runs.find(r=>r.id===activeId);if(run?.apps[m]?.[i]){run.apps[m][i][f]=v;save();renderAll();}}
+function delA(m,i){const run=runs.find(r=>r.id===activeId);if(run){run.apps[m].splice(i,1);save();renderAll();toast("App removed");}}
+
+function renderSummary(run){
+  const items=run.monthLabels.map((lbl,i)=>{
+    const rc=run.recruits[i]?.length||0;
+    const ac=(run.apps[i]||[]).reduce((s,a)=>s+(parseFloat(a.a)||0),0);
+    const pc=(run.apps[i]||[]).reduce((s,a)=>s+(parseFloat(a.p)||0),0);
+    return `<div style="text-align:center;padding:10px;background:var(--s2);border-radius:8px;border:1px solid var(--border);">
+      <div style="font-family:DM Mono,monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">${lbl}</div>
+      <div style="font-family:Barlow Condensed,sans-serif;font-size:14px;font-weight:700;color:#5dade2;">${rc} recruits</div>
+      <div style="font-family:Barlow Condensed,sans-serif;font-size:14px;font-weight:700;color:var(--gold2);">${ac.toFixed(1)} apps</div>
+      <div style="font-family:Barlow Condensed,sans-serif;font-size:14px;font-weight:700;color:var(--green);">${fmtPts(pc)} pts</div>
+    </div>`;
+  });
+  const allA=run.apps.flat();
+  const tR=run.recruits.flat().length,tA=allA.reduce((s,a)=>s+(parseFloat(a.a)||0),0),tP=allA.reduce((s,a)=>s+(parseFloat(a.p)||0),0);
+  items.push(`<div style="text-align:center;padding:10px;background:rgba(201,168,76,.06);border-radius:8px;border:1px solid var(--gold);">
+    <div style="font-family:DM Mono,monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);margin-bottom:6px;">Total Run</div>
+    <div style="font-family:Barlow Condensed,sans-serif;font-size:16px;font-weight:800;color:#5dade2;">${tR} recruits</div>
+    <div style="font-family:Barlow Condensed,sans-serif;font-size:16px;font-weight:800;color:var(--gold2);">${tA.toFixed(1)} apps</div>
+    <div style="font-family:Barlow Condensed,sans-serif;font-size:16px;font-weight:800;color:var(--green);">${fmtPts(tP)} pts</div>
+  </div>`);
+  document.getElementById("sum-grid").innerHTML=items.join("");
+}
+
+function deleteRun(){
+  const run=runs.find(r=>r.id===activeId);if(!run)return;
+  if(!confirm("Delete promotion run for "+run.agentName+"?"))return;
+  runs=runs.filter(r=>r.id!==activeId);activeId=null;save();
+  document.getElementById("tracker-view").style.display="none";
+  document.getElementById("empty-state").style.display=runs.length?"none":"block";
+  renderBar();if(runs.length)selectRun(runs[0].id);
+  toast("Run deleted");
+}
+
+function exportRun(){
+  const run=runs.find(r=>r.id===activeId);
+  if(!run){toast("No active run");return;}
+  const allA=run.apps.flat();
+  const tR=run.recruits.flat().length,tA=allA.reduce((s,a)=>s+(parseFloat(a.a)||0),0),tP=allA.reduce((s,a)=>s+(parseFloat(a.p)||0),0);
+  const lines=[
+    `${run.agentName}   ${run.level}   PROMOTION RUN   ${run.startDate} - ${run.endDate}`,
+    `TOTAL RECRUITS: ${tR}   TOTAL APPS: ${tA.toFixed(1)}   TOTAL POINTS: ${fmtPts(tP)}`,""
+  ];
+  run.monthLabels.forEach((lbl,i)=>{
+    lines.push(`=== ${lbl} ===`);
+    lines.push("DATE,RECRUITS");
+    (run.recruits[i]||[]).forEach((r,j)=>lines.push(`${r.d||""},${r.n||""}`));
+    lines.push("DATE,POLICY NUMBER,CLIENT NAME,APP COUNT,POINTS");
+    (run.apps[i]||[]).forEach(a=>lines.push(`${a.d||""},${a.pol||""},${a.c||""},${a.a||0},${a.p||0}`));
+    lines.push("");
+  });
+  const blob=new Blob([lines.join("\n")],{type:"text/csv"});
+  const url=URL.createObjectURL(blob);
+  const link=document.createElement("a");
+  link.href=url;link.download=`MD_Tracker_${run.agentName.replace(/\s+/g,"_")}_${run.startDate}.csv`;
+  link.click();URL.revokeObjectURL(url);toast("Exported as CSV");
+}
+
+document.getElementById("new-run-modal").addEventListener("click",e=>{if(e.target===document.getElementById("new-run-modal"))closeModal();});
+
+
+// ════════════════════════════════════════════════════════
+// IMPORT ENGINE
+// ════════════════════════════════════════════════════════
+
+let _ssData = null;    // extracted screenshot data
+let _polData = null;   // parsed policy rows
+let _agData  = null;   // parsed agent rows
+
+// ── IMPORT TABS ──────────────────────────────────────────
+function switchImpTab(name, el) {
+  document.querySelectorAll(".imp-tab").forEach(t=>t.classList.remove("active"));
+  document.querySelectorAll(".imp-pane").forEach(p=>p.classList.remove("active"));
+  el.classList.add("active");
+  document.getElementById("imp-"+name).classList.add("active");
+}
+
+// ── TAB 1: DASHBOARD SCREENSHOT ──────────────────────────
+function handleSsDrop(e) {
+  e.preventDefault();
+  document.getElementById("ss-drop").classList.remove("drag");
+  extractDashboard(e.dataTransfer.files);
+}
+
+async function extractDashboard(files) {
+  if(!files||!files.length) return;
+  const load = document.getElementById("ss-loading");
+  const prev = document.getElementById("ss-preview");
+  load.style.display = "flex";
+  prev.style.display = "none";
+  _ssData = null;
+  document.getElementById("ss-merge-btn").disabled = true;
+
+  const ENDPOINT = location.hostname === "localhost" ? null : "/api/claude";
+  if(!ENDPOINT) { toast("Claude proxy needed for screenshot extraction"); load.style.display="none"; return; }
+
+  // Process all uploaded screenshots (Personal + Non-MD Base can be separate images)
+  const allExtracted = { personal: null, nonMd: null };
+
+  for(const file of files) {
+    const dataUrl = await readFile(file);
+    const base64 = dataUrl.split(",")[1];
+    const mime = file.type;
+
+    const system = `You extract metrics from PHP Bamboo recruiting dashboard screenshots.
+The dashboard has two tabs: "Personal" and "Non-MD Base".
+Extract ALL visible metrics and which tab is active.
+Return ONLY valid JSON — no other text.
+JSON structure:
+{
+  "agentName": string,
+  "tab": "Personal" | "Non-MD Base" | "unknown",
+  "dateRange": { "from": "YYYY-MM-DD", "to": "YYYY-MM-DD" },
+  "metrics": {
+    "recruits": number | null,
+    "recruitsRank": string,
+    "subApps": number | null,
+    "subAppsRank": string,
+    "subPoints": number | null,
+    "subPointsRank": string,
+    "firstChecks": number | null,
+    "licensedAgents": number | null,
+    "paidPoints": number | null,
+    "paidPointsRank": string
+  }
+}
+For K values like 68.181K convert to actual number: 68181.
+If a metric is not visible set it to null.`;
+
+    try {
+      const res = await fetch(ENDPOINT, {
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({
+          model:"claude-sonnet-4-6", max_tokens:800, system,
+          messages:[{role:"user",content:[
+            {type:"image",source:{type:"base64",media_type:mime,data:base64}},
+            {type:"text",text:"Extract all metrics from this PHP Bamboo dashboard screenshot. Return JSON only."}
+          ]}]
+        })
+      });
+      const data = await res.json();
+      const raw = (data?.content?.[0]?.text||"{}").replace(/```json|```/g,"").trim();
+      const parsed = JSON.parse(raw);
+      if(parsed.tab==="Non-MD Base") allExtracted.nonMd = parsed;
+      else allExtracted.personal = parsed;
+    } catch(e) { console.error("Screenshot extraction error:", e); }
+  }
+
+  load.style.display = "none";
+
+  if(!allExtracted.personal && !allExtracted.nonMd) {
+    prev.style.display = "block";
+    prev.innerHTML = '<div style="color:var(--red);">✗ Could not extract data from screenshot. Try a clearer image.</div>';
+    return;
+  }
+
+  _ssData = allExtracted;
+
+  // Render preview
+  const renderMetrics = (d, label, cls) => {
+    if(!d) return "";
+    const m = d.metrics||{};
+    const rows = [
+      ["Agent", d.agentName||"?"],
+      ["Date Range", `${d.dateRange?.from||""} — ${d.dateRange?.to||""}`],
+      ["Recruits", m.recruits!=null?m.recruits:"—"],
+      ["Sub Apps", m.subApps!=null?m.subApps:"—"],
+      ["Sub Points", m.subPoints!=null?fmtPts(m.subPoints):"—"],
+      ["Paid Points", m.paidPoints!=null?fmtPts(m.paidPoints):"—"],
+      ["First Checks", m.firstChecks!=null?m.firstChecks:"—"],
+      ["Licensed Agents", m.licensedAgents!=null?m.licensedAgents:"—"],
+    ];
+    return `<div style="margin-bottom:10px;">
+      <div style="font-family:Barlow Condensed,sans-serif;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:${cls==="personal"?"#5dade2":"#9b59b6"};margin-bottom:6px;">
+        ${label}
+      </div>
+      ${rows.map(([k,v])=>`<div class="imp-row"><span class="imp-key">${k}</span><span class="imp-val">${v}</span></div>`).join("")}
+    </div>`;
+  };
+
+  prev.style.display = "block";
+  prev.innerHTML =
+    renderMetrics(allExtracted.personal, "📊 Personal Tab", "personal") +
+    renderMetrics(allExtracted.nonMd, "📊 Non-MD Base Tab", "nonmd");
+
+  document.getElementById("ss-merge-btn").disabled = false;
+}
+
+function mergeScreenshotData() {
+  const run = runs.find(r=>r.id===activeId);
+  if(!run||!_ssData) return;
+
+  // Store screenshot summary on the run
+  if(!run.snapshots) run.snapshots = [];
+  run.snapshots.push({
+    ts: new Date().toISOString(),
+    personal: _ssData.personal,
+    nonMd: _ssData.nonMd
+  });
+
+  // Auto-fill totals in run header for display
+  const p = _ssData.personal?.metrics||{};
+  const n = _ssData.nonMd?.metrics||{};
+
+  if(!run.dashboardStats) run.dashboardStats = {};
+  run.dashboardStats.personal = p;
+  run.dashboardStats.nonMd = n;
+
+  save();
+  renderAll();
+  document.getElementById("import-modal").classList.remove("open");
+  toast("✓ Dashboard stats imported — totals updated", "ok");
+}
+
+// ── TAB 2: POLICY FILE (XLSX/CSV) ────────────────────────
+function handlePolDrop(e) {
+  e.preventDefault();
+  document.getElementById("pol-drop").classList.remove("drag");
+  if(e.dataTransfer.files[0]) parsePolicyFile(e.dataTransfer.files[0]);
+}
+
+async function parsePolicyFile(file) {
+  if(!file) return;
+  const load = document.getElementById("pol-loading");
+  const prev = document.getElementById("pol-preview");
+  load.style.display = "flex"; prev.style.display = "none";
+  _polData = null;
+  document.getElementById("pol-merge-btn").disabled = true;
+
+  try {
+    const rows = await readXlsxOrCsv(file);
+    if(!rows.length) throw new Error("No data rows found");
+
+    // Parse policy rows — match columns regardless of case
+    const headers = rows[0].map(h=>(h||"").toString().toUpperCase().trim());
+    const col = name => headers.findIndex(h=>h.includes(name));
+
+    const iPolicy   = col("POLICY NUMBER");
+    const iAgent    = col("AGENT 1 NAME");
+    const iPhp      = col("AGENT 1 PHP CODE");
+    const iSplit    = col("AGENT 1 SPLIT");
+    const iSubPts   = col("SUBMITTED POINTS");
+    const iTotPts   = col("TOTAL POINTS");
+    const iStatus   = col("STATUS");
+    const iClient1  = col("FIRST NAME");
+    const iClient2  = col("LAST NAME");
+    const iDate     = col("PHP SUBMIT DATE");
+
+    const policies = rows.slice(1).filter(r=>r[iPolicy]).map(r=>({
+      policy:   r[iPolicy]||"",
+      agent:    r[iAgent]||"",
+      phpCode:  String(r[iPhp]||""),
+      split:    r[iSplit]||"100%",
+      subPts:   parseFloat(r[iSubPts])||0,
+      totPts:   parseFloat(r[iTotPts])||0,
+      status:   r[iStatus]||"",
+      client:   `${r[iClient1]||""} ${r[iClient2]||""}`.trim(),
+      date:     formatDateVal(r[iDate]),
+    }));
+
+    // Run-level agent filter: match by agent name or PHP code if we know the run agent
+    const run = runs.find(r=>r.id===activeId);
+    const runPhp = run?.phpId||"";
+
+    // Calculate sub-apps (split-weighted)
+    const calcSubApps = (pol) => {
+      let total = 0;
+      pol.forEach(p => {
+        const s = parseFloat(String(p.split).replace("%",""))||100;
+        total += s/100;
+      });
+      return Math.round(total*100)/100;
+    };
+
+    // All policies vs agent-specific
+    const allPol = policies;
+    const agentPol = runPhp ? policies.filter(p=>p.phpCode===runPhp||p.agent.toLowerCase().includes((run?.agentName||"").split(" ")[0].toLowerCase())) : [];
+
+    _polData = { all: allPol, agent: agentPol };
+
+    const subAppsAll = calcSubApps(allPol);
+    const subAppsAgent = calcSubApps(agentPol);
+    const subPtsAll = allPol.reduce((s,p)=>s+p.subPts,0);
+    const subPtsAgent = agentPol.reduce((s,p)=>s+p.subPts,0);
+    const totPtsAll = allPol.reduce((s,p)=>s+p.totPts,0);
+    const totPtsAgent = agentPol.reduce((s,p)=>s+p.totPts,0);
+
+    prev.style.display = "block";
+    prev.innerHTML = `
+      <div style="margin-bottom:8px;">
+        <div style="font-family:Barlow Condensed,sans-serif;font-size:11px;font-weight:800;color:#5dade2;margin-bottom:6px;letter-spacing:.06em;">FILE SUMMARY — ${allPol.length} POLICIES</div>
+        ${[["Total Apps (all)",`${subAppsAll}`],["Total Sub Points",fmtPts(subPtsAll)],["Total Paid Points",fmtPts(totPtsAll)]].map(([k,v])=>`<div class="imp-row"><span class="imp-key">${k}</span><span class="imp-val">${v}</span></div>`).join("")}
+      </div>
+      ${agentPol.length?`<div>
+        <div style="font-family:Barlow Condensed,sans-serif;font-size:11px;font-weight:800;color:var(--gold);margin-bottom:6px;letter-spacing:.06em;">AGENT MATCH — ${agentPol.length} POLICIES (${run?.agentName||"?"})</div>
+        ${[["Agent Sub Apps",`${subAppsAgent}`],["Agent Sub Points",fmtPts(subPtsAgent)],["Agent Paid Points",fmtPts(totPtsAgent)]].map(([k,v])=>`<div class="imp-row"><span class="imp-key">${k}</span><span class="imp-val green">${v}</span></div>`).join("")}
+      </div>`:""}
+      <div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted);margin-top:8px;">Will import as individual app rows into Month ${activeMonth+1}</div>`;
+
+    document.getElementById("pol-merge-btn").disabled = false;
+  } catch(e) {
+    prev.style.display = "block";
+    prev.innerHTML = `<div style="color:var(--red);">✗ ${e.message}</div>`;
+  }
+  load.style.display = "none";
+}
+
+function mergePolicyData() {
+  const run = runs.find(r=>r.id===activeId);
+  if(!run||!_polData) return;
+
+  // Use agent-specific if available, else all
+  const source = _polData.agent.length ? _polData.agent : _polData.all;
+  if(!run.apps[activeMonth]) run.apps[activeMonth] = [];
+
+  // Deduplicate by policy number
+  const existing = new Set(run.apps[activeMonth].map(a=>a.pol));
+  let added = 0;
+  source.forEach(p=>{
+    if(p.policy && existing.has(p.policy)) return;
+    run.apps[activeMonth].push({
+      d: p.date||new Date().toISOString().slice(0,10),
+      pol: p.policy,
+      c: p.client,
+      a: calcSplitApps(p.split),
+      p: p.subPts,
+      paidPts: p.totPts,
+      status: p.status,
+    });
+    added++;
+  });
+
+  save(); renderAll();
+  document.getElementById("import-modal").classList.remove("open");
+  toast(`✓ ${added} policies imported to Month ${activeMonth+1}`);
+}
+
+function calcSplitApps(split) {
+  const s = parseFloat(String(split).replace("%",""))||100;
+  const v = s/100;
+  return Math.round(v*100)/100;
+}
+
+// ── TAB 3: AGENTS FILE ────────────────────────────────────
+function handleAgDrop(e) {
+  e.preventDefault();
+  document.getElementById("ag-drop").classList.remove("drag");
+  if(e.dataTransfer.files[0]) parseAgentsFile(e.dataTransfer.files[0]);
+}
+
+async function parseAgentsFile(file) {
+  if(!file) return;
+  const load = document.getElementById("ag-loading");
+  const prev = document.getElementById("ag-preview");
+  load.style.display="flex"; prev.style.display="none";
+  _agData = null;
+  document.getElementById("ag-merge-btn").disabled = true;
+
+  try {
+    const rows = await readXlsxOrCsv(file);
+    if(!rows.length) throw new Error("No data found");
+    const headers = rows[0].map(h=>(h||"").toString().toUpperCase().trim());
+    const col = name => headers.findIndex(h=>h.includes(name));
+
+    const iName     = col("NAME");
+    const iPhp      = col("PHPCODE");
+    const iLevel    = col("LEVEL");
+    const iDate     = col("DATE SPONSORED");
+    const iDirects  = col("DIRECTS");
+    const iStatus   = col("STATUS");
+
+    const agents = rows.slice(1).filter(r=>r[iName]).map(r=>({
+      name:    String(r[iName]||"").trim(),
+      phpCode: String(r[iPhp]||"").trim(),
+      level:   String(r[iLevel]||"").trim(),
+      date:    formatDateVal(r[iDate]),
+      directs: String(r[iDirects]||"").trim(),
+      status:  String(r[iStatus]||"active").trim(),
+    })).filter(a=>a.status==="active"||a.status==="");
+
+    _agData = agents;
+
+    const run = runs.find(r=>r.id===activeId);
+    const runName = (run?.agentName||"").toLowerCase();
+    const personally = agents.filter(a=>a.directs.toLowerCase().includes(runName)||a.directs.includes(run?.phpId||"NOMATCH"));
+
+    prev.style.display = "block";
+    prev.innerHTML = `
+      <div style="font-family:Barlow Condensed,sans-serif;font-size:11px;font-weight:800;color:var(--blue);margin-bottom:6px;letter-spacing:.06em;">${agents.length} AGENTS IN FILE</div>
+      ${[["Total agents",agents.length],["Personally sponsored by "+((run?.agentName||"").split(" ")[0]),personally.length]].map(([k,v])=>`<div class="imp-row"><span class="imp-key">${k}</span><span class="imp-val ${typeof v==="number"&&v>0?"green":""}">${v}</span></div>`).join("")}
+      <div style="font-family:Barlow Condensed,sans-serif;font-size:11px;font-weight:800;color:var(--gold);margin-bottom:6px;margin-top:10px;letter-spacing:.06em;">RECRUITS TO IMPORT (${personally.length})</div>
+      ${personally.slice(0,8).map(a=>`<div class="imp-row"><span class="imp-key">${a.name}</span><span class="imp-val" style="font-size:10px;">${a.date||""} · ${a.level}</span></div>`).join("")}
+      ${personally.length>8?`<div style="color:var(--muted);font-size:10px;margin-top:4px;">+${personally.length-8} more…</div>`:""}
+      <div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted);margin-top:8px;">Will import as recruit rows into Month ${activeMonth+1}</div>`;
+
+    document.getElementById("ag-merge-btn").disabled = personally.length===0;
+    _agData = { all: agents, personal: personally };
+  } catch(e) {
+    prev.style.display="block";
+    prev.innerHTML=`<div style="color:var(--red);">✗ ${e.message}</div>`;
+  }
+  load.style.display="none";
+}
+
+function mergeAgentsData() {
+  const run = runs.find(r=>r.id===activeId);
+  if(!run||!_agData?.personal?.length) return;
+
+  if(!run.recruits[activeMonth]) run.recruits[activeMonth] = [];
+  const existing = new Set(run.recruits[activeMonth].map(r=>r.n.toLowerCase().trim()));
+  let added = 0;
+
+  _agData.personal.forEach(a=>{
+    const key = a.name.toLowerCase().trim();
+    if(existing.has(key)) return;
+    run.recruits[activeMonth].push({ d:a.date||"", n:`${a.name} ${a.phpCode}`.trim() });
+    added++;
+  });
+
+  save(); renderAll();
+  document.getElementById("import-modal").classList.remove("open");
+  toast(`✓ ${added} recruits imported to Month ${activeMonth+1}`);
+}
+
+// ── XLSX/CSV READER ──────────────────────────────────────
+async function readXlsxOrCsv(file) {
+  const name = file.name.toLowerCase();
+  if(name.endsWith(".csv")) {
+    const text = await file.text();
+    return text.split("\n").map(line=>{
+      return line.split(",").map(f=>f.replace(/^"|"$/g,"").trim());
+    }).filter(r=>r.some(c=>c));
+  }
+  // XLSX via SheetJS
+  return new Promise((resolve,reject)=>{
+    const reader = new FileReader();
+    reader.onload = e => {
+      try {
+        if(typeof XLSX==="undefined") { reject(new Error("SheetJS not loaded — please wait and retry")); return; }
+        const wb = XLSX.read(e.target.result,{type:"array"});
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const data = XLSX.utils.sheet_to_json(ws,{header:1,defval:""});
+        resolve(data);
+      } catch(err){ reject(err); }
+    };
+    reader.onerror=reject;
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+function formatDateVal(v) {
+  if(!v) return "";
+  if(typeof v==="string") {
+    // Try MM/DD/YYYY
+    const m = v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if(m) return `${m[3]}-${m[1].padStart(2,"0")}-${m[2].padStart(2,"0")}`;
+    // Try YYYY-MM-DD
+    if(/^\d{4}-\d{2}-\d{2}/.test(v)) return v.slice(0,10);
+    return v;
+  }
+  if(typeof v==="number") {
+    // Excel serial date
+    const d = new Date((v-25569)*86400*1000);
+    return d.toISOString().slice(0,10);
+  }
+  return String(v);
+}
+
+function readFile(file) {
+  return new Promise((res,rej)=>{
+    const r=new FileReader();
+    r.onload=e=>res(e.target.result);
+    r.onerror=rej;
+    r.readAsDataURL(file);
+  });
+}
+
+// ── DASHBOARD STATS DISPLAY IN HEADER ────────────────────
+
+
+
+// ════════════════════════════════════════════════════════════════
+// STRATEGY ENGINE
+// ════════════════════════════════════════════════════════════════
+
+function calcRunTotals(run) {
+  const allA = run.apps.flat();
+  return {
+    recruits: run.recruits.flat().length,
+    apps:     allA.reduce((s,a)=>s+(parseFloat(a.a)||0),0),
+    points:   allA.reduce((s,a)=>s+(parseFloat(a.p)||0),0),
+    paidPts:  allA.reduce((s,a)=>s+(parseFloat(a.paidPts)||parseFloat(a.p)||0),0),
+  };
+}
+
+function calcMonthTotals(run, m) {
+  const apps = run.apps[m]||[];
+  return {
+    recruits: (run.recruits[m]||[]).length,
+    apps:     apps.reduce((s,a)=>s+(parseFloat(a.a)||0),0),
+    points:   apps.reduce((s,a)=>s+(parseFloat(a.p)||0),0),
+  };
+}
+
+function daysLeftInRun(run) {
+  const end = new Date(run.endDate+"T23:59:59");
+  const now = new Date();
+  return Math.max(0, Math.ceil((end-now)/(1000*60*60*24)));
+}
+
+function daysInMonth(run, m) {
+  // Approximate: total run days / number of months
+  const start = new Date(run.startDate+"T12:00:00");
+  const end   = new Date(run.endDate+"T23:59:59");
+  const totalDays = Math.ceil((end-start)/(1000*60*60*24));
+  return Math.round(totalDays / run.months);
+}
+
+function weeksLeft(run) {
+  return Math.max(0, Math.ceil(daysLeftInRun(run)/7));
+}
+
+// ── MAIN RENDER ────────────────────────────────────────────────
+function renderStrategy(run) {
+  if(!run) return;
+  const t   = run.targets;
+  const tot = calcRunTotals(run);
+  const months = run.months || 3;
+  const curMonth = typeof run.currentMonth === "number" ? run.currentMonth : activeMonth;
+  const personalPct = run.personalPct || 0.5;
+  const daysLeft = daysLeftInRun(run);
+  const wksLeft  = weeksLeft(run);
+
+  // ── GAPS ──
+  const gapR = Math.max(0, t.r - tot.recruits);
+  const gapA = Math.max(0, t.a - tot.apps);
+  const gapP = Math.max(0, t.p - tot.points);
+
+  // ── STATUS BADGE ──
+  const pctR = t.r>0 ? tot.recruits/t.r : 1;
+  const pctA = t.a>0 ? tot.apps/t.a : 1;
+  const pctP = t.p>0 ? tot.points/t.p : 1;
+  const minPct = Math.min(pctR, t.a>0?pctA:1, t.p>0?pctP:1);
+  const monthPct = (curMonth+1)/months; // expected completion at this point
+
+  let statusCls, statusTxt;
+  if(minPct>=1)                        { statusCls="complete";   statusTxt="✓ Requirements Met!"; }
+  else if(minPct >= monthPct-0.05)     { statusCls="on-track";   statusTxt="On Track"; }
+  else if(minPct >= monthPct-0.15)     { statusCls="behind";     statusTxt="Slightly Behind"; }
+  else                                  { statusCls="critical";   statusTxt="Needs Attention"; }
+
+  const badge = document.getElementById("strat-status-badge");
+  if(badge){ badge.className="strat-status "+statusCls; badge.textContent=statusTxt; }
+
+  // ── NEED BOXES ──────────────────────────────────────────────
+  const needs = [];
+  if(t.r>0) needs.push({
+    lbl:"Recruits", have:tot.recruits, need:t.r, gap:gapR,
+    color:"#5dade2", fill:"linear-gradient(90deg,#3498DB,#5dade2)"
+  });
+  if(t.a>0) needs.push({
+    lbl:"Sub Apps",  have:tot.apps,    need:t.a, gap:gapA,
+    color:"var(--gold2)", fill:"linear-gradient(90deg,var(--gold),var(--gold2))"
+  });
+  if(t.p>0) needs.push({
+    lbl:"Sub Points",have:tot.points,  need:t.p, gap:gapP,
+    color:"var(--green)", fill:"linear-gradient(90deg,var(--green),#58d68d)"
+  });
+
+  // Personal requirement (40-50% rule)
+  if(t.a>0) {
+    const personalNeed  = Math.ceil(t.a * personalPct * 10)/10;
+    const personalHave  = calcPersonalApps(run);
+    const personalGap   = Math.max(0, personalNeed - personalHave);
+    needs.push({
+      lbl:`Personal Apps (${Math.round(personalPct*100)}%)`,
+      have:personalHave, need:personalNeed, gap:personalGap,
+      color:"var(--purple)", fill:"linear-gradient(90deg,#9B59B6,#A569BD)",
+      sub:"Your personal production requirement"
+    });
+  }
+
+  document.getElementById("need-grid").innerHTML = needs.map(n=>{
+    const pct = Math.min(100, n.need>0 ? Math.round(n.have/n.need*100) : 100);
+    const done = n.gap<=0;
+    const cls  = done?"done":pct<50?"urgent":"";
+    return `<div class="need-box ${cls}">
+      <div class="need-lbl">${n.lbl}</div>
+      <div class="need-progress">
+        <span class="need-have" style="color:${n.color};">${fmt(n.have)}</span>
+        <span class="need-of">of ${fmt(n.need)}</span>
+      </div>
+      <div class="need-bar"><div class="need-fill" style="width:${pct}%;background:${n.fill};"></div></div>
+      <div class="need-remain ${done?"done":pct<50?"urgent":"behind"}">
+        ${done ? "✓ Met!" : `${fmt(n.gap)} still needed`}
+      </div>
+      ${n.sub?`<div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted);margin-top:3px;">${n.sub}</div>`:""}
+    </div>`;
+  }).join("");
+
+  // ── PACE CHIPS ──────────────────────────────────────────────
+  const paceItems = buildPaceItems(run, tot, t, gapR, gapA, gapP, daysLeft, wksLeft, curMonth, personalPct);
+  document.getElementById("pace-grid").innerHTML = paceItems.map(p=>
+    `<div class="pace-chip ${p.highlight?"highlight":""}">
+      <div class="pace-val" style="color:${p.color||"var(--gold2)"};">${p.val}</div>
+      <div class="pace-lbl">${p.lbl}</div>
+    </div>`
+  ).join("");
+}
+
+function buildPaceItems(run, tot, t, gapR, gapA, gapP, daysLeft, wksLeft, curMonth, personalPct) {
+  const chips = [];
+  const months = run.months||3;
+  const monthsLeft = Math.max(1, months - curMonth);
+
+  if(daysLeft<=0){ chips.push({val:"Run ended",lbl:"days remaining",color:"var(--muted)"}); return chips; }
+
+  chips.push({val:daysLeft, lbl:"Days remaining", color:"var(--text)"});
+  chips.push({val:wksLeft,  lbl:"Weeks remaining"});
+
+  if(t.r>0 && gapR>0){
+    chips.push({
+      val: (gapR/wksLeft).toFixed(1),
+      lbl:"Recruits per week needed", highlight:true,
+      color:"#5dade2"
+    });
+    chips.push({
+      val: Math.ceil(gapR/monthsLeft),
+      lbl:`Recruits per month (${monthsLeft} mo left)`,
+      color:"#5dade2"
+    });
+  }
+  if(t.a>0 && gapA>0){
+    chips.push({
+      val: (gapA/wksLeft).toFixed(2),
+      lbl:"Apps per week needed", highlight:true,
+      color:"var(--gold2)"
+    });
+    chips.push({
+      val: ((gapA * personalPct)/wksLeft).toFixed(2),
+      lbl:`Your personal apps/wk (${Math.round(personalPct*100)}%)`,
+      color:"var(--purple)"
+    });
+  }
+  if(t.p>0 && gapP>0){
+    chips.push({
+      val: fmtPts(gapP/wksLeft),
+      lbl:"Points per week needed", highlight:true,
+      color:"var(--green)"
+    });
+  }
+
+  // ── FALLOFF SCENARIOS ──────────────────────────────────────
+  // If month 1 fell off: recalculate for remaining months
+  if(curMonth === 0 && months > 1) {
+    // Assume month 1 contributes 0 — what's needed in months 2+?
+    const falloffMonths = months - 1;
+    const falloffWks = Math.max(1, wksLeft - daysInMonth(run,0)/7);
+    if(t.r>0) chips.push({
+      val: Math.ceil(t.r/falloffMonths),
+      lbl:`Recruits/mo if M1 missed (${falloffMonths} mo)`,
+      color:"var(--orange)"
+    });
+    if(t.a>0) chips.push({
+      val: (t.a/falloffMonths).toFixed(1),
+      lbl:`Apps/mo if M1 missed (${falloffMonths} mo)`,
+      color:"var(--orange)"
+    });
+  }
+  if(curMonth === 1 && months === 3) {
+    // In month 2 — if month 1 was behind, everything falls on M2+M3
+    const m1tots = calcMonthTotals(run, 0);
+    const m1gapR = Math.max(0, Math.ceil(t.r/3) - m1tots.recruits);
+    const m1gapA = Math.max(0, t.a/3 - m1tots.apps);
+    if(m1gapR>0||m1gapA>0){
+      chips.push({
+        val: Math.ceil((t.r-calcRunTotals(run).recruits)/2),
+        lbl:"Recruits/mo to make up M1 gap",
+        color:"var(--red)"
+      });
+      chips.push({
+        val: ((t.a-calcRunTotals(run).apps)/2).toFixed(1),
+        lbl:"Apps/mo to make up M1 gap",
+        color:"var(--red)"
+      });
+    }
+  }
+
+  return chips;
+}
+
+function calcPersonalApps(run) {
+  // Look for apps submitted by the run agent themselves
+  // Use dashboardStats if available (from screenshot import)
+  if(run.dashboardStats?.personal?.subApps) return run.dashboardStats.personal.subApps;
+  // Otherwise assume current month's apps are personal
+  const curApps = (run.apps[activeMonth]||[]).reduce((s,a)=>s+(parseFloat(a.a)||0),0);
+  return curApps;
+}
+
+function fmt(n){
+  if(typeof n!=="number") return n;
+  return n%1===0?n.toLocaleString():n.toFixed(n<10?2:1);
+}
+
+// ── MONTH SCENARIO BREAKDOWN ───────────────────────────────────
+function renderMonthScenarios(run) {
+  const t = run.targets;
+  const months = run.months||3;
+  const perMonthR = t.r>0 ? Math.ceil(t.r/months) : 0;
+  const perMonthA = t.a>0 ? (t.a/months).toFixed(1) : 0;
+  const perMonthP = t.p>0 ? Math.round(t.p/months) : 0;
+  const personalPct = run.personalPct||0.5;
+
+  const scenarios = [
+    {
+      label:"Even pace (ideal)",
+      monthR: perMonthR, monthA: perMonthA, monthP: perMonthP,
+      personalA: (perMonthA * personalPct).toFixed(1),
+      color:"var(--green)", icon:"✓"
+    },
+    {
+      label:"M1 missed → M2+M3",
+      monthR: months>1?Math.ceil(t.r/(months-1)):t.r,
+      monthA: months>1?(t.a/(months-1)).toFixed(1):t.a,
+      monthP: months>1?Math.round(t.p/(months-1)):t.p,
+      personalA: months>1?((t.a/(months-1))*personalPct).toFixed(1):(t.a*personalPct).toFixed(1),
+      color:"var(--orange)", icon:"⚠"
+    },
+    {
+      label:"M1+M2 missed → M3 only",
+      monthR: t.r, monthA: t.a, monthP: t.p,
+      personalA: (t.a*personalPct).toFixed(1),
+      color:"var(--red)", icon:"🔥"
+    },
+  ];
+
+  return scenarios.map((sc,i)=>`
+    <div style="background:var(--s2);border:1px solid var(--border);border-left:3px solid ${sc.color};border-radius:9px;padding:11px 14px;margin-bottom:8px;">
+      <div style="font-family:Barlow Condensed,sans-serif;font-size:12px;font-weight:800;color:${sc.color};margin-bottom:7px;">${sc.icon} ${sc.label}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;">
+        ${t.r>0?`<div style="font-size:12px;"><span style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted);">Recruits/mo</span><br><strong style="font-family:Barlow Condensed,sans-serif;font-size:16px;color:#5dade2;">${sc.monthR}</strong></div>`:""}
+        ${t.a>0?`<div style="font-size:12px;"><span style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted);">Total apps/mo</span><br><strong style="font-family:Barlow Condensed,sans-serif;font-size:16px;color:var(--gold2);">${sc.monthA}</strong></div>`:""}
+        ${t.a>0?`<div style="font-size:12px;"><span style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted);">Personal apps/mo (${Math.round(personalPct*100)}%)</span><br><strong style="font-family:Barlow Condensed,sans-serif;font-size:16px;color:#9B59B6;">${sc.personalA}</strong></div>`:""}
+        ${t.p>0?`<div style="font-size:12px;"><span style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted);">Points/mo</span><br><strong style="font-family:Barlow Condensed,sans-serif;font-size:16px;color:var(--green);">${sc.monthP>0?fmtPts(sc.monthP):"—"}</strong></div>`:""}
+      </div>
+    </div>`).join("");
+}
+
+// ── AI STRATEGY GENERATION ─────────────────────────────────────
+async function generateAIStrategy() {
+  const run = runs.find(r=>r.id===activeId);
+  if(!run) return;
+
+  const btn = document.getElementById("strat-ai-btn");
+  const body = document.getElementById("ai-strategy-body");
+  btn.disabled = true;
+  btn.textContent = "⏳ Thinking…";
+  body.style.display = "block";
+  body.innerHTML = `<div class="ai-thinking"><div class="spinner"></div> Analyzing run and building strategy…</div>`;
+
+  const ENDPOINT = location.hostname==="localhost" ? null : "/api/claude";
+  if(!ENDPOINT) {
+    body.innerHTML = `<div style="color:var(--muted);font-size:12px;">AI strategy requires deployment (Claude proxy not available locally).</div>
+      ${renderMonthScenarios(run)}`;
+    btn.disabled = false; btn.innerHTML = "✦ AI Strategy";
+    return;
+  }
+
+  const tot = calcRunTotals(run);
+  const t   = run.targets;
+  const curMonth = run.currentMonth||0;
+  const personalPct = run.personalPct||0.5;
+  const daysLeft = daysLeftInRun(run);
+  const wksLeft  = weeksLeft(run);
+  const months   = run.months||3;
+
+  const monthSummary = run.monthLabels.map((lbl,i)=>{
+    const m = calcMonthTotals(run,i);
+    return `${lbl}: ${m.recruits} recruits, ${m.apps.toFixed(1)} apps, ${fmtPts(m.points)} pts`;
+  }).join("\n");
+
+  const prompt = `You are a PHP Agency production coach for Dynasty Builders Academy.
+
+PROMOTION RUN DATA:
+Agent: ${run.agentName}
+Level: ${run.level} → next level
+Run: ${run.startDate} to ${run.endDate} (${months} months)
+Currently in: Month ${curMonth+1} of ${months}
+Days remaining: ${daysLeft} (${wksLeft} weeks)
+Personal production requirement: ${Math.round(personalPct*100)}% of total apps must be personal
+
+TARGETS:
+Recruits needed: ${t.r}
+Sub Apps needed: ${t.a}
+Sub Points needed: ${t.p>0?fmtPts(t.p):"N/A"}
+
+CURRENT TOTALS:
+Recruits: ${tot.recruits} / ${t.r} (${t.r>0?Math.round(tot.recruits/t.r*100):100}%)
+Apps: ${tot.apps.toFixed(1)} / ${t.a} (${t.a>0?Math.round(tot.apps/t.a*100):100}%)
+Points: ${tot.points>0?fmtPts(tot.points):"0"} / ${t.p>0?fmtPts(t.p):"N/A"}
+
+MONTH BY MONTH:
+${monthSummary}
+
+Generate 4–5 specific, actionable coaching strategies. For each strategy:
+- Give it a short punchy title
+- Tag it as DAILY, WEEKLY, or THIS MONTH
+- Give a specific target number they should hit (e.g. "3 new names per day", "1 app submitted by Friday")
+- Explain WHY it will move the needle
+- Include what to do if month 1 fell off and they need to make it up
+
+Return a JSON array of strategy objects:
+[{
+  "title": string,
+  "timeframe": "DAILY"|"WEEKLY"|"THIS MONTH",
+  "icon": emoji,
+  "target": string (specific number/action),
+  "why": string (1-2 sentences),
+  "action": string (one concrete next step)
+}]
+
+Return ONLY the JSON array. No other text.`;
+
+  try {
+    const res = await fetch(ENDPOINT, {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({
+        model:"claude-sonnet-4-6", max_tokens:1200,
+        messages:[{role:"user",content:prompt}]
+      })
+    });
+    const data = await res.json();
+    const raw  = (data?.content?.[0]?.text||"[]").replace(/```json|```/g,"").trim();
+    const strats = JSON.parse(raw);
+
+    const tagCls = t => t==="DAILY"?"daily":t==="WEEKLY"?"week":"month";
+
+    body.innerHTML = `
+      <div style="font-family:DM Mono,monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;">✦ AI-Generated Strategy</div>
+      <div class="strategy-blocks">
+        ${strats.map(s=>`
+          <div class="strategy-block">
+            <div class="sb-header">
+              <span class="sb-icon">${s.icon||"🎯"}</span>
+              <span class="sb-title">${s.title}</span>
+              <span class="sb-tag ${tagCls(s.timeframe)}">${s.timeframe}</span>
+            </div>
+            <div class="sb-body">
+              <strong>Target:</strong> ${s.target}<br>
+              ${s.why}<br>
+              <strong>Next step:</strong> ${s.action}
+            </div>
+          </div>`).join("")}
+      </div>
+      <div style="margin-top:16px;font-family:DM Mono,monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Scenario Breakdown</div>
+      ${renderMonthScenarios(run)}`;
+
+  } catch(e) {
+    body.innerHTML = `<div style="color:var(--red);font-size:12px;margin-bottom:10px;">AI unavailable — showing calculated scenarios</div>
+      ${renderMonthScenarios(run)}`;
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = "✦ Refresh Strategy";
+}
+
+// ── HOOK INTO renderAll ────────────────────────────────────────
+// Patch renderAll to also call renderStrategy after existing render
+const _renderAll_orig = renderAll;
+function renderAll() {
+  _renderAll_orig();
+  const run = runs.find(r=>r.id===activeId);
+  if(run) renderStrategy(run);
+}
+
+
+document.addEventListener("DOMContentLoaded",()=>{
+  load();populateAgents();
+
+  // Seed Jacinta's run as example
+  if(!runs.length){
+    const jacinta=(typeof AGENTS!=="undefined")?AGENTS.find(a=>a.name&&a.name.includes("Jacinta")):null;
+    const run={
+      id:"jacinta-jun-2026",agentId:jacinta?jacinta.id:"jacabano",agentName:"Jacinta Abanobi",phpId:"1353757",
+      level:"Director",startDate:"2026-06-01",endDate:"2026-08-31",months:3,
+      monthLabels:["June 2026","July 2026","August 2026"],
+      targets:{r:3,a:3,p:3000},
+      recruits:[
+        [{d:"2026-06-17",n:"JLynn Whitaker 1415483"},{d:"2026-06-10",n:"Anthonia Okereke 1414423"},{d:"2026-06-10",n:"Maureen Myers 1414341"},
+         {d:"2026-06-10",n:"Cosmas Uhuo 1414368"},{d:"2026-06-10",n:"Somotochukwu Okongwu 1414492"},{d:"2026-06-10",n:"Uchechukwu Udoh 1414452"},
+         {d:"2026-06-10",n:"Juliana Ezeuka 1414184"},{d:"2026-06-06",n:"Francis Nwadiba 1411448"},{d:"2026-06-06",n:"Amaka Onuora 1412083"},
+         {d:"2026-06-06",n:"Paul Abanobi 1412161"},{d:"2026-06-06",n:"Chukwuma Okonkwo 1412138"},{d:"2026-06-06",n:"Joy Mojokwu 1412126"},
+         {d:"2026-06-05",n:"Virginia Osita 1411239"},{d:"2026-06-03",n:"Emmanuel Abanobi 1410924"}],
+        [],[],
+      ],
+      apps:[
+        [{d:"2026-06-17",pol:"LS229194600",c:"Stella Udoh",a:1,p:1821.9},{d:"2026-06-17",pol:"LS231767300",c:"Fidelis Orji",a:1,p:1593.63},
+         {d:"2026-06-17",pol:"LS806935500",c:"Jude Akalawu",a:0.75,p:1593},{d:"2026-06-17",pol:"LS806940100",c:"Francis Abanobi",a:1,p:1451.76},
+         {d:"2026-06-17",pol:"LS806934200",c:"Cosmas Abanobi",a:1,p:1523.66},{d:"2026-06-10",pol:"LS806761400",c:"Fidelis Orji",a:1,p:516.17},
+         {d:"2026-06-17",pol:"LS234997800",c:"Tornike Tsagareishvili",a:0.75,p:3750},{d:"2026-06-08",pol:"LS807958900",c:"Ivy Iheanyichukwu",a:0.5,p:1029.6},
+         {d:"2026-06-08",pol:"LS234122800",c:"Ivy Iheanyichukwu",a:0.5,p:2498.4},{d:"2026-06-16",pol:"LS234837600",c:"Jacinta Abanobi",a:0.75,p:6072},
+         {d:"2026-01-31",pol:"LS222539400",c:"Gvanit Maxwell",a:0.5,p:2195},{d:"2026-06-16",pol:"BU6738212",c:"Stella Udoh",a:1,p:1821.9},
+         {d:"2026-06-10",pol:"LS234189000",c:"Chisom Nwokedi",a:0.5,p:726},{d:"2026-05-16",pol:"LS232084400",c:"Jude Akalawu",a:0.75,p:535.7},
+         {d:"2026-05-18",pol:"LS231936900",c:"Joy Mokogwu",a:0.75,p:2884.8}],
+        [],[],
+      ],
+      created:new Date().toISOString()
+    };
+    runs.push(run);save();
+  }
+
+  renderBar();
+  if(runs.length){document.getElementById("empty-state").style.display="none";selectRun(runs[0].id);}
+});
+</script>
+
+<!-- IMPORT DATA MODAL -->
+<div class="modal-bg" id="import-modal">
+  <div class="modal" style="max-width:560px;">
+    <div class="modal-hdr">
+      <div class="modal-title">⬆ Import Production Data</div>
+      <button class="modal-close" onclick="document.getElementById('import-modal').classList.remove('open')">×</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="import-tabs">
+        <button class="imp-tab active" onclick="switchImpTab('screenshot',this)">📸 Dashboard Screenshot</button>
+        <button class="imp-tab" onclick="switchImpTab('policies',this)">📋 Policy File</button>
+        <button class="imp-tab" onclick="switchImpTab('agents',this)">👥 Agents File</button>
+      </div>
+
+      <!-- TAB 1: DASHBOARD SCREENSHOT -->
+      <div class="imp-pane active" id="imp-screenshot">
+        <p style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.7;">
+          Upload a screenshot of the PHP Bamboo dashboard. Both <span class="tab-label tab-personal">Personal</span> and <span class="tab-label tab-nonmd">Non-MD Base</span> tabs will be extracted automatically.
+        </p>
+        <div class="drop-zone" id="ss-drop"
+          onclick="document.getElementById('ss-file').click()"
+          ondragover="event.preventDefault();this.classList.add('drag')"
+          ondragleave="this.classList.remove('drag')"
+          ondrop="handleSsDrop(event)">
+          <div class="dz-ico">📸</div>
+          <div class="dz-t">Upload PHP Bamboo Screenshot</div>
+          <div class="dz-h">Dashboard view · Personal or Non-MD Base tab visible</div>
+        </div>
+        <input type="file" id="ss-file" accept="image/*" multiple style="display:none" onchange="extractDashboard(this.files)">
+        <div class="loading-msg" id="ss-loading" style="display:none;margin-top:8px;">
+          <div class="spinner"></div> Reading dashboard with AI…
+        </div>
+        <div class="import-preview" id="ss-preview"></div>
+        <button class="imp-merge-btn" id="ss-merge-btn" onclick="mergeScreenshotData()" disabled>✓ Apply to This Run</button>
+      </div>
+
+      <!-- TAB 2: POLICY EXCEL -->
+      <div class="imp-pane" id="imp-policies">
+        <p style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.7;">
+          Upload the <strong>PolicyDetails</strong> Excel export from PHP Bamboo. Apps and points will be imported as individual rows into the current month tab.
+        </p>
+        <div class="drop-zone" id="pol-drop"
+          onclick="document.getElementById('pol-file').click()"
+          ondragover="event.preventDefault();this.classList.add('drag')"
+          ondragleave="this.classList.remove('drag')"
+          ondrop="handlePolDrop(event)">
+          <div class="dz-ico">📋</div>
+          <div class="dz-t">Upload PolicyDetails Excel</div>
+          <div class="dz-h">PolicyDetails-md-base-YYYY-MM-DD.xlsx</div>
+        </div>
+        <input type="file" id="pol-file" accept=".xlsx,.xls,.csv" style="display:none" onchange="parsePolicyFile(this.files[0])">
+        <div class="loading-msg" id="pol-loading" style="display:none;margin-top:8px;">
+          <div class="spinner"></div> Reading policy file…
+        </div>
+        <div class="import-preview" id="pol-preview"></div>
+        <button class="imp-merge-btn" id="pol-merge-btn" onclick="mergePolicyData()" disabled>✓ Import Apps to This Month</button>
+      </div>
+
+      <!-- TAB 3: AGENTS EXCEL -->
+      <div class="imp-pane" id="imp-agents">
+        <p style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.7;">
+          Upload the <strong>AgentsAssociates</strong> Excel export to import recruits for the current month.
+        </p>
+        <div class="drop-zone" id="ag-drop"
+          onclick="document.getElementById('ag-file').click()"
+          ondragover="event.preventDefault();this.classList.add('drag')"
+          ondragleave="this.classList.remove('drag')"
+          ondrop="handleAgDrop(event)">
+          <div class="dz-ico">👥</div>
+          <div class="dz-t">Upload AgentsAssociates Excel</div>
+          <div class="dz-h">AgentsAssociates-YYYY-MM-DD.xlsx</div>
+        </div>
+        <input type="file" id="ag-file" accept=".xlsx,.xls,.csv" style="display:none" onchange="parseAgentsFile(this.files[0])">
+        <div class="loading-msg" id="ag-loading" style="display:none;margin-top:8px;">
+          <div class="spinner"></div> Reading agents file…
+        </div>
+        <div class="import-preview" id="ag-preview"></div>
+        <button class="imp-merge-btn" id="ag-merge-btn" onclick="mergeAgentsData()" disabled>✓ Import Recruits to This Month</button>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="document.getElementById('import-modal').classList.remove('open')">Close</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

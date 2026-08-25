@@ -1,0 +1,1425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0">
+<title>Recruiting Command Center · Dynasty Builders Academy</title>
+<script src="auth.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Barlow:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#07111F;--s1:#0F1E33;--s2:#172840;--s3:#1E3352;
+  --gold:#C9A84C;--gold2:#E8C97A;--green:#2DCA73;--red:#E74C3C;
+  --orange:#E67E22;--blue:#3498DB;--purple:#9B59B6;
+  --text:#FAF6EE;--muted:#6B7C93;--border:rgba(201,168,76,.18);
+}
+html,body{height:100%;}
+body{background:var(--bg);color:var(--text);font-family:"Barlow",sans-serif;min-height:100vh;overscroll-behavior:none;}
+body::before{content:"";position:fixed;inset:0;
+  background-image:radial-gradient(ellipse at 15% 10%,rgba(201,168,76,.07),transparent 50%),
+    linear-gradient(rgba(201,168,76,.02) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(201,168,76,.02) 1px,transparent 1px);
+  background-size:100%,40px 40px,40px 40px;pointer-events:none;z-index:0;}
+
+/* ── TOPBAR ─────────────────────────────────────────────────── */
+.topbar{background:rgba(7,17,31,.97);border-bottom:1px solid var(--border);
+  padding:0 16px;display:flex;align-items:center;gap:10px;
+  position:sticky;top:0;z-index:100;backdrop-filter:blur(14px);min-height:52px;}
+.brand{display:flex;align-items:center;gap:9px;padding-right:14px;border-right:1px solid var(--border);}
+.brand-hex{width:26px;height:26px;background:linear-gradient(135deg,var(--gold),var(--gold2));
+  clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
+  display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;color:var(--bg);}
+.brand-title{font-family:"Barlow Condensed",sans-serif;font-size:13px;font-weight:900;line-height:1.1;}
+.brand-title em{color:var(--gold);font-style:normal;display:block;font-size:11px;font-weight:700;}
+.tb-nav{display:flex;gap:2px;flex:1;overflow-x:auto;scrollbar-width:none;}
+.tb-nav::-webkit-scrollbar{display:none;}
+.tb-tab{padding:6px 12px;border-radius:6px;font-family:"Barlow Condensed",sans-serif;font-size:12px;font-weight:700;
+  cursor:pointer;border:none;background:transparent;color:var(--muted);transition:all .15s;white-space:nowrap;}
+.tb-tab.active{background:rgba(201,168,76,.1);color:var(--gold);}
+.tb-tab:hover:not(.active){color:var(--text);}
+.tb-right{margin-left:auto;display:flex;gap:7px;align-items:center;flex-shrink:0;}
+.t-btn{padding:6px 11px;border-radius:6px;font-family:"Barlow Condensed",sans-serif;font-size:11px;font-weight:700;
+  cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);
+  transition:all .15s;text-decoration:none;white-space:nowrap;}
+.t-btn:hover{border-color:var(--gold);color:var(--gold);}
+.gcal-btn{display:flex;align-items:center;gap:5px;}
+.gcal-btn.connected{border-color:rgba(45,202,115,.3);color:var(--green);}
+
+/* ── LAYOUT ─────────────────────────────────────────────────── */
+.page{max-width:1060px;margin:0 auto;padding:20px 16px 80px;position:relative;z-index:1;}
+.view{display:none;}.view.active{display:block;}
+
+/* ── DASHBOARD STATS ────────────────────────────────────────── */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:22px;}
+.stat-card{background:var(--s1);border:1px solid var(--border);border-radius:11px;padding:13px 15px;cursor:pointer;transition:border-color .15s;}
+.stat-card:hover{border-color:rgba(201,168,76,.4);}
+.sc-val{font-family:"Barlow Condensed",sans-serif;font-size:28px;font-weight:900;line-height:1;color:var(--gold2);}
+.sc-lbl{font-family:"DM Mono",monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:3px;}
+.sc-delta{font-size:11px;color:var(--green);margin-top:2px;}
+
+/* ── QUICK ADD ──────────────────────────────────────────────── */
+.quick-add-card{background:var(--s1);border:1px solid var(--border);border-radius:13px;padding:18px;margin-bottom:20px;position:relative;overflow:hidden;}
+.quick-add-card::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gold),var(--gold2),transparent);}
+.qa-label{font-family:"Barlow Condensed",sans-serif;font-size:13px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--gold);margin-bottom:10px;display:flex;align-items:center;gap:7px;}
+.qa-label span{font-size:15px;}
+.qa-textarea{width:100%;background:var(--s2);border:1.5px solid var(--border);border-radius:9px;
+  padding:12px 14px;color:var(--text);font-family:"Barlow",sans-serif;font-size:14px;
+  line-height:1.6;resize:none;outline:none;min-height:72px;max-height:180px;transition:border-color .2s;}
+.qa-textarea:focus{border-color:var(--gold);}
+.qa-textarea::placeholder{color:var(--muted);}
+.qa-hint{font-family:"DM Mono",monospace;font-size:10px;color:var(--muted);margin-top:6px;line-height:1.6;}
+.qa-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+.qa-btn{padding:9px 16px;border-radius:8px;font-family:"Barlow Condensed",sans-serif;font-size:13px;font-weight:700;
+  cursor:pointer;border:none;transition:all .2s;display:flex;align-items:center;gap:6px;}
+.qa-btn.primary{background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--bg);}
+.qa-btn.primary:hover{transform:translateY(-1px);box-shadow:0 5px 18px rgba(201,168,76,.3);}
+.qa-btn.ghost{background:transparent;border:1px solid var(--border);color:var(--muted);}
+.qa-btn.ghost:hover{border-color:var(--gold);color:var(--gold);}
+.qa-btn:disabled{opacity:.45;cursor:default;transform:none;}
+
+/* ── PHOTO UPLOAD ───────────────────────────────────────────── */
+.photo-card{background:var(--s1);border:1px solid var(--border);border-radius:13px;padding:18px;margin-bottom:20px;}
+.photo-drop{border:2px dashed var(--border);border-radius:10px;padding:28px 20px;text-align:center;cursor:pointer;transition:all .2s;}
+.photo-drop:hover,.photo-drop.drag{border-color:var(--gold);background:rgba(201,168,76,.04);}
+.photo-drop .pd-ico{font-size:30px;margin-bottom:8px;}
+.photo-drop .pd-t{font-family:"Barlow Condensed",sans-serif;font-size:15px;font-weight:700;margin-bottom:4px;}
+.photo-drop .pd-h{font-size:12px;color:var(--muted);}
+
+/* ── REVIEW CARDS ───────────────────────────────────────────── */
+.review-section{background:var(--s1);border:1px solid var(--gold);border-radius:13px;padding:18px;margin-bottom:20px;}
+.review-title{font-family:"Barlow Condensed",sans-serif;font-size:14px;font-weight:800;color:var(--gold);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.appt-cards{display:flex;flex-direction:column;gap:12px;}
+.appt-card{background:var(--s2);border:1px solid var(--border);border-radius:11px;padding:14px 16px;position:relative;}
+.appt-card.duplicate{border-color:rgba(231,76,60,.4);}
+.appt-card .ac-badge{position:absolute;top:10px;right:12px;padding:2px 8px;border-radius:6px;
+  font-family:"DM Mono",monospace;font-size:9px;font-weight:700;letter-spacing:.06em;}
+.ac-badge.agent{background:rgba(52,152,219,.12);color:var(--blue);border:1px solid rgba(52,152,219,.25);}
+.ac-badge.bom{background:rgba(45,202,115,.1);color:var(--green);border:1px solid rgba(45,202,115,.2);}
+.ac-badge.field{background:rgba(155,89,182,.1);color:var(--purple);border:1px solid rgba(155,89,182,.2);}
+.ac-badge.dup{background:rgba(231,76,60,.1);color:var(--red);border:1px solid rgba(231,76,60,.25);}
+.ac-name{font-family:"Barlow Condensed",sans-serif;font-size:18px;font-weight:800;margin-bottom:2px;}
+.ac-rel{font-size:12px;color:var(--muted);margin-bottom:8px;}
+.ac-meta{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;}
+.ac-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:8px;
+  font-size:12px;background:rgba(255,255,255,.04);border:1px solid var(--border);}
+.ac-chip.editable{cursor:pointer;transition:border-color .15s;}
+.ac-chip.editable:hover{border-color:var(--gold);}
+.ac-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
+@media(max-width:480px){.ac-fields{grid-template-columns:1fr;}}
+.ac-field label{display:block;font-family:"DM Mono",monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:3px;}
+.ac-field input,.ac-field select{width:100%;background:var(--s3);border:1px solid var(--border);border-radius:7px;
+  padding:7px 10px;color:var(--text);font-family:"Barlow",sans-serif;font-size:13px;outline:none;}
+.ac-field input:focus,.ac-field select:focus{border-color:var(--gold);}
+.ac-field select option{background:var(--s1);}
+.ac-actions{display:flex;gap:7px;flex-wrap:wrap;}
+.ac-act{padding:7px 13px;border-radius:7px;font-family:"Barlow Condensed",sans-serif;font-size:12px;font-weight:700;
+  cursor:pointer;border:none;transition:all .15s;}
+.ac-act.approve{background:rgba(45,202,115,.12);border:1px solid rgba(45,202,115,.25);color:var(--green);}
+.ac-act.approve:hover{background:rgba(45,202,115,.2);}
+.ac-act.approved{background:rgba(45,202,115,.2);border:1px solid var(--green);color:var(--green);}
+.ac-act.del{background:rgba(231,76,60,.08);border:1px solid rgba(231,76,60,.2);color:var(--red);}
+.ac-act.del:hover{background:rgba(231,76,60,.15);}
+.dup-warn{background:rgba(231,76,60,.08);border:1px solid rgba(231,76,60,.2);border-radius:7px;
+  padding:8px 12px;font-size:12px;color:var(--red);margin-bottom:8px;display:flex;align-items:center;gap:7px;}
+.review-footer{display:flex;gap:9px;margin-top:14px;flex-wrap:wrap;}
+.rf-btn{flex:1;padding:12px;border-radius:9px;border:none;font-family:"Barlow Condensed",sans-serif;
+  font-size:14px;font-weight:800;cursor:pointer;transition:all .2s;min-width:140px;justify-content:center;display:flex;align-items:center;gap:7px;}
+.rf-btn.add-all{background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--bg);}
+.rf-btn.add-all:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(201,168,76,.3);}
+.rf-btn.add-sel{background:var(--s2);border:1px solid var(--gold);color:var(--gold);}
+.rf-btn.cancel{background:transparent;border:1px solid var(--border);color:var(--muted);}
+
+/* ── PROSPECT TABLE ─────────────────────────────────────────── */
+.search-bar{display:flex;gap:8px;margin-bottom:14px;}
+.search-input{flex:1;background:var(--s2);border:1.5px solid var(--border);border-radius:9px;
+  padding:9px 12px 9px 36px;color:var(--text);font-family:"DM Mono",monospace;font-size:12px;outline:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%236B7C93' viewBox='0 0 20 20'%3E%3Cpath d='M9 3a6 6 0 100 12A6 6 0 009 3zm-8 6a8 8 0 1114.32 4.906l4.387 4.387-1.414 1.414-4.387-4.387A8 8 0 011 9z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:11px center;background-size:14px;}
+.search-input:focus{border-color:var(--gold);}
+.fsel{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:9px 11px;
+  color:var(--text);font-family:"DM Mono",monospace;font-size:11px;outline:none;cursor:pointer;}
+.fsel:focus{border-color:var(--gold);}
+.fsel option{background:var(--s1);}
+.table-wrap{border:1px solid var(--border);border-radius:11px;overflow:hidden;}
+.p-table{width:100%;border-collapse:collapse;font-size:12px;}
+.p-table th{font-family:"DM Mono",monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted);padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;background:var(--s2);white-space:nowrap;}
+.p-table td{padding:9px 12px;border-bottom:1px solid rgba(26,49,88,.4);vertical-align:middle;}
+.p-table tbody tr:last-child td{border-bottom:none;}
+.p-table tbody tr:hover td{background:rgba(201,168,76,.03);cursor:pointer;}
+.status-pill{display:inline-flex;padding:2px 8px;border-radius:8px;font-family:"Barlow Condensed",sans-serif;font-size:10px;font-weight:700;}
+.sp-new{background:rgba(52,152,219,.1);color:#5dade2;border:1px solid rgba(52,152,219,.2);}
+.sp-appt{background:rgba(201,168,76,.1);color:var(--gold);border:1px solid rgba(201,168,76,.2);}
+.sp-bom{background:rgba(45,202,115,.1);color:var(--green);border:1px solid rgba(45,202,115,.2);}
+.sp-showed{background:rgba(45,202,115,.2);color:var(--green);border:1px solid var(--green);}
+.sp-rec{background:rgba(255,215,0,.1);color:#FFD700;border:1px solid rgba(255,215,0,.3);}
+.sp-no{background:rgba(231,76,60,.08);color:var(--red);border:1px solid rgba(231,76,60,.2);}
+.sp-other{background:rgba(107,124,147,.08);color:var(--muted);border:1px solid var(--border);}
+
+/* ── TODAY SCHEDULE ─────────────────────────────────────────── */
+.schedule-list{display:flex;flex-direction:column;gap:10px;}
+.sched-item{background:var(--s1);border:1px solid var(--border);border-radius:11px;padding:13px 15px;
+  display:flex;gap:14px;align-items:center;}
+.sched-time{font-family:"Barlow Condensed",sans-serif;font-size:20px;font-weight:800;color:var(--gold2);
+  min-width:60px;text-align:center;flex-shrink:0;}
+.sched-time .ampm{font-size:11px;font-weight:600;color:var(--muted);display:block;}
+.sched-body{flex:1;}
+.sched-name{font-family:"Barlow Condensed",sans-serif;font-size:17px;font-weight:800;}
+.sched-rel{font-size:12px;color:var(--muted);}
+.sched-actions{display:flex;gap:6px;flex-shrink:0;}
+.sched-act{padding:6px 10px;border-radius:7px;font-family:"Barlow Condensed",sans-serif;font-size:11px;font-weight:700;
+  cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);transition:all .15s;}
+.sched-act:hover{border-color:var(--gold);color:var(--gold);}
+.sched-act.call{border-color:rgba(45,202,115,.3);color:var(--green);}
+
+/* ── SECTION HEADER ─────────────────────────────────────────── */
+.section-head{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+.sh-title{font-family:"Barlow Condensed",sans-serif;font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);white-space:nowrap;}
+.sh-line{flex:1;height:1px;background:var(--border);}
+.sh-count{font-family:"DM Mono",monospace;font-size:10px;color:var(--muted);background:var(--s2);padding:2px 8px;border-radius:6px;border:1px solid var(--border);}
+
+/* ── SUCCESS BANNER ─────────────────────────────────────────── */
+.success-banner{background:rgba(45,202,115,.08);border:1px solid rgba(45,202,115,.25);border-radius:10px;
+  padding:14px 18px;margin-bottom:16px;font-family:"Barlow Condensed",sans-serif;font-size:16px;font-weight:700;
+  color:var(--green);display:flex;align-items:center;gap:10px;}
+
+/* ── CALENDAR CONNECT ───────────────────────────────────────── */
+.cal-connect-card{background:var(--s1);border:1px solid var(--border);border-radius:13px;padding:22px;text-align:center;}
+.cal-title{font-family:"Barlow Condensed",sans-serif;font-size:18px;font-weight:800;margin-bottom:8px;}
+.cal-sub{font-size:13px;color:var(--muted);margin-bottom:18px;line-height:1.7;}
+.cal-list{display:flex;flex-direction:column;gap:8px;margin:14px 0;text-align:left;}
+.cal-item{display:flex;align-items:center;gap:10px;padding:10px 13px;background:var(--s2);border-radius:8px;border:1px solid var(--border);cursor:pointer;transition:border-color .15s;}
+.cal-item:hover{border-color:var(--gold);}
+.cal-item.active{border-color:var(--green);}
+.cal-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.cal-name{font-size:13px;flex:1;}
+.cal-check{color:var(--green);font-size:14px;}
+
+/* ── MODAL ──────────────────────────────────────────────────── */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:none;
+  align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(6px);}
+.modal-bg.open{display:flex;}
+.modal{background:var(--s1);border:1px solid var(--border);border-radius:14px;width:100%;max-width:480px;overflow:hidden;max-height:90vh;overflow-y:auto;}
+.modal-hdr{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--s1);z-index:1;}
+.modal-title{font-family:"Barlow Condensed",sans-serif;font-size:16px;font-weight:800;color:var(--gold);}
+.modal-close{background:transparent;border:none;color:var(--muted);font-size:22px;cursor:pointer;line-height:1;}
+.modal-body{padding:18px;display:flex;flex-direction:column;gap:12px;}
+.field label{display:block;font-family:"DM Mono",monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;}
+.field input,.field select,.field textarea{width:100%;background:var(--s2);border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:"Barlow",sans-serif;font-size:13px;outline:none;transition:border-color .2s;}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--gold);}
+.field select option{background:var(--s1);}
+.field textarea{resize:vertical;min-height:64px;}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.modal-footer{padding:14px 18px;border-top:1px solid var(--border);display:flex;gap:9px;position:sticky;bottom:0;background:var(--s1);}
+.mf-btn{flex:1;padding:11px;border-radius:8px;border:none;font-family:"Barlow Condensed",sans-serif;font-size:14px;font-weight:800;cursor:pointer;transition:all .2s;}
+.mf-btn.save{background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--bg);}
+.mf-btn.save:hover{transform:translateY(-1px);box-shadow:0 5px 16px rgba(201,168,76,.3);}
+.mf-btn.cancel{background:transparent;border:1px solid var(--border);color:var(--muted);}
+
+/* ── SPINNER / LOADING ──────────────────────────────────────── */
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(201,168,76,.2);border-top-color:var(--gold);border-radius:50%;animation:spin .6s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-msg{font-family:"DM Mono",monospace;font-size:11px;color:var(--muted);display:flex;align-items:center;gap:8px;padding:10px 0;}
+
+/* ── TOAST ──────────────────────────────────────────────────── */
+.toast{position:fixed;bottom:20px;right:16px;background:var(--s1);border:1px solid var(--gold);border-radius:10px;
+  padding:11px 17px;font-size:13px;transform:translateY(60px);opacity:0;transition:all .3s;z-index:999;
+  color:var(--gold2);font-family:"DM Mono",monospace;max-width:300px;}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast.success{border-color:var(--green);color:var(--green);}
+.toast.error{border-color:var(--red);color:var(--red);}
+
+/* ── MOBILE QUICK ACTIONS ───────────────────────────────────── */
+.mobile-quick{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;}
+@media(min-width:640px){.mobile-quick{grid-template-columns:repeat(4,1fr);}}
+.mq-btn{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:16px 12px;
+  text-align:center;cursor:pointer;transition:all .2s;}
+.mq-btn:hover{border-color:var(--gold);transform:translateY(-1px);}
+.mq-ico{font-size:22px;margin-bottom:6px;}
+.mq-lbl{font-family:"Barlow Condensed",sans-serif;font-size:13px;font-weight:700;color:var(--text);}
+
+/* ── LEADERBOARD ────────────────────────────────────────────── */
+.lb-table{width:100%;border-collapse:collapse;font-size:12px;}
+.lb-table th{font-family:"DM Mono",monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted);padding:8px 12px;border-bottom:1px solid var(--border);text-align:left;background:var(--s2);}
+.lb-table td{padding:9px 12px;border-bottom:1px solid rgba(26,49,88,.4);}
+.lb-table tbody tr:last-child td{border-bottom:none;}
+.lb-rank{font-family:"Barlow Condensed",sans-serif;font-size:15px;font-weight:800;color:var(--muted);}
+
+/* ── NEEDS REVIEW FLAG ──────────────────────────────────────── */
+.nr-field{position:relative;}
+.nr-flag{background:rgba(230,126,34,.1);border:1px solid rgba(230,126,34,.3);border-radius:5px;
+  padding:2px 7px;font-family:"DM Mono",monospace;font-size:9px;color:var(--orange);margin-left:6px;}
+
+/* ── EMPTY STATE ────────────────────────────────────────────── */
+.empty{text-align:center;padding:44px 20px;color:var(--muted);}
+.empty .e-ico{font-size:36px;margin-bottom:10px;opacity:.4;}
+.empty .e-t{font-family:"Barlow Condensed",sans-serif;font-size:17px;font-weight:700;color:var(--text);margin-bottom:4px;}
+</style>
+</head>
+<body>
+<script>AUTH.require("recruiting.html");</script>
+
+<!-- PROSPECT MODAL -->
+<div class="modal-bg" id="prospect-modal">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title" id="prospect-modal-title">Add Prospect</div>
+      <button class="modal-close" onclick="closeProspectModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="row2">
+        <div class="field"><label>First Name</label><input type="text" id="pm-first" placeholder="First"></div>
+        <div class="field"><label>Last Name</label><input type="text" id="pm-last" placeholder="Last"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Phone</label><input type="tel" id="pm-phone" placeholder="3105551234"></div>
+        <div class="field"><label>Email</label><input type="email" id="pm-email" placeholder="email@example.com"></div>
+      </div>
+      <div class="field"><label>Relationship / Who knows them</label><input type="text" id="pm-rel" placeholder="e.g. Kent's mom, Magdaline's friend"></div>
+      <div class="row2">
+        <div class="field"><label>Recruiting Agent</label><select id="pm-agent"><option value="">Unassigned</option></select></div>
+        <div class="field"><label>Status</label>
+          <select id="pm-status">
+            <option value="New Prospect">New Prospect</option>
+            <option value="Contacted">Contacted</option>
+            <option value="Appointment Set">Appointment Set</option>
+            <option value="BOM Guest">BOM Guest</option>
+            <option value="Showed">Showed</option>
+            <option value="No Show">No Show</option>
+            <option value="Follow Up">Follow Up</option>
+            <option value="Recruited">Recruited</option>
+            <option value="Not Interested">Not Interested</option>
+          </select>
+        </div>
+      </div>
+      <div class="field"><label>Good Qualities</label><input type="text" id="pm-qualities" placeholder="Hardworking, coachable, driven..."></div>
+      <div class="field"><label>Notes</label><textarea id="pm-notes" placeholder="Additional notes..."></textarea></div>
+      <div class="field" id="pm-appt-section">
+        <label>Set Appointment Now?</label>
+        <div style="display:flex;gap:8px;margin-top:4px;">
+          <input type="date" id="pm-appt-date" style="flex:1;">
+          <input type="time" id="pm-appt-time" style="flex:1;" value="10:00">
+          <select id="pm-appt-type" style="flex:1.5;">
+            <option value="Agent Recruiting">Agent Recruiting</option>
+            <option value="BOM Guest">BOM Guest</option>
+            <option value="Field Training">Field Training</option>
+            <option value="Financial Review">Financial Review</option>
+            <option value="Follow Up">Follow Up</option>
+            <option value="Licensing">Licensing</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="mf-btn cancel" onclick="closeProspectModal()">Cancel</button>
+      <button class="mf-btn save" onclick="saveProspect()">Save Prospect</button>
+    </div>
+  </div>
+</div>
+
+<!-- CALENDAR SETTINGS MODAL -->
+<div class="modal-bg" id="cal-modal">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title">📅 Calendar Settings</div>
+      <button class="modal-close" onclick="closeCalModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div id="cal-connect-section">
+        <p style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:14px;">
+          Connect your Google Calendar to add recruiting appointments directly from this app.
+        </p>
+        <button class="qa-btn primary" onclick="startGoogleAuth()" style="width:100%;justify-content:center;">
+          <span>🔐</span> Connect Google Calendar
+        </button>
+      </div>
+      <div id="cal-connected-section" style="display:none;">
+        <div class="success-banner" style="margin-bottom:12px;">✓ Google Calendar Connected</div>
+        <p style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:10px;letter-spacing:.06em;text-transform:uppercase;">Select recruiting calendar:</p>
+        <div class="cal-list" id="cal-list"></div>
+        <div class="field" style="margin-top:12px;">
+          <label>Default Event Duration (minutes)</label>
+          <input type="number" id="cal-duration" value="60" min="15" step="15">
+        </div>
+        <div class="field">
+          <label>Default Timezone</label>
+          <select id="cal-tz">
+            <option value="America/Los_Angeles" selected>Pacific (PST/PDT)</option>
+            <option value="America/Denver">Mountain (MST/MDT)</option>
+            <option value="America/Chicago">Central (CST/CDT)</option>
+            <option value="America/New_York">Eastern (EST/EDT)</option>
+          </select>
+        </div>
+        <button class="qa-btn ghost" onclick="disconnectCalendar()" style="margin-top:8px;width:100%;justify-content:center;border-color:rgba(231,76,60,.3);color:var(--red);">Disconnect Calendar</button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="mf-btn cancel" onclick="closeCalModal()">Close</button>
+      <button class="mf-btn save" onclick="saveCalSettings()" id="cal-save-btn" style="display:none;">Save Settings</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-hex">⬡</div>
+    <div class="brand-title">Command <em>Center</em></div>
+  </div>
+  <nav class="tb-nav">
+    <button class="tb-tab active" onclick="switchView('dashboard',this)">Dashboard</button>
+    <button class="tb-tab" onclick="switchView('prospects',this)">Prospects</button>
+    <button class="tb-tab" onclick="switchView('schedule',this)">Schedule</button>
+    <button class="tb-tab" onclick="switchView('worksheet',this)">Worksheet</button>
+    <button class="tb-tab" onclick="switchView('leaderboard',this)">Leaderboard</button>
+  </nav>
+  <div class="tb-right">
+    <button class="t-btn gcal-btn" id="cal-connect-btn" onclick="openCalModal()">📅 Calendar</button>
+    <a href="hub.html" class="t-btn">← Hub</a>
+  </div>
+</div>
+
+<div class="page">
+
+  <!-- ── DASHBOARD ──────────────────────────────────────────── -->
+  <div class="view active" id="view-dashboard">
+    <div class="mobile-quick">
+      <div class="mq-btn" onclick="openProspectModal()"><div class="mq-ico">👤</div><div class="mq-lbl">+ Prospect</div></div>
+      <div class="mq-btn" onclick="focusQuickAdd()"><div class="mq-ico">📅</div><div class="mq-lbl">+ Appointment</div></div>
+      <div class="mq-btn" onclick="switchView('worksheet',document.querySelector('[onclick*=worksheet]'))"><div class="mq-ico">📷</div><div class="mq-lbl">Upload Sheet</div></div>
+      <div class="mq-btn" onclick="switchView('schedule',document.querySelector('[onclick*=schedule]'))"><div class="mq-ico">📋</div><div class="mq-lbl">Today's Schedule</div></div>
+    </div>
+
+    <div class="stats-row" id="stats-row"></div>
+
+    <div id="success-area"></div>
+
+    <!-- QUICK ADD -->
+    <div class="quick-add-card">
+      <div class="qa-label"><span>⚡</span> Quick Add Appointment</div>
+      <textarea class="qa-textarea" id="qa-input"
+        placeholder='e.g. "Add 10am Wed for Tien (Kent\'s mom) as agent recruiting, and Dylan Tuesday 7pm as BOM guest"'
+        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();parseAppointments();}"></textarea>
+      <div class="qa-hint">Type naturally · Press Enter or tap Parse · Dates relative to today · Pacific timezone</div>
+      <div class="qa-actions">
+        <button class="qa-btn primary" onclick="parseAppointments()" id="parse-btn">
+          <span id="parse-ico">🔍</span> Parse Appointments
+        </button>
+        <button class="qa-btn ghost" onclick="openProspectModal()">👤 Add Prospect</button>
+        <button class="qa-btn ghost" onclick="document.getElementById('worksheet-upload').click()">📷 Upload Sheet</button>
+      </div>
+      <div class="loading-msg" id="parse-loading" style="display:none;">
+        <div class="spinner"></div> Parsing appointments with AI…
+      </div>
+    </div>
+
+    <!-- REVIEW SECTION (hidden until parsed) -->
+    <div id="review-section" style="display:none;"></div>
+
+    <!-- TODAY'S SCHEDULE -->
+    <div class="section-head">
+      <div class="sh-title">Today's Schedule</div>
+      <div class="sh-line"></div>
+      <div class="sh-count" id="today-count">0</div>
+    </div>
+    <div id="today-schedule" class="schedule-list"></div>
+  </div>
+
+  <!-- ── PROSPECTS ──────────────────────────────────────────── -->
+  <div class="view" id="view-prospects">
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center;">
+      <div class="section-head" style="flex:1;margin:0;min-width:0;"><div class="sh-title">Prospects</div><div class="sh-line"></div><div class="sh-count" id="p-count">0</div></div>
+      <button class="qa-btn primary" onclick="openProspectModal()" style="flex-shrink:0;">+ Add Prospect</button>
+    </div>
+    <div class="search-bar">
+      <input class="search-input" type="text" id="prospect-search" placeholder="Search name, phone, relationship, agent…" oninput="renderProspects()">
+      <select class="fsel" id="prospect-status-filter" onchange="renderProspects()">
+        <option value="">All Status</option>
+        <option value="New Prospect">New</option>
+        <option value="Appointment Set">Appt Set</option>
+        <option value="BOM Guest">BOM Guest</option>
+        <option value="Showed">Showed</option>
+        <option value="Recruited">Recruited</option>
+        <option value="No Show">No Show</option>
+      </select>
+      <select class="fsel" id="prospect-agent-filter" onchange="renderProspects()">
+        <option value="">All Agents</option>
+      </select>
+    </div>
+    <div class="table-wrap">
+      <table class="p-table">
+        <thead><tr>
+          <th>Name</th><th>Phone</th><th>Relationship</th><th>Agent</th><th>Status</th><th>Appointment</th>
+        </tr></thead>
+        <tbody id="prospect-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── SCHEDULE ───────────────────────────────────────────── -->
+  <div class="view" id="view-schedule">
+    <div class="section-head" style="margin-bottom:16px;">
+      <div class="sh-title">Upcoming Schedule</div>
+      <div class="sh-line"></div>
+    </div>
+    <div id="full-schedule" class="schedule-list"></div>
+  </div>
+
+  <!-- ── WORKSHEET ──────────────────────────────────────────── -->
+  <div class="view" id="view-worksheet">
+    <div class="photo-card" style="margin-bottom:16px;">
+      <div class="section-head" style="margin-bottom:14px;"><div class="sh-title">Upload Recruiting Worksheet</div><div class="sh-line"></div></div>
+      <div class="photo-drop" id="ws-drop"
+        onclick="document.getElementById('worksheet-upload').click()"
+        ondragover="event.preventDefault();this.classList.add('drag')"
+        ondragleave="this.classList.remove('drag')"
+        ondrop="handleWsDrop(event)">
+        <div class="pd-ico">📸</div>
+        <div class="pd-t">Tap to photograph or upload worksheet</div>
+        <div class="pd-h">PHP Top 25 Worksheet · Handwritten notes · Any prospect list</div>
+      </div>
+      <input type="file" id="worksheet-upload" accept="image/*" multiple style="display:none" onchange="extractWorksheet(this.files)">
+      <div class="loading-msg" id="ws-loading" style="display:none;margin-top:12px;">
+        <div class="spinner"></div> Extracting prospects with AI vision…
+      </div>
+      <div id="ws-results" style="margin-top:12px;"></div>
+    </div>
+
+    <!-- Top 25 Digital Worksheet -->
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap;">
+      <div class="section-head" style="flex:1;margin:0;"><div class="sh-title">Top 25 Digital Worksheet</div><div class="sh-line"></div></div>
+      <button class="qa-btn ghost" onclick="addWorksheetRow()" style="flex-shrink:0;">+ Add Row</button>
+    </div>
+    <div id="ws-progress" style="margin-bottom:12px;"></div>
+    <div class="table-wrap" style="overflow-x:auto;">
+      <table class="p-table" id="ws-table" style="min-width:700px;">
+        <thead><tr>
+          <th>#</th><th>Name</th><th>Phone</th><th>Type</th><th>Qualities</th><th>Agent</th><th>Status</th><th>Appt Date</th><th></th>
+        </tr></thead>
+        <tbody id="ws-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── LEADERBOARD ────────────────────────────────────────── -->
+  <div class="view" id="view-leaderboard">
+    <div class="section-head" style="margin-bottom:16px;"><div class="sh-title">Recruiting Leaderboard</div><div class="sh-line"></div></div>
+    <div class="table-wrap">
+      <table class="lb-table">
+        <thead><tr>
+          <th>#</th><th>Agent</th><th>Prospects</th><th>Appointments</th><th>BOM Guests</th><th>Shows</th><th>Recruits</th><th>Convert %</th>
+        </tr></thead>
+        <tbody id="lb-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+<input type="file" accept="image/*" id="ws-hidden-upload" style="display:none">
+
+<script>
+// ════════════════════════════════════════════════════════════════
+// DYNASTY RECRUITING COMMAND CENTER
+// ════════════════════════════════════════════════════════════════
+
+const STORAGE = { prospects:'rcc_prospects', appointments:'rcc_appointments', cal:'rcc_calendar', settings:'rcc_settings' };
+const TZ = 'America/Los_Angeles';
+const CLAUDE_PROXY = location.hostname==='localhost' ? null : '/api/claude';
+
+let prospects = [], appointments = [], editingProspectId = null;
+let calToken = null, calendarId = null, calDuration = 60;
+let parseResult = [];
+let agentList = typeof AGENTS !== 'undefined' ? AGENTS.filter(a=>a.id!=='dba000') : [];
+
+// ── INIT ─────────────────────────────────────────────────────────
+function loadAll() {
+  try { prospects    = JSON.parse(localStorage.getItem(STORAGE.prospects)    || '[]'); } catch(e){ prospects=[]; }
+  try { appointments = JSON.parse(localStorage.getItem(STORAGE.appointments) || '[]'); } catch(e){ appointments=[]; }
+  try {
+    const cs = JSON.parse(localStorage.getItem(STORAGE.cal) || '{}');
+    calToken = cs.token || null; calendarId = cs.calendarId || null; calDuration = cs.duration || 60;
+  } catch(e){}
+}
+function saveAll() {
+  localStorage.setItem(STORAGE.prospects,    JSON.stringify(prospects));
+  localStorage.setItem(STORAGE.appointments, JSON.stringify(appointments));
+}
+function saveCalSettings() {
+  const tz = document.getElementById('cal-tz')?.value || TZ;
+  calDuration = parseInt(document.getElementById('cal-duration')?.value) || 60;
+  localStorage.setItem(STORAGE.cal, JSON.stringify({ token:calToken, calendarId, duration:calDuration, tz }));
+  toast('✓ Calendar settings saved', 'success');
+  closeCalModal();
+  updateCalBtn();
+}
+
+// ── VIEWS ─────────────────────────────────────────────────────────
+function switchView(name, el) {
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.tb-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  if(el) el.classList.add('active');
+  if(name==='prospects') renderProspects();
+  if(name==='schedule') renderFullSchedule();
+  if(name==='leaderboard') renderLeaderboard();
+  if(name==='worksheet') renderWorksheet();
+}
+
+// ── STATS DASHBOARD ───────────────────────────────────────────────
+function renderStats() {
+  const today = localDateStr();
+  const thisWeek = prospects.filter(p => {
+    const cd = p.createdAt?.slice(0,10);
+    return cd && cd >= sevenDaysAgo();
+  }).length;
+  const apptSet = prospects.filter(p=>p.status==='Appointment Set').length;
+  const bomGuests = prospects.filter(p=>p.status==='BOM Guest'||p.status==='Showed').length;
+  const shows = prospects.filter(p=>p.status==='Showed').length;
+  const recruits = prospects.filter(p=>p.status==='Recruited').length;
+  const noShows = appointments.filter(a=>a.status==='No Show').length;
+  const followUps = prospects.filter(p=>p.status==='Follow Up').length;
+
+  const stats = [
+    {v:thisWeek, l:'Prospects This Week', c:'var(--blue)'},
+    {v:apptSet,  l:'Appointments Set',    c:'var(--gold2)'},
+    {v:bomGuests,l:'BOM Guests',          c:'var(--green)'},
+    {v:shows,    l:'Shows',               c:'var(--green)'},
+    {v:recruits, l:'New Recruits',        c:'#FFD700'},
+    {v:noShows,  l:'No Shows',            c:'var(--red)'},
+    {v:followUps,l:'Follow-Ups Due',      c:'var(--orange)'},
+  ];
+  document.getElementById('stats-row').innerHTML = stats.map(s=>
+    `<div class="stat-card"><div class="sc-val" style="color:${s.c};">${s.v}</div><div class="sc-lbl">${s.l}</div></div>`
+  ).join('');
+}
+
+function renderTodaySchedule() {
+  const today = localDateStr();
+  const todayAppts = appointments
+    .filter(a => a.date === today)
+    .sort((a,b) => (a.time||'').localeCompare(b.time||''));
+
+  document.getElementById('today-count').textContent = todayAppts.length;
+
+  if (!todayAppts.length) {
+    document.getElementById('today-schedule').innerHTML =
+      '<div class="empty"><div class="e-ico">📋</div><div class="e-t">No appointments today</div><p style="font-size:12px;">Use Quick Add above to schedule recruiting appointments.</p></div>';
+    return;
+  }
+
+  document.getElementById('today-schedule').innerHTML = todayAppts.map(a => {
+    const p = prospects.find(x=>x.id===a.prospectId)||{};
+    const [h,m] = (a.time||'10:00').split(':').map(Number);
+    const ampm = h>=12?'PM':'AM';
+    const h12 = ((h%12)||12);
+    const badge = evtBadge(a.type);
+    const phone = p.phone||'';
+    return `<div class="sched-item">
+      <div class="sched-time">${h12}:${String(m).padStart(2,'0')}<span class="ampm">${ampm}</span></div>
+      <div class="sched-body">
+        <div class="sched-name">${p.firstName||a.name||'Unknown'} ${p.lastName||''}</div>
+        <div class="sched-rel">${p.relationship||''} · <span style="color:${badge.c}">${a.type||''}</span></div>
+      </div>
+      <div class="sched-actions">
+        ${phone?`<a class="sched-act call" href="tel:${phone}">📞</a>`:''}
+        <button class="sched-act" onclick="markStatus('${a.id}','Showed')">✓ Show</button>
+        <button class="sched-act" onclick="markStatus('${a.id}','No Show')">✗</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function markStatus(apptId, status) {
+  const a = appointments.find(x=>x.id===apptId);
+  if(!a) return;
+  a.status = status;
+  const p = prospects.find(x=>x.id===a.prospectId);
+  if(p) p.status = status==='Showed'?'Showed':'No Show';
+  saveAll();
+  renderTodaySchedule();
+  renderStats();
+  toast(`✓ Marked as ${status}`, 'success');
+}
+
+// ── QUICK ADD / NLP PARSING ────────────────────────────────────────
+function focusQuickAdd() {
+  document.getElementById('qa-input').focus();
+  document.getElementById('qa-input').scrollIntoView({behavior:'smooth'});
+}
+
+async function parseAppointments() {
+  const text = document.getElementById('qa-input').value.trim();
+  if(!text) { toast('Enter appointment details first'); return; }
+
+  const btn = document.getElementById('parse-btn');
+  btn.disabled = true;
+  document.getElementById('parse-loading').style.display = 'flex';
+  document.getElementById('review-section').style.display = 'none';
+
+  try {
+    const todayStr = new Date().toLocaleDateString('en-US',{timeZone:TZ,weekday:'long',year:'numeric',month:'long',day:'numeric'});
+    const system = `You are a recruiting appointment parser for Dynasty Builders Academy (life insurance).
+Today is ${todayStr} in Pacific Time (America/Los_Angeles).
+Extract EVERY appointment from the user's text and return ONLY a valid JSON array.
+Each object: {name, relationship, type, date, time24, notes}
+type options: "Agent Recruiting","BOM Guest","Field Training","Financial Review","Follow Up","Licensing","Fast Start"
+date: YYYY-MM-DD format resolved from today
+time24: HH:MM 24-hour format
+relationship: who they know or how they were referred
+If a field is unclear set it to "" and add a note.
+Return ONLY the JSON array, no other text.`;
+
+    const endpoint = CLAUDE_PROXY || 'https://api.anthropic.com/v1/messages';
+    const headers = {'Content-Type':'application/json'};
+    if(!CLAUDE_PROXY) {
+      headers['x-api-key'] = '';
+      headers['anthropic-version'] = '2023-06-01';
+      headers['anthropic-dangerous-direct-browser-access'] = 'true';
+    }
+
+    const res = await fetch(endpoint, {
+      method:'POST',headers,
+      body: JSON.stringify({
+        model:'claude-sonnet-4-6', max_tokens:1000,
+        system, messages:[{role:'user',content:text}]
+      })
+    });
+
+    const data = await res.json();
+    const raw = data?.content?.[0]?.text || '[]';
+    const cleaned = raw.replace(/```json|```/g,'').trim();
+    parseResult = JSON.parse(cleaned);
+    if(!Array.isArray(parseResult)||!parseResult.length) throw new Error('No appointments found');
+    renderReview(parseResult);
+  } catch(e) {
+    toast('Parse failed: '+e.message, 'error');
+    console.error(e);
+  } finally {
+    btn.disabled = false;
+    document.getElementById('parse-loading').style.display = 'none';
+  }
+}
+
+function renderReview(items) {
+  const section = document.getElementById('review-section');
+  section.style.display = 'block';
+
+  const cards = items.map((item, i) => {
+    const dup = checkDuplicate(item);
+    const badge = evtBadge(item.type);
+    const fmt = formatDisplayDate(item.date);
+    const fmt12 = fmt24to12(item.time24);
+    return `<div class="appt-card ${dup?'duplicate':''}" id="rc-${i}">
+      ${dup?`<div class="dup-warn">⚠ Possible duplicate: ${dup}</div>`:''}
+      <span class="ac-badge ${badge.cls}">${item.type||'Recruiting'}</span>
+      <div class="ac-name" id="rc-name-${i}">${item.name||'—'}</div>
+      <div class="ac-rel" id="rc-rel-${i}">${item.relationship||''}</div>
+      <div class="ac-fields">
+        <div class="ac-field"><label>Date</label>
+          <input type="date" id="rc-date-${i}" value="${item.date||''}"></div>
+        <div class="ac-field"><label>Time</label>
+          <input type="time" id="rc-time-${i}" value="${item.time24||'10:00'}"></div>
+        <div class="ac-field"><label>Name</label>
+          <input type="text" id="rc-nm-${i}" value="${item.name||''}" oninput="document.getElementById('rc-name-${i}').textContent=this.value"></div>
+        <div class="ac-field"><label>Relationship</label>
+          <input type="text" id="rc-rl-${i}" value="${item.relationship||''}" oninput="document.getElementById('rc-rel-${i}').textContent=this.value"></div>
+        <div class="ac-field"><label>Type</label>
+          <select id="rc-type-${i}">
+            ${['Agent Recruiting','BOM Guest','Field Training','Financial Review','Follow Up','Licensing','Fast Start'].map(t=>`<option ${t===item.type?'selected':''}>${t}</option>`).join('')}
+          </select></div>
+        <div class="ac-field"><label>Agent</label>
+          <select id="rc-agent-${i}">${agentOptions()}</select></div>
+      </div>
+      <div class="ac-actions">
+        <button class="ac-act approve" id="rc-approve-${i}" onclick="toggleApprove(${i})">Approve</button>
+        ${dup?`<button class="ac-act" onclick="ignoreFlag(${i})" style="background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);color:var(--gold);">Create Anyway</button>`:''}
+        <button class="ac-act del" onclick="removeReviewItem(${i})">Remove</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  const count = items.length;
+  section.innerHTML = `<div class="review-section">
+    <div class="review-title">👁 Review Appointments (${count})</div>
+    <div class="appt-cards">${cards}</div>
+    <div class="review-footer">
+      <button class="rf-btn add-all" onclick="addAllToCalendar()"><span id="add-all-ico">📅</span> Add All ${count} to Calendar</button>
+      <button class="rf-btn add-sel" onclick="addSelectedToCalendar()">Add Approved Only</button>
+      <button class="rf-btn cancel" onclick="document.getElementById('review-section').style.display='none'">Cancel</button>
+    </div>
+  </div>`;
+
+  section.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function toggleApprove(i) {
+  const btn = document.getElementById(`rc-approve-${i}`);
+  const approved = btn.classList.contains('approved');
+  btn.classList.toggle('approved', !approved);
+  btn.textContent = approved ? 'Approve' : '✓ Approved';
+  btn.classList.toggle('approve', approved);
+}
+
+function ignoreFlag(i) {
+  const card = document.getElementById(`rc-${i}`);
+  if(card) card.classList.remove('duplicate');
+  const warn = card?.querySelector('.dup-warn');
+  if(warn) warn.remove();
+}
+
+function removeReviewItem(i) {
+  const card = document.getElementById(`rc-${i}`);
+  if(card) card.style.display = 'none';
+}
+
+// ── CALENDAR ACTIONS ──────────────────────────────────────────────
+async function addAllToCalendar() {
+  await createCalendarEvents(null); // null = all
+}
+async function addSelectedToCalendar() {
+  await createCalendarEvents('approved');
+}
+
+async function createCalendarEvents(filter) {
+  const btn = document.getElementById('add-all-ico');
+  if(btn) { btn.textContent = '⏳'; }
+
+  const cards = document.querySelectorAll('.appt-card:not([style*="display: none"])');
+  let created = 0, failed = 0, errors = [];
+
+  for(const card of cards) {
+    const i = card.id.replace('rc-','');
+    if(filter==='approved' && !document.getElementById(`rc-approve-${i}`)?.classList.contains('approved')) continue;
+
+    const name     = document.getElementById(`rc-nm-${i}`)?.value?.trim();
+    const rel      = document.getElementById(`rc-rl-${i}`)?.value?.trim();
+    const date     = document.getElementById(`rc-date-${i}`)?.value;
+    const time     = document.getElementById(`rc-time-${i}`)?.value;
+    const type     = document.getElementById(`rc-type-${i}`)?.value;
+    const agentId  = document.getElementById(`rc-agent-${i}`)?.value;
+    const agent    = agentList.find(a=>a.id===agentId);
+
+    if(!name||!date) { errors.push(`Row ${i}: missing name or date`); continue; }
+
+    // Create prospect record
+    const pid = 'p-'+Date.now()+'-'+i;
+    const pRec = {
+      id:pid, firstName:name, lastName:'', phone:'', email:'', relationship:rel||'',
+      agentId:agentId||'', status:'Appointment Set', notes:'', source:'Quick Add',
+      createdAt:new Date().toISOString()
+    };
+    prospects.push(pRec);
+
+    // Create appointment record
+    const apptId = 'a-'+Date.now()+'-'+i;
+    const appt = {
+      id:apptId, prospectId:pid, name, relationship:rel||'', type, date, time, agentId:agentId||'',
+      status:'Scheduled', calEventId:'', source:'Quick Add', createdAt:new Date().toISOString()
+    };
+
+    // Try Google Calendar
+    if(calToken && calendarId) {
+      try {
+        const gcalEvent = buildGCalEvent(name, rel, type, date, time, agent);
+        const result = await gcalRequest('createEvent', { eventData: gcalEvent });
+        if(result?.id) { appt.calEventId = result.id; appt.status = 'Confirmed'; }
+        else { errors.push(`${name}: Calendar API error`); }
+      } catch(e) {
+        errors.push(`${name}: ${e.message}`);
+      }
+    }
+
+    appointments.push(appt);
+    created++;
+  }
+
+  saveAll();
+
+  const successArea = document.getElementById('success-area');
+  successArea.innerHTML = created > 0
+    ? `<div class="success-banner">✓ ${created} appointment${created!==1?'s':''} successfully added${calToken&&calendarId?' to Google Calendar':' (locally — connect calendar to sync)'}</div>`
+    : `<div class="dup-warn">⚠ ${failed} failed: ${errors[0]||'Unknown error'}</div>`;
+
+  if(errors.length) console.warn('Calendar errors:', errors);
+
+  document.getElementById('review-section').style.display = 'none';
+  document.getElementById('qa-input').value = '';
+  renderTodaySchedule();
+  renderStats();
+  if(btn) btn.textContent = '📅';
+  toast(`✓ ${created} appointments added`, 'success');
+}
+
+function buildGCalEvent(name, rel, type, date, time, agent) {
+  const [year,month,day] = date.split('-').map(Number);
+  const [h,m] = (time||'10:00').split(':').map(Number);
+  const startLocal = new Date(year, month-1, day, h, m, 0);
+  const endLocal   = new Date(year, month-1, day, h, m+calDuration, 0);
+
+  const title = `${type} – ${name}${rel?` (${rel})`:''}`; 
+  const agentName = agent ? agent.name : '';
+
+  return {
+    summary: title,
+    description: `Prospect: ${name}\nRelationship: ${rel||''}\nRecruiting Agent: ${agentName}\nAppointment Type: ${type}\nSource: Dynasty Recruiting Command Center\nCreated By: DBA Recruiting Command Center`,
+    start: { dateTime: toISOLocal(startLocal), timeZone: TZ },
+    end:   { dateTime: toISOLocal(endLocal),   timeZone: TZ },
+    colorId: typeToColorId(type),
+  };
+}
+
+function toISOLocal(d) {
+  // Returns ISO 8601 with timezone offset
+  const off = -d.getTimezoneOffset();
+  const sign = off>=0?'+':'-';
+  const pad = n => String(Math.abs(n)).padStart(2,'0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:00${sign}${pad(Math.floor(Math.abs(off)/60))}:${pad(Math.abs(off)%60)}`;
+}
+
+function typeToColorId(type) {
+  const map = {'Agent Recruiting':'11','BOM Guest':'10','Field Training':'6','Financial Review':'7','Licensing':'9','Follow Up':'8','Fast Start':'4'};
+  return map[type]||'11';
+}
+
+// ── GOOGLE CALENDAR ────────────────────────────────────────────────
+const GCAL_ENDPOINT = location.hostname==='localhost' ? null : '/api/gcal';
+const GOOGLE_CLIENT_ID = ''; // Set in Netlify env var GOOGLE_CLIENT_ID — accessed via gcal.js proxy
+
+async function gcalRequest(action, extra={}) {
+  if(!GCAL_ENDPOINT) { console.warn('GCal proxy not available in localhost'); return null; }
+  const res = await fetch(GCAL_ENDPOINT, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ action, token:calToken, calendarId, ...extra })
+  });
+  return res.json();
+}
+
+function startGoogleAuth() {
+  // Use Netlify function client_id env var — redirect back with code
+  const clientId = ''; // Injected at build time or retrieved from server
+  if(!clientId) {
+    toast('GOOGLE_CLIENT_ID not configured in Netlify env vars', 'error');
+    return;
+  }
+  const redirect = encodeURIComponent(location.origin + '/auth/google/callback');
+  const scope = encodeURIComponent('https://www.googleapis.com/auth/calendar');
+  window.open(`https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirect}&response_type=code&scope=${scope}&access_type=offline&prompt=consent`, '_blank', 'width=500,height=600');
+}
+
+async function loadCalendars() {
+  if(!calToken) return;
+  try {
+    const data = await gcalRequest('listCalendars');
+    const cals = data?.items||[];
+    document.getElementById('cal-list').innerHTML = cals.slice(0,12).map(c=>`
+      <div class="cal-item ${c.id===calendarId?'active':''}" onclick="selectCalendar('${c.id}','${c.summary?.replace(/'/g,'')}')">
+        <div class="cal-dot" style="background:${c.backgroundColor||'#666'};"></div>
+        <div class="cal-name">${c.summary||'Calendar'}</div>
+        ${c.id===calendarId?'<div class="cal-check">✓</div>':''}
+      </div>`).join('');
+  } catch(e) { console.warn('Calendar list error:', e); }
+}
+
+function selectCalendar(id, name) {
+  calendarId = id;
+  document.querySelectorAll('.cal-item').forEach(el=>el.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  document.getElementById('cal-save-btn').style.display = '';
+  toast(`Selected: ${name}`);
+}
+
+function disconnectCalendar() {
+  calToken = null; calendarId = null;
+  localStorage.removeItem(STORAGE.cal);
+  updateCalBtn();
+  document.getElementById('cal-connect-section').style.display = '';
+  document.getElementById('cal-connected-section').style.display = 'none';
+  toast('Calendar disconnected');
+}
+
+function updateCalBtn() {
+  const btn = document.getElementById('cal-connect-btn');
+  if(calToken) { btn.classList.add('connected'); btn.textContent = '✓ Calendar'; }
+  else { btn.classList.remove('connected'); btn.textContent = '📅 Calendar'; }
+}
+
+function openCalModal() {
+  document.getElementById('cal-modal').classList.add('open');
+  if(calToken) {
+    document.getElementById('cal-connect-section').style.display = 'none';
+    document.getElementById('cal-connected-section').style.display = '';
+    document.getElementById('cal-save-btn').style.display = '';
+    loadCalendars();
+  }
+}
+function closeCalModal() { document.getElementById('cal-modal').classList.remove('open'); }
+
+// ── PROSPECT MANAGEMENT ────────────────────────────────────────────
+function openProspectModal(id=null) {
+  editingProspectId = id;
+  const p = id ? prospects.find(x=>x.id===id) : {};
+  document.getElementById('prospect-modal-title').textContent = id ? 'Edit Prospect' : 'Add Prospect';
+  document.getElementById('pm-first').value    = p?.firstName||'';
+  document.getElementById('pm-last').value     = p?.lastName||'';
+  document.getElementById('pm-phone').value    = p?.phone||'';
+  document.getElementById('pm-email').value    = p?.email||'';
+  document.getElementById('pm-rel').value      = p?.relationship||'';
+  document.getElementById('pm-qualities').value= p?.goodQualities||'';
+  document.getElementById('pm-notes').value    = p?.notes||'';
+  document.getElementById('pm-status').value   = p?.status||'New Prospect';
+  document.getElementById('pm-agent').innerHTML= `<option value="">Unassigned</option>`+agentOptions(p?.agentId);
+  document.getElementById('pm-appt-date').value= '';
+  document.getElementById('pm-appt-time').value= '10:00';
+  document.getElementById('prospect-modal').classList.add('open');
+}
+function closeProspectModal() { document.getElementById('prospect-modal').classList.remove('open'); }
+
+function saveProspect() {
+  const first = document.getElementById('pm-first').value.trim();
+  if(!first) { toast('First name required'); return; }
+  const id = editingProspectId || 'p-'+Date.now();
+  const rec = {
+    id, firstName:first, lastName:document.getElementById('pm-last').value.trim(),
+    phone:document.getElementById('pm-phone').value.trim().replace(/\D/g,''),
+    email:document.getElementById('pm-email').value.trim(),
+    relationship:document.getElementById('pm-rel').value.trim(),
+    agentId:document.getElementById('pm-agent').value,
+    status:document.getElementById('pm-status').value,
+    goodQualities:document.getElementById('pm-qualities').value.trim(),
+    notes:document.getElementById('pm-notes').value.trim(),
+    source:'Manual',
+    createdAt: editingProspectId ? (prospects.find(p=>p.id===editingProspectId)?.createdAt||new Date().toISOString()) : new Date().toISOString(),
+    updatedAt:new Date().toISOString()
+  };
+
+  if(editingProspectId) {
+    const idx = prospects.findIndex(p=>p.id===editingProspectId);
+    if(idx>=0) prospects[idx] = rec;
+  } else {
+    prospects.unshift(rec);
+  }
+
+  // Check if appointment was set
+  const apptDate = document.getElementById('pm-appt-date').value;
+  const apptTime = document.getElementById('pm-appt-time').value;
+  const apptType = document.getElementById('pm-appt-type').value;
+  if(apptDate) {
+    appointments.push({
+      id:'a-'+Date.now(), prospectId:id, name:first, relationship:rec.relationship,
+      type:apptType, date:apptDate, time:apptTime,
+      status:'Scheduled', calEventId:'', source:'Manual', createdAt:new Date().toISOString()
+    });
+    rec.status = 'Appointment Set';
+  }
+
+  saveAll();
+  closeProspectModal();
+  renderProspects();
+  renderTodaySchedule();
+  renderStats();
+  toast(`✓ ${first} saved`, 'success');
+}
+
+function renderProspects() {
+  const q = document.getElementById('prospect-search')?.value?.toLowerCase()||'';
+  const sf = document.getElementById('prospect-status-filter')?.value||'';
+  const af = document.getElementById('prospect-agent-filter')?.value||'';
+
+  const filtered = prospects.filter(p=>{
+    if(sf && p.status!==sf) return false;
+    if(af && p.agentId!==af) return false;
+    if(q) {
+      const s = `${p.firstName} ${p.lastName} ${p.phone} ${p.relationship} ${p.agentId}`.toLowerCase();
+      if(!s.includes(q)) return false;
+    }
+    return true;
+  });
+
+  document.getElementById('p-count').textContent = filtered.length;
+
+  const tbody = document.getElementById('prospect-tbody');
+  if(!filtered.length) {
+    tbody.innerHTML = `<tr><td colspan="6" class="empty" style="padding:32px;text-align:center;color:var(--muted);">No prospects yet — add some above!</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(p=>{
+    const agent = agentList.find(a=>a.id===p.agentId);
+    const appt = appointments.find(a=>a.prospectId===p.id);
+    const pill = statusPill(p.status);
+    return `<tr onclick="openProspectModal('${p.id}')">
+      <td><strong>${p.firstName} ${p.lastName}</strong></td>
+      <td style="font-family:DM Mono,monospace;font-size:11px;">${p.phone||'—'}</td>
+      <td style="font-size:12px;color:var(--muted);">${p.relationship||'—'}</td>
+      <td style="font-size:12px;">${agent?.name?.split(' ')[0]||'—'}</td>
+      <td><span class="status-pill ${pill.cls}">${p.status}</span></td>
+      <td style="font-family:DM Mono,monospace;font-size:11px;">${appt?formatDisplayDate(appt.date):'—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderFullSchedule() {
+  const upcoming = appointments
+    .filter(a=>a.date>=localDateStr())
+    .sort((a,b)=>a.date.localeCompare(b.date)||(a.time||'').localeCompare(b.time||''));
+
+  const el = document.getElementById('full-schedule');
+  if(!upcoming.length) {
+    el.innerHTML = '<div class="empty"><div class="e-ico">📅</div><div class="e-t">No upcoming appointments</div></div>';
+    return;
+  }
+
+  let lastDate = '';
+  el.innerHTML = upcoming.map(a=>{
+    const p = prospects.find(x=>x.id===a.prospectId)||{};
+    const badge = evtBadge(a.type);
+    const [h,m] = (a.time||'10:00').split(':').map(Number);
+    const ampm = h>=12?'PM':'AM';
+    const h12 = ((h%12)||12);
+    const dateLabel = a.date!==lastDate ? `<div style="font-family:DM Mono,monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:10px 0 6px;">${formatDisplayDate(a.date)}</div>` : '';
+    lastDate = a.date;
+    const phone = p.phone||'';
+    return dateLabel + `<div class="sched-item">
+      <div class="sched-time">${h12}:${String(m).padStart(2,'0')}<span class="ampm">${ampm}</span></div>
+      <div class="sched-body">
+        <div class="sched-name">${p.firstName||a.name||'?'} ${p.lastName||''}</div>
+        <div class="sched-rel">${p.relationship||''} · <span style="color:${badge.c}">${a.type}</span></div>
+      </div>
+      <div class="sched-actions">
+        ${phone?`<a class="sched-act call" href="tel:${phone}">📞</a>`:''}
+        <button class="sched-act" onclick="markStatus('${a.id}','Showed');event.stopPropagation();">✓ Show</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── WORKSHEET / PHOTO EXTRACTION ─────────────────────────────────
+function handleWsDrop(e) {
+  e.preventDefault();
+  document.getElementById('ws-drop').classList.remove('drag');
+  extractWorksheet(e.dataTransfer.files);
+}
+
+async function extractWorksheet(files) {
+  if(!files||!files.length) return;
+  document.getElementById('ws-loading').style.display = 'flex';
+  document.getElementById('ws-results').innerHTML = '';
+
+  const extracted = [];
+  for(const file of files) {
+    try {
+      const dataUrl = await readFileAsDataUrl(file);
+      const base64 = dataUrl.split(',')[1];
+      const mime = file.type;
+
+      const system = `You are an expert at reading PHP Agency recruiting worksheets — both printed and handwritten.
+Extract EVERY prospect row. Return ONLY valid JSON with key "prospects": array of objects.
+Each object: {row,firstName,lastName,phone,type,goodQualities,notes,relationship,appointmentDate,appointmentTime,bomDate,confidence,needsReview,flagReason}
+type: "R"=Recruit,"FT"=Field Training,"A"=Appointment or as written
+confidence: 0.0-1.0
+needsReview: true if confidence<0.75 or field unclear
+flagReason: reason if needsReview
+NEVER invent phone numbers or names. If unclear, set needsReview:true.
+Return ONLY the JSON object, no other text.`;
+
+      const endpoint = CLAUDE_PROXY || null;
+      if(!endpoint) { toast('Claude proxy required for photo extraction', 'error'); break; }
+
+      const res = await fetch(endpoint, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          model:'claude-sonnet-4-6', max_tokens:2000,
+          system,
+          messages:[{role:'user',content:[
+            {type:'image',source:{type:'base64',media_type:mime,data:base64}},
+            {type:'text',text:'Extract all prospects from this recruiting worksheet. Return structured JSON only.'}
+          ]}]
+        })
+      });
+      const data = await res.json();
+      const raw = data?.content?.[0]?.text||'{}';
+      const cleaned = raw.replace(/```json|```/g,'').trim();
+      const parsed = JSON.parse(cleaned);
+      if(parsed.prospects?.length) extracted.push(...parsed.prospects);
+    } catch(e) {
+      console.error('Extraction error:', e);
+    }
+  }
+
+  document.getElementById('ws-loading').style.display = 'none';
+
+  if(!extracted.length) {
+    document.getElementById('ws-results').innerHTML = '<div class="dup-warn">⚠ No prospects found. Try a clearer photo.</div>';
+    return;
+  }
+
+  // Render review cards for extracted prospects
+  document.getElementById('ws-results').innerHTML = `
+    <div class="review-section">
+      <div class="review-title">📋 Extracted Prospects (${extracted.length}) — Review before saving</div>
+      <div class="appt-cards">
+        ${extracted.map((p,i)=>`
+          <div class="appt-card" style="${p.needsReview?'border-color:rgba(230,126,34,.4)':''}">
+            ${p.needsReview?`<div class="dup-warn" style="background:rgba(230,126,34,.08);border-color:rgba(230,126,34,.3);color:var(--orange);">⚠ Needs Review: ${p.flagReason||'Low confidence'}</div>`:''}
+            <div class="ac-fields">
+              <div class="ac-field"><label>First Name ${p.needsReview?'<span class="nr-flag">review</span>':''}</label>
+                <input type="text" id="wx-first-${i}" value="${p.firstName||''}" placeholder="First name"></div>
+              <div class="ac-field"><label>Last Name</label>
+                <input type="text" id="wx-last-${i}" value="${p.lastName||''}" placeholder="Last name"></div>
+              <div class="ac-field"><label>Phone</label>
+                <input type="tel" id="wx-phone-${i}" value="${p.phone||''}" placeholder="Phone"></div>
+              <div class="ac-field"><label>Type</label>
+                <select id="wx-type-${i}">
+                  <option ${p.type==='R'?'selected':''} value="R">R - Recruit</option>
+                  <option ${p.type==='FT'?'selected':''} value="FT">FT - Field Training</option>
+                  <option ${p.type==='A'?'selected':''} value="A">A - Appointment</option>
+                </select></div>
+              <div class="ac-field"><label>Good Qualities</label>
+                <input type="text" id="wx-qual-${i}" value="${p.goodQualities||''}" placeholder="..."></div>
+              <div class="ac-field"><label>Notes</label>
+                <input type="text" id="wx-notes-${i}" value="${p.notes||''}" placeholder="..."></div>
+            </div>
+            <div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted);margin-top:6px;">Confidence: ${Math.round((p.confidence||0)*100)}%</div>
+          </div>`).join('')}
+      </div>
+      <div class="review-footer">
+        <button class="rf-btn add-all" onclick="importWorksheetProspects(${extracted.length})">✓ Import All Prospects</button>
+        <button class="rf-btn cancel" onclick="document.getElementById('ws-results').innerHTML=''">Cancel</button>
+      </div>
+    </div>`;
+}
+
+function importWorksheetProspects(count) {
+  let added = 0;
+  for(let i=0;i<count;i++) {
+    const first = document.getElementById(`wx-first-${i}`)?.value?.trim();
+    if(!first) continue;
+    prospects.push({
+      id:'ws-'+Date.now()+'-'+i,
+      firstName:first,
+      lastName:document.getElementById(`wx-last-${i}`)?.value?.trim()||'',
+      phone:document.getElementById(`wx-phone-${i}`)?.value?.trim().replace(/\D/g,'')||'',
+      email:'',relationship:'',agentId:'',
+      type:document.getElementById(`wx-type-${i}`)?.value||'R',
+      goodQualities:document.getElementById(`wx-qual-${i}`)?.value?.trim()||'',
+      notes:document.getElementById(`wx-notes-${i}`)?.value?.trim()||'',
+      status:'New Prospect',source:'Worksheet Upload',
+      createdAt:new Date().toISOString()
+    });
+    added++;
+  }
+  saveAll();
+  document.getElementById('ws-results').innerHTML = `<div class="success-banner">✓ ${added} prospects imported to your database</div>`;
+  renderWorksheet();
+  renderStats();
+  toast(`✓ ${added} prospects imported`, 'success');
+}
+
+// ── DIGITAL WORKSHEET ─────────────────────────────────────────────
+function renderWorksheet() {
+  const allP = prospects;
+  const total=allP.length, contacted=allP.filter(p=>p.status!=='New Prospect').length;
+  const appts=allP.filter(p=>p.status==='Appointment Set'||p.status==='Showed').length;
+  const bom=allP.filter(p=>p.status==='BOM Guest').length;
+  const rec=allP.filter(p=>p.status==='Recruited').length;
+
+  document.getElementById('ws-progress').innerHTML = `
+    <div style="display:flex;gap:14px;flex-wrap:wrap;">
+      ${[['Total',total,'var(--text)'],['Contacted',contacted,'var(--blue)'],['Appointments',appts,'var(--gold2)'],['BOM Guests',bom,'var(--green)'],['Recruits',rec,'#FFD700']].map(([l,v,c])=>
+        `<div style="text-align:center;"><div style="font-family:Barlow Condensed,sans-serif;font-size:20px;font-weight:800;color:${c};">${v}</div><div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted);letter-spacing:.06em;">${l}</div></div>`
+      ).join('<div style="width:1px;background:var(--border);"></div>')}
+    </div>`;
+
+  const tbody = document.getElementById('ws-tbody');
+  if(!allP.length) {
+    tbody.innerHTML = `<tr><td colspan="9" style="padding:28px;text-align:center;color:var(--muted);font-size:13px;">No prospects yet. Upload a worksheet or add manually.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = allP.map((p,i)=>{
+    const pill = statusPill(p.status);
+    const appt = appointments.find(a=>a.prospectId===p.id);
+    return `<tr>
+      <td class="row-num" style="color:var(--muted);font-family:DM Mono,monospace;font-size:10px;">${i+1}</td>
+      <td><strong style="font-size:13px;">${p.firstName} ${p.lastName}</strong></td>
+      <td style="font-family:DM Mono,monospace;font-size:11px;">${p.phone||'—'}</td>
+      <td style="font-size:11px;">${p.type||'R'}</td>
+      <td style="font-size:11px;color:var(--muted);">${p.goodQualities||'—'}</td>
+      <td style="font-size:11px;">${agentList.find(a=>a.id===p.agentId)?.name?.split(' ')[0]||'—'}</td>
+      <td><span class="status-pill ${pill.cls}" style="font-size:9px;">${p.status}</span></td>
+      <td style="font-family:DM Mono,monospace;font-size:10px;">${appt?formatDisplayDate(appt.date):'—'}</td>
+      <td>
+        <button onclick="openProspectModal('${p.id}')" style="background:transparent;border:1px solid var(--border);border-radius:5px;color:var(--muted);font-size:11px;padding:3px 8px;cursor:pointer;">Edit</button>
+        <button onclick="quickSetAppt('${p.id}')" style="background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);border-radius:5px;color:var(--gold);font-size:11px;padding:3px 8px;cursor:pointer;margin-left:3px;">Appt</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function addWorksheetRow() {
+  prospects.push({
+    id:'ws-'+Date.now(), firstName:'New', lastName:'', phone:'', email:'',
+    relationship:'', agentId:'', status:'New Prospect', type:'R', goodQualities:'', notes:'',
+    source:'Manual', createdAt:new Date().toISOString()
+  });
+  saveAll();
+  renderWorksheet();
+  renderStats();
+}
+
+function quickSetAppt(pid) {
+  openProspectModal(pid);
+  setTimeout(()=>{ document.getElementById('pm-appt-date').focus(); },200);
+}
+
+// ── LEADERBOARD ───────────────────────────────────────────────────
+function renderLeaderboard() {
+  const rows = agentList.map(a=>{
+    const ap = prospects.filter(p=>p.agentId===a.id);
+    const aa = appointments.filter(x=>ap.some(p=>p.id===x.prospectId));
+    const shows = aa.filter(x=>x.status==='Showed').length;
+    const recruits = ap.filter(p=>p.status==='Recruited').length;
+    const conv = ap.length ? Math.round(recruits/ap.length*100) : 0;
+    return { name:a.name, prospects:ap.length, appts:aa.length,
+             bom:ap.filter(p=>p.status==='BOM Guest').length, shows, recruits, conv };
+  }).filter(r=>r.prospects>0).sort((a,b)=>b.recruits-a.recruits||b.prospects-a.prospects);
+
+  const tbody = document.getElementById('lb-tbody');
+  if(!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="8" style="padding:24px;text-align:center;color:var(--muted);">No recruiting activity tracked yet.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = rows.map((r,i)=>`
+    <tr>
+      <td class="lb-rank">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</td>
+      <td><strong>${r.name}</strong></td>
+      <td>${r.prospects}</td><td>${r.appts}</td><td>${r.bom}</td><td>${r.shows}</td><td>${r.recruits}</td>
+      <td><span style="font-family:Barlow Condensed,sans-serif;font-size:14px;font-weight:700;color:${r.conv>0?'var(--green)':'var(--muted)'};">${r.conv}%</span></td>
+    </tr>`).join('');
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────
+function agentOptions(selectedId='') {
+  return agentList.map(a=>`<option value="${a.id}" ${a.id===selectedId?'selected':''}>${a.name}</option>`).join('');
+}
+
+function checkDuplicate(item) {
+  const name = (item.name||'').toLowerCase();
+  const date = item.date;
+  const dup = appointments.find(a=>(a.name||'').toLowerCase()===name && a.date===date);
+  if(dup) return `${item.name} already has an appointment on ${formatDisplayDate(date)}`;
+  const pDup = prospects.find(p=>`${p.firstName} ${p.lastName}`.toLowerCase().trim()===name);
+  if(pDup && pDup.status==='Appointment Set') return `${item.name} already has appointment set`;
+  return null;
+}
+
+function statusPill(status) {
+  const map = {
+    'New Prospect':'sp-new','Appointment Set':'sp-appt','BOM Guest':'sp-bom',
+    'Showed':'sp-showed','Recruited':'sp-rec','No Show':'sp-no',
+  };
+  return { cls:map[status]||'sp-other' };
+}
+
+function evtBadge(type) {
+  const map = {
+    'Agent Recruiting':{cls:'agent',c:'var(--blue)'},
+    'BOM Guest':{cls:'bom',c:'var(--green)'},
+    'Field Training':{cls:'field',c:'var(--purple)'},
+  };
+  return map[type]||{cls:'agent',c:'var(--gold)'};
+}
+
+function fmt24to12(t) {
+  if(!t) return '';
+  const [h,m] = t.split(':').map(Number);
+  return `${(h%12)||12}:${String(m).padStart(2,'0')} ${h>=12?'PM':'AM'}`;
+}
+
+function formatDisplayDate(s) {
+  if(!s) return '—';
+  try { return new Date(s+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}); }
+  catch(e){ return s; }
+}
+
+function localDateStr() {
+  return new Date().toLocaleDateString('en-CA',{timeZone:TZ}); // YYYY-MM-DD
+}
+
+function sevenDaysAgo() {
+  const d = new Date(); d.setDate(d.getDate()-7);
+  return d.toLocaleDateString('en-CA',{timeZone:TZ});
+}
+
+function readFileAsDataUrl(file) {
+  return new Promise((res,rej)=>{
+    const r=new FileReader();
+    r.onload=e=>res(e.target.result);
+    r.onerror=rej;
+    r.readAsDataURL(file);
+  });
+}
+
+function toast(msg, type='') {
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast show'+(type?' '+type:'');
+  setTimeout(()=>t.classList.remove('show'),3200);
+}
+
+// ── AGENT FILTER POPULATION ────────────────────────────────────────
+function populateAgentFilter() {
+  const sel = document.getElementById('prospect-agent-filter');
+  if(!sel) return;
+  agentList.forEach(a=>{
+    const o=document.createElement('option');
+    o.value=a.id;o.textContent=a.name;
+    sel.appendChild(o);
+  });
+}
+
+// ── HANDLE GOOGLE CALLBACK ────────────────────────────────────────
+// Check if returning from Google OAuth
+function checkGoogleCallback() {
+  const params = new URLSearchParams(location.search);
+  const code = params.get('code');
+  if(!code) return;
+  // Exchange code for token via gcal proxy
+  fetch('/api/gcal', {
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({action:'exchange',code,redirectUri:location.origin+location.pathname})
+  }).then(r=>r.json()).then(data=>{
+    if(data.access_token) {
+      calToken = data.access_token;
+      const cs = JSON.parse(localStorage.getItem(STORAGE.cal)||'{}');
+      cs.token = calToken;
+      localStorage.setItem(STORAGE.cal, JSON.stringify(cs));
+      updateCalBtn();
+      toast('✓ Google Calendar connected', 'success');
+      history.replaceState({},document.title,location.pathname);
+    }
+  }).catch(e=>console.error('Token exchange failed:',e));
+}
+
+// ── INIT ──────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded',()=>{
+  loadAll();
+  populateAgentFilter();
+  updateCalBtn();
+  checkGoogleCallback();
+  renderStats();
+  renderTodaySchedule();
+
+  // Close modals on backdrop
+  ['prospect-modal','cal-modal'].forEach(id=>{
+    document.getElementById(id)?.addEventListener('click',e=>{
+      if(e.target===document.getElementById(id)) document.getElementById(id).classList.remove('open');
+    });
+  });
+});
+</script>
+</body>
+</html>
