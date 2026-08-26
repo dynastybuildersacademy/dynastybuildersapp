@@ -728,32 +728,38 @@ async function extractDashboard(files) {
       load.style.display = "none"; return;
     }
 
-    const system = `You are reading a PHP Agency Bamboo dashboard screenshot.
-The dashboard shows an agent's production metrics for a date range.
-At the top it shows the agent's name (e.g. "Jacinta Abanobi") and "GOLF Score".
-Below that are two tabs: "Personal" and "Non-MD Base" — one is underlined/active.
-The metrics appear as circular donut charts with a number below each.
-The metric cards show (left to right): Recruits, Sub Apps, Sub Points, First Checks, Licensed Agents, Paid Points.
-Below each number is a rank like "174th", "117th" etc.
-Some numbers use K notation: 68.181K = 68181, 34.666K = 34666.
+    const system = `You are reading a PHP Agency Bamboo "Mentor Mode" dashboard screenshot.
+This is a mobile view showing an agent's production stats.
 
-Extract ALL visible information and return ONLY this exact JSON structure, no other text:
+LAYOUT:
+- Top: "Mentor Mode" title with date range (e.g. 06/01/26 - 08/26/26)
+- Search box showing the agent's name (e.g. "Jacinta Abanobi")
+- Two toggle buttons: "PERSONAL" and "NON-MD BASE" — the highlighted/filled one is active
+- Six large circular donut charts arranged in a 3x2 grid, each showing a number and label below
+- The circles with labels are (in order, reading left-to-right, top-to-bottom):
+  Row 1: Recruits, Sub Points, Paid Points
+  Row 2: Sub Apps, First Checks, Licensed Agents
+- Below each circle is the metric name and a rank (e.g. "171st", "144th")
+- Numbers use k notation: 58.13k = 58130, 35.32k = 35320, 32.86k = 32860
+- Decimal values like 40.5 or 18.5 are Sub Apps counts
+
+Extract ALL visible information and return ONLY this exact JSON, no other text:
 {
-  "agentName": "the agent name shown at top",
-  "tab": "Personal" or "Non-MD Base" (whichever tab is active/underlined),
+  "agentName": "<name from search box>",
+  "tab": "Personal" or "Non-MD Base",
   "dateRange": { "from": "YYYY-MM-DD", "to": "YYYY-MM-DD" },
   "metrics": {
-    "recruits": <number or null>,
-    "recruitsRank": "<e.g. 174th>",
-    "subApps": <number or null, may be decimal like 44.50>,
+    "recruits": <integer or null>,
+    "recruitsRank": "<e.g. 171st>",
+    "subApps": <decimal number e.g. 40.5, or null>,
     "subAppsRank": "<rank>",
-    "subPoints": <convert K to number, e.g. 68.181K becomes 68181>,
+    "subPoints": <convert k to number e.g. 58.13k becomes 58130>,
     "subPointsRank": "<rank>",
-    "firstChecks": <number or null>,
+    "firstChecks": <integer or null>,
     "firstChecksRank": "<rank>",
-    "licensedAgents": <number or null>,
+    "licensedAgents": <integer or null>,
     "licensedAgentsRank": "<rank>",
-    "paidPoints": <convert K to number>,
+    "paidPoints": <convert k to number>,
     "paidPointsRank": "<rank>"
   }
 }`;
