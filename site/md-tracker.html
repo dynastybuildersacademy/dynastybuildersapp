@@ -241,7 +241,7 @@ body::before{content:"";position:fixed;inset:0;
       <button class="modal-close" onclick="closeModal()">×</button>
     </div>
     <div class="modal-body">
-      <div class="field"><label>Agent</label>
+      <div class="field"><label id="nr-agent-label">Agent</label>
         <select id="nr-agent" onchange="preselectDownline(this.value)"><option value="">Select agent…</option></select></div>
       <div class="field"><label>Current Level</label>
         <select id="nr-level">
@@ -407,12 +407,38 @@ function fmtPts(n){n=parseFloat(n)||0;return n>999?n.toLocaleString("en-US",{max
 
 function populateAgents(){
   const sel=document.getElementById("nr-agent");
-  if(typeof AGENTS==="undefined")return;
-  AGENTS.filter(a=>a.id!=="dba000").sort((a,b)=>a.name.localeCompare(b.name)).forEach(a=>{
-    const o=document.createElement("option");
-    o.value=a.id;o.textContent=a.name+(a.phpId?" ("+a.phpId+")":"");
-    sel.appendChild(o);
-  });
+  const agentLabel=document.getElementById("nr-agent-label");
+  if(typeof AGENTS==="undefined") return;
+  const session = AUTH.getSession ? AUTH.getSession() : null;
+  const isAdmin = session && (session.role==="admin"||session.role==="agency_builder"||session.role==="marketing_director");
+
+  if(isAdmin){
+    // Admin: full dropdown of all agents, grouped by role
+    const roleOrder = ["marketing_director","director","agency_builder","admin","trainee"];
+    const sorted = AGENTS.filter(a=>a.id!=="dba000")
+      .sort((a,b)=> (roleOrder.indexOf(a.role)-roleOrder.indexOf(b.role)) || a.name.localeCompare(b.name));
+    sorted.forEach(a=>{
+      const o=document.createElement("option");
+      o.value=a.id;
+      const roleTag = a.role==="marketing_director"?"[MD] ":a.role==="director"?"[Dir] ":"";
+      o.textContent=roleTag+a.name+(a.phpId?" ("+a.phpId+")":"");
+      sel.appendChild(o);
+    });
+    if(agentLabel) agentLabel.textContent="Run for Agent (Admin)";
+    sel.style.display="";
+  } else {
+    // Non-admin: locked to themselves
+    const me = AGENTS.find(a=>a.id===session?.agentId);
+    if(me){
+      const o=document.createElement("option");
+      o.value=me.id;
+      o.textContent=me.name+(me.phpId?" ("+me.phpId+")":"");
+      sel.appendChild(o);
+      sel.value=me.id;
+      sel.disabled=true;
+    }
+    if(agentLabel) agentLabel.textContent="Your Promotion Run";
+  }
 }
 
 function openModal(){
@@ -420,7 +446,6 @@ function openModal(){
   selectedDownline.clear();
   renderDownlinePicker();
   document.getElementById("new-run-modal").classList.add("open");
-  // Default: select all agents under the run agent's upline
   setTimeout(()=>{
     const agId = document.getElementById("nr-agent").value;
     if(agId) preselectDownline(agId);
@@ -462,12 +487,30 @@ function createRun(){
 
 function renderBar(){
   const bar=document.getElementById("run-bar");
-  bar.innerHTML=runs.map(r=>{
+  const session = AUTH.getSession ? AUTH.getSession() : null;
+  const isAdmin = session && (session.role==="admin"||session.role==="agency_builder"||session.role==="marketing_director");
+
+  // Filter: non-admins only see their own runs
+  const visible = isAdmin ? runs : runs.filter(r=>r.agentId===session?.agentId);
+
+  bar.innerHTML=visible.map(r=>{
     const totR=r.recruits.flat().length;
     const totA=r.apps.flat().reduce((s,a)=>s+(parseFloat(a.a)||0),0);
-    return `<button class="run-chip ${r.id===activeId?"active":""}" onclick="selectRun('${r.id}')">
-      ${r.agentName.split(" ")[0]} · ${(r.monthLabels[0]||"").split(" ")[0]}
-      <span style="font-family:DM Mono,monospace;font-size:9px;margin-left:4px;">${totR}R·${totA.toFixed(1)}A</span>
+    const ini=r.agentName.split(" ").map(p=>p[0]).join("").slice(0,2).toUpperCase();
+    const active=r.id===activeId;
+    const months=r.months||3;
+    const curM=r.currentMonth||0;
+    return `<button class="run-chip ${active?"active":""}" onclick="selectRun('${r.id}')"
+      style="display:flex;align-items:center;gap:7px;padding:6px 12px;">
+      <span style="width:22px;height:22px;border-radius:50%;background:${active?"var(--gold)":"var(--s3)"};
+        color:${active?"var(--bg)":"var(--muted)"};font-family:Barlow Condensed,sans-serif;font-size:9px;
+        font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${ini}</span>
+      <span>
+        <span style="display:block;font-weight:700;">${r.agentName.split(" ").slice(0,2).join(" ")}</span>
+        <span style="font-family:DM Mono,monospace;font-size:9px;color:${active?"var(--gold)":"var(--muted)"};">
+          M${curM+1}/${months} · ${totR}R·${totA.toFixed(1)}A
+        </span>
+      </span>
     </button>`;
   }).join("")+`<button class="run-chip add" onclick="openModal()">+ New Run</button>`;
 }
@@ -487,7 +530,12 @@ function renderAll(){
   const totA=allA.reduce((s,a)=>s+(parseFloat(a.a)||0),0);
   const totP=allA.reduce((s,a)=>s+(parseFloat(a.p)||0),0);
 
-  document.getElementById("th-role").textContent=run.level.toUpperCase()+" · PROMOTION RUN";
+  const session2 = AUTH.getSession ? AUTH.getSession() : null;
+  const isAdmin2 = session2 && (session2.role==="admin"||session2.role==="agency_builder"||session2.role==="marketing_director");
+  const viewingOther = isAdmin2 && run.agentId !== session2?.agentId;
+  document.getElementById("th-role").innerHTML =
+    (viewingOther ? `<span style="font-size:9px;padding:2px 8px;border-radius:5px;background:rgba(52,152,219,.12);color:#5dade2;border:1px solid rgba(52,152,219,.2);font-family:DM Mono,monospace;letter-spacing:.06em;margin-right:8px;">ADMIN VIEW</span>` : "") +
+    run.level.toUpperCase()+" · PROMOTION RUN";
   document.getElementById("th-agent-name").textContent=run.agentName;
   const dlTag = renderDownlineTag(run);
   document.getElementById("th-run").innerHTML="PROMOTION RUN · "+fmtDate(run.startDate)+" – "+fmtDate(run.endDate)+" · PHP "+run.phpId + dlTag;
