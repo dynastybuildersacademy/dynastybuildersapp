@@ -235,6 +235,11 @@ body::before{content:"";position:fixed;inset:0;
 .me-field input:focus{border-color:var(--gold);}
 .me-field input::placeholder{font-size:12px;font-weight:400;color:var(--muted);}
 
+
+#career-path-strip::-webkit-scrollbar{height:3px;}
+#career-path-strip::-webkit-scrollbar-track{background:transparent;}
+#career-path-strip::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
@@ -251,12 +256,18 @@ body::before{content:"";position:fixed;inset:0;
       <div class="field"><label id="nr-agent-label">Agent</label>
         <select id="nr-agent" onchange="preselectDownline(this.value)"><option value="">Select agent…</option></select></div>
       <div class="field"><label>Current Level</label>
-        <select id="nr-level">
-          <option value="Trainee">Trainee</option>
-          <option value="Associate">Associate</option>
-          <option value="Field Associate" selected>Field Associate</option>
-          <option value="Director">Director</option>
-        </select></div>
+        <select id="nr-level" onchange="onLevelChange(this.value)">
+          <option value="Trainee">Trainee → Associate</option>
+          <option value="Associate">Associate → Field Associate</option>
+          <option value="Field Associate" selected>Field Associate → Director</option>
+          <option value="Director">Director → Marketing Director</option>
+          <option value="Marketing Director">Marketing Director → Senior MD</option>
+          <option value="Senior Marketing Director">Senior MD → Executive MD</option>
+          <option value="Executive Marketing Director">Executive MD → Senior VP</option>
+          <option value="Senior Vice President">Senior VP → Managing Partner</option>
+          <option value="Managing Partner">Managing Partner → Boards Council</option>
+        </select>
+        <div id="level-notes" style="font-family:DM Mono,monospace;font-size:10px;color:var(--muted);margin-top:5px;line-height:1.6;"></div></div>
       <div class="row2">
         <div class="field"><label>Run Start</label><input type="date" id="nr-start"></div>
         <div class="field"><label>Duration (months)</label>
@@ -351,6 +362,8 @@ body::before{content:"";position:fixed;inset:0;
         <div class="pp-bars" id="pp-bars"></div>
       </div>
     </div>
+    <!-- CAREER PATH STRIP -->
+    <div id="career-path-strip" style="padding:12px 20px 0;overflow-x:auto;"></div>
 
     <div class="month-tabs" id="month-tabs"></div>
 
@@ -447,12 +460,137 @@ const GROUPS = {
   2: "group_mm6mtp6g",  // Month 3
   summary: "group_mm6mhvnx", // Run Summaries
 };
-const TARGETS = {
-  "Trainee":{r:3,a:3,p:3000},
-  "Associate":{r:10,a:10,p:10000},
-  "Field Associate":{r:25,a:0,p:0},
-  "Director":{r:3,a:0,p:0}
-};
+// ── FULL PHP/HGI PROMOTION LADDER ─────────────────────────────
+// Each level: requirements to reach the NEXT level
+// r=recruits, a=sub_apps, p=sub_points, months=run duration
+// perMonth = true means the requirement is per month, not cumulative
+// personalPct = required % of apps that must be personal production
+const PROMO_LADDER = [
+  {
+    id: "trainee",
+    label: "Trainee",
+    nextLabel: "Associate",
+    icon: "🌱",
+    comm: "25%",
+    color: "#95a5a6",
+    months: 1,
+    targets: { r:3, a:3, p:3000 },
+    personalPct: 0,
+    notes: "3 personally sponsored recruits, 3 apps, 3,000 pts within first month"
+  },
+  {
+    id: "associate",
+    label: "Associate",
+    nextLabel: "Field Associate",
+    icon: "🔑",
+    comm: "35%",
+    color: "#3498DB",
+    months: 3,
+    targets: { r:10, a:10, p:10000 },
+    personalPct: 0,
+    notes: "10 recruits, 10 apps, 10,000 pts in 3-month run"
+  },
+  {
+    id: "field_associate",
+    label: "Field Associate",
+    nextLabel: "Director",
+    icon: "⚡",
+    comm: "50%",
+    color: "#2ECC71",
+    months: 3,
+    targets: { r:25, a:25, p:25000 },
+    personalPct: 0.40,
+    notes: "25 recruits, 25 apps, 25,000 pts — 40% must be personal production"
+  },
+  {
+    id: "director",
+    label: "Director",
+    nextLabel: "Marketing Director",
+    icon: "🎯",
+    comm: "55%",
+    color: "#E67E22",
+    months: 3,
+    targets: { r:3, a:3, p:0, mds:1 },
+    personalPct: 0.40,
+    notes: "3 recruits, 3 apps, promote 1 personally sponsored MD"
+  },
+  {
+    id: "marketing_director",
+    label: "Marketing Director",
+    nextLabel: "Senior MD",
+    icon: "🏆",
+    comm: "60%",
+    color: "#C9A84C",
+    months: 3,
+    targets: { r:0, a:0, p:0, basePts:100000 },
+    personalPct: 0.40,
+    notes: "100,000 base points in 3-month period · Build your own baseshop"
+  },
+  {
+    id: "senior_md",
+    label: "Senior Marketing Director",
+    nextLabel: "Executive MD",
+    icon: "🌟",
+    comm: "65%",
+    color: "#9B59B6",
+    months: 3,
+    targets: { r:0, a:0, p:0, basePts:250000 },
+    personalPct: 0.30,
+    notes: "250,000 base points · Multiple active MDs in baseshop"
+  },
+  {
+    id: "executive_md",
+    label: "Executive Marketing Director",
+    nextLabel: "Senior Vice President",
+    icon: "💎",
+    comm: "70%",
+    color: "#E74C3C",
+    months: 3,
+    targets: { r:0, a:0, p:0, basePts:500000 },
+    personalPct: 0.25,
+    notes: "500,000 base points · Established multi-MD baseshop"
+  },
+  {
+    id: "svp",
+    label: "Senior Vice President",
+    nextLabel: "Managing Partner",
+    icon: "🦅",
+    comm: "75%",
+    color: "#1ABC9C",
+    months: 3,
+    targets: { r:0, a:0, p:0, basePts:1000000 },
+    personalPct: 0.20,
+    notes: "1,000,000 base points · Regional leadership"
+  },
+  {
+    id: "managing_partner",
+    label: "Managing Partner",
+    nextLabel: "Boards Council",
+    icon: "👑",
+    comm: "75%",
+    color: "#E8C97A",
+    months: 3,
+    targets: { r:0, a:0, p:0, basePts:2500000 },
+    personalPct: 0.15,
+    notes: "2.5M base points · National-level leadership"
+  },
+  {
+    id: "boards_council",
+    label: "Boards Council",
+    nextLabel: null,
+    icon: "⬡",
+    comm: "75%+",
+    color: "#FFD700",
+    months: 0,
+    targets: {},
+    personalPct: 0,
+    notes: "Top tier — national recognition and equity partnership"
+  },
+];
+
+// Quick lookup for modal dropdown and strategy engine
+const TARGETS = {};
+PROMO_LADDER.forEach(l => { TARGETS[l.label] = l.targets; });
 let runs=[], activeId=null, activeMonth=0;
 
 function load(){try{runs=JSON.parse(localStorage.getItem(SK)||"[]");}catch(e){runs=[];}}
@@ -522,7 +660,11 @@ function createRun(){
   ed.setMonth(ed.getMonth()+months);ed.setDate(ed.getDate()-1);
   const lbls=[];
   for(let i=0;i<months;i++){const d=new Date(sd);d.setMonth(d.getMonth()+i);lbls.push(d.toLocaleString("en-US",{month:"long",year:"numeric"}));}
-  const tDef=TARGETS[level]||{r:3,a:3,p:3000};
+  // Look up from PROMO_LADDER first, fall back to TARGETS
+  const ladderEntry = PROMO_LADDER.find(l => l.label === level || l.id === level.toLowerCase().replace(/\s+/g,"_"));
+  const tDef = ladderEntry ? ladderEntry.targets : (TARGETS[level]||{r:3,a:3,p:3000});
+  const defaultPersonalPct = ladderEntry?.personalPct || 0.5;
+  const defaultMonths = ladderEntry?.months || 3;
   const run={
     id:Date.now().toString(),
     agentId:agId,agentName:agent?agent.name:agId,phpId:agent?agent.phpId:"",
@@ -595,6 +737,9 @@ function renderAllBase(){
   document.getElementById("th-agent-name").textContent=run.agentName;
   const dlTag = renderDownlineTag(run);
   document.getElementById("th-run").innerHTML="PROMOTION RUN · "+fmtDate(run.startDate)+" – "+fmtDate(run.endDate)+" · PHP "+run.phpId + dlTag;
+
+  // Render career path strip
+  renderCareerPath(run);
   document.getElementById("tot-r").textContent=totR;
   document.getElementById("tot-a").textContent=totA%1===0?totA:totA.toFixed(2);
   document.getElementById("tot-p").textContent=fmtPts(totP);
@@ -1031,98 +1176,185 @@ async function parsePolicyFile(file) {
     const rows = await readXlsxOrCsv(file);
     if(!rows.length) throw new Error("No data rows found");
 
-    // Parse policy rows — match columns regardless of case
     const headers = rows[0].map(h=>(h||"").toString().toUpperCase().trim());
     const col = name => headers.findIndex(h=>h.includes(name));
 
-    const iPolicy   = col("POLICY NUMBER");
-    const iAgent    = col("AGENT 1 NAME");
-    const iPhp      = col("AGENT 1 PHP CODE");
-    const iSplit    = col("AGENT 1 SPLIT");
-    const iSubPts   = col("SUBMITTED POINTS");
-    const iTotPts   = col("TOTAL POINTS");
-    const iStatus   = col("STATUS");
-    const iClient1  = col("FIRST NAME");
-    const iClient2  = col("LAST NAME");
-    const iDate     = col("PHP SUBMIT DATE");
+    // All columns
+    const iPolicy  = col("POLICY NUMBER");
+    const iFirst   = col("FIRST NAME");
+    const iLast    = col("LAST NAME");
+    const iDate    = col("PHP SUBMIT DATE");
+    const iStatus  = col("STATUS");
+    const iSubPts  = col("SUBMITTED POINTS");
+    const iTotPts  = col("TOTAL POINTS");
 
-    const policies = rows.slice(1).filter(r=>r[iPolicy]).map(r=>({
-      policy:   r[iPolicy]||"",
-      agent:    r[iAgent]||"",
-      phpCode:  String(r[iPhp]||""),
-      split:    r[iSplit]||"100%",
-      subPts:   parseFloat(r[iSubPts])||0,
-      totPts:   parseFloat(r[iTotPts])||0,
-      status:   r[iStatus]||"",
-      client:   `${r[iClient1]||""} ${r[iClient2]||""}`.trim(),
-      date:     formatDateVal(r[iDate]),
-    }));
+    // Agent slots — policy file has up to 3 agent columns
+    const AGENT_SLOTS = [
+      { name: col("AGENT 1 NAME"), php: col("AGENT 1 PHP CODE"), split: col("AGENT 1 SPLIT") },
+      { name: col("AGENT 2 NAME"), php: col("AGENT 2 PHP CODE"), split: col("AGENT 2 SPLIT") },
+    ];
+    // Trainee slots
+    const TRAINEE_SLOTS = [
+      { name: col("TRAINEE 1 NAME"), php: col("TRAINEE 1 PHP CODE") },
+      { name: col("TRAINEE 2 NAME"), php: col("TRAINEE 2 PHP CODE") },
+      { name: col("TRAINEE 3 NAME"), php: col("TRAINEE 3 PHP CODE") },
+    ];
 
-    // Run-level agent filter: match by agent name or PHP code if we know the run agent
-    const run = runs.find(r=>r.id===activeId);
-    const runPhp = run?.phpId||"";
-
-    // Calculate sub-apps (split-weighted)
-    const calcSubApps = (pol) => {
-      let total = 0;
-      pol.forEach(p => {
-        const s = parseFloat(String(p.split).replace("%",""))||100;
-        total += s/100;
+    // Parse every policy row, expanding agent slots
+    const rawPolicies = rows.slice(1).filter(r => r[iPolicy]).map(r => {
+      const agents = [];
+      AGENT_SLOTS.forEach(slot => {
+        if(slot.name >= 0 && r[slot.name]) {
+          const splitRaw = slot.split >= 0 ? String(r[slot.split]||"100").replace("%","").trim() : "100";
+          const splitPct = parseFloat(splitRaw) || 100;
+          agents.push({
+            name:     String(r[slot.name]).trim(),
+            phpCode:  String(r[slot.php] || "").trim(),
+            splitPct,
+            apps:     Math.round((splitPct/100) * 100) / 100,
+          });
+        }
       });
-      return Math.round(total*100)/100;
-    };
+      // Trainee slots (no split — they count as the writing agent's production)
+      TRAINEE_SLOTS.forEach(slot => {
+        if(slot.name >= 0 && r[slot.name]) {
+          agents.push({
+            name:     String(r[slot.name]).trim(),
+            phpCode:  String(r[slot.php] || "").trim(),
+            splitPct: 100,
+            apps:     1,
+            isTrainee: true,
+          });
+        }
+      });
 
-    // All policies vs agent-specific
-    const allPol = policies;
-    // Filter by downline — if no downline set, this returns all
-    const agentPol = filterPoliciesByDownline(policies, run);
+      return {
+        policy:  String(r[iPolicy] || "").trim(),
+        client:  (String(r[iFirst]||"") + " " + String(r[iLast]||"")).trim(),
+        date:    formatDateVal(r[iDate]),
+        status:  String(r[iStatus] || "").trim(),
+        subPts:  parseFloat(r[iSubPts]) || 0,
+        totPts:  parseFloat(r[iTotPts]) || 0,
+        agents,  // all agent slots with their splits
+        // Primary agent (slot 1) for display
+        agent:   agents[0]?.name || "",
+        phpCode: agents[0]?.phpCode || "",
+        split:   agents[0]?.splitPct + "%",
+      };
+    });
 
-    console.log(`[MD Tracker] Policy import: ${allPol.length} total in file, ${agentPol.length} matched to run (${run.downlineIds?.length||0} downline agents)`);
+    const run = runs.find(r => r.id === activeId);
 
-    _polData = { all: allPol, agent: agentPol };
+    // Build the full set of PHP codes for the run team
+    // (run agent + all downline + extraPhpCodes)
+    const teamPhpCodes = buildTeamPhpCodes(run);
+    const teamNames    = buildTeamNames(run);
 
-    const subAppsAll = calcSubApps(allPol);
-    const subAppsAgent = calcSubApps(agentPol);
-    const subPtsAll = allPol.reduce((s,p)=>s+p.subPts,0);
-    const subPtsAgent = agentPol.reduce((s,p)=>s+p.subPts,0);
-    const totPtsAll = allPol.reduce((s,p)=>s+p.totPts,0);
-    const totPtsAgent = agentPol.reduce((s,p)=>s+p.totPts,0);
+    // A policy belongs to the run if ANY of its agent slots match the team
+    const teamPolicies = rawPolicies.filter(pol =>
+      pol.agents.some(a =>
+        (a.phpCode && teamPhpCodes.has(String(a.phpCode))) ||
+        (a.name && teamNames.some(n => a.name.toLowerCase().includes(n) || n.includes(a.name.toLowerCase())))
+      )
+    );
+
+    // For each matched policy, figure out the team's combined apps
+    // by summing only the splits that belong to team members
+    const enriched = teamPolicies.map(pol => {
+      const teamAgents = pol.agents.filter(a =>
+        (a.phpCode && teamPhpCodes.has(String(a.phpCode))) ||
+        (a.name && teamNames.some(n => a.name.toLowerCase().includes(n)))
+      );
+      const teamApps = teamAgents.reduce((s,a) => s + (a.splitPct/100), 0);
+      // Which agent slot is the run agent personally?
+      const isPersonal = pol.agents.some(a =>
+        (a.phpCode && String(a.phpCode) === String(run?.phpId)) ||
+        (a.name && run?.agentName && a.name.toLowerCase().includes(run.agentName.split(" ")[0].toLowerCase()))
+      );
+      return { ...pol, teamApps: Math.round(teamApps*100)/100, isPersonal, teamAgents };
+    });
+
+    _polData = { all: rawPolicies, agent: enriched };
+
+    // Summary stats
+    const totSubPts   = enriched.reduce((s,p) => s+p.subPts, 0);
+    const totPaidPts  = enriched.reduce((s,p) => s+p.totPts, 0);
+    const totTeamApps = enriched.reduce((s,p) => s+p.teamApps, 0);
+    const paidPols    = enriched.filter(p => isPaid(p.status));
+    const personalPols= enriched.filter(p => p.isPersonal);
+    const personalApps= personalPols.reduce((s,p) => {
+      const mySlot = p.agents.find(a =>
+        (a.phpCode && String(a.phpCode) === String(run?.phpId)) ||
+        (a.name && run?.agentName && a.name.toLowerCase().includes(run.agentName.split(" ")[0].toLowerCase()))
+      );
+      return s + (mySlot ? mySlot.splitPct/100 : 0);
+    }, 0);
 
     prev.style.display = "block";
-    prev.innerHTML = `
-      <div style="margin-bottom:8px;">
-        <div style="font-family:Barlow Condensed,sans-serif;font-size:11px;font-weight:800;color:#5dade2;margin-bottom:6px;letter-spacing:.06em;">FILE SUMMARY — ${allPol.length} POLICIES TOTAL</div>
-        ${[["Total Apps (all)",""+subAppsAll],["Total Sub Points",fmtPts(subPtsAll)],["Total Paid Points",fmtPts(totPtsAll)]].map(([k,v])=>`<div class="imp-row"><span class="imp-key">${k}</span><span class="imp-val">${v}</span></div>`).join("")}
-      </div>
-      <div>
-        <div style="font-family:Barlow Condensed,sans-serif;font-size:11px;font-weight:800;color:var(--gold);margin-bottom:6px;letter-spacing:.06em;">
-          ${agentPol.length===allPol.length?"✓ ALL POLICIES (no downline filter)":"RUN TEAM MATCH — "+agentPol.length+" / "+allPol.length+" POLICIES"}
-        </div>
-        ${agentPol.length===0?`<div style="color:var(--orange);font-size:11px;">⚠ No policies matched. Check agent PHP codes or add team members in the run settings.</div>`:""}
-        ${[["Team Sub Apps",""+subAppsAgent],["Team Sub Points",fmtPts(subPtsAgent)],["Team Paid Points",fmtPts(totPtsAgent)]].map(([k,v])=>`<div class="imp-row"><span class="imp-key">${k}</span><span class="imp-val green">${v}</span></div>`).join("")}
-        ${agentPol.length<allPol.length?`<div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted);margin-top:5px;">${allPol.length-agentPol.length} policies excluded (not in your downline)</div>`:""}
-      </div>
-      <div style="margin-top:10px;">
-        <div style="font-family:DM Mono,monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;">Import into month:</div>
-        <div style="display:flex;gap:6px;" id="pol-month-picker"></div>
-      </div>`;
+    prev.innerHTML = buildPolicyPreviewHTML(rawPolicies.length, enriched.length,
+      totTeamApps, totSubPts, totPaidPts, paidPols.length, personalApps, run);
 
     // Build month picker
-    const run2 = runs.find(r=>r.id===activeId);
     const pickerEl = document.getElementById("pol-month-picker");
-    if(pickerEl && run2) {
-      const detectedMonth = detectMonthFromPolicies(_polData.agent.length?_polData.agent:_polData.all, run2);
-      buildMonthPicker(pickerEl, run2, detectedMonth, "pol");
-      window._polImportMonth = detectedMonth;
+    if(pickerEl && run) {
+      const det = detectMonthFromPolicies(enriched, run);
+      buildMonthPicker(pickerEl, run, det, "pol");
+      window._polImportMonth = det;
     }
+    document.getElementById("pol-merge-btn").disabled = enriched.length === 0;
 
-    document.getElementById("pol-merge-btn").disabled = false;
   } catch(e) {
+    console.error("[Policy import]", e);
     prev.style.display = "block";
     prev.innerHTML = `<div style="color:var(--red);">✗ ${e.message}</div>`;
   }
   load.style.display = "none";
 }
+
+function buildTeamPhpCodes(run) {
+  const codes = new Set();
+  if(run?.phpId) codes.add(String(run.phpId));
+  const agents = typeof AGENTS !== "undefined" ? AGENTS : [];
+  (run?.downlineIds||[]).forEach(id => {
+    const a = agents.find(x => x.id === id);
+    if(a?.phpId) codes.add(String(a.phpId));
+  });
+  (run?.extraPhpCodes||[]).forEach(c => codes.add(String(c)));
+  return codes;
+}
+
+function buildTeamNames(run) {
+  const names = [];
+  if(run?.agentName) names.push(run.agentName.toLowerCase().trim());
+  const agents = typeof AGENTS !== "undefined" ? AGENTS : [];
+  (run?.downlineIds||[]).forEach(id => {
+    const a = agents.find(x => x.id === id);
+    if(a?.name) names.push(a.name.toLowerCase().trim());
+  });
+  return names;
+}
+
+function buildPolicyPreviewHTML(total, matched, teamApps, subPts, paidPts, paidCount, personalApps, run) {
+  return `
+    <div style="margin-bottom:10px;">
+      <div style="font-family:Barlow Condensed,sans-serif;font-size:11px;font-weight:800;color:#5dade2;margin-bottom:6px;letter-spacing:.06em;">FILE — ${total} TOTAL POLICIES</div>
+      <div class="imp-row"><span class="imp-key">Matched to run team</span><span class="imp-val ${matched>0?"green":""}">${matched} policies</span></div>
+      ${matched<total?`<div class="imp-row"><span class="imp-key">Excluded</span><span class="imp-val">${total-matched} (not in your team)</span></div>`:""}
+    </div>
+    <div>
+      <div style="font-family:Barlow Condensed,sans-serif;font-size:11px;font-weight:800;color:var(--gold);margin-bottom:6px;letter-spacing:.06em;">TEAM PRODUCTION</div>
+      <div class="imp-row"><span class="imp-key">Team Sub Apps</span><span class="imp-val gold">${teamApps.toFixed(2)}</span></div>
+      <div class="imp-row"><span class="imp-key">Personal Apps (${run?.agentName?.split(" ")[0]||"you"})</span><span class="imp-val">${personalApps.toFixed(2)}</span></div>
+      <div class="imp-row"><span class="imp-key">Sub Points</span><span class="imp-val">${fmtPts(subPts)}</span></div>
+      <div class="imp-row"><span class="imp-key">Paid Points</span><span class="imp-val">${fmtPts(paidPts)}</span></div>
+      <div class="imp-row"><span class="imp-key">Paid policies</span><span class="imp-val green">${paidCount} / ${matched}</span></div>
+    </div>
+    <div style="margin-top:10px;">
+      <div style="font-family:DM Mono,monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;">Import into month:</div>
+      <div style="display:flex;gap:6px;" id="pol-month-picker"></div>
+    </div>`;
+}
+
 
 function mergePolicyData() {
   const run = runs.find(r=>r.id===activeId);
@@ -1133,50 +1365,159 @@ function mergePolicyData() {
   const source = _polData.agent.length ? _polData.agent : _polData.all;
   if(!source.length) { toast("⚠ No policies to import"); return; }
 
-  if(!run.apps[targetMonth]) run.apps[targetMonth] = [];
+  // Show editable preview before committing
+  showEditableImportPreview(source, run, targetMonth);
+}
 
-  // Group policies by month if run has multiple months
-  // and import each to its detected month (or all to targetMonth if no dates)
+function showEditableImportPreview(source, run, targetMonth) {
+  const modal = document.getElementById("import-modal");
+  const body  = modal.querySelector(".modal-body");
+
+  // Group by month
   const byMonth = {};
   source.forEach(p => {
-    let m = targetMonth; // default
-    if(p.date && run.months > 1) {
-      m = detectMonthForDate(p.date, run);
-      if(m < 0) m = targetMonth; // date outside run range — use selected month
-    }
-    if(!byMonth[m]) byMonth[m] = [];
+    let m = targetMonth;
+    if(p.date && run.months > 1) { m = detectMonthForDate(p.date, run); if(m<0) m=targetMonth; }
+    if(!byMonth[m]) byMonth[m]=[];
     byMonth[m].push(p);
   });
 
-  let totalAdded = 0;
-  const monthsSynced = [];
-
-  Object.entries(byMonth).forEach(([mStr, policies]) => {
+  // Build editable rows — stored in _editRows for commit
+  window._editRows = [];
+  let rowsHTML = "";
+  Object.entries(byMonth).sort().forEach(([mStr, pols]) => {
     const m = parseInt(mStr);
-    if(!run.apps[m]) run.apps[m] = [];
-    const existing = new Set(run.apps[m].map(a=>a.pol).filter(Boolean));
-    let added = 0;
-    policies.forEach(p => {
-      if(p.policy && existing.has(p.policy)) return;
-      run.apps[m].push({
-        d: p.date||new Date().toISOString().slice(0,10),
-        pol: p.policy,
-        c: p.client,
-        a: calcSplitApps(p.split),
-        p: p.subPts,
-        paidPts: p.totPts,
-        status: p.status,
-        paid: isPaid(p.status),
-      });
-      added++;
+    const mLabel = run.monthLabels[m] || ("Month "+(m+1));
+    rowsHTML += `<div style="font-family:Barlow Condensed,sans-serif;font-size:11px;font-weight:800;
+      color:var(--gold);padding:8px 0 4px;letter-spacing:.06em;text-transform:uppercase;">${mLabel}</div>`;
+    pols.forEach((p, i) => {
+      const ri = window._editRows.length;
+      const existing = (run.apps[m]||[]).some(a=>a.pol && a.pol===p.policy);
+      const apps = p.teamApps !== undefined ? p.teamApps : calcSplitApps(p.split);
+      window._editRows.push({ ...p, _month: m, _apps: apps, _skip: existing });
+      rowsHTML += `<div style="display:grid;grid-template-columns:1fr 70px 80px 70px 28px;gap:5px;
+        align-items:center;padding:5px 0;border-bottom:1px solid rgba(26,49,88,.3);
+        ${existing?"opacity:.4":""}">
+        <div>
+          <input id="er-client-${ri}" value="${(p.client||"").replace(/"/g,"")}"
+            style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:5px;
+              padding:4px 7px;color:var(--text);font-size:12px;outline:none;"
+            placeholder="Client name">
+          <div style="font-family:DM Mono,monospace;font-size:9px;color:${isPaid(p.status)?"var(--green)":"var(--muted)"};margin-top:2px;">
+            ${p.policy||""} · ${p.date||""}${existing?" · already imported":""}
+          </div>
+        </div>
+        <input id="er-apps-${ri}" type="number" step="0.25" value="${apps}"
+          style="background:var(--s2);border:1px solid var(--border);border-radius:5px;
+            padding:4px 6px;color:var(--gold2);font-family:Barlow Condensed,sans-serif;
+            font-size:13px;font-weight:700;width:100%;outline:none;" title="App count (split-weighted)">
+        <input id="er-pts-${ri}" type="number" value="${p.subPts||0}"
+          style="background:var(--s2);border:1px solid var(--border);border-radius:5px;
+            padding:4px 6px;color:var(--green);font-family:Barlow Condensed,sans-serif;
+            font-size:13px;font-weight:700;width:100%;outline:none;" title="Submitted points">
+        <div style="text-align:center;">
+          <div onclick="toggleEditRowPaid(${ri})" id="er-paid-${ri}"
+            style="width:20px;height:20px;border-radius:4px;border:1.5px solid ${isPaid(p.status)?"var(--green)":"var(--border)"};
+              background:${isPaid(p.status)?"rgba(45,202,115,.15)":"transparent"};
+              display:inline-flex;align-items:center;justify-content:center;
+              cursor:pointer;font-size:11px;" data-paid="${isPaid(p.status)?1:0}">
+            ${isPaid(p.status)?"✓":""}
+          </div>
+        </div>
+        <div onclick="toggleEditRowSkip(${ri})" id="er-skip-${ri}"
+          title="${existing?"Already imported — click to re-import":"Click to skip"}"
+          style="cursor:pointer;text-align:center;font-size:13px;color:${existing?"var(--muted)":"var(--red)"};">
+          ${existing?"○":"×"}
+        </div>
+      </div>`;
     });
-    if(added) { totalAdded += added; monthsSynced.push(`M${m+1}: ${added}`); }
+  });
+
+  body.innerHTML = `
+    <div style="font-family:Barlow Condensed,sans-serif;font-size:14px;font-weight:800;
+      color:var(--gold);margin-bottom:4px;">Review &amp; Edit Before Importing</div>
+    <div style="font-family:DM Mono,monospace;font-size:10px;color:var(--muted);margin-bottom:10px;">
+      Edit client names, app counts, or points. Toggle ✓ for paid. × to skip a row.
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 70px 80px 70px 28px;gap:5px;
+      margin-bottom:4px;padding-bottom:4px;border-bottom:1px solid var(--border);">
+      <div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted);">CLIENT</div>
+      <div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted);">APPS</div>
+      <div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted);">SUB PTS</div>
+      <div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted);">PAID</div>
+      <div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted);">SKP</div>
+    </div>
+    <div style="max-height:340px;overflow-y:auto;">${rowsHTML}</div>
+    <div style="display:flex;gap:8px;margin-top:12px;">
+      <button class="btn-create" onclick="commitPolicyImport()" style="flex:2;border:none;">
+        ✓ Import ${source.filter(p=>{
+          const m2=detectMonthForDate(p.date,run); const m3=m2<0?targetMonth:m2;
+          return !(run.apps[m3]||[]).some(a=>a.pol===p.policy);
+        }).length} Policies
+      </button>
+      <button class="btn-cancel" onclick="document.getElementById('import-modal').classList.remove('open')" style="flex:1;">Cancel</button>
+    </div>`;
+}
+
+function toggleEditRowPaid(ri) {
+  const el = document.getElementById("er-paid-"+ri);
+  if(!el) return;
+  const now = el.dataset.paid === "1";
+  el.dataset.paid = now ? "0" : "1";
+  el.innerHTML = now ? "" : "✓";
+  el.style.background = now ? "transparent" : "rgba(45,202,115,.15)";
+  el.style.borderColor = now ? "var(--border)" : "var(--green)";
+}
+
+function toggleEditRowSkip(ri) {
+  const el = document.getElementById("er-skip-"+ri);
+  if(!el || !window._editRows) return;
+  window._editRows[ri]._skip = !window._editRows[ri]._skip;
+  el.innerHTML = window._editRows[ri]._skip ? "○" : "×";
+  el.style.color = window._editRows[ri]._skip ? "var(--muted)" : "var(--red)";
+  const row = el.parentElement;
+  if(row) row.style.opacity = window._editRows[ri]._skip ? ".35" : "";
+}
+
+function commitPolicyImport() {
+  const run = runs.find(r=>r.id===activeId);
+  if(!run || !window._editRows?.length) return;
+
+  let added = 0;
+  const monthsSynced = {};
+
+  window._editRows.forEach((row, ri) => {
+    if(row._skip) return;
+    const m = row._month;
+    if(!run.apps[m]) run.apps[m] = [];
+    // Check duplicate
+    if(row.policy && (run.apps[m]||[]).some(a=>a.pol===row.policy)) return;
+
+    const paidEl = document.getElementById("er-paid-"+ri);
+    const paid = paidEl ? paidEl.dataset.paid === "1" : isPaid(row.status);
+    const apps = parseFloat(document.getElementById("er-apps-"+ri)?.value) || row._apps || 1;
+    const pts  = parseFloat(document.getElementById("er-pts-"+ri)?.value)  || row.subPts || 0;
+    const client = document.getElementById("er-client-"+ri)?.value || row.client || "";
+
+    run.apps[m].push({
+      d:      row.date || new Date().toISOString().slice(0,10),
+      pol:    row.policy || "",
+      c:      client,
+      a:      Math.round(apps*100)/100,
+      p:      pts,
+      paidPts:row.totPts || pts,
+      status: row.status || "",
+      paid,
+    });
+    added++;
+    monthsSynced[m] = (monthsSynced[m]||0)+1;
   });
 
   save(); renderAll();
   document.getElementById("import-modal").classList.remove("open");
-  if(totalAdded) toast(`✓ ${totalAdded} policies imported (${monthsSynced.join(", ")})`);
-  else toast("ℹ All policies already exist in tracker");
+  const breakdown = Object.entries(monthsSynced).map(([m,n])=>`M${parseInt(m)+1}: ${n}`).join(", ");
+  toast(added ? `✓ ${added} policies imported (${breakdown})` : "ℹ No new policies to import");
+  window._editRows = null;
 }
 
 function isPaid(status) {
@@ -1202,7 +1543,7 @@ async function parseAgentsFile(file) {
   if(!file) return;
   const load = document.getElementById("ag-loading");
   const prev = document.getElementById("ag-preview");
-  load.style.display="flex"; prev.style.display="none";
+  load.style.display = "flex"; prev.style.display = "none";
   _agData = null;
   document.getElementById("ag-merge-btn").disabled = true;
 
@@ -1212,45 +1553,109 @@ async function parseAgentsFile(file) {
     const headers = rows[0].map(h=>(h||"").toString().toUpperCase().trim());
     const col = name => headers.findIndex(h=>h.includes(name));
 
-    const iName     = col("NAME");
-    const iPhp      = col("PHPCODE");
-    const iLevel    = col("LEVEL");
-    const iDate     = col("DATE SPONSORED");
-    const iDirects  = col("DIRECTS");
-    const iStatus   = col("STATUS");
+    const iName    = col("NAME");
+    const iPhp     = col("PHPCODE");
+    const iLevel   = col("LEVEL");
+    const iDate    = col("DATE SPONSORED");
+    const iDirects = col("DIRECTS");
+    const iMdBase  = col("MD BASE");
+    const iSvpBase = col("SVP BASE");
+    const iStatus  = col("STATUS");
+    const iPersSp  = col("PERSONALLY SPONSORED");
 
-    const agents = rows.slice(1).filter(r=>r[iName]).map(r=>({
-      name:    String(r[iName]||"").trim(),
-      phpCode: String(r[iPhp]||"").trim(),
-      level:   String(r[iLevel]||"").trim(),
-      date:    formatDateVal(r[iDate]),
-      directs: String(r[iDirects]||"").trim(),
-      status:  String(r[iStatus]||"active").trim(),
-    })).filter(a=>a.status==="active"||a.status==="");
+    const allAgents = rows.slice(1).filter(r=>r[iName]).map(r=>({
+      name:      String(r[iName]||"").trim(),
+      phpCode:   String(r[iPhp]||"").trim(),
+      level:     String(r[iLevel]||"").trim(),
+      date:      formatDateVal(r[iDate]),
+      directs:   String(r[iDirects]||"").trim(),
+      mdBase:    String(r[iMdBase]||"").trim(),
+      svpBase:   String(r[iSvpBase]||"").trim(),
+      status:    String(r[iStatus]||"active").trim().toLowerCase(),
+      persSpon:  parseInt(r[iPersSp])||0,
+    })).filter(a => a.status === "active" || a.status === "");
 
-    _agData = agents;
+    const run = runs.find(r => r.id === activeId);
+    if(!run) throw new Error("No active run");
 
-    const run = runs.find(r=>r.id===activeId);
-    const runName = (run?.agentName||"").toLowerCase();
-    const personally = agents.filter(a=>a.directs.toLowerCase().includes(runName)||a.directs.includes(run?.phpId||"NOMATCH"));
+    const runName   = run.agentName.toLowerCase().trim();
+    const runPhp    = String(run.phpId||"");
+    const firstName = run.agentName.split(" ")[0].toLowerCase();
+
+    // ── DIRECT recruits: DIRECTS field contains run agent name/PHP ──
+    const directRecruit = a =>
+      a.directs.toLowerCase().includes(runName) ||
+      a.directs.toLowerCase().includes(firstName) ||
+      (runPhp && a.directs.includes(runPhp));
+
+    // ── INDIRECT recruits: in the run agent's MD BASE hierarchy ──
+    const inMdBase = a =>
+      a.mdBase.toLowerCase().includes(runName) ||
+      a.mdBase.toLowerCase().includes(firstName) ||
+      (runPhp && a.mdBase.includes(runPhp));
+
+    // ── Also include anyone explicitly in downlineIds ──
+    const dlAgentPHPs = buildTeamPhpCodes(run);
+    const inDownline = a => dlAgentPHPs.has(String(a.phpCode));
+
+    const direct   = allAgents.filter(a => directRecruit(a));
+    const indirect = allAgents.filter(a => !directRecruit(a) && (inMdBase(a) || inDownline(a)));
+    const all_team = [...direct, ...indirect]; // deduplicated by name below
+
+    // Dedup
+    const seen = new Set();
+    const team = all_team.filter(a => {
+      if(seen.has(a.phpCode||a.name)) return false;
+      seen.add(a.phpCode||a.name); return true;
+    });
+
+    _agData = { all: allAgents, personal: direct, indirect, team };
 
     prev.style.display = "block";
-    prev.innerHTML = `
-      <div style="font-family:Barlow Condensed,sans-serif;font-size:11px;font-weight:800;color:var(--blue);margin-bottom:6px;letter-spacing:.06em;">${agents.length} AGENTS IN FILE</div>
-      ${[["Total agents",agents.length],["Personally sponsored by "+((run?.agentName||"").split(" ")[0]),personally.length]].map(([k,v])=>`<div class="imp-row"><span class="imp-key">${k}</span><span class="imp-val ${typeof v==="number"&&v>0?"green":""}">${v}</span></div>`).join("")}
-      <div style="font-family:Barlow Condensed,sans-serif;font-size:11px;font-weight:800;color:var(--gold);margin-bottom:6px;margin-top:10px;letter-spacing:.06em;">RECRUITS TO IMPORT (${personally.length})</div>
-      ${personally.slice(0,8).map(a=>`<div class="imp-row"><span class="imp-key">${a.name}</span><span class="imp-val" style="font-size:10px;">${a.date||""} · ${a.level}</span></div>`).join("")}
-      ${personally.length>8?`<div style="color:var(--muted);font-size:10px;margin-top:4px;">+${personally.length-8} more…</div>`:""}
-      <div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted);margin-top:8px;">Will import as recruit rows into Month ${activeMonth+1}</div>`;
+    prev.innerHTML = buildAgentsPreviewHTML(allAgents.length, direct, indirect, run);
 
-    document.getElementById("ag-merge-btn").disabled = personally.length===0;
-    _agData = { all: agents, personal: personally };
+    // Month picker
+    const agPickerEl = document.getElementById("ag-month-picker");
+    if(agPickerEl && run) {
+      const det = detectMonthFromAgents(direct, run);
+      buildMonthPicker(agPickerEl, run, det, "ag");
+      window._agImportMonth = det;
+    }
+
+    document.getElementById("ag-merge-btn").disabled = team.length === 0;
   } catch(e) {
-    prev.style.display="block";
-    prev.innerHTML=`<div style="color:var(--red);">✗ ${e.message}</div>`;
+    console.error("[Agents import]", e);
+    prev.style.display = "block";
+    prev.innerHTML = `<div style="color:var(--red);">✗ ${e.message}</div>`;
   }
-  load.style.display="none";
+  load.style.display = "none";
 }
+
+function buildAgentsPreviewHTML(total, direct, indirect, run) {
+  const agFirst = run.agentName.split(" ")[0];
+  return `
+    <div style="margin-bottom:8px;">
+      <div style="font-family:Barlow Condensed,sans-serif;font-size:11px;font-weight:800;color:#5dade2;margin-bottom:6px;letter-spacing:.06em;">${total} AGENTS IN FILE</div>
+    </div>
+    <div style="margin-bottom:8px;">
+      <div style="font-family:Barlow Condensed,sans-serif;font-size:11px;font-weight:800;color:var(--gold);margin-bottom:5px;letter-spacing:.06em;">DIRECT RECRUITS — ${direct.length} (personally sponsored by ${agFirst})</div>
+      ${direct.slice(0,6).map(a=>`<div class="imp-row"><span class="imp-key">${a.name}</span><span class="imp-val" style="font-size:10px;">${a.date||""} · ${a.level}</span></div>`).join("")}
+      ${direct.length>6?`<div style="color:var(--muted);font-size:10px;margin-top:3px;">+${direct.length-6} more direct recruits</div>`:""}
+    </div>
+    <div style="margin-bottom:10px;">
+      <div style="font-family:Barlow Condensed,sans-serif;font-size:11px;font-weight:800;color:var(--purple);margin-bottom:5px;letter-spacing:.06em;">INDIRECT TEAM — ${indirect.length} (in ${agFirst}'s MD base)</div>
+      ${indirect.slice(0,4).map(a=>`<div class="imp-row"><span class="imp-key">${a.name}</span><span class="imp-val" style="font-size:10px;color:var(--muted);">${a.directs||""} · ${a.level}</span></div>`).join("")}
+      ${indirect.length>4?`<div style="color:var(--muted);font-size:10px;margin-top:3px;">+${indirect.length-4} more indirect</div>`:""}
+    </div>
+    <div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted);margin-bottom:10px;">
+      Importing <strong style="color:var(--text);">${direct.length} direct</strong> recruits only. Use the Edit Team button to add/remove indirect team members from policy tracking.
+    </div>
+    <div style="margin-top:8px;">
+      <div style="font-family:DM Mono,monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;">Import into month:</div>
+      <div style="display:flex;gap:6px;" id="ag-month-picker"></div>
+    </div>`;
+}
+
 
 function mergeAgentsData() {
   const run = runs.find(r=>r.id===activeId);
@@ -1454,7 +1859,9 @@ function renderStrategy(run) {
   if(badge){ badge.className="strat-status "+statusCls; badge.textContent=statusTxt; }
 
   // ── NEED BOXES ──────────────────────────────────────────────
+  const ladderEntry = PROMO_LADDER.find(l=>l.label===run.level||l.id===run.level?.toLowerCase().replace(/\s+/g,"_"));
   const needs = [];
+
   if(t.r>0) needs.push({
     lbl:"Recruits", have:tot.recruits, need:t.r, gap:gapR,
     color:"#5dade2", fill:"linear-gradient(90deg,#3498DB,#5dade2)"
@@ -1468,13 +1875,36 @@ function renderStrategy(run) {
     color:"var(--green)", fill:"linear-gradient(90deg,var(--green),#58d68d)"
   });
 
-  // Personal requirement (40-50% rule)
-  if(t.a>0) {
+  // Base points requirement (for MD+ levels)
+  if(t.basePts>0) {
+    const dashPts = run.dashboardStats?.nonMd?.metrics?.subPoints || run.dashboardStats?.personal?.metrics?.subPoints || 0;
+    const haveBasePts = Math.max(tot.points, dashPts);
+    const gapBasePts = Math.max(0, t.basePts - haveBasePts);
+    needs.push({
+      lbl:"Base Points", have:haveBasePts, need:t.basePts, gap:gapBasePts,
+      color:"#1ABC9C", fill:"linear-gradient(90deg,#1ABC9C,#48C9B0)",
+      sub:"Total baseshop production"
+    });
+  }
+
+  // MD promotion requirement
+  if(t.mds>0) {
+    const haveMds = run.promotedMds || 0;
+    const gapMds = Math.max(0, t.mds - haveMds);
+    needs.push({
+      lbl:"MDs Promoted", have:haveMds, need:t.mds, gap:gapMds,
+      color:"#FFD700", fill:"linear-gradient(90deg,#C9A84C,#FFD700)",
+      sub:"Personally sponsored MDs"
+    });
+  }
+
+  // Personal requirement (40-50% rule) — for levels that require it
+  if(t.a>0 && personalPct>0) {
     const personalNeed  = Math.ceil(t.a * personalPct * 10)/10;
     const personalHave  = calcPersonalApps(run);
     const personalGap   = Math.max(0, personalNeed - personalHave);
     needs.push({
-      lbl:`Personal Apps (${Math.round(personalPct*100)}%)`,
+      lbl:"Personal Apps ("+Math.round(personalPct*100)+"%)",
       have:personalHave, need:personalNeed, gap:personalGap,
       color:"var(--purple)", fill:"linear-gradient(90deg,#9B59B6,#A569BD)",
       sub:"Your personal production requirement"
@@ -2577,6 +3007,77 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("edit-team-modal").classList.remove("open");
   });
 });
+
+
+
+function onLevelChange(level) {
+  const entry = PROMO_LADDER.find(l => l.label === level || l.id === level.toLowerCase().replace(/\s+/g,"_"));
+  if(!entry) return;
+
+  // Update targets
+  const t = entry.targets;
+  if(document.getElementById("nr-tr")) document.getElementById("nr-tr").value = t.r || 0;
+  if(document.getElementById("nr-ta")) document.getElementById("nr-ta").value = t.a || 0;
+  if(document.getElementById("nr-tp")) document.getElementById("nr-tp").value = t.p || 0;
+
+  // Update duration
+  const dur = document.getElementById("nr-duration");
+  if(dur && entry.months) dur.value = Math.min(entry.months, 3);
+
+  // Update personal %
+  const pct = document.getElementById("nr-personal-pct");
+  if(pct && entry.personalPct) {
+    pct.value = entry.personalPct;
+  }
+
+  // Show notes
+  const notes = document.getElementById("level-notes");
+  if(notes) notes.textContent = entry.notes || "";
+}
+
+
+
+// ════════════════════════════════════════════════════════════════
+// CAREER PATH STRIP
+// ════════════════════════════════════════════════════════════════
+function renderCareerPath(run) {
+  const el = document.getElementById("career-path-strip");
+  if(!el) return;
+
+  const currentIdx = PROMO_LADDER.findIndex(l =>
+    l.label === run.level ||
+    l.id === (run.level||"").toLowerCase().replace(/\s+/g,"_")
+  );
+
+  el.innerHTML = `<div style="display:flex;align-items:center;gap:0;padding-bottom:12px;min-width:max-content;">
+    ${PROMO_LADDER.map((l, i) => {
+      const done    = i < currentIdx;
+      const current = i === currentIdx;
+      const next    = i === currentIdx + 1;
+      const locked  = i > currentIdx + 1;
+
+      const bg   = done ? "rgba(45,202,115,.12)" : current ? "rgba(201,168,76,.12)" : "rgba(255,255,255,.03)";
+      const bord = done ? "rgba(45,202,115,.3)"  : current ? "var(--gold)"          : "var(--border)";
+      const tc   = done ? "var(--green)"          : current ? "var(--gold2)"         : next ? "var(--muted)" : "rgba(107,124,147,.4)";
+      const check= done ? "✓ " : current ? "● " : "";
+
+      return `<div style="display:flex;align-items:center;">
+        <div style="padding:6px 12px;background:${bg};border:1.5px solid ${bord};border-radius:8px;
+          cursor:${locked?"default":"pointer"};white-space:nowrap;transition:all .15s;
+          ${current?"box-shadow:0 0 12px rgba(201,168,76,.2);":""}"
+          title="${l.notes||""}">
+          <div style="font-family:DM Mono,monospace;font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:${tc};opacity:${locked?.45:1};">
+            ${check}${l.label}
+          </div>
+          <div style="font-family:Barlow Condensed,sans-serif;font-size:13px;font-weight:800;color:${tc};opacity:${locked?.35:1};">
+            ${l.icon} ${l.comm}
+          </div>
+        </div>
+        ${l.nextLabel ? `<div style="width:14px;height:1px;background:${done?"var(--green)":i===currentIdx?"var(--gold)":"var(--border)"};flex-shrink:0;"></div>` : ""}
+      </div>`;
+    }).join("")}
+  </div>`;
+}
 
 
 document.addEventListener("DOMContentLoaded",()=>{
