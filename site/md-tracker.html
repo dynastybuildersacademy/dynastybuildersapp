@@ -393,6 +393,24 @@ body::before{content:"";position:fixed;inset:0;
       <div class="sc-title">3-Month Summary</div>
       <div class="sc-grid" id="sum-grid"></div>
     </div>
+
+    <!-- STRATEGY PANEL -->
+    <div class="strategy-card" id="strategy-panel">
+      <div class="strategy-hdr">
+        <div class="strategy-hdr-left">
+          <div class="strat-title">📐 Strategy &amp; Pace</div>
+          <span class="strat-status" id="strat-status-badge">Calculating…</span>
+        </div>
+        <button class="strat-ai-btn" id="strat-ai-btn" onclick="generateAIStrategy()">✦ AI Strategy</button>
+      </div>
+      <div class="need-grid" id="need-grid"></div>
+      <div class="pace-section">
+        <div class="pace-title">Required pace to finish on time</div>
+        <div class="pace-grid" id="pace-grid"></div>
+      </div>
+      <div class="ai-strategy-body" id="ai-strategy-body" style="display:none;"></div>
+    </div>
+
   </div>
 </div>
 <div class="toast" id="toast"></div>
@@ -1456,7 +1474,9 @@ function renderStrategy(run) {
     });
   }
 
-  document.getElementById("need-grid").innerHTML = needs.map(n=>{
+  const needGrid = document.getElementById("need-grid");
+  if(!needGrid) return;
+  needGrid.innerHTML = needs.map(n=>{
     const pct = Math.min(100, n.need>0 ? Math.round(n.have/n.need*100) : 100);
     const done = n.gap<=0;
     const cls  = done?"done":pct<50?"urgent":"";
@@ -1476,7 +1496,8 @@ function renderStrategy(run) {
 
   // ── PACE CHIPS ──────────────────────────────────────────────
   const paceItems = buildPaceItems(run, tot, t, gapR, gapA, gapP, daysLeft, wksLeft, curMonth, personalPct);
-  document.getElementById("pace-grid").innerHTML = paceItems.map(p=>
+  const paceGrid = document.getElementById("pace-grid");
+  if(paceGrid) paceGrid.innerHTML = paceItems.map(p=>
     `<div class="pace-chip ${p.highlight?"highlight":""}">
       <div class="pace-val" style="color:${p.color||"var(--gold2)"};">${p.val}</div>
       <div class="pace-lbl">${p.lbl}</div>
