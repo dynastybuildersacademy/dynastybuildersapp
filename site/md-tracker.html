@@ -359,6 +359,7 @@ body::before{content:"";position:fixed;inset:0;
       <button class="act-btn" onclick="addApp()">+ Application</button>
       <div style="flex:1;"></div>
       <button class="act-btn" onclick="document.getElementById('import-modal').classList.add('open')" style="border-color:rgba(52,152,219,.3);color:var(--blue);">⬆ Import Data</button>
+      <button class="act-btn" onclick="openEditTeamModal()" style="border-color:rgba(155,89,182,.3);color:#9b59b6;">👥 Edit Team</button>
       <button class="act-btn" onclick="syncToMonday()" id="sync-btn" style="border-color:rgba(45,202,115,.3);color:var(--green);">⬡ Sync to Monday</button>
       <button class="act-btn danger" onclick="deleteRun()">✕ Delete Run</button>
     </div>
@@ -1073,8 +1074,10 @@ async function parsePolicyFile(file) {
 
     // All policies vs agent-specific
     const allPol = policies;
-    // Filter by downline if set, otherwise by run agent
+    // Filter by downline — if no downline set, this returns all
     const agentPol = filterPoliciesByDownline(policies, run);
+
+    console.log(`[MD Tracker] Policy import: ${allPol.length} total in file, ${agentPol.length} matched to run (${run.downlineIds?.length||0} downline agents)`);
 
     _polData = { all: allPol, agent: agentPol };
 
@@ -1088,13 +1091,17 @@ async function parsePolicyFile(file) {
     prev.style.display = "block";
     prev.innerHTML = `
       <div style="margin-bottom:8px;">
-        <div style="font-family:Barlow Condensed,sans-serif;font-size:11px;font-weight:800;color:#5dade2;margin-bottom:6px;letter-spacing:.06em;">FILE SUMMARY — ${allPol.length} POLICIES</div>
-        ${[["Total Apps (all)",`${subAppsAll}`],["Total Sub Points",fmtPts(subPtsAll)],["Total Paid Points",fmtPts(totPtsAll)]].map(([k,v])=>`<div class="imp-row"><span class="imp-key">${k}</span><span class="imp-val">${v}</span></div>`).join("")}
+        <div style="font-family:Barlow Condensed,sans-serif;font-size:11px;font-weight:800;color:#5dade2;margin-bottom:6px;letter-spacing:.06em;">FILE SUMMARY — ${allPol.length} POLICIES TOTAL</div>
+        ${[["Total Apps (all)",""+subAppsAll],["Total Sub Points",fmtPts(subPtsAll)],["Total Paid Points",fmtPts(totPtsAll)]].map(([k,v])=>`<div class="imp-row"><span class="imp-key">${k}</span><span class="imp-val">${v}</span></div>`).join("")}
       </div>
-      ${agentPol.length?`<div>
-        <div style="font-family:Barlow Condensed,sans-serif;font-size:11px;font-weight:800;color:var(--gold);margin-bottom:6px;letter-spacing:.06em;">AGENT MATCH — ${agentPol.length} POLICIES (${run?.agentName||"?"})</div>
-        ${[["Agent Sub Apps",`${subAppsAgent}`],["Agent Sub Points",fmtPts(subPtsAgent)],["Agent Paid Points",fmtPts(totPtsAgent)]].map(([k,v])=>`<div class="imp-row"><span class="imp-key">${k}</span><span class="imp-val green">${v}</span></div>`).join("")}
-      </div>`:""}
+      <div>
+        <div style="font-family:Barlow Condensed,sans-serif;font-size:11px;font-weight:800;color:var(--gold);margin-bottom:6px;letter-spacing:.06em;">
+          ${agentPol.length===allPol.length?"✓ ALL POLICIES (no downline filter)":"RUN TEAM MATCH — "+agentPol.length+" / "+allPol.length+" POLICIES"}
+        </div>
+        ${agentPol.length===0?`<div style="color:var(--orange);font-size:11px;">⚠ No policies matched. Check agent PHP codes or add team members in the run settings.</div>`:""}
+        ${[["Team Sub Apps",""+subAppsAgent],["Team Sub Points",fmtPts(subPtsAgent)],["Team Paid Points",fmtPts(totPtsAgent)]].map(([k,v])=>`<div class="imp-row"><span class="imp-key">${k}</span><span class="imp-val green">${v}</span></div>`).join("")}
+        ${agentPol.length<allPol.length?`<div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted);margin-top:5px;">${allPol.length-agentPol.length} policies excluded (not in your downline)</div>`:""}
+      </div>
       <div style="margin-top:10px;">
         <div style="font-family:DM Mono,monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;">Import into month:</div>
         <div style="display:flex;gap:6px;" id="pol-month-picker"></div>
@@ -1904,18 +1911,49 @@ function renderDownlineTag(run) {
 // ── FILTER POLICY IMPORT BY DOWNLINE ──────────────────────────
 // Extend parsePolicyFile to filter by the run's downlineIds
 function filterPoliciesByDownline(policies, run) {
-  if(!run.downlineIds?.length) return policies; // no filter = all
+  // If no downline set, import ALL policies from the file (team view)
+  if(!run.downlineIds?.length) return policies;
+
   const agents = typeof AGENTS !== "undefined" ? AGENTS : [];
 
-  // Build set of PHP codes for the downline + run agent
+  // Build set of PHP codes AND name fragments for matching
   const phpCodes = new Set();
-  phpCodes.add(run.phpId);
+  const nameFragments = new Set();
+
+  // Always include run agent
+  if(run.phpId) phpCodes.add(String(run.phpId));
+  if(run.agentName) nameFragments.add(run.agentName.toLowerCase().trim());
+
   run.downlineIds.forEach(id => {
     const a = agents.find(x=>x.id===id);
-    if(a?.phpId) phpCodes.add(String(a.phpId));
+    if(!a) return;
+    if(a.phpId) phpCodes.add(String(a.phpId));
+    // Also match by name (policy file has full names)
+    if(a.name) {
+      nameFragments.add(a.name.toLowerCase().trim());
+      // Also try last name only for fuzzy match
+      const parts = a.name.trim().split(" ");
+      if(parts.length > 1) nameFragments.add(parts[parts.length-1].toLowerCase());
+    }
   });
 
-  return policies.filter(p => phpCodes.has(String(p.phpCode)));
+  // Also include any manually-mapped PHP codes on the run
+  if(run.extraPhpCodes?.length) {
+    run.extraPhpCodes.forEach(c => phpCodes.add(String(c)));
+  }
+
+  return policies.filter(p => {
+    // Match by PHP code first (most reliable)
+    if(p.phpCode && phpCodes.has(String(p.phpCode))) return true;
+    // Fall back to name match
+    if(p.agent) {
+      const agentLower = p.agent.toLowerCase().trim();
+      for(const frag of nameFragments) {
+        if(agentLower.includes(frag) || frag.includes(agentLower)) return true;
+      }
+    }
+    return false;
+  });
 }
 
 
@@ -2409,6 +2447,138 @@ function selectImportMonth(type, monthIdx, btn) {
 }
 
 
+
+// ════════════════════════════════════════════════════════════════
+// EDIT TEAM — add/remove downline agents after run creation
+// ════════════════════════════════════════════════════════════════
+
+let _editTeamSelected = new Set();
+
+function openEditTeamModal() {
+  const run = runs.find(r => r.id === activeId);
+  if(!run) { toast("Open a run first"); return; }
+
+  // Seed picker from run's current downline
+  _editTeamSelected = new Set(run.downlineIds || []);
+
+  renderEditTeamList();
+  renderExtraCodes(run);
+  updateEditTeamSummary(run);
+  document.getElementById("edit-team-modal").classList.add("open");
+}
+
+function renderEditTeamList() {
+  const q = (document.getElementById("et-search")?.value || "").toLowerCase();
+  const run = runs.find(r => r.id === activeId);
+  const agents = typeof AGENTS !== "undefined" ? AGENTS : [];
+  const runAgentId = run?.agentId || "";
+
+  const visible = agents.filter(a =>
+    a.id !== "dba000" && a.id !== runAgentId &&
+    (!q || a.name.toLowerCase().includes(q) || (a.phpId||"").includes(q))
+  );
+
+  const list = document.getElementById("et-list");
+  if(!list) return;
+
+  list.innerHTML = visible.map(a => {
+    const checked = _editTeamSelected.has(a.id);
+    return `<div class="dl-item ${checked?"checked":""}" onclick="toggleEditAgent('${a.id}')">
+      <div class="dl-cb">${checked?"✓":""}</div>
+      <span class="dl-name">${a.name}</span>
+      <span class="dl-php">${a.phpId || a.id}</span>
+    </div>`;
+  }).join("") || `<div style="padding:14px;text-align:center;color:var(--muted);font-size:12px;">No agents found</div>`;
+
+  document.getElementById("et-count").textContent = `${_editTeamSelected.size} selected`;
+}
+
+function filterEditTeam() { renderEditTeamList(); }
+
+function toggleEditAgent(id) {
+  if(_editTeamSelected.has(id)) _editTeamSelected.delete(id);
+  else _editTeamSelected.add(id);
+  renderEditTeamList();
+  const run = runs.find(r => r.id === activeId);
+  if(run) updateEditTeamSummary(run);
+}
+
+function toggleAllEditTeam() {
+  const run = runs.find(r => r.id === activeId);
+  const agents = typeof AGENTS !== "undefined" ? AGENTS : [];
+  const eligible = agents.filter(a => a.id !== "dba000" && a.id !== run?.agentId);
+  const allSel = eligible.every(a => _editTeamSelected.has(a.id));
+  if(allSel) eligible.forEach(a => _editTeamSelected.delete(a.id));
+  else eligible.forEach(a => _editTeamSelected.add(a.id));
+  renderEditTeamList();
+}
+
+function addExtraPhpCode() {
+  const run = runs.find(r => r.id === activeId);
+  if(!run) return;
+  const val = document.getElementById("et-php-input")?.value?.trim();
+  if(!val || isNaN(val)) { toast("Enter a valid PHP code number"); return; }
+  if(!run.extraPhpCodes) run.extraPhpCodes = [];
+  if(!run.extraPhpCodes.includes(val)) {
+    run.extraPhpCodes.push(val);
+    save();
+    renderExtraCodes(run);
+    document.getElementById("et-php-input").value = "";
+    toast(`✓ PHP code ${val} added`);
+  }
+}
+
+function removeExtraCode(code) {
+  const run = runs.find(r => r.id === activeId);
+  if(!run?.extraPhpCodes) return;
+  run.extraPhpCodes = run.extraPhpCodes.filter(c => c !== code);
+  save();
+  renderExtraCodes(run);
+}
+
+function renderExtraCodes(run) {
+  const el = document.getElementById("et-extra-codes");
+  if(!el) return;
+  const codes = run?.extraPhpCodes || [];
+  el.innerHTML = codes.map(c =>
+    `<span class="dl-chip">${c}
+      <span class="dl-chip-x" onclick="removeExtraCode('${c}')">×</span>
+    </span>`
+  ).join("") || `<span style="font-family:DM Mono,monospace;font-size:10px;color:var(--muted);">None added</span>`;
+}
+
+function updateEditTeamSummary(run) {
+  const el = document.getElementById("et-summary");
+  if(!el) return;
+  const agents = typeof AGENTS !== "undefined" ? AGENTS : [];
+  const names = [..._editTeamSelected]
+    .map(id => agents.find(a => a.id === id)?.name?.split(" ")[0])
+    .filter(Boolean);
+  const extra = run?.extraPhpCodes?.length ? ` + ${run.extraPhpCodes.length} PHP code(s)` : "";
+  el.textContent = names.length
+    ? `Team: ${names.slice(0,6).join(", ")}${names.length>6?" +"+(names.length-6)+" more":""}${extra}`
+    : `No team members selected${extra}`;
+}
+
+function saveEditTeam() {
+  const run = runs.find(r => r.id === activeId);
+  if(!run) return;
+  run.downlineIds = [..._editTeamSelected];
+  save();
+  renderAll();
+  document.getElementById("edit-team-modal").classList.remove("open");
+  toast(`✓ Team updated — ${run.downlineIds.length} members`);
+}
+
+// Close on backdrop
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("edit-team-modal")?.addEventListener("click", e => {
+    if(e.target === document.getElementById("edit-team-modal"))
+      document.getElementById("edit-team-modal").classList.remove("open");
+  });
+});
+
+
 document.addEventListener("DOMContentLoaded",()=>{
   load();populateAgents();
 
@@ -2588,6 +2758,52 @@ document.addEventListener("DOMContentLoaded",()=>{
     </div>
     <div class="modal-footer">
       <button class="btn-cancel" onclick="document.getElementById('import-modal').classList.remove('open')">Close</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- EDIT TEAM MODAL -->
+<div class="modal-bg" id="edit-team-modal">
+  <div class="modal" style="max-width:540px;">
+    <div class="modal-hdr">
+      <div class="modal-title">👥 Edit Run Team</div>
+      <button class="modal-close" onclick="document.getElementById('edit-team-modal').classList.remove('open')">×</button>
+    </div>
+    <div class="modal-body" style="gap:10px;">
+      <p style="font-size:12px;color:var(--muted);line-height:1.7;">
+        Add or remove agents whose production counts toward this run. The policy import filter updates automatically.
+      </p>
+
+      <!-- PHP code manual override -->
+      <div class="field">
+        <label>Add agent by PHP Bamboo code (if not in roster)</label>
+        <div style="display:flex;gap:8px;">
+          <input type="number" id="et-php-input" placeholder="e.g. 1353757" style="flex:1;background:var(--s2);border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-family:DM Mono,monospace;font-size:12px;outline:none;">
+          <button onclick="addExtraPhpCode()" style="padding:8px 14px;border-radius:8px;border:none;background:rgba(155,89,182,.15);color:#9b59b6;font-family:Barlow Condensed,sans-serif;font-size:12px;font-weight:700;cursor:pointer;border:1px solid rgba(155,89,182,.3);">+ Add Code</button>
+        </div>
+        <div id="et-extra-codes" style="display:flex;flex-wrap:wrap;gap:5px;margin-top:6px;"></div>
+      </div>
+
+      <!-- Downline search picker -->
+      <div class="field">
+        <label>Team members from agent roster</label>
+        <div class="downline-picker">
+          <input class="dl-search" id="et-search" type="text" placeholder="Search agents…" oninput="filterEditTeam()">
+          <div class="dl-list" id="et-list" style="max-height:220px;"></div>
+          <div class="dl-footer">
+            <span class="dl-count" id="et-count">0 selected</span>
+            <button class="dl-toggle" onclick="toggleAllEditTeam()">Select All</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Current team summary -->
+      <div id="et-summary" style="font-family:DM Mono,monospace;font-size:10px;color:var(--muted);"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="document.getElementById('edit-team-modal').classList.remove('open')">Cancel</button>
+      <button class="btn-create" onclick="saveEditTeam()">✓ Save Team</button>
     </div>
   </div>
 </div>
