@@ -559,7 +559,7 @@ function selectRun(id){
   renderBar();renderAll();
 }
 
-function renderAll(){
+function renderAllBase(){
   const run=runs.find(r=>r.id===activeId);if(!run)return;
   const allR=run.recruits.flat();
   const allA=run.apps.flat();
@@ -1152,6 +1152,12 @@ function mergePolicyData() {
   document.getElementById("import-modal").classList.remove("open");
   if(totalAdded) toast(`✓ ${totalAdded} policies imported (${monthsSynced.join(", ")})`);
   else toast("ℹ All policies already exist in tracker");
+}
+
+function isPaid(status) {
+  if(!status) return false;
+  const s = status.toUpperCase();
+  return s.includes("PAID") || s.includes("INFORCE") || s.includes("ISSUED PAID") || s.includes("APPROVED");
 }
 
 function calcSplitApps(split) {
@@ -1750,9 +1756,8 @@ Return ONLY the JSON array. No other text.`;
 
 // ── HOOK INTO renderAll ────────────────────────────────────────
 // Patch renderAll to also call renderStrategy after existing render
-const _renderAll_orig = renderAll;
-function renderAll() {
-  _renderAll_orig();
+function renderAll(){
+  renderAllBase();
   const run = runs.find(r=>r.id===activeId);
   if(run) renderStrategy(run);
 }

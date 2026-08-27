@@ -921,11 +921,22 @@ Rules:
     }]
   };
 
-  const res = await fetch(ENDPOINT, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
-  });
+  // Try proxy, fall back to direct Anthropic
+  let res = null;
+  const endpoints = ENDPOINT ? [ENDPOINT, 'https://api.anthropic.com/v1/messages'] : ['https://api.anthropic.com/v1/messages'];
+  for(const ep of endpoints) {
+    const hdrs = {'Content-Type':'application/json'};
+    if(ep.includes('anthropic.com')) {
+      hdrs['x-api-key'] = AUTH.getAnthropicKey ? AUTH.getAnthropicKey() : '';
+      hdrs['anthropic-version'] = '2023-06-01';
+      hdrs['anthropic-dangerous-direct-browser-access'] = 'true';
+    }
+    try {
+      const r = await fetch(ep, {method:'POST', headers:hdrs, body:JSON.stringify(body)});
+      if(r.ok){res=r;break;}
+    } catch(e){ console.warn('[Vision]',ep,e.message); }
+  }
+  if(!res) throw new Error('Vision API unreachable — check proxy deployment');
 
   if (!res.ok) throw new Error('Claude API ' + res.status);
   const data = await res.json();
