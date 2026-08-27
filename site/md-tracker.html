@@ -228,6 +228,13 @@ body::before{content:"";position:fixed;inset:0;
 .dl-chip .dl-chip-x{cursor:pointer;opacity:.7;font-size:10px;margin-left:2px;}
 .dl-chip .dl-chip-x:hover{opacity:1;}
 
+
+/* MANUAL ENTRY */
+.me-field label{display:block;font-family:"DM Mono",monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;}
+.me-field input{width:100%;background:var(--s2);border:1.5px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:"Barlow Condensed",sans-serif;font-size:16px;font-weight:700;outline:none;transition:border-color .2s;}
+.me-field input:focus{border-color:var(--gold);}
+.me-field input::placeholder{font-size:12px;font-weight:400;color:var(--muted);}
+
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
@@ -352,6 +359,7 @@ body::before{content:"";position:fixed;inset:0;
       <button class="act-btn" onclick="addApp()">+ Application</button>
       <div style="flex:1;"></div>
       <button class="act-btn" onclick="document.getElementById('import-modal').classList.add('open')" style="border-color:rgba(52,152,219,.3);color:var(--blue);">⬆ Import Data</button>
+      <button class="act-btn" onclick="syncToMonday()" id="sync-btn" style="border-color:rgba(45,202,115,.3);color:var(--green);">⬡ Sync to Monday</button>
       <button class="act-btn danger" onclick="deleteRun()">✕ Delete Run</button>
     </div>
 
@@ -391,6 +399,35 @@ body::before{content:"";position:fixed;inset:0;
 
 <script>
 const SK = "dba_md_tracker_v2";
+const MONDAY_BOARD_ID = 18428379351; // DBA — MD Promotion Tracker board
+
+// Column IDs
+const COL = {
+  agent:       "text_mm6m53ks",
+  phpId:       "text_mm6m9182",
+  level:       "text_mm6mxgk1",
+  runStart:    "date_mm6msmh3",
+  runEnd:      "date_mm6mx39d",
+  curMonth:    "numeric_mm6mqnnj",
+  recruits:    "numeric_mm6mzzjg",
+  recruitsT:   "numeric_mm6mwvp9",
+  apps:        "numeric_mm6mxabm",
+  appsT:       "numeric_mm6m6sw0",
+  subPts:      "numeric_mm6mckhb",
+  ptsT:        "numeric_mm6m4ad2",
+  paidPts:     "numeric_mm6mm5m",
+  status:      "color_mm6mdt7b",
+  notes:       "long_text_mm6mm4hz",
+  lastSynced:  "date_mm6mrw0k",
+};
+
+// Group IDs (months 0-indexed, plus summary group)
+const GROUPS = {
+  0: "group_mm6mknw6",  // Month 1
+  1: "group_mm6m4sf3",  // Month 2
+  2: "group_mm6mtp6g",  // Month 3
+  summary: "group_mm6mhvnx", // Run Summaries
+};
 const TARGETS = {
   "Trainee":{r:3,a:3,p:3000},
   "Associate":{r:10,a:10,p:10000},
@@ -594,16 +631,35 @@ function delR(m,i){const run=runs.find(r=>r.id===activeId);if(run){run.recruits[
 
 function renderApps(run){
   const rows=run.apps[activeMonth]||[];
-  const totA=run.apps.flat().reduce((s,a)=>s+(parseFloat(a.a)||0),0);
-  const totP=run.apps.flat().reduce((s,a)=>s+(parseFloat(a.p)||0),0);
-  document.getElementById("a-count").textContent=totA.toFixed(1)+" apps · "+fmtPts(totP)+" pts";
+  const allA=run.apps.flat();
+  const totA=allA.reduce((s,a)=>s+(parseFloat(a.a)||0),0);
+  const totP=allA.reduce((s,a)=>s+(parseFloat(a.p)||0),0);
+  const paidA=allA.filter(a=>a.paid).reduce((s,a)=>s+(parseFloat(a.a)||0),0);
+  const paidP=allA.filter(a=>a.paid).reduce((s,a)=>s+(parseFloat(a.p)||0),0);
+  const unpaidCount=allA.filter(a=>!a.paid).length;
+
+  let countHtml = `${totA.toFixed(1)} apps · ${fmtPts(totP)} pts`;
+  if(paidA<totA) countHtml += ` <span style="color:var(--green);margin-left:6px;">✓ ${paidA.toFixed(1)} paid</span>`;
+  if(unpaidCount) countHtml += ` <span style="color:var(--orange);margin-left:4px;">· ${unpaidCount} pending</span>`;
+  document.getElementById("a-count").innerHTML = countHtml;
+
   document.getElementById("a-tbody").innerHTML=rows.map((a,i)=>`
-    <tr><td class="row-num">${i+1}</td>
+    <tr style="${a.paid?'':'opacity:.75;'}">
+    <td class="row-num">${i+1}</td>
     <td><input class="editable" value="${a.d||""}" placeholder="YYYY-MM-DD" onchange="updA(${activeMonth},${i},'d',this.value)" style="width:90px;font-family:DM Mono,monospace;font-size:10px;color:var(--muted);"></td>
-    <td><input class="editable" value="${a.pol||""}" placeholder="Policy #" onchange="updA(${activeMonth},${i},'pol',this.value)" style="font-family:DM Mono,monospace;font-size:10px;color:var(--gold);width:100px;"></td>
-    <td><input class="editable" value="${a.c||""}" placeholder="Client Name" onchange="updA(${activeMonth},${i},'c',this.value)"></td>
-    <td><input class="editable" type="number" step="0.25" value="${a.a||""}" placeholder="1" onchange="updA(${activeMonth},${i},'a',this.value)" style="width:44px;font-family:Barlow Condensed,sans-serif;font-size:14px;font-weight:700;color:var(--gold2);"></td>
-    <td><input class="editable" type="number" value="${a.p||""}" placeholder="0" onchange="updA(${activeMonth},${i},'p',this.value)" style="width:70px;font-family:Barlow Condensed,sans-serif;font-size:13px;font-weight:700;color:var(--green);"></td>
+    <td><input class="editable" value="${a.pol||""}" placeholder="Policy #" onchange="updA(${activeMonth},${i},'pol',this.value)" style="font-family:DM Mono,monospace;font-size:10px;color:${a.paid?'var(--gold)':'var(--muted)'};width:100px;"></td>
+    <td><input class="editable" value="${a.c||""}" placeholder="Client Name" onchange="updA(${activeMonth},${i},'c',this.value)" style="${a.paid?'':'color:var(--muted);'}"></td>
+    <td><input class="editable" type="number" step="0.25" value="${a.a||""}" placeholder="1" onchange="updA(${activeMonth},${i},'a',this.value)" style="width:44px;font-family:Barlow Condensed,sans-serif;font-size:14px;font-weight:700;color:${a.paid?'var(--gold2)':'var(--muted)'};"></td>
+    <td><input class="editable" type="number" value="${a.p||""}" placeholder="0" onchange="updA(${activeMonth},${i},'p',this.value)" style="width:70px;font-family:Barlow Condensed,sans-serif;font-size:13px;font-weight:700;color:${a.paid?'var(--green)':'var(--muted)'};"></td>
+    <td style="text-align:center;">
+      <div onclick="togglePaid(${activeMonth},${i})" title="${a.paid?'Paid — click to mark unpaid':'Pending — click to mark paid'}"
+        style="width:22px;height:22px;border-radius:5px;border:2px solid ${a.paid?'var(--green)':'var(--border)'};
+          background:${a.paid?'rgba(45,202,115,.15)':'transparent'};
+          display:inline-flex;align-items:center;justify-content:center;
+          cursor:pointer;transition:all .15s;font-size:12px;margin:auto;">
+        ${a.paid?'✓':''}
+      </div>
+    </td>
     <td><button onclick="delA(${activeMonth},${i})" style="background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:2px 5px;">×</button></td>
     </tr>`).join("");
 }
@@ -615,6 +671,19 @@ function addApp(){
   save();renderAll();
 }
 function updA(m,i,f,v){const run=runs.find(r=>r.id===activeId);if(run?.apps[m]?.[i]){run.apps[m][i][f]=v;save();renderAll();}}
+function togglePaid(m,i){
+  const run=runs.find(r=>r.id===activeId);
+  if(!run?.apps[m]?.[i]) return;
+  run.apps[m][i].paid = !run.apps[m][i].paid;
+  // If marking paid and no paidPts set, copy from sub points
+  if(run.apps[m][i].paid && !run.apps[m][i].paidPts && run.apps[m][i].p) {
+    run.apps[m][i].paidPts = run.apps[m][i].p;
+  }
+  save();
+  renderAll();
+  const a=run.apps[m][i];
+  toast(a.paid ? `✓ ${a.c||"Policy"} marked as paid` : `${a.c||"Policy"} marked as pending`);
+}
 function delA(m,i){const run=runs.find(r=>r.id===activeId);if(run){run.apps[m].splice(i,1);save();renderAll();toast("App removed");}}
 
 function renderSummary(run){
@@ -622,20 +691,33 @@ function renderSummary(run){
     const rc=run.recruits[i]?.length||0;
     const ac=(run.apps[i]||[]).reduce((s,a)=>s+(parseFloat(a.a)||0),0);
     const pc=(run.apps[i]||[]).reduce((s,a)=>s+(parseFloat(a.p)||0),0);
+    const paidC=(run.apps[i]||[]).filter(a=>a.paid).length;
+    const pendC=(run.apps[i]||[]).length-paidC;
     return `<div style="text-align:center;padding:10px;background:var(--s2);border-radius:8px;border:1px solid var(--border);">
       <div style="font-family:DM Mono,monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">${lbl}</div>
       <div style="font-family:Barlow Condensed,sans-serif;font-size:14px;font-weight:700;color:#5dade2;">${rc} recruits</div>
       <div style="font-family:Barlow Condensed,sans-serif;font-size:14px;font-weight:700;color:var(--gold2);">${ac.toFixed(1)} apps</div>
       <div style="font-family:Barlow Condensed,sans-serif;font-size:14px;font-weight:700;color:var(--green);">${fmtPts(pc)} pts</div>
+      ${paidC||pendC?`<div style="font-family:DM Mono,monospace;font-size:9px;margin-top:5px;color:var(--muted);">
+        ${paidC?`<span style="color:var(--green);">✓${paidC} paid</span>`:""}
+        ${pendC?`<span style="color:var(--orange);margin-left:4px;">⏳${pendC} pending</span>`:""}
+      </div>`:""}
     </div>`;
   });
   const allA=run.apps.flat();
   const tR=run.recruits.flat().length,tA=allA.reduce((s,a)=>s+(parseFloat(a.a)||0),0),tP=allA.reduce((s,a)=>s+(parseFloat(a.p)||0),0);
+  const tPaidA=allA.filter(a=>a.paid).reduce((s,a)=>s+(parseFloat(a.a)||0),0);
+  const tPaidP=allA.filter(a=>a.paid).reduce((s,a)=>s+(parseFloat(a.p)||0),0);
+  const tPendingCount=allA.filter(a=>!a.paid).length;
   items.push(`<div style="text-align:center;padding:10px;background:rgba(201,168,76,.06);border-radius:8px;border:1px solid var(--gold);">
     <div style="font-family:DM Mono,monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);margin-bottom:6px;">Total Run</div>
     <div style="font-family:Barlow Condensed,sans-serif;font-size:16px;font-weight:800;color:#5dade2;">${tR} recruits</div>
     <div style="font-family:Barlow Condensed,sans-serif;font-size:16px;font-weight:800;color:var(--gold2);">${tA.toFixed(1)} apps</div>
     <div style="font-family:Barlow Condensed,sans-serif;font-size:16px;font-weight:800;color:var(--green);">${fmtPts(tP)} pts</div>
+    ${allA.length?`<div style="font-family:DM Mono,monospace;font-size:9px;margin-top:6px;border-top:1px solid rgba(201,168,76,.15);padding-top:5px;">
+      <div style="color:var(--green);">✓ ${tPaidA.toFixed(1)} apps paid · ${fmtPts(tPaidP)} pts</div>
+      ${tPendingCount?`<div style="color:var(--orange);">⏳ ${tPendingCount} pending</div>`:""}
+    </div>`:""}
   </div>`);
   document.getElementById("sum-grid").innerHTML=items.join("");
 }
@@ -766,17 +848,40 @@ Extract ALL visible information and return ONLY this exact JSON, no other text:
 
     let lastError = "";
     try {
-      const res = await fetch(ENDPOINT, {
-        method:"POST", headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({
-          model:"claude-sonnet-4-6", max_tokens:1000, system,
-          messages:[{role:"user",content:[
-            {type:"image",source:{type:"base64",media_type:mime,data:base64}},
-            {type:"text",text:"Extract all metrics from this PHP Bamboo dashboard screenshot. Return JSON only."}
-          ]}]
-        })
-      });
+      // Try proxy first, fall back to direct Anthropic call
+      const DIRECT = "https://api.anthropic.com/v1/messages";
+      const endpoints = ENDPOINT ? [ENDPOINT, DIRECT] : [DIRECT];
+      let res = null;
 
+      for(const ep of endpoints) {
+        const hdrs = {"Content-Type":"application/json"};
+        if(ep === DIRECT) {
+          // Direct browser call — requires the header below
+          hdrs["x-api-key"] = AUTH.getAnthropicKey ? AUTH.getAnthropicKey() : "";
+          hdrs["anthropic-version"] = "2023-06-01";
+          hdrs["anthropic-dangerous-direct-browser-access"] = "true";
+        }
+        try {
+          res = await fetch(ep, {
+            method:"POST", headers: hdrs,
+            body: JSON.stringify({
+              model:"claude-sonnet-4-6", max_tokens:1000, system,
+              messages:[{role:"user",content:[
+                {type:"image",source:{type:"base64",media_type:mime,data:base64}},
+                {type:"text",text:"Extract all metrics from this PHP Bamboo dashboard screenshot. Return JSON only."}
+              ]}]
+            })
+          });
+          if(res.ok) break; // success — stop trying
+          console.warn(`[MD Tracker] ${ep} returned ${res.status}, trying next…`);
+          res = null;
+        } catch(fetchErr) {
+          console.warn(`[MD Tracker] ${ep} fetch error:`, fetchErr.message);
+          res = null;
+        }
+      }
+
+      if(!res) throw new Error("All endpoints failed — check network connection");
       if(!res.ok) {
         lastError = `HTTP ${res.status}: ${await res.text()}`;
         throw new Error(lastError);
@@ -859,6 +964,7 @@ Extract ALL visible information and return ONLY this exact JSON, no other text:
     renderMetrics(allExtracted.nonMd, "📊 Non-MD Base Tab", "nonmd");
 
   document.getElementById("ss-merge-btn").disabled = false;
+  document.getElementById("ss-merge-btn").style.display = "";
 }
 
 function mergeScreenshotData() {
@@ -971,7 +1077,19 @@ async function parsePolicyFile(file) {
         <div style="font-family:Barlow Condensed,sans-serif;font-size:11px;font-weight:800;color:var(--gold);margin-bottom:6px;letter-spacing:.06em;">AGENT MATCH — ${agentPol.length} POLICIES (${run?.agentName||"?"})</div>
         ${[["Agent Sub Apps",`${subAppsAgent}`],["Agent Sub Points",fmtPts(subPtsAgent)],["Agent Paid Points",fmtPts(totPtsAgent)]].map(([k,v])=>`<div class="imp-row"><span class="imp-key">${k}</span><span class="imp-val green">${v}</span></div>`).join("")}
       </div>`:""}
-      <div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted);margin-top:8px;">Will import as individual app rows into Month ${activeMonth+1}</div>`;
+      <div style="margin-top:10px;">
+        <div style="font-family:DM Mono,monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;">Import into month:</div>
+        <div style="display:flex;gap:6px;" id="pol-month-picker"></div>
+      </div>`;
+
+    // Build month picker
+    const run2 = runs.find(r=>r.id===activeId);
+    const pickerEl = document.getElementById("pol-month-picker");
+    if(pickerEl && run2) {
+      const detectedMonth = detectMonthFromPolicies(_polData.agent.length?_polData.agent:_polData.all, run2);
+      buildMonthPicker(pickerEl, run2, detectedMonth, "pol");
+      window._polImportMonth = detectedMonth;
+    }
 
     document.getElementById("pol-merge-btn").disabled = false;
   } catch(e) {
@@ -983,32 +1101,57 @@ async function parsePolicyFile(file) {
 
 function mergePolicyData() {
   const run = runs.find(r=>r.id===activeId);
-  if(!run||!_polData) return;
+  if(!run) { toast("⚠ No active run — open a run first"); return; }
+  if(!_polData) { toast("⚠ No policy data — upload a file first"); return; }
 
-  // Use agent-specific if available, else all
+  const targetMonth = window._polImportMonth ?? activeMonth;
   const source = _polData.agent.length ? _polData.agent : _polData.all;
-  if(!run.apps[activeMonth]) run.apps[activeMonth] = [];
+  if(!source.length) { toast("⚠ No policies to import"); return; }
 
-  // Deduplicate by policy number
-  const existing = new Set(run.apps[activeMonth].map(a=>a.pol));
-  let added = 0;
-  source.forEach(p=>{
-    if(p.policy && existing.has(p.policy)) return;
-    run.apps[activeMonth].push({
-      d: p.date||new Date().toISOString().slice(0,10),
-      pol: p.policy,
-      c: p.client,
-      a: calcSplitApps(p.split),
-      p: p.subPts,
-      paidPts: p.totPts,
-      status: p.status,
+  if(!run.apps[targetMonth]) run.apps[targetMonth] = [];
+
+  // Group policies by month if run has multiple months
+  // and import each to its detected month (or all to targetMonth if no dates)
+  const byMonth = {};
+  source.forEach(p => {
+    let m = targetMonth; // default
+    if(p.date && run.months > 1) {
+      m = detectMonthForDate(p.date, run);
+      if(m < 0) m = targetMonth; // date outside run range — use selected month
+    }
+    if(!byMonth[m]) byMonth[m] = [];
+    byMonth[m].push(p);
+  });
+
+  let totalAdded = 0;
+  const monthsSynced = [];
+
+  Object.entries(byMonth).forEach(([mStr, policies]) => {
+    const m = parseInt(mStr);
+    if(!run.apps[m]) run.apps[m] = [];
+    const existing = new Set(run.apps[m].map(a=>a.pol).filter(Boolean));
+    let added = 0;
+    policies.forEach(p => {
+      if(p.policy && existing.has(p.policy)) return;
+      run.apps[m].push({
+        d: p.date||new Date().toISOString().slice(0,10),
+        pol: p.policy,
+        c: p.client,
+        a: calcSplitApps(p.split),
+        p: p.subPts,
+        paidPts: p.totPts,
+        status: p.status,
+        paid: isPaid(p.status),
+      });
+      added++;
     });
-    added++;
+    if(added) { totalAdded += added; monthsSynced.push(`M${m+1}: ${added}`); }
   });
 
   save(); renderAll();
   document.getElementById("import-modal").classList.remove("open");
-  toast(`✓ ${added} policies imported to Month ${activeMonth+1}`);
+  if(totalAdded) toast(`✓ ${totalAdded} policies imported (${monthsSynced.join(", ")})`);
+  else toast("ℹ All policies already exist in tracker");
 }
 
 function calcSplitApps(split) {
@@ -1080,22 +1223,44 @@ async function parseAgentsFile(file) {
 
 function mergeAgentsData() {
   const run = runs.find(r=>r.id===activeId);
-  if(!run||!_agData?.personal?.length) return;
+  if(!run) { toast("⚠ No active run — open a run first"); return; }
+  if(!_agData?.personal?.length) { toast("⚠ No agents to import"); return; }
 
-  if(!run.recruits[activeMonth]) run.recruits[activeMonth] = [];
-  const existing = new Set(run.recruits[activeMonth].map(r=>r.n.toLowerCase().trim()));
-  let added = 0;
+  const targetMonth = window._agImportMonth ?? activeMonth;
 
-  _agData.personal.forEach(a=>{
-    const key = a.name.toLowerCase().trim();
-    if(existing.has(key)) return;
-    run.recruits[activeMonth].push({ d:a.date||"", n:`${a.name} ${a.phpCode}`.trim() });
-    added++;
+  // Distribute recruits by sponsorship date into the right month
+  const byMonth = {};
+  _agData.personal.forEach(a => {
+    let m = targetMonth;
+    if(a.date && run.months > 1) {
+      m = detectMonthForDate(a.date, run);
+      if(m < 0) m = targetMonth;
+    }
+    if(!byMonth[m]) byMonth[m] = [];
+    byMonth[m].push(a);
+  });
+
+  let totalAdded = 0;
+  const monthsSynced = [];
+
+  Object.entries(byMonth).forEach(([mStr, agents]) => {
+    const m = parseInt(mStr);
+    if(!run.recruits[m]) run.recruits[m] = [];
+    const existing = new Set(run.recruits[m].map(r=>r.n.toLowerCase().trim()));
+    let added = 0;
+    agents.forEach(a => {
+      const key = a.name.toLowerCase().trim();
+      if(existing.has(key)) return;
+      run.recruits[m].push({ d:a.date||"", n:`${a.name} ${a.phpCode}`.trim() });
+      added++;
+    });
+    if(added) { totalAdded += added; monthsSynced.push(`M${m+1}: ${added}`); }
   });
 
   save(); renderAll();
   document.getElementById("import-modal").classList.remove("open");
-  toast(`✓ ${added} recruits imported to Month ${activeMonth+1}`);
+  if(totalAdded) toast(`✓ ${totalAdded} recruits imported (${monthsSynced.join(", ")})`);
+  else toast("ℹ All recruits already in tracker");
 }
 
 // ── XLSX/CSV READER ──────────────────────────────────────
@@ -1528,13 +1693,26 @@ Return a JSON array of strategy objects:
 Return ONLY the JSON array. No other text.`;
 
   try {
-    const res = await fetch(ENDPOINT, {
-      method:"POST", headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({
-        model:"claude-sonnet-4-6", max_tokens:1200,
-        messages:[{role:"user",content:prompt}]
-      })
-    });
+    // Try proxy then direct
+    const DIRECT2 = "https://api.anthropic.com/v1/messages";
+    const eps2 = ENDPOINT ? [ENDPOINT, DIRECT2] : [DIRECT2];
+    let res2 = null;
+    for(const ep of eps2) {
+      const hdrs = {"Content-Type":"application/json"};
+      if(ep === DIRECT2) {
+        hdrs["x-api-key"] = AUTH.getAnthropicKey ? AUTH.getAnthropicKey() : "";
+        hdrs["anthropic-version"] = "2023-06-01";
+        hdrs["anthropic-dangerous-direct-browser-access"] = "true";
+      }
+      try {
+        const r = await fetch(ep, {method:"POST",headers:hdrs,
+          body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:1200,
+            messages:[{role:"user",content:prompt}]})});
+        if(r.ok){res2=r;break;}
+      } catch(e){ console.warn("Strategy fetch:",ep,e.message); }
+    }
+    if(!res2) throw new Error("Strategy API unreachable");
+    const res = res2;
     const data = await res.json();
     const raw  = (data?.content?.[0]?.text||"[]").replace(/```json|```/g,"").trim();
     const strats = JSON.parse(raw);
@@ -1715,8 +1893,501 @@ function filterPoliciesByDownline(policies, run) {
 }
 
 
+
+// ════════════════════════════════════════════════════════════════
+// MONDAY.COM SYNC — DBA MD Promotion Tracker (board 18428379351)
+// ════════════════════════════════════════════════════════════════
+
+async function syncToMonday() {
+  const run = runs.find(r => r.id === activeId);
+  if(!run) { toast("No active run to sync"); return; }
+
+  const btn = document.getElementById("sync-btn");
+  btn.textContent = "⏳ Syncing…";
+  btn.style.opacity = ".6";
+
+  try {
+    const tot = calcRunTotals(run);
+
+    // Status label based on progress
+    const t = run.targets;
+    const pct = t.r > 0 ? tot.recruits/t.r : 1;
+    const statusIdx = pct >= 1 ? 1 : pct >= 0.5 ? 5 : 8; // Done/On Track/Behind
+
+    const today = new Date().toISOString().slice(0,10);
+
+    // Build column values for the summary row
+    const cv = {
+      [COL.agent]:      run.agentName,
+      [COL.phpId]:      run.phpId || "",
+      [COL.level]:      run.level,
+      [COL.runStart]:   { date: run.startDate },
+      [COL.runEnd]:     { date: run.endDate },
+      [COL.curMonth]:   (run.currentMonth || 0) + 1,
+      [COL.recruits]:   tot.recruits,
+      [COL.recruitsT]:  t.r || 0,
+      [COL.apps]:       Math.round(tot.apps * 100) / 100,
+      [COL.appsT]:      t.a || 0,
+      [COL.subPts]:     Math.round(tot.points),
+      [COL.ptsT]:       t.p || 0,
+      [COL.paidPts]:    Math.round(tot.paidPts || 0),
+      [COL.status]:     { index: statusIdx },
+      [COL.lastSynced]: { date: today },
+    };
+
+    const cvStr = JSON.stringify(JSON.stringify(cv));
+    const itemName = `${run.agentName} — ${run.startDate}`;
+
+    // Check if summary row already exists on the board
+    let itemId = run.mondayItemId || null;
+
+    if(itemId) {
+      // Update existing item
+      await mondayQuery(`mutation {
+        change_multiple_column_values(
+          board_id: ${MONDAY_BOARD_ID},
+          item_id: ${itemId},
+          column_values: ${cvStr}
+        ) { id }
+      }`);
+    } else {
+      // Create new summary row in Run Summaries group
+      const res = await mondayQuery(`mutation {
+        create_item(
+          board_id: ${MONDAY_BOARD_ID},
+          group_id: "${GROUPS.summary}",
+          item_name: "${itemName.replace(/"/g,"")}",
+          column_values: ${cvStr}
+        ) { id }
+      }`);
+      itemId = res?.data?.create_item?.id;
+      if(itemId) {
+        run.mondayItemId = itemId;
+        save();
+      }
+    }
+
+    // Sync each month's recruits and apps as subitems
+    if(itemId) {
+      await syncMonthlyDetails(run, itemId, tot);
+    }
+
+    toast("✓ Synced to Monday.com", "ok");
+    renderAll();
+  } catch(e) {
+    console.error("[MD Tracker] Monday sync error:", e);
+    toast("✗ Sync failed: " + e.message);
+  }
+
+  btn.textContent = "⬡ Sync to Monday";
+  btn.style.opacity = "";
+}
+
+async function syncMonthlyDetails(run, parentId, tot) {
+  // Sync each month as a separate item in the month group
+  for(let m = 0; m < run.months; m++) {
+    const mR = (run.recruits[m]||[]).length;
+    const mA = (run.apps[m]||[]).reduce((s,a) => s+(parseFloat(a.a)||0), 0);
+    const mP = (run.apps[m]||[]).reduce((s,a) => s+(parseFloat(a.p)||0), 0);
+    const mPaid = (run.apps[m]||[]).reduce((s,a) => s+(parseFloat(a.paidPts||a.p)||0), 0);
+
+    const monthName = run.monthLabels[m] || `Month ${m+1}`;
+    const groupId = GROUPS[m] || GROUPS[0];
+
+    const cv = JSON.stringify(JSON.stringify({
+      [COL.agent]:    run.agentName,
+      [COL.phpId]:    run.phpId || "",
+      [COL.level]:    run.level,
+      [COL.curMonth]: m + 1,
+      [COL.recruits]: mR,
+      [COL.apps]:     Math.round(mA * 100) / 100,
+      [COL.subPts]:   Math.round(mP),
+      [COL.paidPts]:  Math.round(mPaid),
+      [COL.lastSynced]: { date: new Date().toISOString().slice(0,10) },
+    }));
+
+    const monthItemId = run[`mondayMonth${m}Id`] || null;
+    const itemName = `${run.agentName} — ${monthName}`;
+
+    if(monthItemId) {
+      await mondayQuery(`mutation {
+        change_multiple_column_values(
+          board_id: ${MONDAY_BOARD_ID},
+          item_id: ${monthItemId},
+          column_values: ${cv}
+        ) { id }
+      }`);
+    } else {
+      const res = await mondayQuery(`mutation {
+        create_item(
+          board_id: ${MONDAY_BOARD_ID},
+          group_id: "${groupId}",
+          item_name: "${itemName.replace(/"/g,"")}",
+          column_values: ${cv}
+        ) { id }
+      }`);
+      const mid = res?.data?.create_item?.id;
+      if(mid) { run[`mondayMonth${m}Id`] = mid; save(); }
+    }
+
+    // Add individual app rows as subitems if the month has data
+    if(run.apps[m]?.length) {
+      const parentMonthId = run[`mondayMonth${m}Id`];
+      if(parentMonthId) {
+        await syncAppSubitems(run, m, parentMonthId);
+      }
+    }
+  }
+}
+
+async function syncAppSubitems(run, month, parentItemId) {
+  const apps = run.apps[month] || [];
+  // Only add new apps (ones without a mondaySubitemId)
+  const newApps = apps.filter(a => !a.mondaySubitemId);
+  if(!newApps.length) return;
+
+  // Batch create subitems (up to 10 at a time)
+  const BATCH = 10;
+  for(let i = 0; i < newApps.length; i += BATCH) {
+    const batch = newApps.slice(i, i + BATCH);
+    const mutations = batch.map((a, j) => {
+      const clientName = (a.c || "Unknown").replace(/"/g,"");
+      const subCv = JSON.stringify(JSON.stringify({
+        [COL.apps]:    parseFloat(a.a) || 1,
+        [COL.subPts]:  parseFloat(a.p) || 0,
+        [COL.paidPts]: parseFloat(a.paidPts || a.p) || 0,
+        [COL.notes]:   a.pol ? `Policy: ${a.pol}` : "",
+      }));
+      return `s${j}: create_subitem(parent_item_id: ${parentItemId}, item_name: "${clientName}", column_values: ${subCv}) { id }`;
+    }).join("\n  ");
+
+    try {
+      const res = await mondayQuery(`mutation {\n  ${mutations}\n}`);
+      // Save subitem IDs back to the run
+      batch.forEach((a, j) => {
+        const sid = res?.data?.[`s${j}`]?.id;
+        if(sid) a.mondaySubitemId = sid;
+      });
+      save();
+    } catch(e) {
+      console.warn("[MD Tracker] Subitem sync error:", e.message);
+    }
+  }
+}
+
+// ── PULL FROM MONDAY (load existing run data) ──────────────────
+async function pullFromMonday() {
+  const btn = document.getElementById("sync-btn");
+  try {
+    const res = await mondayQuery(`{
+      boards(ids: ${MONDAY_BOARD_ID}) {
+        groups { id title }
+        items_page(limit: 100) {
+          items {
+            id name group { id }
+            column_values { id text }
+          }
+        }
+      }
+    }`);
+
+    const items = res?.data?.boards?.[0]?.items_page?.items || [];
+    console.log(`[MD Tracker] Pulled ${items.length} items from Monday`);
+
+    items.forEach(item => {
+      const cv = {};
+      item.column_values.forEach(c => { if(c.text) cv[c.id] = c.text; });
+      const agentName = cv[COL.agent] || "";
+      // Match to existing run by agent name + start date
+      const run = runs.find(r =>
+        r.agentName.toLowerCase() === agentName.toLowerCase() &&
+        item.group.id === GROUPS.summary
+      );
+      if(run && !run.mondayItemId) {
+        run.mondayItemId = item.id;
+        save();
+      }
+    });
+  } catch(e) {
+    console.warn("[MD Tracker] Pull from Monday failed:", e.message);
+  }
+}
+
+
+
+// ── DASHBOARD INPUT MODE SWITCHING ────────────────────────────
+let manualTab = "personal"; // "personal" | "nonmd"
+
+function switchSsMode(mode) {
+  const photoMode  = document.getElementById("ss-photo-mode");
+  const manualMode = document.getElementById("ss-manual-mode");
+  const btnPhoto   = document.getElementById("ss-sub-photo");
+  const btnManual  = document.getElementById("ss-sub-manual");
+
+  if(mode === "photo") {
+    photoMode.style.display  = "";
+    manualMode.style.display = "none";
+    btnPhoto.classList.add("active");
+    btnManual.classList.remove("active");
+    // Show screenshot apply button only if data was already extracted
+    document.getElementById("ss-merge-btn").style.display = _ssData ? "" : "none";
+  } else {
+    photoMode.style.display  = "none";
+    manualMode.style.display = "";
+    btnPhoto.classList.remove("active");
+    btnManual.classList.add("active");
+    document.getElementById("ss-merge-btn").style.display = "none";
+    // Pre-fill dates from active run
+    const run = runs.find(r => r.id === activeId);
+    if(run) {
+      document.getElementById("me-from").value = run.startDate || "";
+      document.getElementById("me-to").value   = new Date().toISOString().slice(0,10);
+    }
+    // Pre-fill from existing snapshot if available
+    prefillManualFromSnapshot();
+  }
+}
+
+function switchManualTab(tab, btn) {
+  manualTab = tab;
+  // Update button styles
+  document.getElementById("manual-tab-personal").style.cssText =
+    tab === "personal"
+      ? "flex:1;padding:8px;border-radius:7px;border:1.5px solid var(--blue);background:rgba(52,152,219,.1);color:#5dade2;font-family:Barlow Condensed,sans-serif;font-size:12px;font-weight:700;cursor:pointer;"
+      : "flex:1;padding:8px;border-radius:7px;border:1.5px solid var(--border);background:transparent;color:var(--muted);font-family:Barlow Condensed,sans-serif;font-size:12px;font-weight:700;cursor:pointer;";
+  document.getElementById("manual-tab-nonmd").style.cssText =
+    tab === "nonmd"
+      ? "flex:1;padding:8px;border-radius:7px;border:1.5px solid #9b59b6;background:rgba(155,89,182,.1);color:#9b59b6;font-family:Barlow Condensed,sans-serif;font-size:12px;font-weight:700;cursor:pointer;"
+      : "flex:1;padding:8px;border-radius:7px;border:1.5px solid var(--border);background:transparent;color:var(--muted);font-family:Barlow Condensed,sans-serif;font-size:12px;font-weight:700;cursor:pointer;";
+  // Pre-fill fields from existing snapshot for this tab
+  prefillManualFromSnapshot();
+}
+
+function prefillManualFromSnapshot() {
+  const run = runs.find(r => r.id === activeId);
+  if(!run?.dashboardStats) return;
+  const src = manualTab === "personal" ? run.dashboardStats.personal : run.dashboardStats.nonMd;
+  if(!src) return;
+  const m = src.metrics || src; // handle both {metrics:{}} and flat
+  const set = (id, val) => { const el=document.getElementById(id); if(el&&val!=null) el.value=val; };
+  set("me-recruits", m.recruits);
+  set("me-apps",     m.subApps);
+  set("me-subpts",   m.subPoints);
+  set("me-paidpts",  m.paidPoints);
+  set("me-checks",   m.firstChecks);
+  set("me-licensed", m.licensedAgents);
+}
+
+function applyManualEntry() {
+  const run = runs.find(r => r.id === activeId);
+  if(!run) return;
+
+  const getNum = id => { const v = parseFloat(document.getElementById(id)?.value); return isNaN(v) ? null : v; };
+
+  const entered = {
+    recruits:      getNum("me-recruits"),
+    subApps:       getNum("me-apps"),
+    subPoints:     getNum("me-subpts"),
+    paidPoints:    getNum("me-paidpts"),
+    firstChecks:   getNum("me-checks"),
+    licensedAgents:getNum("me-licensed"),
+  };
+
+  const hasAny = Object.values(entered).some(v => v !== null);
+  if(!hasAny) { toast("⚠ No values entered"); return; }
+
+  // ── Compare against calculated totals from local data ──────
+  const allA   = run.apps.flat();
+  const allR   = run.recruits.flat();
+  const calc = {
+    recruits:  allR.length,
+    subApps:   Math.round(allA.reduce((s,a)=>s+(parseFloat(a.a)||0),0)*100)/100,
+    subPoints: Math.round(allA.reduce((s,a)=>s+(parseFloat(a.p)||0),0)),
+    paidPoints:Math.round(allA.filter(a=>a.paid).reduce((s,a)=>s+(parseFloat(a.paidPts||a.p)||0),0)),
+  };
+
+  // Build a variance report
+  const variances = [];
+  const checks = [
+    { key:"recruits",  label:"Recruits",   entered: entered.recruits,  calc: calc.recruits  },
+    { key:"subApps",   label:"Sub Apps",   entered: entered.subApps,   calc: calc.subApps   },
+    { key:"subPoints", label:"Sub Points", entered: entered.subPoints, calc: calc.subPoints },
+    { key:"paidPoints",label:"Paid Points",entered: entered.paidPoints,calc: calc.paidPoints},
+  ];
+
+  checks.forEach(c => {
+    if(c.entered === null) return; // not entered — skip
+    if(calc[c.key] === 0 && c.entered > 0) {
+      variances.push({ label:c.label, entered:c.entered, calc:c.calc, type:"no-local-data" });
+      return;
+    }
+    const diff = c.entered - c.calc;
+    const pctDiff = c.calc > 0 ? Math.abs(diff/c.calc) : 0;
+    if(Math.abs(diff) > 0.01) {
+      variances.push({ label:c.label, entered:c.entered, calc:c.calc, diff, pctDiff, type:"mismatch" });
+    }
+  });
+
+  // Show variance report in the preview area before saving
+  const prev = document.getElementById("ss-preview");
+  if(variances.length) {
+    const rows = variances.map(v => {
+      const icon = v.type==="no-local-data" ? "ℹ" : Math.abs(v.pctDiff)>0.15 ? "⚠" : "~";
+      const clr  = v.type==="no-local-data" ? "var(--blue)" : Math.abs(v.pctDiff)>0.15 ? "var(--orange)" : "var(--muted)";
+      const diffStr = v.diff != null
+        ? ` (${v.diff>0?"+":""}${v.type==="subApps"?v.diff.toFixed(1):Math.round(v.diff)} vs ${fmtPts(v.calc)} local)`
+        : " (no local data to compare)";
+      return `<div class="imp-row">
+        <span style="color:${clr};">${icon} ${v.label}</span>
+        <span class="imp-val" style="color:${clr};">${fmtPts(v.entered)}${diffStr}</span>
+      </div>`;
+    }).join("");
+
+    const hasWarn = variances.some(v=>v.pctDiff>0.15||v.type==="no-local-data");
+    prev.style.display = "block";
+    prev.innerHTML = `
+      <div style="font-family:Barlow Condensed,sans-serif;font-size:11px;font-weight:800;letter-spacing:.08em;
+        color:${hasWarn?"var(--orange)":"var(--muted)"};margin-bottom:8px;text-transform:uppercase;">
+        ${hasWarn?"⚠ Variance Detected":"~ Minor Variance"} — PHP Bamboo vs Local Data
+      </div>
+      ${rows}
+      <div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted);margin-top:8px;line-height:1.7;">
+        ${hasWarn
+          ? "PHP Bamboo numbers may include policies not yet in your local tracker. Review before saving, or import the policy file to reconcile."
+          : "Small differences are normal (rounding, timing). Saving will use your entered numbers."}
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <button class="imp-merge-btn" onclick="confirmManualEntry()" style="flex:2;">✓ Save Anyway</button>
+        <button class="imp-merge-btn" onclick="document.getElementById('ss-preview').style.display='none'"
+          style="flex:1;background:transparent;border:1px solid var(--border);color:var(--muted);">✕ Cancel</button>
+      </div>`;
+    // Store pending entry for confirmManualEntry
+    window._pendingManualEntry = { run, entered };
+    return; // Don't save yet — wait for confirmation
+  }
+
+  // No variances — save directly
+  _doSaveManualEntry(run, entered);
+}
+
+// Called either directly (no variance) or after user confirms
+function confirmManualEntry() {
+  if(!window._pendingManualEntry) return;
+  const { run, entered } = window._pendingManualEntry;
+  window._pendingManualEntry = null;
+  _doSaveManualEntry(run, entered);
+  document.getElementById("ss-preview").style.display = "none";
+}
+
+function _doSaveManualEntry(run, metrics) {
+  const from = document.getElementById("me-from")?.value || run.startDate;
+  const to   = document.getElementById("me-to")?.value   || new Date().toISOString().slice(0,10);
+  const tab  = manualTab === "personal" ? "Personal" : "Non-MD Base";
+
+  const entry = {
+    agentName: run.agentName,
+    tab, dateRange:{from,to}, metrics, source:"manual",
+    savedAt: new Date().toISOString(),
+  };
+
+  if(!run.dashboardStats) run.dashboardStats = {};
+  if(manualTab === "personal") run.dashboardStats.personal = entry;
+  else                         run.dashboardStats.nonMd    = entry;
+
+  if(!run.snapshots) run.snapshots = [];
+  run.snapshots.push({ ts: new Date().toISOString(), ...entry });
+
+  save();
+  renderAll();
+  document.getElementById("import-modal").classList.remove("open");
+  toast(`✓ ${tab} stats saved`);
+}
+
+
+
+// ── MONTH DETECTION HELPERS ────────────────────────────────────
+
+// Build month picker buttons using DOM (avoids nested backtick issues)
+function buildMonthPicker(container, run, detectedMonth, type) {
+  container.innerHTML = "";
+  run.monthLabels.forEach(function(lbl, i) {
+    var btn = document.createElement("button");
+    btn.textContent = lbl.split(" ")[0] + (i === detectedMonth ? " (auto)" : "");
+    btn.style.cssText = "flex:1;padding:7px 4px;border-radius:7px;cursor:pointer;transition:all .15s;" +
+      "font-family:Barlow Condensed,sans-serif;font-size:11px;font-weight:700;" +
+      "border:1.5px solid " + (i === detectedMonth ? "var(--gold)" : "var(--border)") + ";" +
+      "background:" + (i === detectedMonth ? "rgba(201,168,76,.1)" : "transparent") + ";" +
+      "color:" + (i === detectedMonth ? "var(--gold)" : "var(--muted)") + ";";
+    btn.onclick = (function(idx){ return function(){ selectImportMonth(type, idx, this); }; })(i);
+    container.appendChild(btn);
+  });
+}
+
+
+// Returns 0/1/2 for which month a date falls in, or 0 if can't determine
+function detectMonthForDate(dateStr, run) {
+  if(!dateStr || !run.startDate) return 0;
+  try {
+    const d = new Date(dateStr + "T12:00:00");
+    for(let m = 0; m < run.months; m++) {
+      const start = new Date(run.startDate + "T00:00:00");
+      start.setMonth(start.getMonth() + m);
+      const end = new Date(run.startDate + "T00:00:00");
+      end.setMonth(end.getMonth() + m + 1);
+      end.setDate(end.getDate() - 1);
+      if(d >= start && d <= end) return m;
+    }
+    return -1; // outside run range
+  } catch(e) { return 0; }
+}
+
+// Find the most common month across all policy dates
+function detectMonthFromPolicies(policies, run) {
+  const counts = {};
+  policies.forEach(p => {
+    if(!p.date) return;
+    const m = detectMonthForDate(p.date, run);
+    if(m >= 0) counts[m] = (counts[m]||0) + 1;
+  });
+  if(!Object.keys(counts).length) return activeMonth;
+  return parseInt(Object.entries(counts).sort((a,b)=>b[1]-a[1])[0][0]);
+}
+
+// Find the most common month across all sponsorship dates
+function detectMonthFromAgents(agents, run) {
+  const counts = {};
+  agents.forEach(a => {
+    if(!a.date) return;
+    const m = detectMonthForDate(a.date, run);
+    if(m >= 0) counts[m] = (counts[m]||0) + 1;
+  });
+  if(!Object.keys(counts).length) return activeMonth;
+  return parseInt(Object.entries(counts).sort((a,b)=>b[1]-a[1])[0][0]);
+}
+
+// Update selected import month when user clicks a month button
+function selectImportMonth(type, monthIdx, btn) {
+  window[type === "pol" ? "_polImportMonth" : "_agImportMonth"] = monthIdx;
+  // Update button styles in the picker
+  const pickerId = type === "pol" ? "pol-month-picker" : "ag-month-picker";
+  const picker = document.getElementById(pickerId);
+  if(!picker) return;
+  picker.querySelectorAll("button").forEach((b, i) => {
+    const active = i === monthIdx;
+    b.style.borderColor  = active ? "var(--gold)"              : "var(--border)";
+    b.style.background   = active ? "rgba(201,168,76,.1)"      : "transparent";
+    b.style.color        = active ? "var(--gold)"              : "var(--muted)";
+    b.innerHTML = b.innerHTML.replace(/\(auto\)/g, "").trim()
+      + (active ? "<br><span style='font-family:DM Mono,monospace;font-size:9px;'>(selected)</span>" : "");
+  });
+}
+
+
 document.addEventListener("DOMContentLoaded",()=>{
   load();populateAgents();
+
+  // Pull existing Monday item IDs on init (non-blocking)
+  setTimeout(pullFromMonday, 1500);
 
   // Seed Jacinta's run as example
   if(!runs.length){
@@ -1771,26 +2442,77 @@ document.addEventListener("DOMContentLoaded",()=>{
         <button class="imp-tab" onclick="switchImpTab('agents',this)">👥 Agents File</button>
       </div>
 
-      <!-- TAB 1: DASHBOARD SCREENSHOT -->
+      <!-- TAB 1: DASHBOARD SCREENSHOT OR MANUAL ENTRY -->
       <div class="imp-pane active" id="imp-screenshot">
-        <p style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.7;">
-          Upload a screenshot of the PHP Bamboo dashboard. Both <span class="tab-label tab-personal">Personal</span> and <span class="tab-label tab-nonmd">Non-MD Base</span> tabs will be extracted automatically.
-        </p>
-        <div class="drop-zone" id="ss-drop"
-          onclick="document.getElementById('ss-file').click()"
-          ondragover="event.preventDefault();this.classList.add('drag')"
-          ondragleave="this.classList.remove('drag')"
-          ondrop="handleSsDrop(event)">
-          <div class="dz-ico">📸</div>
-          <div class="dz-t">Upload PHP Bamboo Screenshot</div>
-          <div class="dz-h">Dashboard view · Personal or Non-MD Base tab visible</div>
+
+        <!-- Sub-tabs: Photo vs Manual -->
+        <div style="display:flex;gap:0;margin-bottom:14px;border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+          <button class="imp-tab active" id="ss-sub-photo" onclick="switchSsMode('photo')" style="border-radius:0;border:none;">📸 Screenshot</button>
+          <button class="imp-tab" id="ss-sub-manual" onclick="switchSsMode('manual')" style="border-radius:0;border:none;border-left:1px solid var(--border);">✏ Enter Manually</button>
         </div>
-        <input type="file" id="ss-file" accept="image/*" multiple style="display:none" onchange="extractDashboard(this.files)">
-        <div class="loading-msg" id="ss-loading" style="display:none;margin-top:8px;">
-          <div class="spinner"></div> Reading dashboard with AI…
+
+        <!-- PHOTO MODE -->
+        <div id="ss-photo-mode">
+          <p style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.7;">
+            Upload a screenshot of the PHP Bamboo Mentor Mode dashboard. Both <span class="tab-label tab-personal">Personal</span> and <span class="tab-label tab-nonmd">Non-MD Base</span> tabs will be extracted automatically.
+          </p>
+          <div class="drop-zone" id="ss-drop"
+            onclick="document.getElementById('ss-file').click()"
+            ondragover="event.preventDefault();this.classList.add('drag')"
+            ondragleave="this.classList.remove('drag')"
+            ondrop="handleSsDrop(event)">
+            <div class="dz-ico">📸</div>
+            <div class="dz-t">Upload PHP Bamboo Screenshot</div>
+            <div class="dz-h">Mentor Mode · Personal or Non-MD Base tab</div>
+          </div>
+          <input type="file" id="ss-file" accept="image/*" multiple style="display:none" onchange="extractDashboard(this.files)">
+          <div class="loading-msg" id="ss-loading" style="display:none;margin-top:8px;">
+            <div class="spinner"></div> Reading dashboard with AI…
+          </div>
         </div>
-        <div class="import-preview" id="ss-preview"></div>
-        <button class="imp-merge-btn" id="ss-merge-btn" onclick="mergeScreenshotData()" disabled>✓ Apply to This Run</button>
+
+        <!-- MANUAL ENTRY MODE -->
+        <div id="ss-manual-mode" style="display:none;">
+          <p style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.7;">
+            Enter your numbers directly from the PHP Bamboo Mentor Mode dashboard.
+          </p>
+
+          <!-- Tab selector: Personal / Non-MD Base -->
+          <div style="display:flex;gap:8px;margin-bottom:14px;">
+            <button onclick="switchManualTab('personal',this)"
+              style="flex:1;padding:8px;border-radius:7px;border:1.5px solid var(--blue);background:rgba(52,152,219,.1);color:#5dade2;font-family:Barlow Condensed,sans-serif;font-size:12px;font-weight:700;cursor:pointer;" id="manual-tab-personal">
+              Personal
+            </button>
+            <button onclick="switchManualTab('nonmd',this)"
+              style="flex:1;padding:8px;border-radius:7px;border:1.5px solid var(--border);background:transparent;color:var(--muted);font-family:Barlow Condensed,sans-serif;font-size:12px;font-weight:700;cursor:pointer;" id="manual-tab-nonmd">
+              Non-MD Base
+            </button>
+          </div>
+
+          <!-- Date range -->
+          <div style="display:flex;gap:8px;margin-bottom:12px;">
+            <div style="flex:1;"><div style="font-family:DM Mono,monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;">From</div>
+              <input type="date" id="me-from" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:7px;padding:7px 10px;color:var(--text);font-family:DM Mono,monospace;font-size:11px;outline:none;"></div>
+            <div style="flex:1;"><div style="font-family:DM Mono,monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;">To</div>
+              <input type="date" id="me-to" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:7px;padding:7px 10px;color:var(--text);font-family:DM Mono,monospace;font-size:11px;outline:none;"></div>
+          </div>
+
+          <!-- Metric inputs -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <div class="me-field"><label>Recruits</label><input type="number" id="me-recruits" placeholder="e.g. 39" min="0"></div>
+            <div class="me-field"><label>Sub Apps</label><input type="number" id="me-apps" placeholder="e.g. 40.5" min="0" step="0.5"></div>
+            <div class="me-field"><label>Sub Points</label><input type="number" id="me-subpts" placeholder="e.g. 58130" min="0"></div>
+            <div class="me-field"><label>Paid Points</label><input type="number" id="me-paidpts" placeholder="e.g. 35320" min="0"></div>
+            <div class="me-field"><label>First Checks</label><input type="number" id="me-checks" placeholder="e.g. 3" min="0"></div>
+            <div class="me-field"><label>Licensed Agents</label><input type="number" id="me-licensed" placeholder="e.g. 4" min="0"></div>
+          </div>
+
+          <button class="imp-merge-btn" onclick="applyManualEntry()" style="margin-top:12px;">✓ Apply to This Run</button>
+        </div>
+
+        <!-- Shared preview and apply (used by both modes) -->
+        <div class="import-preview" id="ss-preview" style="margin-top:10px;"></div>
+        <button class="imp-merge-btn" id="ss-merge-btn" onclick="mergeScreenshotData()" disabled style="display:none;">✓ Apply Screenshot Data</button>
       </div>
 
       <!-- TAB 2: POLICY EXCEL -->
