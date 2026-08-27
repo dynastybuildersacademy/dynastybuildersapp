@@ -470,124 +470,131 @@ const PROMO_LADDER = [
     id: "trainee",
     label: "Trainee",
     nextLabel: "Associate",
-    icon: "🌱",
-    comm: "25%",
-    color: "#95a5a6",
+    icon: "🌱", comm: "25%", color: "#95a5a6",
     months: 1,
     targets: { r:3, a:3, p:3000 },
     personalPct: 0,
-    notes: "3 personally sponsored recruits, 3 apps, 3,000 pts within first month"
+    pointsType: "submitted",       // sub points count
+    productionRule: "personal",    // ALL numbers must be personal
+    legCap: null,
+    notes: "3 personal recruits · 3 personal apps · 3,000 personal sub pts (1 month)"
   },
   {
     id: "associate",
     label: "Associate",
     nextLabel: "Field Associate",
-    icon: "🔑",
-    comm: "35%",
-    color: "#3498DB",
+    icon: "🔑", comm: "35%", color: "#3498DB",
     months: 3,
     targets: { r:10, a:10, p:10000 },
-    personalPct: 0,
-    notes: "10 recruits, 10 apps, 10,000 pts in 3-month run"
+    personalPct: 1.0,              // 100% personal
+    pointsType: "submitted",
+    productionRule: "personal",    // ALL numbers must be personal
+    legCap: null,
+    notes: "10 personal recruits · 10 personal apps · 10,000 personal sub pts (3 months)"
   },
   {
     id: "field_associate",
     label: "Field Associate",
     nextLabel: "Director",
-    icon: "⚡",
-    comm: "50%",
-    color: "#2ECC71",
+    icon: "⚡", comm: "50%", color: "#2ECC71",
     months: 3,
     targets: { r:25, a:25, p:25000 },
     personalPct: 0.40,
-    notes: "25 recruits, 25 apps, 25,000 pts — 40% must be personal production"
+    pointsType: "submitted",
+    productionRule: "team",        // team counts, 50% leg cap
+    legCap: 0.50,
+    notes: "25 recruits · 25 apps · 25,000 sub pts · team (no leg >50%) · 40% personal"
   },
   {
     id: "director",
     label: "Director",
     nextLabel: "Marketing Director",
-    icon: "🎯",
-    comm: "55%",
-    color: "#E67E22",
+    icon: "🎯", comm: "55%", color: "#E67E22",
     months: 3,
     targets: { r:3, a:3, p:0, mds:1 },
     personalPct: 0.40,
-    notes: "3 recruits, 3 apps, promote 1 personally sponsored MD"
+    pointsType: "submitted",
+    productionRule: "team",
+    legCap: 0.50,
+    notes: "3 recruits · 3 apps · promote 1 MD · team (no leg >50%) · 40% personal"
   },
   {
     id: "marketing_director",
     label: "Marketing Director",
     nextLabel: "Senior MD",
-    icon: "🏆",
-    comm: "60%",
-    color: "#C9A84C",
+    icon: "🏆", comm: "60%", color: "#C9A84C",
     months: 3,
     targets: { r:0, a:0, p:0, basePts:100000 },
     personalPct: 0.40,
-    notes: "100,000 base points in 3-month period · Build your own baseshop"
+    pointsType: "paid",            // MD+ requires PAID points
+    productionRule: "team",
+    legCap: 0.50,
+    notes: "100,000 paid base pts · team (no leg >50%) · 40% personal"
   },
   {
     id: "senior_md",
     label: "Senior Marketing Director",
     nextLabel: "Executive MD",
-    icon: "🌟",
-    comm: "65%",
-    color: "#9B59B6",
+    icon: "🌟", comm: "65%", color: "#9B59B6",
     months: 3,
     targets: { r:0, a:0, p:0, basePts:250000 },
     personalPct: 0.30,
-    notes: "250,000 base points · Multiple active MDs in baseshop"
+    pointsType: "paid",
+    productionRule: "team",
+    legCap: 0.50,
+    notes: "250,000 paid base pts · team (no leg >50%) · 30% personal"
   },
   {
     id: "executive_md",
     label: "Executive Marketing Director",
     nextLabel: "Senior Vice President",
-    icon: "💎",
-    comm: "70%",
-    color: "#E74C3C",
+    icon: "💎", comm: "70%", color: "#E74C3C",
     months: 3,
     targets: { r:0, a:0, p:0, basePts:500000 },
     personalPct: 0.25,
-    notes: "500,000 base points · Established multi-MD baseshop"
+    pointsType: "paid",
+    productionRule: "team",
+    legCap: 0.50,
+    notes: "500,000 paid base pts · team (no leg >50%) · 25% personal"
   },
   {
     id: "svp",
     label: "Senior Vice President",
     nextLabel: "Managing Partner",
-    icon: "🦅",
-    comm: "75%",
-    color: "#1ABC9C",
+    icon: "🦅", comm: "75%", color: "#1ABC9C",
     months: 3,
     targets: { r:0, a:0, p:0, basePts:1000000 },
     personalPct: 0.20,
-    notes: "1,000,000 base points · Regional leadership"
+    pointsType: "paid",
+    productionRule: "team",
+    legCap: 0.50,
+    notes: "1,000,000 paid base pts · team (no leg >50%) · 20% personal"
   },
   {
     id: "managing_partner",
     label: "Managing Partner",
     nextLabel: "Boards Council",
-    icon: "👑",
-    comm: "75%",
-    color: "#E8C97A",
+    icon: "👑", comm: "75%", color: "#E8C97A",
     months: 3,
     targets: { r:0, a:0, p:0, basePts:2500000 },
     personalPct: 0.15,
-    notes: "2.5M base points · National-level leadership"
+    pointsType: "paid",
+    productionRule: "team",
+    legCap: 0.50,
+    notes: "2.5M paid base pts · team (no leg >50%) · 15% personal"
   },
   {
     id: "boards_council",
     label: "Boards Council",
     nextLabel: null,
-    icon: "⬡",
-    comm: "75%+",
-    color: "#FFD700",
-    months: 0,
-    targets: {},
-    personalPct: 0,
+    icon: "⬡", comm: "75%+", color: "#FFD700",
+    months: 0, targets: {}, personalPct: 0,
+    pointsType: "paid",
+    productionRule: "team",
+    legCap: 0.50,
     notes: "Top tier — national recognition and equity partnership"
   },
 ];
-
 // Quick lookup for modal dropdown and strategy engine
 const TARGETS = {};
 PROMO_LADDER.forEach(l => { TARGETS[l.label] = l.targets; });
@@ -1789,23 +1796,124 @@ function compressImage(file, maxDim=1400, quality=0.85) {
 // STRATEGY ENGINE
 // ════════════════════════════════════════════════════════════════
 
+// ── Lookup this run's ladder entry ──────────────────────────────
+function getLadderEntry(run) {
+  return PROMO_LADDER.find(l =>
+    l.label === run.level ||
+    l.id === (run.level||"").toLowerCase().replace(/\s+/g,"_")
+  );
+}
+
+// ── Raw totals (no filtering) ────────────────────────────────────
 function calcRunTotals(run) {
   const allA = run.apps.flat();
+  const entry = getLadderEntry(run);
+  const usePaid = entry?.pointsType === "paid";
   return {
-    recruits: run.recruits.flat().length,
-    apps:     allA.reduce((s,a)=>s+(parseFloat(a.a)||0),0),
-    points:   allA.reduce((s,a)=>s+(parseFloat(a.p)||0),0),
-    paidPts:  allA.reduce((s,a)=>s+(parseFloat(a.paidPts)||parseFloat(a.p)||0),0),
+    recruits:   run.recruits.flat().length,
+    apps:       allA.reduce((s,a)=>s+(parseFloat(a.a)||0),0),
+    points:     allA.reduce((s,a)=>s+(parseFloat(a.p)||0),0),
+    paidPts:    allA.reduce((s,a)=>s+(parseFloat(a.paidPts)||parseFloat(a.p)||0),0),
+    // "qualifying points" = the figure that counts toward the promotion target
+    qualPts:    usePaid
+                  ? allA.reduce((s,a)=>s+(parseFloat(a.paidPts)||parseFloat(a.p)||0),0)
+                  : allA.reduce((s,a)=>s+(parseFloat(a.p)||0),0),
+    pointsType: usePaid ? "paid" : "submitted",
   };
 }
 
 function calcMonthTotals(run, m) {
   const apps = run.apps[m]||[];
+  const entry = getLadderEntry(run);
+  const usePaid = entry?.pointsType === "paid";
   return {
     recruits: (run.recruits[m]||[]).length,
     apps:     apps.reduce((s,a)=>s+(parseFloat(a.a)||0),0),
     points:   apps.reduce((s,a)=>s+(parseFloat(a.p)||0),0),
+    qualPts:  usePaid
+                ? apps.reduce((s,a)=>s+(parseFloat(a.paidPts)||parseFloat(a.p)||0),0)
+                : apps.reduce((s,a)=>s+(parseFloat(a.p)||0),0),
   };
+}
+
+// ── Qualifying production after applying leg cap (50%) ───────────
+// Returns { qualApps, qualPts, qualRecruits, legWarning }
+// For personal-only levels (Associate/Trainee) this returns
+// only apps/recruits flagged as personal (a.personal===true or a.agentId===run agentId)
+function calcQualifyingTotals(run) {
+  const entry = getLadderEntry(run);
+  const isPersonalOnly = entry?.productionRule === "personal";
+  const legCap = entry?.legCap ?? null;   // e.g. 0.50
+  const usePaid = entry?.pointsType === "paid";
+  const allApps = run.apps.flat();
+  const allRecr = run.recruits.flat();
+
+  if(isPersonalOnly) {
+    // Only count apps/recruits the run agent personally wrote/recruited
+    const pApps = allApps.filter(a => a.personal || a.agentId === run.agentId);
+    const pRecr = allRecr.filter(r => r.personal || r.agentId === run.agentId);
+    return {
+      qualApps:     pApps.reduce((s,a)=>s+(parseFloat(a.a)||0),0),
+      qualPts:      usePaid
+                      ? pApps.reduce((s,a)=>s+(parseFloat(a.paidPts)||parseFloat(a.p)||0),0)
+                      : pApps.reduce((s,a)=>s+(parseFloat(a.p)||0),0),
+      qualRecruits: pRecr.length,
+      legWarning:   null,
+      personalOnly: true,
+    };
+  }
+
+  // Team production with optional 50% leg cap
+  // Each app row may have a.legId (agentId of the leg it belongs to)
+  // Group apps by leg
+  const legApps = {};
+  const legPts  = {};
+  const legRecr = {};
+  allApps.forEach(a => {
+    const leg = a.legId || a.agentId || "__self__";
+    legApps[leg] = (legApps[leg]||0) + (parseFloat(a.a)||0);
+    const pts = usePaid ? (parseFloat(a.paidPts)||parseFloat(a.p)||0) : (parseFloat(a.p)||0);
+    legPts[leg] = (legPts[leg]||0) + pts;
+  });
+  allRecr.forEach(r => {
+    const leg = r.legId || r.agentId || "__self__";
+    legRecr[leg] = (legRecr[leg]||0) + 1;
+  });
+
+  const totalApps = Object.values(legApps).reduce((s,v)=>s+v,0);
+  const totalPts  = Object.values(legPts).reduce((s,v)=>s+v,0);
+  const totalRecr = Object.values(legRecr).reduce((s,v)=>s+v,0);
+
+  let legWarning = null;
+  if(legCap !== null && totalApps > 0) {
+    // Find heaviest leg
+    const heaviestLeg = Object.entries(legApps).sort((a,b)=>b[1]-a[1])[0];
+    if(heaviestLeg) {
+      const legPct = heaviestLeg[1] / totalApps;
+      if(legPct > legCap) {
+        const cappedContrib = totalApps * legCap;
+        const excess = heaviestLeg[1] - cappedContrib;
+        legWarning = {
+          leg: heaviestLeg[0],
+          pct: Math.round(legPct * 100),
+          excess: Math.round(excess * 100) / 100,
+        };
+      }
+    }
+  }
+
+  // Qualifying totals: if legCap, cap the heaviest leg's contribution
+  let qualApps = totalApps, qualPts = totalPts, qualRecruits = totalRecr;
+  if(legCap !== null && legWarning) {
+    const capOff = legWarning.excess;
+    qualApps = Math.max(0, totalApps - capOff);
+    // Reduce pts proportionally
+    const legId = legWarning.leg;
+    const legPtsFrac = totalPts > 0 ? legPts[legId] / totalPts : 0;
+    qualPts = Math.max(0, totalPts - legPtsFrac * capOff * (totalPts / Math.max(totalApps,1)));
+  }
+
+  return { qualApps, qualPts, qualRecruits, legWarning, personalOnly: false };
 }
 
 function daysLeftInRun(run) {
@@ -1829,91 +1937,127 @@ function weeksLeft(run) {
 // ── MAIN RENDER ────────────────────────────────────────────────
 function renderStrategy(run) {
   if(!run) return;
+  const entry = getLadderEntry(run);
   const t   = run.targets;
   const tot = calcRunTotals(run);
+  const qual = calcQualifyingTotals(run);
   const months = run.months || 3;
   const curMonth = typeof run.currentMonth === "number" ? run.currentMonth : activeMonth;
-  const personalPct = run.personalPct || 0.5;
+  const personalPct = run.personalPct || (entry?.personalPct ?? 0.5);
   const daysLeft = daysLeftInRun(run);
   const wksLeft  = weeksLeft(run);
 
-  // ── GAPS ──
-  const gapR = Math.max(0, t.r - tot.recruits);
-  const gapA = Math.max(0, t.a - tot.apps);
-  const gapP = Math.max(0, t.p - tot.points);
+  // Labels driven by rules
+  const isPersonalOnly = entry?.productionRule === "personal";
+  const usePaid        = entry?.pointsType === "paid";
+  const legCap         = entry?.legCap ?? null;
+  const ptsLabel       = usePaid ? "Paid Points" : "Sub Points";
+  const appsLabel      = isPersonalOnly ? "Personal Apps" : "Team Apps";
+  const recLabel       = isPersonalOnly ? "Personal Recruits" : "Team Recruits";
+
+  // ── EFFECTIVE TOTALS for gap calculation ──
+  // For personal-only levels, use qual figures
+  // For team levels, raw tot is fine (leg cap warning shown separately)
+  const haveR = isPersonalOnly ? qual.qualRecruits : tot.recruits;
+  const haveA = isPersonalOnly ? qual.qualApps     : tot.apps;
+  const haveP = usePaid        ? tot.paidPts       : tot.points;
+
+  const gapR = Math.max(0, t.r - haveR);
+  const gapA = Math.max(0, t.a - haveA);
+  const gapP = Math.max(0, t.p - haveP);
 
   // ── STATUS BADGE ──
-  const pctR = t.r>0 ? tot.recruits/t.r : 1;
-  const pctA = t.a>0 ? tot.apps/t.a : 1;
-  const pctP = t.p>0 ? tot.points/t.p : 1;
+  const pctR = t.r>0 ? haveR/t.r : 1;
+  const pctA = t.a>0 ? haveA/t.a : 1;
+  const pctP = t.p>0 ? haveP/t.p : 1;
   const minPct = Math.min(pctR, t.a>0?pctA:1, t.p>0?pctP:1);
-  const monthPct = (curMonth+1)/months; // expected completion at this point
+  const monthPct = (curMonth+1)/months;
 
   let statusCls, statusTxt;
-  if(minPct>=1)                        { statusCls="complete";   statusTxt="✓ Requirements Met!"; }
-  else if(minPct >= monthPct-0.05)     { statusCls="on-track";   statusTxt="On Track"; }
-  else if(minPct >= monthPct-0.15)     { statusCls="behind";     statusTxt="Slightly Behind"; }
-  else                                  { statusCls="critical";   statusTxt="Needs Attention"; }
+  if(minPct>=1)                    { statusCls="complete"; statusTxt="✓ Requirements Met!"; }
+  else if(minPct>=monthPct-0.05)   { statusCls="on-track"; statusTxt="On Track"; }
+  else if(minPct>=monthPct-0.15)   { statusCls="behind";   statusTxt="Slightly Behind"; }
+  else                              { statusCls="critical"; statusTxt="Needs Attention"; }
 
   const badge = document.getElementById("strat-status-badge");
   if(badge){ badge.className="strat-status "+statusCls; badge.textContent=statusTxt; }
 
   // ── NEED BOXES ──────────────────────────────────────────────
-  const ladderEntry = PROMO_LADDER.find(l=>l.label===run.level||l.id===run.level?.toLowerCase().replace(/\s+/g,"_"));
   const needs = [];
 
   if(t.r>0) needs.push({
-    lbl:"Recruits", have:tot.recruits, need:t.r, gap:gapR,
-    color:"#5dade2", fill:"linear-gradient(90deg,#3498DB,#5dade2)"
+    lbl: recLabel,
+    have: haveR, need: t.r, gap: gapR,
+    color:"#5dade2", fill:"linear-gradient(90deg,#3498DB,#5dade2)",
+    sub: isPersonalOnly ? "Personally sponsored only" : legCap ? "Team · no single leg >50%" : null
   });
   if(t.a>0) needs.push({
-    lbl:"Sub Apps",  have:tot.apps,    need:t.a, gap:gapA,
-    color:"var(--gold2)", fill:"linear-gradient(90deg,var(--gold),var(--gold2))"
+    lbl: appsLabel,
+    have: haveA, need: t.a, gap: gapA,
+    color:"var(--gold2)", fill:"linear-gradient(90deg,var(--gold),var(--gold2))",
+    sub: isPersonalOnly ? "Your personal apps only" : legCap ? "Team · no single leg >50%" : null
   });
   if(t.p>0) needs.push({
-    lbl:"Sub Points",have:tot.points,  need:t.p, gap:gapP,
-    color:"var(--green)", fill:"linear-gradient(90deg,var(--green),#58d68d)"
+    lbl: ptsLabel,
+    have: haveP, need: t.p, gap: gapP,
+    color:"var(--green)", fill:"linear-gradient(90deg,var(--green),#58d68d)",
+    sub: isPersonalOnly ? "Personal submitted points only" : usePaid ? "Paid/inforce points only" : "Submitted points"
   });
 
-  // Base points requirement (for MD+ levels)
+  // Base points requirement (MD+ — paid points)
   if(t.basePts>0) {
-    const dashPts = run.dashboardStats?.nonMd?.metrics?.subPoints || run.dashboardStats?.personal?.metrics?.subPoints || 0;
-    const haveBasePts = Math.max(tot.points, dashPts);
+    const dashPts = run.dashboardStats?.nonMd?.metrics?.paidPoints
+                 || run.dashboardStats?.nonMd?.metrics?.subPoints
+                 || run.dashboardStats?.personal?.metrics?.subPoints || 0;
+    const haveBasePts = Math.max(tot.paidPts, dashPts);
     const gapBasePts = Math.max(0, t.basePts - haveBasePts);
     needs.push({
-      lbl:"Base Points", have:haveBasePts, need:t.basePts, gap:gapBasePts,
+      lbl:"Base Paid Points", have:haveBasePts, need:t.basePts, gap:gapBasePts,
       color:"#1ABC9C", fill:"linear-gradient(90deg,#1ABC9C,#48C9B0)",
-      sub:"Total baseshop production"
+      sub: legCap ? "Baseshop paid pts · no single leg >50%" : "Total baseshop paid points"
     });
   }
 
   // MD promotion requirement
   if(t.mds>0) {
     const haveMds = run.promotedMds || 0;
-    const gapMds = Math.max(0, t.mds - haveMds);
     needs.push({
-      lbl:"MDs Promoted", have:haveMds, need:t.mds, gap:gapMds,
+      lbl:"MDs Promoted", have:haveMds, need:t.mds, gap:Math.max(0,t.mds-haveMds),
       color:"#FFD700", fill:"linear-gradient(90deg,#C9A84C,#FFD700)",
       sub:"Personally sponsored MDs"
     });
   }
 
-  // Personal requirement (40-50% rule) — for levels that require it
-  if(t.a>0 && personalPct>0) {
-    const personalNeed  = Math.ceil(t.a * personalPct * 10)/10;
-    const personalHave  = calcPersonalApps(run);
-    const personalGap   = Math.max(0, personalNeed - personalHave);
+  // Personal apps requirement (for team levels with personalPct > 0)
+  if(!isPersonalOnly && t.a>0 && personalPct>0) {
+    const personalNeed = Math.ceil(t.a * personalPct * 10)/10;
+    const personalHave = calcPersonalApps(run);
+    const personalGap  = Math.max(0, personalNeed - personalHave);
     needs.push({
       lbl:"Personal Apps ("+Math.round(personalPct*100)+"%)",
       have:personalHave, need:personalNeed, gap:personalGap,
       color:"var(--purple)", fill:"linear-gradient(90deg,#9B59B6,#A569BD)",
-      sub:"Your personal production requirement"
+      sub:"Your personal slice of team total"
     });
   }
 
+  // ── LEG CAP WARNING BANNER ───────────────────────────────────
   const needGrid = document.getElementById("need-grid");
   if(!needGrid) return;
-  needGrid.innerHTML = needs.map(n=>{
+
+  let legBanner = "";
+  if(qual.legWarning && !isPersonalOnly) {
+    const lw = qual.legWarning;
+    legBanner = `<div style="grid-column:1/-1;background:rgba(231,76,60,.08);border:1px solid rgba(231,76,60,.3);
+      border-radius:8px;padding:8px 12px;font-family:DM Mono,monospace;font-size:10px;
+      color:var(--red);line-height:1.6;margin-bottom:4px;">
+      ⚠ Leg cap exceeded: one leg is contributing ${lw.pct}% of your apps — only 50% from any single leg counts.
+      <strong>${lw.excess.toFixed(1)} apps are currently non-qualifying.</strong>
+      Balance production across legs to unlock those numbers.
+    </div>`;
+  }
+
+  needGrid.innerHTML = legBanner + needs.map(n=>{
     const pct = Math.min(100, n.need>0 ? Math.round(n.have/n.need*100) : 100);
     const done = n.gap<=0;
     const cls  = done?"done":pct<50?"urgent":"";
@@ -1932,7 +2076,7 @@ function renderStrategy(run) {
   }).join("");
 
   // ── PACE CHIPS ──────────────────────────────────────────────
-  const paceItems = buildPaceItems(run, tot, t, gapR, gapA, gapP, daysLeft, wksLeft, curMonth, personalPct);
+  const paceItems = buildPaceItems(run, tot, t, gapR, gapA, gapP, daysLeft, wksLeft, curMonth, personalPct, usePaid, isPersonalOnly);
   const paceGrid = document.getElementById("pace-grid");
   if(paceGrid) paceGrid.innerHTML = paceItems.map(p=>
     `<div class="pace-chip ${p.highlight?"highlight":""}">
@@ -1942,7 +2086,7 @@ function renderStrategy(run) {
   ).join("");
 }
 
-function buildPaceItems(run, tot, t, gapR, gapA, gapP, daysLeft, wksLeft, curMonth, personalPct) {
+function buildPaceItems(run, tot, t, gapR, gapA, gapP, daysLeft, wksLeft, curMonth, personalPct, usePaid, isPersonalOnly) {
   const chips = [];
   const months = run.months||3;
   const monthsLeft = Math.max(1, months - curMonth);
@@ -1979,10 +2123,16 @@ function buildPaceItems(run, tot, t, gapR, gapA, gapP, daysLeft, wksLeft, curMon
   if(t.p>0 && gapP>0){
     chips.push({
       val: fmtPts(gapP/wksLeft),
-      lbl:"Points per week needed", highlight:true,
+      lbl:(usePaid?"Paid pts":"Sub pts")+" per week needed", highlight:true,
       color:"var(--green)"
     });
   }
+  // Rule annotation chip
+  chips.push({
+    val: isPersonalOnly ? "Personal Only" : usePaid ? "Paid Pts" : "Sub Pts",
+    lbl: isPersonalOnly ? "All numbers must be personal" : usePaid ? "MD+ requires paid/inforce pts" : "Counts submitted pts",
+    color: isPersonalOnly ? "var(--purple)" : usePaid ? "var(--gold2)" : "var(--green)"
+  });
 
   // ── FALLOFF SCENARIOS ──────────────────────────────────────
   // If month 1 fell off: recalculate for remaining months
@@ -3030,9 +3180,19 @@ function onLevelChange(level) {
     pct.value = entry.personalPct;
   }
 
-  // Show notes
+  // Show notes with points type and rule badges
   const notes = document.getElementById("level-notes");
-  if(notes) notes.textContent = entry.notes || "";
+  if(notes) {
+    const ptsBadge = entry.pointsType === "paid"
+      ? '<span style="background:rgba(201,168,76,.15);color:var(--gold2);border-radius:4px;padding:1px 5px;margin-right:4px;">PAID PTS</span>'
+      : '<span style="background:rgba(45,202,115,.12);color:var(--green);border-radius:4px;padding:1px 5px;margin-right:4px;">SUB PTS</span>';
+    const ruleBadge = entry.productionRule === "personal"
+      ? '<span style="background:rgba(155,89,182,.15);color:var(--purple);border-radius:4px;padding:1px 5px;margin-right:4px;">PERSONAL ONLY</span>'
+      : entry.legCap
+      ? '<span style="background:rgba(231,76,60,.1);color:var(--orange);border-radius:4px;padding:1px 5px;">TEAM · MAX 50% / LEG</span>'
+      : "";
+    notes.innerHTML = ptsBadge + ruleBadge + "<br>" + (entry.notes || "");
+  }
 }
 
 
