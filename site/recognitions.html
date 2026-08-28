@@ -446,29 +446,7 @@ if (!data.weeks[currentWeekKey]) {
 
 // ── SEED DEMO DATA ────────────────────────────────────────────
 function seedDemoData() {
-  if (Object.keys(data.weeks).length > 1) return;
-  const wk = data.weeks[currentWeekKey];
-  if (wk.producers.length || wk.paidpoints.length || wk.cashflow.length) return;
-  wk.producers = [
-    { rank:1, name:'Blessing Ikejemba', value:'3.947K', unit:'sub pts' },
-    { rank:2, name:'Augustine Alozie', value:'1.09K', unit:'sub pts' },
-  ];
-  wk.paidpoints = [
-    { rank:1, name:'Blessing Ikejemba', value:'12.672K', unit:'paid pts' },
-    { rank:2, name:'CherryJane &amp; Christian Ukwuhaiwe', value:'2.058K', unit:'paid pts' },
-    { rank:3, name:'Obi &amp; Jennifer', value:'$2,455K', unit:'paid pts' },
-    { rank:4, name:'Soroush Nasirzadeh', value:'$1,703K', unit:'paid pts' },
-    { rank:5, name:'Francis Iketuonye', value:'1.641K', unit:'paid pts' },
-    { rank:6, name:'Taiwo Odunola', value:'1.57K', unit:'paid pts' },
-    { rank:7, name:'Jacinta Abanobi', value:'$1,198K', unit:'paid pts' },
-  ];
-  wk.cashflow = [
-    { rank:1, name:'Blessing Ikejemba', value:'$12.784K', unit:'comma check' },
-    { rank:2, name:'Obi &amp; Jennifer', value:'$5,904K', unit:'comma check' },
-    { rank:3, name:'CherryJane &amp; Christian', value:'$1,5512K', unit:'comma check' },
-    { rank:4, name:'Goodluck Nwaka', value:'$1,442K', unit:'comma check' },
-  ];
-  saveData(data);
+  // Demo data cleared — enter live weekly numbers via the admin panel
 }
 seedDemoData();
 
