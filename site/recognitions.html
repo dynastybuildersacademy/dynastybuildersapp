@@ -528,6 +528,10 @@ function buildSlides() {
   slides.push({ type:'dynasty', result: calcDynastyBuilder() });
 
   // ── EXTRA SLIDES (added after dynasty) ─────────────────────
+  slides.push({ type:'miami2026' });
+  slides.push({ type:'wealthexperience' });
+  slides.push({ type:'thankfultraining' });
+  slides.push({ type:'1kearners' });
   slides.push({ type:'contest' });
   slides.push({ type:'mansion' });
   slides.push({ type:'bookclub' });
@@ -731,6 +735,130 @@ function renderSlideHTML(slide, idx) {
       <ul class="sp-bullets">${sp.bullets.map(b=>`<li>${b}</li>`).join('')}</ul>
       <div class="sp-sessions">${sp.sessions.map(s=>`<div class="sp-session"><div class="sp-session-title">${s.t}</div><div class="sp-session-desc">${s.d}</div></div>`).join('')}</div>
       <div class="sp-footer">agent.yourdynastybuilder.com &nbsp;·&nbsp; PHP Lights Out 2026</div>
+    </div>`;
+  }
+
+  // ── ROAD TO MIAMI CHALLENGE 2026 ─────────────────────────
+  if (slide.type === 'miami2026') {
+    return `<div class="slide" data-idx="${idx}" style="background:linear-gradient(160deg,#0d0020 0%,#1a004d 40%,#0a001a 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 28px;text-align:center;position:relative;overflow:hidden;">
+      <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 70% 20%,rgba(128,0,200,.18),transparent 60%),radial-gradient(ellipse at 20% 80%,rgba(200,0,150,.1),transparent 60%);pointer-events:none;"></div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:#b388ff;margin-bottom:6px;">Dynasty Builders &amp; Life Changers</div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:#e0e0e0;letter-spacing:.08em;text-transform:uppercase;">Road To</div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:52px;font-weight:900;color:#fff;letter-spacing:-.01em;line-height:.9;text-transform:uppercase;text-shadow:0 0 40px rgba(180,100,255,.6);">MIAMI</div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:800;color:var(--gold);letter-spacing:.04em;text-transform:uppercase;margin-bottom:12px;">Challenge 2026</div>
+      <div style="display:flex;gap:8px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:#b388ff;letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px;">
+        <span>90 Days</span><span style="color:var(--gold);">•</span><span>Top 2 Finalists</span><span style="color:var(--gold);">•</span><span>Road to Miami</span>
+      </div>
+      <div style="background:rgba(255,255,255,.07);border:1.5px solid rgba(180,100,255,.3);border-radius:10px;padding:7px 18px;font-family:'DM Mono',monospace;font-size:12px;color:#e0d0ff;margin-bottom:18px;">📅 September 1 – November 30, 2026</div>
+      <div style="background:rgba(180,100,255,.1);border:1px solid rgba(180,100,255,.25);border-radius:10px;padding:12px 18px;margin-bottom:14px;width:100%;max-width:380px;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:var(--gold2);margin-bottom:4px;">TWO CONTESTS RUNNING CONCURRENTLY</div>
+        <div style="font-family:'Barlow',sans-serif;font-size:11px;color:#d0c0f0;line-height:1.5;">Everyone registers for the Official Miami Contest · Dynasty contest runs at the same time</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:380px;margin-bottom:14px;">
+        <div style="background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.25);border-radius:10px;padding:12px;">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:800;color:var(--gold);margin-bottom:6px;">⭐ THE TOP 2</div>
+          <div style="font-family:'Barlow',sans-serif;font-size:10px;color:#d0c0f0;line-height:1.6;">Dynasty Finalists · Rise in Miami standings · Chance for all-expense-paid trip ✈</div>
+        </div>
+        <div style="background:rgba(93,173,226,.07);border:1px solid rgba(93,173,226,.2);border-radius:10px;padding:12px;">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:800;color:#5dade2;margin-bottom:6px;">CATEGORIES</div>
+          <div style="font-family:'Barlow',sans-serif;font-size:10px;color:#d0c0f0;line-height:1.6;">Personal Recruits · Personal Licensed Directs · Personal Paid Points</div>
+        </div>
+      </div>
+      <div style="background:linear-gradient(90deg,rgba(201,168,76,.12),rgba(180,100,255,.12));border:1px solid rgba(201,168,76,.3);border-radius:10px;padding:10px 18px;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;color:var(--gold2);">
+        PLUS! Dynasty Experience Prize · Valued at $500+
+      </div>
+      <div style="margin-top:14px;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;letter-spacing:.08em;color:#fff;">BUILD · COMPETE · WIN · LET'S GO DYNASTY! 🏆</div>
+    </div>`;
+  }
+
+  // ── WEALTH EXPERIENCE ─────────────────────────────────────
+  if (slide.type === 'wealthexperience') {
+    return `<div class="slide" data-idx="${idx}" style="background:linear-gradient(160deg,#1a1000 0%,#2d1e00 50%,#0d0900 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 28px;text-align:center;position:relative;overflow:hidden;">
+      <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 50% 30%,rgba(201,168,76,.15),transparent 60%);pointer-events:none;"></div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.2em;color:var(--gold);text-transform:uppercase;margin-bottom:4px;">PHP · People Helping People · Integrity</div>
+      <div style="font-family:'Barlow',sans-serif;font-size:12px;color:#d4b87a;margin-bottom:2px;">Join us for an empowering event on</div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;color:var(--gold2);letter-spacing:.04em;text-transform:uppercase;">WEALTH</div>
+      <div style="width:60px;height:2px;background:var(--gold);margin:8px auto;opacity:.5;"></div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:#d4b87a;letter-spacing:.15em;text-transform:uppercase;margin-bottom:2px;">THE</div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:42px;font-weight:900;color:var(--gold);line-height:1;text-transform:uppercase;">WEALTH</div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:#e0c870;letter-spacing:.2em;text-transform:uppercase;margin-bottom:4px;">EXPERIENCE</div>
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--gold);letter-spacing:.15em;margin-bottom:14px;">LEARN · GROW · BUILD · LEAVE A LEGACY</div>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;width:100%;max-width:380px;margin-bottom:16px;">
+        ${['Three Ways Money Works','Fundamentals of Money & Finances','Legacy & Wealth Creation','How to Build Wealth','Make Money. Save Money. Get Out of Debt.'].map(t=>`<div style="background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);border-radius:7px;padding:8px 4px;font-family:'Barlow',sans-serif;font-size:9px;color:#d4b87a;line-height:1.3;">${t}</div>`).join('')}
+      </div>
+      <div style="background:rgba(201,168,76,.1);border:1.5px solid rgba(201,168,76,.35);border-radius:12px;padding:12px 22px;margin-bottom:12px;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;color:var(--gold2);">TUESDAY, AUGUST 25TH, 2026</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;color:#d4b87a;margin-top:2px;">⏰ 7:00 PM PST</div>
+      </div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:var(--gold);margin-bottom:2px;">📍 TRUCAR BUILDING</div>
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:#b89a5a;">3415 S Sepulveda, Suite 900, Los Angeles, CA 90034</div>
+    </div>`;
+  }
+
+  // ── THANKFUL THURSDAY TRAINING ────────────────────────────
+  if (slide.type === 'thankfultraining') {
+    return `<div class="slide" data-idx="${idx}" style="background:linear-gradient(160deg,#050d1a 0%,#0c1528 60%,#030a14 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 28px;text-align:center;position:relative;overflow:hidden;">
+      <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 30% 20%,rgba(201,168,76,.1),transparent 55%),radial-gradient(ellipse at 80% 80%,rgba(201,168,76,.07),transparent 55%);pointer-events:none;"></div>
+      <div style="font-family:'Playfair Display',serif;font-size:36px;font-weight:900;color:var(--gold);line-height:1.1;margin-bottom:4px;font-style:italic;">Thankful</div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:44px;font-weight:900;color:#ffffff;letter-spacing:.02em;text-transform:uppercase;line-height:1;margin-bottom:2px;">THURSDAY</div>
+      <div style="background:var(--gold);padding:5px 20px;border-radius:4px;margin-bottom:10px;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;color:#0a1628;text-transform:uppercase;letter-spacing:.05em;">TEAM TRAINING</div>
+      </div>
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:#8a9bb5;letter-spacing:.1em;text-transform:uppercase;margin-bottom:18px;">Grateful Hearts · Stronger Team · Greater Impact</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;max-width:380px;margin-bottom:18px;">
+        <div style="background:rgba(201,168,76,.08);border:1.5px solid rgba(201,168,76,.25);border-radius:10px;padding:10px 8px;">
+          <div style="font-size:18px;margin-bottom:4px;">⏰</div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;color:var(--gold2);">5:00 PM PST</div>
+          <div style="font-family:'DM Mono',monospace;font-size:9px;color:#8a9bb5;margin-top:2px;">7PM CST · 8PM EST</div>
+        </div>
+        <div style="background:rgba(201,168,76,.08);border:1.5px solid rgba(201,168,76,.25);border-radius:10px;padding:10px 8px;">
+          <div style="font-size:18px;margin-bottom:4px;">📅</div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;color:var(--gold2);">EVERY THURSDAY</div>
+          <div style="font-family:'DM Mono',monospace;font-size:9px;color:#8a9bb5;margin-top:2px;">Same time. Same purpose.</div>
+        </div>
+        <div style="background:rgba(201,168,76,.08);border:1.5px solid rgba(201,168,76,.25);border-radius:10px;padding:10px 8px;">
+          <div style="font-size:18px;margin-bottom:4px;">👥</div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:var(--gold2);">ALL AGENTS &amp; LEADERS</div>
+          <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--gold);margin-top:2px;">Don't Miss It!</div>
+        </div>
+      </div>
+      <div style="background:rgba(41,128,185,.12);border:1.5px solid rgba(41,128,185,.35);border-radius:12px;padding:12px 20px;width:100%;max-width:360px;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;color:#5dade2;letter-spacing:.1em;margin-bottom:6px;">JOIN US ON ZOOM</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;color:#fff;">769-169-1776</div>
+        <div style="font-family:'DM Mono',monospace;font-size:11px;color:#8a9bb5;margin-top:2px;">Password: 54321</div>
+      </div>
+      <div style="margin-top:14px;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;color:var(--gold);letter-spacing:.08em;">WE TRAIN · WE GROW · WE WIN</div>
+    </div>`;
+  }
+
+  // ── 1K EARNERS AND ABOVE ──────────────────────────────────
+  if (slide.type === '1kearners') {
+    return `<div class="slide" data-idx="${idx}" style="background:linear-gradient(160deg,#050505 0%,#111111 60%,#030303 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 28px;text-align:center;position:relative;overflow:hidden;">
+      <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 50% 10%,rgba(201,168,76,.12),transparent 55%);pointer-events:none;"></div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:800;letter-spacing:.2em;color:var(--gold);text-transform:uppercase;margin-bottom:6px;">Dynasty Builders Academy</div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:52px;font-weight:900;color:var(--gold);line-height:.9;text-transform:uppercase;text-shadow:0 0 30px rgba(201,168,76,.4);">1K EARNERS</div>
+      <div style="font-family:'Playfair Display',serif;font-size:22px;font-style:italic;color:#fff;margin:4px 0;">and Above!</div>
+      <div style="background:var(--gold);padding:5px 18px;border-radius:4px;margin:10px 0;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:900;color:#0a0a0a;letter-spacing:.08em;">⭐ FOR THE MONTH SO FAR ⭐</div>
+      </div>
+      <div style="font-family:'Barlow',sans-serif;font-size:11px;color:#888;margin-bottom:16px;">Congratulations to our top performers building legacies &amp; changing lives!</div>
+      <div style="display:flex;flex-direction:column;gap:8px;width:100%;max-width:360px;margin-bottom:16px;">
+        ${[
+          'Tornike &amp; Tea Tsagareishvili',
+          'Goodluck Nwaka',
+          'Stella Udoh',
+          'Jacinta Abanobi'
+        ].map(name => `<div style="display:flex;align-items:center;justify-content:space-between;background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.2);border-radius:8px;padding:10px 16px;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-size:18px;">⭐</span>
+            <span style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;color:#fff;text-transform:uppercase;">${name}</span>
+          </div>
+          <span style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;color:var(--gold);">$1,000+</span>
+        </div>`).join('')}
+      </div>
+      <div style="font-family:'Playfair Display',serif;font-size:20px;font-style:italic;color:var(--gold2);margin-bottom:6px;">Congratulations! 🏆</div>
+      <div style="font-family:'Barlow',sans-serif;font-size:10px;color:#888;line-height:1.6;">Your hard work, faith, and consistency are building legacies!</div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:800;color:var(--gold);letter-spacing:.08em;margin-top:8px;">KEEP CHASING · KEEP WINNING · KEEP BUILDING!</div>
     </div>`;
   }
 
