@@ -196,6 +196,13 @@ const MONDAY_ORG_KEY = 'eyJhbGciOiJIUzI1NiJ9.eyJ0aWQiOjY1Nzg0OTc3NSwiYWFpIjoxMSw
 // ─────────────────────────────────────────────────────────────────────────────
 const AGENTS = [
   {
+    id: "deigar526", name: "Deisy Garcia",
+    pin: "526",  role: "admin", level: 100,
+    phpId: "deigar526", phone: "",
+    email: "",
+    uplineId: "obi001"
+  },
+  {
     id: "obi001", name: "Obi Iroezi",
     pin: "1111", role: "admin", level: 100,
     phpId: "10146", phone: "3109956507",
