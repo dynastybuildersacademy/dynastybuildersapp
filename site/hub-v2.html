@@ -29,7 +29,7 @@ html,body{height:100%;background:var(--navy);color:var(--text);font-family:'Barl
   backdrop-filter:blur(8px);
 }
 .tb-left{display:flex;align-items:center;gap:10px;}
-.tb-logo{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;
+.tb-logo{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;
   color:var(--gold2);letter-spacing:.02em;}
 .tb-logo span{color:var(--text);font-weight:600;}
 .tb-right{display:flex;align-items:center;gap:8px;}
@@ -45,9 +45,9 @@ html,body{height:100%;background:var(--navy);color:var(--text);font-family:'Barl
 
 /* ── HERO ─────────────────────────────────────────────────── */
 .hero{padding:20px 16px 12px;border-bottom:1px solid var(--border);}
-.hero-name{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:900;
+.hero-name{font-family:'Barlow Condensed',sans-serif;font-size:34px;font-weight:900;
   color:var(--text);line-height:1;}
-.hero-role{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:600;
+.hero-role{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:600;
   color:var(--gold);letter-spacing:.06em;text-transform:uppercase;margin-top:3px;}
 .hero-date{font-family:'DM Mono',monospace;font-size:10px;color:var(--sub);margin-top:2px;}
 .hero-bar{display:flex;gap:8px;margin-top:12px;overflow-x:auto;padding-bottom:4px;}
@@ -60,28 +60,28 @@ html,body{height:100%;background:var(--navy);color:var(--text);font-family:'Barl
 .main{padding:16px 16px 80px;}
 .module-section{margin-bottom:24px;}
 .mod-hdr{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
-.mod-icon{font-size:16px;width:28px;height:28px;display:flex;align-items:center;
+.mod-icon{font-size:18px;width:32px;height:32px;display:flex;align-items:center;
   justify-content:center;background:var(--s1);border-radius:8px;flex-shrink:0;}
-.mod-title{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;
+.mod-title{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;
   letter-spacing:.06em;text-transform:uppercase;color:var(--sub);}
 
 /* ── TOOL GRID ───────────────────────────────────────────── */
 .tool-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
 .tool-card{
   background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
-  padding:16px 14px 14px;text-decoration:none;color:var(--text);
+  padding:18px 14px 16px;text-decoration:none;color:var(--text);
   display:flex;flex-direction:column;gap:6px;
   transition:border-color .15s,background .15s;
   position:relative;overflow:hidden;
-  min-height:90px;
+  min-height:100px;
 }
 .tool-card:active{background:var(--s2);border-color:rgba(201,168,76,.3);}
 .tool-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;
   background:linear-gradient(90deg,var(--mod-color,var(--gold)),transparent);opacity:.6;}
-.tc-icon{font-size:22px;line-height:1;}
-.tc-name{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;
+.tc-icon{font-size:28px;line-height:1;}
+.tc-name{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;
   letter-spacing:.02em;line-height:1.1;color:var(--text);}
-.tc-sub{font-family:'DM Mono',monospace;font-size:10px;color:var(--sub);line-height:1.4;}
+.tc-sub{font-family:'DM Mono',monospace;font-size:12px;color:var(--sub);line-height:1.4;}
 .tc-new{position:absolute;top:10px;right:10px;background:var(--green);color:#fff;
   font-family:'DM Mono',monospace;font-size:9px;font-weight:700;
   padding:2px 7px;border-radius:10px;letter-spacing:.04em;}
@@ -90,15 +90,15 @@ html,body{height:100%;background:var(--navy);color:var(--text);font-family:'Barl
 /* ── WIDE CARD (full width) ──────────────────────────────── */
 .tool-card.wide{grid-column:1/-1;flex-direction:row;align-items:center;
   min-height:auto;padding:14px 16px;gap:14px;}
-.tool-card.wide .tc-icon{font-size:26px;flex-shrink:0;}
+.tool-card.wide .tc-icon{font-size:32px;flex-shrink:0;}
 .tool-card.wide .tc-body{flex:1;}
-.tool-card.wide .tc-name{font-size:17px;}
+.tool-card.wide .tc-name{font-size:22px;}
 
 /* ── QUICK LINKS ROW ─────────────────────────────────────── */
 .quick-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:22px;}
 .quick-row::-webkit-scrollbar{display:none;}
 .quick-pill{
-  flex-shrink:0;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;
+  flex-shrink:0;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;
   padding:7px 14px;border-radius:20px;border:1px solid var(--border);
   color:var(--text);text-decoration:none;background:var(--s1);
   white-space:nowrap;letter-spacing:.02em;
@@ -211,10 +211,10 @@ html,body{height:100%;background:var(--navy);color:var(--text);font-family:'Barl
 }
 .bn-item{flex:1;display:flex;flex-direction:column;align-items:center;
   justify-content:center;gap:3px;cursor:pointer;color:var(--sub);
-  font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.04em;
+  font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.04em;
   text-decoration:none;border:none;background:none;}
 .bn-item.active{color:var(--gold);}
-.bn-icon{font-size:20px;}
+.bn-icon{font-size:24px;}
 
 /* ── EMPTY STATE ─────────────────────────────────────────── */
 .empty-state{text-align:center;padding:40px 20px;}
