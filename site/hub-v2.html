@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Dynasty Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Barlow:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="auth.js"></script>
+<style>
+/* ── RESET & ROOT ─────────────────────────────────────────── */
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{
+  --navy:#0A1628;--navy2:#0F1E38;--s1:#132240;--s2:#1A2E50;
+  --gold:#C9A84C;--gold2:#E8C97A;
+  --text:#E8EDF5;--sub:#8A9BB5;--border:rgba(201,168,76,.15);
+  --green:#2DCA73;--red:#E74C3C;--blue:#3498DB;
+  --card:rgba(15,30,56,.8);
+  --radius:14px;
+}
+html,body{height:100%;background:var(--navy);color:var(--text);font-family:'Barlow',sans-serif;overflow-x:hidden;}
+
+/* ── TOP BAR ─────────────────────────────────────────────── */
+.topbar{
+  position:sticky;top:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 16px;height:52px;
+  background:rgba(10,22,40,.96);
+  border-bottom:1px solid var(--border);
+  backdrop-filter:blur(8px);
+}
+.tb-left{display:flex;align-items:center;gap:10px;}
+.tb-logo{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;
+  color:var(--gold2);letter-spacing:.02em;}
+.tb-logo span{color:var(--text);font-weight:600;}
+.tb-right{display:flex;align-items:center;gap:8px;}
+.tb-greeting{font-family:'DM Mono',monospace;font-size:11px;color:var(--sub);}
+.tb-manage{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;
+  letter-spacing:.04em;color:var(--gold);background:rgba(201,168,76,.1);
+  border:1px solid rgba(201,168,76,.25);border-radius:8px;
+  padding:5px 12px;cursor:pointer;text-decoration:none;}
+.tb-manage:hover{background:rgba(201,168,76,.18);}
+.tb-logout{font-family:'DM Mono',monospace;font-size:10px;color:var(--sub);
+  background:none;border:none;cursor:pointer;padding:4px 8px;}
+.tb-logout:hover{color:var(--text);}
+
+/* ── HERO ─────────────────────────────────────────────────── */
+.hero{padding:20px 16px 12px;border-bottom:1px solid var(--border);}
+.hero-name{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:900;
+  color:var(--text);line-height:1;}
+.hero-role{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:600;
+  color:var(--gold);letter-spacing:.06em;text-transform:uppercase;margin-top:3px;}
+.hero-date{font-family:'DM Mono',monospace;font-size:10px;color:var(--sub);margin-top:2px;}
+.hero-bar{display:flex;gap:8px;margin-top:12px;overflow-x:auto;padding-bottom:4px;}
+.hero-bar::-webkit-scrollbar{display:none;}
+.hb-chip{flex-shrink:0;font-family:'DM Mono',monospace;font-size:10px;
+  padding:4px 12px;border-radius:20px;border:1px solid var(--border);color:var(--sub);}
+.hb-chip.active{background:rgba(201,168,76,.1);border-color:rgba(201,168,76,.35);color:var(--gold);}
+
+/* ── MAIN ─────────────────────────────────────────────────── */
+.main{padding:16px 16px 80px;}
+.module-section{margin-bottom:24px;}
+.mod-hdr{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.mod-icon{font-size:16px;width:28px;height:28px;display:flex;align-items:center;
+  justify-content:center;background:var(--s1);border-radius:8px;flex-shrink:0;}
+.mod-title{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;
+  letter-spacing:.06em;text-transform:uppercase;color:var(--sub);}
+
+/* ── TOOL GRID ───────────────────────────────────────────── */
+.tool-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
+.tool-card{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:16px 14px 14px;text-decoration:none;color:var(--text);
+  display:flex;flex-direction:column;gap:6px;
+  transition:border-color .15s,background .15s;
+  position:relative;overflow:hidden;
+  min-height:90px;
+}
+.tool-card:active{background:var(--s2);border-color:rgba(201,168,76,.3);}
+.tool-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--mod-color,var(--gold)),transparent);opacity:.6;}
+.tc-icon{font-size:22px;line-height:1;}
+.tc-name{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;
+  letter-spacing:.02em;line-height:1.1;color:var(--text);}
+.tc-sub{font-family:'DM Mono',monospace;font-size:10px;color:var(--sub);line-height:1.4;}
+.tc-new{position:absolute;top:10px;right:10px;background:var(--green);color:#fff;
+  font-family:'DM Mono',monospace;font-size:9px;font-weight:700;
+  padding:2px 7px;border-radius:10px;letter-spacing:.04em;}
+.tc-ext{position:absolute;top:10px;right:10px;font-size:11px;color:var(--sub);}
+
+/* ── WIDE CARD (full width) ──────────────────────────────── */
+.tool-card.wide{grid-column:1/-1;flex-direction:row;align-items:center;
+  min-height:auto;padding:14px 16px;gap:14px;}
+.tool-card.wide .tc-icon{font-size:26px;flex-shrink:0;}
+.tool-card.wide .tc-body{flex:1;}
+.tool-card.wide .tc-name{font-size:17px;}
+
+/* ── QUICK LINKS ROW ─────────────────────────────────────── */
+.quick-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:22px;}
+.quick-row::-webkit-scrollbar{display:none;}
+.quick-pill{
+  flex-shrink:0;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;
+  padding:7px 14px;border-radius:20px;border:1px solid var(--border);
+  color:var(--text);text-decoration:none;background:var(--s1);
+  white-space:nowrap;letter-spacing:.02em;
+}
+.quick-pill:active{background:var(--s2);}
+.quick-pill.gold{background:rgba(201,168,76,.1);border-color:rgba(201,168,76,.35);color:var(--gold2);}
+
+/* ── ONBOARDING WIZARD ───────────────────────────────────── */
+.wizard-overlay{
+  position:fixed;inset:0;background:rgba(5,12,25,.92);z-index:200;
+  display:flex;align-items:flex-end;justify-content:center;
+  backdrop-filter:blur(4px);
+}
+.wizard-sheet{
+  background:var(--navy2);border:1px solid var(--border);
+  border-radius:20px 20px 0 0;padding:24px 20px 40px;
+  width:100%;max-width:500px;max-height:88vh;overflow-y:auto;
+}
+.wiz-step{display:none;}
+.wiz-step.active{display:block;}
+.wiz-title{font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:900;
+  color:var(--gold2);margin-bottom:4px;}
+.wiz-sub{font-family:'DM Mono',monospace;font-size:11px;color:var(--sub);
+  margin-bottom:20px;line-height:1.6;}
+.wiz-modules{display:flex;flex-direction:column;gap:8px;margin-bottom:20px;}
+.wiz-mod{
+  background:var(--s1);border:1.5px solid var(--border);border-radius:12px;
+  padding:14px;display:flex;align-items:center;gap:12px;cursor:pointer;
+  transition:border-color .15s,background .15s;
+}
+.wiz-mod.selected{border-color:var(--gold);background:rgba(201,168,76,.08);}
+.wiz-mod.locked{opacity:.4;cursor:default;}
+.wiz-mod-icon{font-size:24px;width:44px;height:44px;background:var(--s2);
+  border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.wiz-mod-body{flex:1;}
+.wiz-mod-name{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;
+  color:var(--text);margin-bottom:2px;}
+.wiz-mod-desc{font-family:'DM Mono',monospace;font-size:10px;color:var(--sub);line-height:1.5;}
+.wiz-mod-check{width:22px;height:22px;border-radius:50%;border:2px solid var(--border);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  font-size:12px;color:var(--gold);transition:all .15s;}
+.wiz-mod.selected .wiz-mod-check{background:var(--gold);border-color:var(--gold);color:#000;}
+.wiz-level-badge{font-family:'DM Mono',monospace;font-size:9px;padding:2px 8px;
+  border-radius:10px;background:rgba(107,124,147,.15);color:var(--sub);
+  display:inline-block;margin-top:4px;}
+.wiz-btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--gold),#b8901f);
+  border:none;border-radius:10px;font-family:'Barlow Condensed',sans-serif;
+  font-size:18px;font-weight:900;letter-spacing:.04em;color:#0A1628;cursor:pointer;}
+.wiz-btn:active{opacity:.88;}
+.wiz-skip{display:block;text-align:center;margin-top:12px;font-family:'DM Mono',monospace;
+  font-size:11px;color:var(--sub);cursor:pointer;text-decoration:underline;}
+
+/* ── MANAGE OVERLAY ─────────────────────────────────────── */
+.manage-overlay{
+  position:fixed;inset:0;background:rgba(5,12,25,.92);z-index:200;
+  display:none;flex-direction:column;
+  backdrop-filter:blur(4px);overflow-y:auto;
+}
+.manage-overlay.open{display:flex;}
+.manage-sheet{
+  background:var(--navy2);min-height:100%;padding:0 0 60px;
+}
+.manage-topbar{
+  position:sticky;top:0;background:rgba(10,22,40,.96);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 16px;height:52px;z-index:10;
+}
+.manage-title{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;
+  color:var(--gold2);letter-spacing:.04em;}
+.manage-close{background:none;border:none;color:var(--sub);font-size:22px;cursor:pointer;padding:8px;}
+.manage-body{padding:16px;}
+.manage-section-title{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--sub);margin-bottom:10px;}
+
+/* Agent module rows */
+.agent-row{background:var(--s1);border:1px solid var(--border);border-radius:12px;
+  margin-bottom:8px;overflow:hidden;}
+.agent-row-hdr{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;}
+.agent-avatar{width:36px;height:36px;border-radius:50%;background:var(--s2);
+  font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;color:var(--gold2);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.agent-info{flex:1;}
+.agent-name{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:var(--text);}
+.agent-role-tag{font-family:'DM Mono',monospace;font-size:9px;color:var(--sub);}
+.agent-chevron{font-size:14px;color:var(--sub);transition:transform .2s;}
+.agent-row.open .agent-chevron{transform:rotate(180deg);}
+.agent-modules{display:none;padding:0 14px 12px;border-top:1px solid var(--border);}
+.agent-row.open .agent-modules{display:block;}
+.mod-toggle-row{display:flex;align-items:center;justify-content:space-between;
+  padding:8px 0;border-bottom:1px solid rgba(26,46,80,.4);}
+.mod-toggle-row:last-child{border:none;}
+.mod-toggle-label{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;color:var(--text);}
+.mod-toggle-sub{font-family:'DM Mono',monospace;font-size:9px;color:var(--sub);}
+.toggle-switch{width:42px;height:24px;border-radius:12px;background:var(--s2);
+  border:1px solid var(--border);position:relative;cursor:pointer;
+  transition:background .2s;flex-shrink:0;}
+.toggle-switch.on{background:var(--green);border-color:var(--green);}
+.toggle-switch.locked{opacity:.4;cursor:not-allowed;}
+.toggle-knob{position:absolute;top:3px;left:3px;width:16px;height:16px;
+  border-radius:50%;background:#fff;transition:left .2s;}
+.toggle-switch.on .toggle-knob{left:21px;}
+
+/* ── BOTTOM NAV ──────────────────────────────────────────── */
+.bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;
+  background:rgba(10,22,40,.96);border-top:1px solid var(--border);
+  display:flex;height:60px;z-index:50;
+  backdrop-filter:blur(8px);
+}
+.bn-item{flex:1;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:3px;cursor:pointer;color:var(--sub);
+  font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.04em;
+  text-decoration:none;border:none;background:none;}
+.bn-item.active{color:var(--gold);}
+.bn-icon{font-size:20px;}
+
+/* ── EMPTY STATE ─────────────────────────────────────────── */
+.empty-state{text-align:center;padding:40px 20px;}
+.empty-icon{font-size:40px;margin-bottom:12px;}
+.empty-title{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;
+  color:var(--gold2);margin-bottom:6px;}
+.empty-sub{font-family:'DM Mono',monospace;font-size:11px;color:var(--sub);line-height:1.7;}
+.empty-btn{margin-top:16px;display:inline-block;padding:10px 24px;
+  background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.35);
+  border-radius:10px;font-family:'Barlow Condensed',sans-serif;font-size:15px;
+  font-weight:800;color:var(--gold2);cursor:pointer;letter-spacing:.04em;}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="tb-left">
+    <div class="tb-logo">DBA <span>Hub</span></div>
+  </div>
+  <div class="tb-right">
+    <span class="tb-greeting" id="tb-greeting"></span>
+    <a class="tb-manage" id="tb-manage-btn" href="#" onclick="openManage();return false;" style="display:none;">⚙ Manage</a>
+    <button class="tb-logout" onclick="AUTH.logout()">Sign out</button>
+  </div>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-name" id="hero-name">Welcome</div>
+  <div class="hero-role" id="hero-role"></div>
+  <div class="hero-date" id="hero-date"></div>
+  <div class="hero-bar" id="hero-bar"></div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main" id="main-content"></div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <a class="bn-item active" href="hub-v2.html">
+    <div class="bn-icon">🏠</div><span>Home</span>
+  </a>
+  <a class="bn-item" href="tracker.html">
+    <div class="bn-icon">📞</div><span>Activity</span>
+  </a>
+  <a class="bn-item" href="leaderboard.html">
+    <div class="bn-icon">🏆</div><span>Leaders</span>
+  </a>
+  <a class="bn-item" href="training.html">
+    <div class="bn-icon">📚</div><span>Training</span>
+  </a>
+</div>
+
+<!-- ONBOARDING WIZARD -->
+<div class="wizard-overlay" id="wizard-overlay" style="display:none;">
+  <div class="wizard-sheet">
+    <div class="wiz-step active" id="wiz-step-1">
+      <div class="wiz-title">Welcome to DBA Hub 👋</div>
+      <div class="wiz-sub">Let's set up your personal workspace.<br>Choose the tools you want — you can change these any time.</div>
+      <div class="wiz-modules" id="wiz-module-list"></div>
+      <button class="wiz-btn" onclick="saveWizard()">Set Up My Hub</button>
+      <span class="wiz-skip" onclick="skipWizard()">Skip — show me everything available</span>
+    </div>
+  </div>
+</div>
+
+<!-- MANAGE OVERLAY -->
+<div class="manage-overlay" id="manage-overlay">
+  <div class="manage-sheet">
+    <div class="manage-topbar">
+      <div class="manage-title">⚙ Manage Team Modules</div>
+      <button class="manage-close" onclick="closeManage()">✕</button>
+    </div>
+    <div class="manage-body" id="manage-body"></div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// DBA HUB v2 — MODULAR EDITION
+// All 57 existing pages untouched. This is a new front door.
+// ══════════════════════════════════════════════════════════════
+
+const SK_MODULES = 'dba_hub_v2_modules';
+
+// ── MODULE DEFINITIONS ────────────────────────────────────────
+// minLevel: minimum role level to see this module
+// defaultOn: auto-activated for eligible agents (no wizard needed)
+const MODULE_DEFS = [
+  {
+    id: 'basics',
+    icon: '🌱',
+    name: 'Getting Started',
+    desc: 'Training, forms, and income calculator',
+    minLevel: 0,
+    defaultOn: true,
+    color: '#2DCA73',
+    tools: [
+      { icon:'📚', name:'Training Hub',       sub:'Videos & study guides',      href:'training.html' },
+      { icon:'💰', name:'Income Calculator',  sub:'Project your earnings',      href:'income-calculator.html' },
+      { icon:'📋', name:'Client Prequal',     sub:'Intake form for clients',    href:'prequal.html' },
+      { icon:'🎋', name:'PHP Bamboo',         sub:'Official PHP platform',      href:'https://app.phpbamboo.com/agent/signin', ext:true },
+    ]
+  },
+  {
+    id: 'my_numbers',
+    icon: '📊',
+    name: 'My Numbers',
+    desc: 'Track activity, progress and promotion path',
+    minLevel: 0,
+    defaultOn: true,
+    color: '#3498DB',
+    tools: [
+      { icon:'📞', name:'Activity Log',       sub:'Log calls & contacts',       href:'tracker.html', wide:true },
+      { icon:'📈', name:'My Progress',        sub:'Promotion path & milestones',href:'promotions.html' },
+      { icon:'🏆', name:'Leaderboard',        sub:'Team rankings',              href:'leaderboard.html' },
+      { icon:'🎯', name:'Rewards',            sub:'Milestone bonuses',          href:'rewards.html' },
+    ]
+  },
+  {
+    id: 'recruiting',
+    icon: '🤝',
+    name: 'Recruiting',
+    desc: 'Prospects, appointments and Top 25 worksheet',
+    minLevel: 20,
+    defaultOn: false,
+    color: '#E67E22',
+    tools: [
+      { icon:'📝', name:'Top 25 Worksheet',  sub:'Your prospect pipeline',     href:'top25.html', wide:true },
+      { icon:'🔍', name:'Recruiting Center',  sub:'Prospects & appointments',   href:'recruiting.html' },
+      { icon:'📅', name:'BOM Tracker',        sub:'Business opportunity mtgs',  href:'bom.html' },
+    ]
+  },
+  {
+    id: 'contest',
+    icon: '🌴',
+    name: 'Contest & Recognition',
+    desc: 'Miami challenge, incentives and leaderboards',
+    minLevel: 30,
+    defaultOn: false,
+    color: '#FF6B35',
+    tools: [
+      { icon:'🌴', name:'Miami Tracker',      sub:'Road to Miami 2026',         href:'miami-tracker.html', wide:true, badge:'NEW' },
+      { icon:'🏅', name:'Incentives',         sub:'Contests & prizes',          href:'incentives.html' },
+      { icon:'⭐', name:'Recognitions',        sub:'Thankful Thursday',          href:'recognitions.html' },
+    ]
+  },
+  {
+    id: 'team_builder',
+    icon: '🏗',
+    name: 'Team Builder',
+    desc: 'MD tracker, roster and team communications',
+    minLevel: 40,
+    defaultOn: false,
+    color: '#9B59B6',
+    tools: [
+      { icon:'📈', name:'MD Promo Tracker',  sub:'90-day promotion runs',      href:'md-tracker.html', wide:true },
+      { icon:'👥', name:'Agent Roster',      sub:'Team directory',             href:'agents.html' },
+      { icon:'💬', name:'Team Messages',     sub:'Announcements & DMs',        href:'messages.html' },
+      { icon:'🏆', name:'Thankful Thursday', sub:'Weekly recognition show',    href:'recognitions.html' },
+    ]
+  },
+  {
+    id: 'operations',
+    icon: '⚙️',
+    name: 'Operations',
+    desc: 'Agency OS, analytics and admin tools',
+    minLevel: 60,
+    defaultOn: false,
+    color: '#C9A84C',
+    tools: [
+      { icon:'⚙️', name:'Agency OS',         sub:'Leadership operations',      href:'os.html', wide:true },
+      { icon:'📊', name:'Analytics',         sub:'Lead & campaign data',       href:'analytics.html' },
+      { icon:'👥', name:'Roster Admin',      sub:'Manage agent records',       href:'roster-admin.html' },
+      { icon:'🔗', name:'Monday Sync',       sub:'Board integration',          href:'monday-setup.html' },
+    ]
+  },
+];
+
+// ── QUICK LINKS (always visible) ──────────────────────────────
+const QUICK_LINKS = [
+  { label:'PHP Bamboo',           href:'https://app.phpbamboo.com/agent/signin' },
+  { label:'🔗 Integrity Connect', href:'https://integrity.com/integrityconnect/' },
+  { label:'Schedule 1-on-1',      href:'schedule-1on1.html' },
+  { label:'Client Survey',        href:'survey.html' },
+];
+
+// ── LOAD / SAVE MODULE PREFS ──────────────────────────────────
+function loadModulePrefs(agentId) {
+  try {
+    const raw = localStorage.getItem(SK_MODULES);
+    if(!raw) return null;
+    const all = JSON.parse(raw);
+    return all[agentId] || null;
+  } catch { return null; }
+}
+function saveModulePrefs(agentId, prefs) {
+  try {
+    const raw = localStorage.getItem(SK_MODULES);
+    const all = raw ? JSON.parse(raw) : {};
+    all[agentId] = prefs;
+    localStorage.setItem(SK_MODULES, JSON.stringify(all));
+  } catch {}
+}
+function getActiveModules(session) {
+  const prefs = loadModulePrefs(session.agentId);
+  if(prefs) return prefs;
+  // Default: all eligible modules that are defaultOn
+  return MODULE_DEFS
+    .filter(m => session.level >= m.minLevel && m.defaultOn)
+    .map(m => m.id);
+}
+
+// ── RENDER HUB ────────────────────────────────────────────────
+function renderHub(session) {
+  const activeIds = getActiveModules(session);
+  const activeModules = MODULE_DEFS.filter(m =>
+    activeIds.includes(m.id) && session.level >= m.minLevel
+  );
+
+  const main = document.getElementById('main-content');
+
+  if(!activeModules.length) {
+    main.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">🧩</div>
+      <div class="empty-title">No modules active</div>
+      <div class="empty-sub">Tap the button below to pick your tools.<br>Your hub will show only what you need.</div>
+      <div class="empty-btn" onclick="openWizard()">Choose My Tools</div>
+    </div>`;
+    return;
+  }
+
+  // Quick links strip
+  let html = `<div class="quick-row">
+    <div class="quick-pill gold" onclick="openWizard()">🧩 My Tools</div>
+    ${QUICK_LINKS.map(l=>`<a class="quick-pill" href="${l.href}" ${l.href.startsWith('http')?'target="_blank"':''}>${l.label}</a>`).join('')}
+  </div>`;
+
+  // Modules
+  activeModules.forEach(mod => {
+    html += `<div class="module-section">
+      <div class="mod-hdr">
+        <div class="mod-icon">${mod.icon}</div>
+        <div class="mod-title">${mod.name}</div>
+      </div>
+      <div class="tool-grid">`;
+
+    mod.tools.forEach(tool => {
+      const cssColor = `--mod-color:${mod.color};`;
+      const extIcon = tool.ext ? `<span class="tc-ext">↗</span>` : '';
+      const badge = tool.badge ? `<span class="tc-new">${tool.badge}</span>` : '';
+      const target = tool.ext ? 'target="_blank"' : '';
+
+      if(tool.wide) {
+        html += `<a class="tool-card wide" href="${tool.href}" ${target} style="${cssColor}">
+          ${badge}${extIcon}
+          <div class="tc-icon">${tool.icon}</div>
+          <div class="tc-body">
+            <div class="tc-name">${tool.name}</div>
+            <div class="tc-sub">${tool.sub}</div>
+          </div>
+        </a>`;
+      } else {
+        html += `<a class="tool-card" href="${tool.href}" ${target} style="${cssColor}">
+          ${badge}${extIcon}
+          <div class="tc-icon">${tool.icon}</div>
+          <div class="tc-name">${tool.name}</div>
+          <div class="tc-sub">${tool.sub}</div>
+        </a>`;
+      }
+    });
+    html += `</div></div>`;
+  });
+
+  main.innerHTML = html;
+}
+
+// ── ONBOARDING WIZARD ─────────────────────────────────────────
+function openWizard() {
+  const session = AUTH.getSession();
+  const activeIds = getActiveModules(session);
+
+  // Build module list
+  const eligible = MODULE_DEFS.filter(m => session.level >= m.minLevel);
+  const locked   = MODULE_DEFS.filter(m => session.level < m.minLevel);
+
+  let html = eligible.map(m => `
+    <div class="wiz-mod ${activeIds.includes(m.id) ? 'selected' : ''}"
+      id="wm-${m.id}" onclick="toggleWizMod('${m.id}')">
+      <div class="wiz-mod-icon">${m.icon}</div>
+      <div class="wiz-mod-body">
+        <div class="wiz-mod-name">${m.name}</div>
+        <div class="wiz-mod-desc">${m.desc}</div>
+      </div>
+      <div class="wiz-mod-check">${activeIds.includes(m.id) ? '✓' : ''}</div>
+    </div>`).join('');
+
+  if(locked.length) {
+    html += `<div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--sub);
+      text-transform:uppercase;letter-spacing:.08em;margin:10px 0 6px;">Unlocks as you grow</div>`;
+    html += locked.map(m => `
+      <div class="wiz-mod locked">
+        <div class="wiz-mod-icon">${m.icon}</div>
+        <div class="wiz-mod-body">
+          <div class="wiz-mod-name">${m.name}</div>
+          <div class="wiz-mod-desc">${m.desc}</div>
+          <span class="wiz-level-badge">🔒 Level ${m.minLevel}+</span>
+        </div>
+      </div>`).join('');
+  }
+
+  document.getElementById('wiz-module-list').innerHTML = html;
+  document.getElementById('wizard-overlay').style.display = 'flex';
+}
+
+function toggleWizMod(id) {
+  const el = document.getElementById(`wm-${id}`);
+  const check = el.querySelector('.wiz-mod-check');
+  if(el.classList.contains('selected')) {
+    el.classList.remove('selected');
+    check.textContent = '';
+  } else {
+    el.classList.add('selected');
+    check.textContent = '✓';
+  }
+}
+
+function saveWizard() {
+  const session = AUTH.getSession();
+  const selected = [...document.querySelectorAll('.wiz-mod.selected')]
+    .map(el => el.id.replace('wm-', ''));
+  saveModulePrefs(session.agentId, selected);
+  document.getElementById('wizard-overlay').style.display = 'none';
+  renderHub(session);
+  updateHeroBadges(session, selected);
+}
+
+function skipWizard() {
+  const session = AUTH.getSession();
+  const all = MODULE_DEFS.filter(m => session.level >= m.minLevel).map(m => m.id);
+  saveModulePrefs(session.agentId, all);
+  document.getElementById('wizard-overlay').style.display = 'none';
+  renderHub(session);
+  updateHeroBadges(session, all);
+}
+
+// ── MANAGE (Director+) ────────────────────────────────────────
+function openManage() {
+  const session = AUTH.getSession();
+  const body = document.getElementById('manage-body');
+
+  // My own modules section
+  let html = `<div class="manage-section-title" style="margin-bottom:12px;">Your modules</div>
+    <div style="background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:20px;">
+    ${MODULE_DEFS.map(m => {
+      const eligible = session.level >= m.minLevel;
+      const activeIds = getActiveModules(session);
+      const isOn = activeIds.includes(m.id);
+      return `<div class="mod-toggle-row">
+        <div>
+          <div class="mod-toggle-label">${m.icon} ${m.name}</div>
+          <div class="mod-toggle-sub">${m.desc}</div>
+        </div>
+        <div class="toggle-switch ${eligible ? (isOn ? 'on':'') : 'locked'}"
+          id="mytog-${m.id}"
+          onclick="${eligible ? `toggleMyModule('${m.id}')` : ''}">
+          <div class="toggle-knob"></div>
+        </div>
+      </div>`;
+    }).join('')}
+    </div>`;
+
+  // Team section — agents in downline
+  const myAgents = getDownlineAgents(session);
+  if(myAgents.length) {
+    html += `<div class="manage-section-title" style="margin-top:4px;margin-bottom:12px;">Team members (${myAgents.length})</div>`;
+    html += myAgents.map(agent => {
+      const agentPrefs = getActiveModules({agentId: agent.id, level: ROLES[agent.role]?.level || 0});
+      const initials = agent.name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
+      const eligibleMods = MODULE_DEFS.filter(m => (ROLES[agent.role]?.level || 0) >= m.minLevel);
+      return `<div class="agent-row" id="ar-${agent.id}">
+        <div class="agent-row-hdr" onclick="toggleAgentRow('${agent.id}')">
+          <div class="agent-avatar">${initials}</div>
+          <div class="agent-info">
+            <div class="agent-name">${agent.name}</div>
+            <div class="agent-role-tag">${ROLES[agent.role]?.label || agent.role} · ${agent.phpId || '—'}</div>
+          </div>
+          <span class="agent-chevron">▾</span>
+        </div>
+        <div class="agent-modules">
+          ${eligibleMods.map(m => {
+            const isOn = agentPrefs.includes(m.id);
+            return `<div class="mod-toggle-row">
+              <div>
+                <div class="mod-toggle-label">${m.icon} ${m.name}</div>
+                <div class="mod-toggle-sub">${m.desc}</div>
+              </div>
+              <div class="toggle-switch ${isOn ? 'on' : ''}"
+                id="atog-${agent.id}-${m.id}"
+                onclick="toggleAgentModule('${agent.id}','${m.id}')">
+                <div class="toggle-knob"></div>
+              </div>
+            </div>`;
+          }).join('')}
+          ${eligibleMods.length === 0 ? '<div style="font-family:\'DM Mono\',monospace;font-size:10px;color:var(--sub);padding:8px 0;">No eligible modules for this role.</div>' : ''}
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  body.innerHTML = html;
+  document.getElementById('manage-overlay').classList.add('open');
+}
+
+function closeManage() {
+  document.getElementById('manage-overlay').classList.remove('open');
+}
+
+function toggleAgentRow(agentId) {
+  const el = document.getElementById(`ar-${agentId}`);
+  el.classList.toggle('open');
+}
+
+function toggleMyModule(moduleId) {
+  const session = AUTH.getSession();
+  const active = getActiveModules(session);
+  const idx = active.indexOf(moduleId);
+  if(idx > -1) active.splice(idx,1); else active.push(moduleId);
+  saveModulePrefs(session.agentId, active);
+  const tog = document.getElementById(`mytog-${moduleId}`);
+  tog.classList.toggle('on');
+  renderHub(session);
+  updateHeroBadges(session, active);
+}
+
+function toggleAgentModule(agentId, moduleId) {
+  const agentObj = typeof AGENTS !== 'undefined' ? AGENTS.find(a => a.id === agentId) : null;
+  const agentSession = {
+    agentId,
+    level: agentObj ? (ROLES[agentObj.role]?.level || 0) : 0
+  };
+  const active = getActiveModules(agentSession);
+  const idx = active.indexOf(moduleId);
+  if(idx > -1) active.splice(idx,1); else active.push(moduleId);
+  saveModulePrefs(agentId, active);
+  const tog = document.getElementById(`atog-${agentId}-${moduleId}`);
+  if(tog) tog.classList.toggle('on');
+}
+
+// Get agents whose uplineId === this session's agentId (direct downline)
+function getDownlineAgents(session) {
+  if(typeof AGENTS === 'undefined') return [];
+  return AGENTS.filter(a =>
+    a.uplineId === session.agentId ||
+    (session.level >= 95) // admins see everyone
+  ).slice(0,50);
+}
+
+// ── HERO BADGES ───────────────────────────────────────────────
+function updateHeroBadges(session, activeIds) {
+  const bar = document.getElementById('hero-bar');
+  const activeMods = MODULE_DEFS.filter(m => activeIds.includes(m.id));
+  bar.innerHTML = activeMods.map(m =>
+    `<div class="hb-chip active">${m.icon} ${m.name}</div>`
+  ).join('') + `<div class="hb-chip" onclick="openWizard()" style="cursor:pointer;">+ Add tools</div>`;
+}
+
+// ── INIT ──────────────────────────────────────────────────────
+(function init() {
+  if(!AUTH.require('hub.html')) return;
+  const session = AUTH.getSession();
+
+  // Topbar
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  document.getElementById('tb-greeting').textContent = `${greeting}, ${session.name.split(' ')[0]}`;
+
+  // Hero
+  document.getElementById('hero-name').textContent = session.name.split(' ')[0] + '\'s Hub';
+  document.getElementById('hero-role').textContent = ROLES[session.role]?.label || session.role;
+  document.getElementById('hero-date').textContent = new Date().toLocaleDateString('en-US',
+    {weekday:'long', month:'long', day:'numeric', year:'numeric'});
+
+  // Show manage button for Director+
+  if(session.level >= 40) {
+    document.getElementById('tb-manage-btn').style.display = 'inline-block';
+  }
+
+  // Hero badges
+  const active = getActiveModules(session);
+  updateHeroBadges(session, active);
+
+  // First login wizard — show if no prefs saved yet
+  const prefs = loadModulePrefs(session.agentId);
+  if(!prefs) {
+    // Small delay so hub renders first
+    setTimeout(() => openWizard(), 400);
+  }
+
+  // Render hub
+  renderHub(session);
+})();
+</script>
+</body>
+</html>
