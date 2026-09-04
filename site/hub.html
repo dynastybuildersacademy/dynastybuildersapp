@@ -2,897 +2,745 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DBA — Command Center</title>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Dynasty Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Barlow:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="auth.js"></script>
 <style>
-:root{--navy:#0A1628;--navy-mid:#112040;--navy-light:#1A3158;--gold:#C9A84C;--gold-light:#E8C97A;--gold-pale:#F5E8C0;--cream:#FAF6EE;--success:#27AE60;--warn:#E67E22;--danger:#C0392B;--slate:#6B7C93;--border:rgba(201,168,76,0.22);}
-*{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);min-height:100vh;overflow-x:hidden;}
-.app{display:flex;height:100vh;overflow:hidden;}
-
-/* ── SIDEBAR ── */
-.sidebar{width:256px;min-width:256px;background:var(--navy-mid);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;z-index:100;transition:transform 0.3s;}
-.sb-logo{padding:18px 18px 14px;border-bottom:1px solid var(--border);}
-.sb-shield{width:30px;height:34px;background:linear-gradient(160deg,var(--gold) 0%,#7a5c14 100%);clip-path:polygon(50% 0%,100% 18%,100% 65%,50% 100%,0% 65%,0% 18%);display:flex;align-items:center;justify-content:center;font-size:13px;margin-bottom:8px;}
-.sb-logo h1{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:700;color:var(--gold);line-height:1.2;}
-.sb-logo p{font-size:10px;color:var(--slate);letter-spacing:0.08em;text-transform:uppercase;margin-top:2px;}
-.sb-agent{padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
-.sb-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--gold) 0%,#7a5c14 100%);display:flex;align-items:center;justify-content:center;font-family:Barlow Condensed,sans-serif;font-size:13px;font-weight:700;color:var(--navy);flex-shrink:0;}
-.sb-name{font-size:13px;font-weight:600;}
-.sb-role{font-size:10px;color:var(--slate);text-transform:uppercase;letter-spacing:0.07em;margin-top:1px;}
-.sb-nav{flex:1;padding:8px 0;overflow-y:auto;}
-.nav-section{font-size:9px;color:var(--slate);letter-spacing:0.12em;text-transform:uppercase;padding:12px 18px 5px;font-weight:600;}
-.nav-item{display:flex;align-items:center;gap:9px;padding:8px 18px;font-size:12px;color:var(--slate);cursor:pointer;transition:all 0.15s;text-decoration:none;border-left:3px solid transparent;}
-.nav-item:hover{color:var(--cream);background:rgba(201,168,76,0.05);}
-.nav-item.active{color:var(--gold-light);background:rgba(201,168,76,0.08);border-left-color:var(--gold);}
-.nav-item .icon{font-size:14px;flex-shrink:0;width:18px;text-align:center;}
-.nav-item.locked{opacity:0.3;pointer-events:none;}
-.nav-item .new-badge{margin-left:auto;background:var(--gold);color:var(--navy);font-size:8px;font-weight:700;padding:1px 5px;border-radius:2px;font-family:Barlow Condensed,sans-serif;letter-spacing:0.05em;}
-.sb-bottom{padding:12px 18px;border-top:1px solid var(--border);}
-.logout-btn{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--slate);cursor:pointer;padding:7px 0;transition:color 0.15s;}
-.logout-btn:hover{color:var(--cream);}
-
-/* ── MOBILE ── */
-.sb-toggle{display:none;position:fixed;top:12px;left:12px;z-index:200;background:var(--gold);border:none;border-radius:3px;padding:7px 9px;cursor:pointer;font-size:15px;color:var(--navy);}
-.sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:99;}
-@media(max-width:768px){
-  .sidebar{position:fixed;left:0;top:0;bottom:0;transform:translateX(-100%);z-index:200;}
-  .sidebar.open{transform:translateX(0);}
-  .sb-toggle{display:block;}
-  .sb-overlay.open{display:block;}
+/* ── RESET & ROOT ─────────────────────────────────────────── */
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{
+  --navy:#0A1628;--navy2:#0F1E38;--s1:#132240;--s2:#1A2E50;
+  --gold:#C9A84C;--gold2:#E8C97A;
+  --text:#E8EDF5;--sub:#8A9BB5;--border:rgba(201,168,76,.15);
+  --green:#2DCA73;--red:#E74C3C;--blue:#3498DB;
+  --card:rgba(15,30,56,.8);
+  --radius:14px;
 }
+html,body{height:100%;background:var(--navy);color:var(--text);font-family:'Barlow',sans-serif;overflow-x:hidden;}
 
-/* ── MAIN ── */
-.main{flex:1;overflow-y:auto;display:flex;flex-direction:column;min-width:0;}
-.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 22px;border-bottom:1px solid var(--border);background:rgba(10,22,40,0.97);backdrop-filter:blur(10px);position:sticky;top:0;z-index:50;flex-shrink:0;}
-.topbar-left{display:flex;align-items:center;gap:12px;}
-.topbar-title{font-family:Barlow Condensed,sans-serif;font-size:16px;font-weight:700;letter-spacing:0.04em;}
-.topbar-date{font-size:11px;color:var(--slate);}
-.topbar-right{display:flex;align-items:center;gap:8px;}
-.top-link{font-size:11px;color:var(--gold);text-decoration:none;border:1px solid var(--border);padding:5px 11px;border-radius:3px;transition:border-color 0.15s;white-space:nowrap;}
-.top-link:hover{border-color:var(--gold);}
-.content{padding:20px 22px;flex:1;}
-@media(max-width:768px){.content{padding:14px;}.topbar{padding:12px 14px 12px 50px;}}
+/* ── TOP BAR ─────────────────────────────────────────────── */
+.topbar{
+  position:sticky;top:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 16px;height:52px;
+  background:rgba(10,22,40,.96);
+  border-bottom:1px solid var(--border);
+  backdrop-filter:blur(8px);
+}
+.tb-left{display:flex;align-items:center;gap:10px;}
+.tb-logo{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:900;
+  color:var(--gold2);letter-spacing:.02em;}
+.tb-logo span{color:var(--text);font-weight:600;}
+.tb-right{display:flex;align-items:center;gap:8px;}
+.tb-greeting{font-family:'DM Mono',monospace;font-size:11px;color:var(--sub);}
+.tb-manage{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;
+  letter-spacing:.04em;color:var(--gold);background:rgba(201,168,76,.1);
+  border:1px solid rgba(201,168,76,.25);border-radius:8px;
+  padding:5px 12px;cursor:pointer;text-decoration:none;}
+.tb-manage:hover{background:rgba(201,168,76,.18);}
+.tb-logout{font-family:'DM Mono',monospace;font-size:10px;color:var(--sub);
+  background:none;border:none;cursor:pointer;padding:4px 8px;}
+.tb-logout:hover{color:var(--text);}
 
-/* ── GRIDS ── */
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
-.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
-.grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;}
-@media(max-width:1000px){.grid4{grid-template-columns:1fr 1fr;}}
-@media(max-width:640px){.grid2,.grid3,.grid4{grid-template-columns:1fr;}}
+/* ── HERO ─────────────────────────────────────────────────── */
+.hero{padding:20px 16px 12px;border-bottom:1px solid var(--border);}
+.hero-name{font-family:'Barlow Condensed',sans-serif;font-size:52px;font-weight:900;
+  color:var(--text);line-height:1;}
+.hero-role{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:600;
+  color:var(--gold);letter-spacing:.06em;text-transform:uppercase;margin-top:3px;}
+.hero-date{font-family:'DM Mono',monospace;font-size:13px;color:var(--sub);margin-top:2px;}
+.hero-bar{display:flex;gap:8px;margin-top:12px;overflow-x:auto;padding-bottom:4px;}
+.hero-bar::-webkit-scrollbar{display:none;}
+.hb-chip{flex-shrink:0;font-family:'DM Mono',monospace;font-size:10px;
+  padding:4px 12px;border-radius:20px;border:1px solid var(--border);color:var(--sub);}
+.hb-chip.active{background:rgba(201,168,76,.1);border-color:rgba(201,168,76,.35);color:var(--gold);}
 
-/* ── BASE CARDS ── */
-.card{background:var(--navy-mid);border:1px solid var(--border);border-radius:4px;padding:18px 20px;}
-.card-title{font-family:Barlow Condensed,sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--gold);margin-bottom:14px;display:flex;align-items:center;gap:7px;}
+/* ── MAIN ─────────────────────────────────────────────────── */
+.main{padding:16px 16px 80px;}
+.module-section{margin-bottom:24px;}
+.mod-hdr{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.mod-icon{font-size:22px;width:38px;height:38px;display:flex;align-items:center;
+  justify-content:center;background:var(--s1);border-radius:8px;flex-shrink:0;}
+.mod-title{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;
+  letter-spacing:.06em;text-transform:uppercase;color:var(--sub);}
 
-/* ── KPI CARDS ── */
-.kpi{background:var(--navy-light);border:1px solid var(--border);border-radius:4px;padding:14px 16px;position:relative;overflow:hidden;}
-.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gold) 0%,transparent 100%);}
-.kpi-label{font-size:10px;color:var(--slate);text-transform:uppercase;letter-spacing:0.09em;}
-.kpi-val{font-family:Barlow Condensed,sans-serif;font-size:30px;font-weight:800;color:var(--gold-light);margin:4px 0 2px;line-height:1;}
-.kpi-sub{font-size:11px;color:var(--slate);}
-
-/* ── TOOL LAUNCHER GRID ── */
-.tool-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-bottom:22px;}
+/* ── TOOL GRID ───────────────────────────────────────────── */
+.tool-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
 .tool-card{
-  background:var(--navy-light);border:1px solid var(--border);border-radius:4px;
-  padding:16px 14px;display:flex;flex-direction:column;gap:8px;
-  text-decoration:none;color:var(--cream);transition:all 0.2s;cursor:pointer;
-  position:relative;
-}
-.tool-card:hover{border-color:var(--gold);background:rgba(201,168,76,0.07);transform:translateY(-1px);}
-.tool-card.locked{opacity:0.35;pointer-events:none;}
-.tool-card .tc-icon{font-size:22px;}
-.tool-card .tc-name{font-family:Barlow Condensed,sans-serif;font-size:13px;font-weight:700;letter-spacing:0.04em;line-height:1.2;}
-.tool-card .tc-desc{font-size:11px;color:var(--slate);line-height:1.4;}
-.tool-card .tc-badge{position:absolute;top:8px;right:8px;font-size:8px;font-weight:700;padding:2px 6px;border-radius:2px;font-family:Barlow Condensed,sans-serif;letter-spacing:0.05em;}
-.tc-badge.new{background:var(--gold);color:var(--navy);}
-.tc-badge.md{background:rgba(201,168,76,0.2);color:var(--gold);border:1px solid rgba(201,168,76,0.4);}
-.tc-badge.ext{background:rgba(52,152,219,0.15);color:#5dade2;border:1px solid rgba(52,152,219,0.3);}
-
-/* ── QUICK ACTIONS ── */
-.action-card{background:var(--navy-mid);border:1px solid var(--border);border-radius:4px;padding:16px 18px;display:flex;align-items:flex-start;gap:14px;text-decoration:none;color:var(--cream);transition:all 0.2s;}
-.action-card:hover{border-color:var(--gold);background:rgba(201,168,76,0.06);}
-.action-num{width:30px;height:30px;border-radius:50%;background:var(--gold);color:var(--navy);display:flex;align-items:center;justify-content:center;font-family:Barlow Condensed,sans-serif;font-size:15px;font-weight:800;flex-shrink:0;}
-.action-body h3{font-family:Barlow Condensed,sans-serif;font-size:14px;font-weight:700;letter-spacing:0.03em;margin-bottom:3px;}
-.action-body p{font-size:12px;color:var(--slate);line-height:1.5;}
-
-/* ── PROGRESS RING ── */
-.ring-wrap{display:flex;flex-direction:column;align-items:center;padding:16px 0;}
-.ring-svg{transform:rotate(-90deg);}
-.ring-track{fill:none;stroke:rgba(201,168,76,0.15);stroke-width:8;}
-.ring-fill{fill:none;stroke:var(--gold);stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset 0.8s ease;}
-
-/* ── TEAM TABLE ── */
-.tbl-wrap{overflow-x:auto;}
-table{width:100%;border-collapse:collapse;}
-thead tr{border-bottom:1px solid var(--gold);}
-th{font-family:Barlow Condensed,sans-serif;font-size:10px;font-weight:700;color:var(--gold);letter-spacing:0.1em;text-transform:uppercase;padding:8px 10px;text-align:left;white-space:nowrap;}
-tbody tr{border-bottom:1px solid rgba(201,168,76,0.07);transition:background 0.15s;}
-tbody tr:hover{background:rgba(201,168,76,0.04);}
-td{padding:9px 10px;font-size:12px;vertical-align:middle;}
-.badge{display:inline-block;padding:2px 7px;border-radius:2px;font-size:9px;font-weight:700;font-family:Barlow Condensed,sans-serif;letter-spacing:0.04em;}
-.badge-md{background:rgba(201,168,76,0.18);color:var(--gold);border:1px solid rgba(201,168,76,0.3);}
-.badge-dir{background:rgba(39,174,96,0.15);color:#2ecc71;border:1px solid rgba(39,174,96,0.3);}
-.badge-fa{background:rgba(93,173,226,0.15);color:#5dade2;border:1px solid rgba(93,173,226,0.3);}
-.badge-assoc{background:rgba(187,143,206,0.15);color:#bb8fce;border:1px solid rgba(187,143,206,0.3);}
-.badge-train{background:rgba(107,124,147,0.15);color:var(--slate);border:1px solid rgba(107,124,147,0.3);}
-.av{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--gold) 0%,#8a6010 100%);display:inline-flex;align-items:center;justify-content:center;font-family:Barlow Condensed,sans-serif;font-size:10px;font-weight:700;color:var(--navy);}
-.prog-bar{height:4px;background:rgba(201,168,76,0.1);border-radius:2px;width:72px;display:inline-block;vertical-align:middle;}
-.prog-fill{height:4px;border-radius:2px;background:var(--gold);}
-
-/* ── AI CHAT ── */
-.chat-box{background:var(--navy);border:1px solid var(--border);border-radius:4px;overflow:hidden;}
-.chat-msgs{height:240px;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:9px;}
-.chat-msgs::-webkit-scrollbar{width:3px;}
-.chat-msgs::-webkit-scrollbar-thumb{background:var(--gold);border-radius:2px;}
-.msg{max-width:88%;padding:8px 12px;border-radius:4px;font-size:13px;line-height:1.55;}
-.msg.user{align-self:flex-end;background:rgba(201,168,76,0.15);border:1px solid rgba(201,168,76,0.3);}
-.msg.ai{align-self:flex-start;background:var(--navy-light);border:1px solid var(--border);}
-.msg.ai .name{font-size:9px;color:var(--gold);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:3px;}
-.msg.typing span{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--slate);margin:0 1px;animation:blink 1s infinite;}
-.msg.typing span:nth-child(2){animation-delay:0.2s;}
-.msg.typing span:nth-child(3){animation-delay:0.4s;}
-@keyframes blink{0%,100%{opacity:0.2;}50%{opacity:1;}}
-.chat-prompts{display:flex;flex-wrap:wrap;gap:6px;padding:9px 12px;border-bottom:1px solid var(--border);}
-.chip{padding:4px 10px;border:1px solid var(--border);border-radius:20px;font-size:11px;color:var(--slate);cursor:pointer;transition:all 0.15s;white-space:nowrap;}
-.chip:hover{border-color:var(--gold);color:var(--gold);}
-.chat-input-row{display:flex;border-top:1px solid var(--border);}
-.chat-input{flex:1;background:transparent;border:none;padding:10px 13px;color:var(--cream);font-family:'Barlow',sans-serif;font-size:13px;}
-.chat-input:focus{outline:none;}
-.chat-input::placeholder{color:var(--slate);}
-.chat-send{background:var(--gold);border:none;padding:0 16px;color:var(--navy);cursor:pointer;font-family:Barlow Condensed,sans-serif;font-size:13px;font-weight:700;transition:opacity 0.2s;}
-.chat-send:hover{opacity:0.85;}
-
-/* ── SECTION HEADERS ── */
-.section-hdr{display:flex;align-items:center;justify-content:space-between;margin:20px 0 12px;}
-.section-hdr h2{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:var(--gold);}
-.view-all{font-size:11px;color:var(--gold);text-decoration:none;letter-spacing:0.06em;text-transform:uppercase;}
-.view-all:hover{text-decoration:underline;}
-
-/* ── ALERT BANNERS ── */
-.alert{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:4px;margin-bottom:10px;font-size:13px;}
-.alert-gold{background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.3);}
-.alert-green{background:rgba(39,174,96,0.1);border:1px solid rgba(39,174,96,0.25);}
-.alert-red{background:rgba(192,50,50,0.1);border:1px solid rgba(192,50,50,0.25);}
-
-/* ── LIGHTS OUT COUNTDOWN ── */
-.lights-out-banner{
-  background:linear-gradient(135deg,#06060a 0%,#0c0c12 50%,#111118 100%);
-  border:1px solid rgba(232,0,45,0.4);border-radius:6px;
-  padding:20px 22px;margin-bottom:20px;
-  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:18px 14px 16px;text-decoration:none;color:var(--text);
+  display:flex;flex-direction:column;gap:6px;
+  transition:border-color .15s,background .15s;
   position:relative;overflow:hidden;
+  min-height:110px;
 }
-.lights-out-banner::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#e8002d,transparent);}
-.lo-title{font-family:Barlow Condensed,sans-serif;font-size:11px;font-weight:700;color:#e8002d;letter-spacing:0.15em;text-transform:uppercase;margin-bottom:4px;}
-.lo-name{font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--cream);font-weight:700;}
-.lo-sub{font-size:11px;color:var(--slate);margin-top:3px;}
-.countdown{display:flex;gap:12px;align-items:center;}
-.cd-unit{text-align:center;background:rgba(232,0,45,0.1);border:1px solid rgba(232,0,45,0.3);border-radius:4px;padding:10px 14px;min-width:58px;}
-.cd-num{font-family:Barlow Condensed,sans-serif;font-size:28px;font-weight:800;color:var(--cream);line-height:1;}
-.cd-lbl{font-size:9px;color:var(--slate);text-transform:uppercase;letter-spacing:0.09em;margin-top:2px;}
-.lo-action{display:flex;flex-direction:column;gap:8px;align-items:flex-end;}
-.lo-link{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:3px;font-family:Barlow Condensed,sans-serif;font-size:12px;font-weight:700;text-decoration:none;transition:opacity 0.2s;letter-spacing:0.05em;white-space:nowrap;}
-.lo-link.primary{background:#e8002d;color:#fff;}
-.lo-link.secondary{background:var(--gold);color:var(--navy);}
-.lo-link:hover{opacity:0.85;}
+.tool-card:active{background:var(--s2);border-color:rgba(201,168,76,.3);}
+.tool-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--mod-color,var(--gold)),transparent);opacity:.6;}
+.tc-icon{font-size:40px;line-height:1;}
+.tc-name{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:800;
+  letter-spacing:.02em;line-height:1.1;color:var(--text);}
+.tc-sub{font-family:'DM Mono',monospace;font-size:14px;color:var(--sub);line-height:1.4;}
+.tc-new{position:absolute;top:10px;right:10px;background:var(--green);color:#fff;
+  font-family:'DM Mono',monospace;font-size:9px;font-weight:700;
+  padding:2px 7px;border-radius:10px;letter-spacing:.04em;}
+.tc-ext{position:absolute;top:10px;right:10px;font-size:11px;color:var(--sub);}
 
-/* ── TOAST ── */
-.toast{position:fixed;bottom:20px;right:20px;background:var(--navy-mid);border:1px solid var(--gold);border-radius:4px;padding:10px 18px;font-size:13px;transform:translateY(60px);opacity:0;transition:all 0.3s;z-index:999;color:var(--gold-light);}
-.toast.show{transform:translateY(0);opacity:1;}
+/* ── WIDE CARD (full width) ──────────────────────────────── */
+.tool-card.wide{grid-column:1/-1;flex-direction:row;align-items:center;
+  min-height:auto;padding:14px 16px;gap:14px;}
+.tool-card.wide .tc-icon{font-size:44px;flex-shrink:0;}
+.tool-card.wide .tc-body{flex:1;}
+.tool-card.wide .tc-name{font-size:30px;}
+
+/* ── QUICK LINKS ROW ─────────────────────────────────────── */
+.quick-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:22px;}
+.quick-row::-webkit-scrollbar{display:none;}
+.quick-pill{
+  flex-shrink:0;font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;
+  padding:9px 16px;border-radius:20px;border:1px solid var(--border);
+  color:var(--text);text-decoration:none;background:var(--s1);
+  white-space:nowrap;letter-spacing:.02em;
+}
+.quick-pill:active{background:var(--s2);}
+.quick-pill.gold{background:rgba(201,168,76,.1);border-color:rgba(201,168,76,.35);color:var(--gold2);}
+
+/* ── ONBOARDING WIZARD ───────────────────────────────────── */
+.wizard-overlay{
+  position:fixed;inset:0;background:rgba(5,12,25,.92);z-index:200;
+  display:flex;align-items:flex-end;justify-content:center;
+  backdrop-filter:blur(4px);
+}
+.wizard-sheet{
+  background:var(--navy2);border:1px solid var(--border);
+  border-radius:20px 20px 0 0;padding:24px 20px 40px;
+  width:100%;max-width:500px;max-height:88vh;overflow-y:auto;
+}
+.wiz-step{display:none;}
+.wiz-step.active{display:block;}
+.wiz-title{font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:900;
+  color:var(--gold2);margin-bottom:4px;}
+.wiz-sub{font-family:'DM Mono',monospace;font-size:11px;color:var(--sub);
+  margin-bottom:20px;line-height:1.6;}
+.wiz-modules{display:flex;flex-direction:column;gap:8px;margin-bottom:20px;}
+.wiz-mod{
+  background:var(--s1);border:1.5px solid var(--border);border-radius:12px;
+  padding:14px;display:flex;align-items:center;gap:12px;cursor:pointer;
+  transition:border-color .15s,background .15s;
+}
+.wiz-mod.selected{border-color:var(--gold);background:rgba(201,168,76,.08);}
+.wiz-mod.locked{opacity:.4;cursor:default;}
+.wiz-mod-icon{font-size:24px;width:44px;height:44px;background:var(--s2);
+  border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.wiz-mod-body{flex:1;}
+.wiz-mod-name{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;
+  color:var(--text);margin-bottom:2px;}
+.wiz-mod-desc{font-family:'DM Mono',monospace;font-size:10px;color:var(--sub);line-height:1.5;}
+.wiz-mod-check{width:24px;height:24px;border-radius:50%;border:2px solid var(--border);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  font-size:13px;color:var(--gold);transition:all .15s;}
+.wiz-mod-check.checked,.wiz-mod.selected .wiz-mod-check{background:var(--gold);border-color:var(--gold);color:#0A1628;font-weight:900;}
+.wiz-level-badge{font-family:'DM Mono',monospace;font-size:9px;padding:2px 8px;
+  border-radius:10px;background:rgba(107,124,147,.15);color:var(--sub);
+  display:inline-block;margin-top:4px;}
+.wiz-btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--gold),#b8901f);
+  border:none;border-radius:10px;font-family:'Barlow Condensed',sans-serif;
+  font-size:18px;font-weight:900;letter-spacing:.04em;color:#0A1628;cursor:pointer;}
+.wiz-btn:active{opacity:.88;}
+.wiz-skip{display:block;text-align:center;margin-top:12px;font-family:'DM Mono',monospace;
+  font-size:11px;color:var(--sub);cursor:pointer;text-decoration:underline;}
+
+/* ── MANAGE OVERLAY ─────────────────────────────────────── */
+.manage-overlay{
+  position:fixed;inset:0;background:rgba(5,12,25,.92);z-index:200;
+  display:none;flex-direction:column;
+  backdrop-filter:blur(4px);overflow-y:auto;
+}
+.manage-overlay.open{display:flex;}
+.manage-sheet{
+  background:var(--navy2);min-height:100%;padding:0 0 60px;
+}
+.manage-topbar{
+  position:sticky;top:0;background:rgba(10,22,40,.96);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 16px;height:52px;z-index:10;
+}
+.manage-title{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;
+  color:var(--gold2);letter-spacing:.04em;}
+.manage-close{background:none;border:none;color:var(--sub);font-size:22px;cursor:pointer;padding:8px;}
+.manage-body{padding:16px;}
+.manage-section-title{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--sub);margin-bottom:10px;}
+
+/* Agent module rows */
+.agent-row{background:var(--s1);border:1px solid var(--border);border-radius:12px;
+  margin-bottom:8px;overflow:hidden;}
+.agent-row-hdr{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;}
+.agent-avatar{width:36px;height:36px;border-radius:50%;background:var(--s2);
+  font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;color:var(--gold2);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.agent-info{flex:1;}
+.agent-name{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:var(--text);}
+.agent-role-tag{font-family:'DM Mono',monospace;font-size:9px;color:var(--sub);}
+.agent-chevron{font-size:14px;color:var(--sub);transition:transform .2s;}
+.agent-row.open .agent-chevron{transform:rotate(180deg);}
+.agent-modules{display:none;padding:0 14px 12px;border-top:1px solid var(--border);}
+.agent-row.open .agent-modules{display:block;}
+.mod-toggle-row{display:flex;align-items:center;justify-content:space-between;
+  padding:8px 0;border-bottom:1px solid rgba(26,46,80,.4);}
+.mod-toggle-row:last-child{border:none;}
+.mod-toggle-label{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;color:var(--text);}
+.mod-toggle-sub{font-family:'DM Mono',monospace;font-size:9px;color:var(--sub);}
+.toggle-switch{width:42px;height:24px;border-radius:12px;background:var(--s2);
+  border:1px solid var(--border);position:relative;cursor:pointer;
+  transition:background .2s;flex-shrink:0;}
+.toggle-switch.on{background:var(--green);border-color:var(--green);}
+.toggle-switch.locked{opacity:.4;cursor:not-allowed;}
+.toggle-knob{position:absolute;top:3px;left:3px;width:16px;height:16px;
+  border-radius:50%;background:#fff;transition:left .2s;}
+.toggle-switch.on .toggle-knob{left:21px;}
+
+/* ── BOTTOM NAV ──────────────────────────────────────────── */
+.bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;
+  background:rgba(10,22,40,.96);border-top:1px solid var(--border);
+  display:flex;height:60px;z-index:50;
+  backdrop-filter:blur(8px);
+}
+.bn-item{flex:1;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:3px;cursor:pointer;color:var(--sub);
+  font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.04em;
+  text-decoration:none;border:none;background:none;}
+.bn-item.active{color:var(--gold);}
+.bn-icon{font-size:28px;}
+
+/* ── EMPTY STATE ─────────────────────────────────────────── */
+.empty-state{text-align:center;padding:40px 20px;}
+.empty-icon{font-size:40px;margin-bottom:12px;}
+.empty-title{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;
+  color:var(--gold2);margin-bottom:6px;}
+.empty-sub{font-family:'DM Mono',monospace;font-size:11px;color:var(--sub);line-height:1.7;}
+.empty-btn{margin-top:16px;display:inline-block;padding:10px 24px;
+  background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.35);
+  border-radius:10px;font-family:'Barlow Condensed',sans-serif;font-size:15px;
+  font-weight:800;color:var(--gold2);cursor:pointer;letter-spacing:.04em;}
 </style>
 </head>
 <body>
 
-<button class="sb-toggle" onclick="toggleSidebar()">☰</button>
-<div class="sb-overlay" id="sb-overlay" onclick="toggleSidebar()"></div>
-
-<div class="app">
-  <!-- ══ SIDEBAR ══ -->
-  <aside class="sidebar" id="sidebar">
-    <div class="sb-logo">
-      <div class="sb-shield">👑</div>
-      <h1>Dynasty Builders<br>Academy</h1>
-      <p>PHP Agency Platform</p>
-    </div>
-    <div class="sb-agent">
-      <div class="sb-avatar" id="sb-av">–</div>
-      <div>
-        <div class="sb-name" id="sb-name">Loading…</div>
-        <div class="sb-role" id="sb-role">–</div>
-      </div>
-    </div>
-    <nav class="sb-nav" id="sb-nav"></nav>
-    <div class="sb-bottom">
-      <div style="font-size:10px;color:var(--slate);margin-bottom:8px;">Making Dreams Come True</div>
-      <div class="logout-btn" onclick="AUTH.logout()">⏻ Sign Out</div>
-    </div>
-  </aside>
-
-  <!-- ══ MAIN ══ -->
-  <main class="main">
-    <div class="topbar">
-      <div class="topbar-left">
-        <div class="topbar-title" id="topbar-greeting">Command Center</div>
-        <div class="topbar-date" id="topbar-date"></div>
-      </div>
-      <div class="topbar-right">
-        <a href="pmd-hub.html" class="top-link" id="pmd-link" style="display:none;">⚙️ PMD Hub</a>
-        <a href="agents.html" class="top-link" id="roster-link" style="display:none;">👥 Agent Roster</a>
-        <a href="https://app.phpbamboo.com/agent/signin" target="_blank" class="top-link">PHP Bamboo ↗</a>
-      </div>
-    </div>
-
-    <div id="monday-sync-banner" style="display:none;background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.3);border-radius:4px;padding:14px 18px;margin:10px 20px 0;position:relative;"></div>
-    <div class="content" id="main-content">
-      <div style="text-align:center;padding:60px;color:var(--slate);">Loading…</div>
-    </div>
-  </main>
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="tb-left">
+    <div class="tb-logo">DBA <span>Hub</span></div>
+  </div>
+  <div class="tb-right">
+    <span class="tb-greeting" id="tb-greeting"></span>
+    <a class="tb-manage" id="tb-manage-btn" href="#" onclick="openManage();return false;" style="display:none;">⚙ Manage</a>
+    <button class="tb-logout" onclick="AUTH.logout()">Sign out</button>
+  </div>
 </div>
 
-<div class="toast" id="toast"></div>
+<!-- HERO -->
+<!-- NOTIFICATION STRIP -->
+<div id="notif-strip" style="display:none;background:rgba(201,168,76,.12);border-bottom:1px solid rgba(201,168,76,.25);padding:8px 16px;font-family:'DM Mono',monospace;font-size:11px;color:var(--gold2);display:flex;align-items:center;justify-content:space-between;">
+  <span id="notif-text"></span>
+  <span onclick="document.getElementById('notif-strip').style.display='none'" style="cursor:pointer;font-size:14px;color:var(--sub);">✕</span>
+</div>
+
+<div class="hero">
+  <div class="hero-name" id="hero-name">Welcome</div>
+  <div class="hero-role" id="hero-role"></div>
+  <div class="hero-date" id="hero-date"></div>
+  <div class="hero-bar" id="hero-bar"></div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main" id="main-content"></div>
+
+<!-- BOTTOM NAV — rendered dynamically -->
+<div class="bottom-nav" id="bottom-nav"></div>
+
+<!-- ONBOARDING WIZARD -->
+<div class="wizard-overlay" id="wizard-overlay" style="display:none;">
+  <div class="wizard-sheet">
+    <div class="wiz-step active" id="wiz-step-1">
+      <div class="wiz-title">Welcome to DBA Hub 👋</div>
+      <div class="wiz-sub">Let's set up your personal workspace.<br>Choose the tools you want — you can change these any time.</div>
+      <div class="wiz-modules" id="wiz-module-list"></div>
+      <div style="display:flex;gap:8px;margin-bottom:14px;">
+        <button class="wiz-btn" onclick="saveWizard()" style="flex:2;">✓ Save My Hub</button>
+        <button onclick="skipWizard()" style="flex:1;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:10px;color:var(--sub);font-family:'DM Mono',monospace;font-size:11px;padding:14px;cursor:pointer;">All tools</button>
+      </div>
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--sub);text-align:center;line-height:1.6;">You can change this any time by tapping <strong style="color:var(--gold);">🧩 My Tools</strong> on the hub.</div>
+    </div>
+  </div>
+</div>
+
+<!-- MANAGE OVERLAY -->
+<div class="manage-overlay" id="manage-overlay">
+  <div class="manage-sheet">
+    <div class="manage-topbar">
+      <div class="manage-title">⚙ Manage Team Modules</div>
+      <button class="manage-close" onclick="closeManage()">✕</button>
+    </div>
+    <div class="manage-body" id="manage-body"></div>
+  </div>
+</div>
 
 <script>
-// ── SHARED STATE (declared first — must be before IIFE) ───────
-const chatHistory = {};
-const chatSystems = {};
+// ══════════════════════════════════════════════════════════════
+// DBA HUB v2.1 — MODULAR EDITION — PHASE 2
+// ══════════════════════════════════════════════════════════════
+
+const SK_MODULES = 'dba_hub_v2_modules';
+const SK_NOTIF   = 'dba_hub_v2_notif_seen';
+
+// ── MODULE DEFINITIONS ────────────────────────────────────────
+const MODULE_DEFS = [
+  {
+    id: 'basics', icon: '🌱', name: 'Getting Started',
+    desc: 'Training, forms and income calculator',
+    minLevel: 0, defaultOn: true, color: '#2DCA73',
+    navIcon: '📚', navLabel: 'Training', navHref: 'training.html',
+    tools: [
+      { icon:'📚', name:'Training Hub',      sub:'Videos & study guides',     href:'training.html', wide:true },
+      { icon:'💰', name:'Income Calculator', sub:'Project your earnings',     href:'income-calculator.html' },
+      { icon:'📋', name:'Client Prequal',    sub:'Client intake form',        href:'prequal.html' },
+      { icon:'🎋', name:'PHP Bamboo',        sub:'Official PHP platform',     href:'https://app.phpbamboo.com/agent/signin', ext:true },
+    ]
+  },
+  {
+    id: 'my_numbers', icon: '📊', name: 'My Numbers',
+    desc: 'Track activity, progress and your promotion path',
+    minLevel: 0, defaultOn: true, color: '#3498DB',
+    navIcon: '📞', navLabel: 'Activity', navHref: 'tracker.html',
+    tools: [
+      { icon:'📞', name:'Activity Log',      sub:'Log calls & contacts daily', href:'tracker.html', wide:true },
+      { icon:'🎯', name:'My Promotion',      sub:'Track promotion progress',  href:'md-tracker.html' },
+      { icon:'🏆', name:'Leaderboard',       sub:'Team rankings this week',   href:'agent-leaderboard.html' },
+      { icon:'🎁', name:'Rewards',           sub:'Milestone bonuses',         href:'rewards.html' },
+    ]
+  },
+  {
+    id: 'recruiting', icon: '🤝', name: 'Recruiting',
+    desc: 'Build your prospect pipeline and schedule appointments',
+    minLevel: 20, defaultOn: false, color: '#E67E22',
+    navIcon: '🤝', navLabel: 'Recruit', navHref: 'top25.html',
+    tools: [
+      { icon:'📝', name:'Top 25 Worksheet', sub:'Your prospect pipeline',    href:'top25.html', wide:true },
+      { icon:'🔍', name:'Recruiting Center', sub:'Prospects & appointments', href:'recruiting.html' },
+      { icon:'📅', name:'BOM Tracker',      sub:'Business opportunity mtgs', href:'bom.html' },
+    ]
+  },
+  {
+    id: 'contest', icon: '🌴', name: 'Contest & Recognition',
+    desc: 'Miami challenge standings and weekly recognition',
+    minLevel: 30, defaultOn: false, color: '#FF6B35',
+    navIcon: '🌴', navLabel: 'Miami', navHref: 'miami-tracker.html',
+    tools: [
+      { icon:'🌴', name:'Miami Tracker',    sub:'Road to Miami 2026',         href:'miami-tracker.html', wide:true, badge:'LIVE' },
+      { icon:'⭐', name:'Thankful Thursday', sub:'Weekly recognition show',   href:'recognitions.html' },
+      { icon:'🏅', name:'Incentives',        sub:'Contests & prizes',         href:'incentives.html' },
+    ]
+  },
+  {
+    id: 'team_builder', icon: '🏗', name: 'Team Builder',
+    desc: 'Run promotion trackers, manage your team and communicate',
+    minLevel: 40, defaultOn: false, color: '#9B59B6',
+    navIcon: '👥', navLabel: 'Team', navHref: 'messages.html',
+    tools: [
+      { icon:'📈', name:'MD Promo Tracker', sub:'90-day promotion runs',     href:'md-tracker.html', wide:true },
+      { icon:'🌴', name:'Miami Tracker',    sub:'Official contest standings', href:'miami-tracker.html' },
+      { icon:'💬', name:'Team Messages',    sub:'Announcements & DMs',       href:'messages.html' },
+      { icon:'⭐', name:'Thankful Thursday', sub:'Weekly recognition',        href:'recognitions.html' },
+    ]
+  },
+  {
+    id: 'operations', icon: '⚙️', name: 'Operations',
+    desc: 'Agency analytics, roster and admin tools',
+    minLevel: 60, defaultOn: false, color: '#C9A84C',
+    navIcon: '⚙️', navLabel: 'Ops', navHref: 'roster-admin.html',
+    tools: [
+      { icon:'👥', name:'Roster Admin',     sub:'Manage agent records',      href:'roster-admin.html', wide:true },
+      { icon:'📊', name:'Analytics',        sub:'Lead & campaign data',      href:'analytics.html' },
+      { icon:'🔗', name:'Monday Sync',      sub:'Board integration',         href:'monday-setup.html' },
+      { icon:'💬', name:'Messages',         sub:'Team communications',       href:'messages.html' },
+    ]
+  },
+];
+
+// Quick links always visible in scroll strip
+const QUICK_LINKS = [
+  { label:'🎋 PHP Bamboo',      href:'https://app.phpbamboo.com/agent/signin', ext:true },
+  { label:'📋 Prequal Form',    href:'prequal.html' },
+  { label:'📞 Log Activity',    href:'tracker.html' },
+  { label:'🌴 Miami Tracker',   href:'miami-tracker.html' },
+];
+
+// ── STORE ─────────────────────────────────────────────────────
+function loadModulePrefs(agentId) {
+  try { const r=JSON.parse(localStorage.getItem(SK_MODULES)||'{}'); return r[agentId]||null; } catch { return null; }
+}
+function saveModulePrefs(agentId, prefs) {
+  try { const r=JSON.parse(localStorage.getItem(SK_MODULES)||'{}'); r[agentId]=prefs; localStorage.setItem(SK_MODULES,JSON.stringify(r)); } catch {}
+}
+function getActiveModules(session) {
+  const p = loadModulePrefs(session.agentId);
+  if(p) return p;
+  return MODULE_DEFS.filter(m => session.level >= m.minLevel && m.defaultOn).map(m => m.id);
+}
+
+// ── BOTTOM NAV — built from top 4 active modules ──────────────
+function renderBottomNav(session) {
+  const activeIds = getActiveModules(session);
+  const activeMods = MODULE_DEFS.filter(m => activeIds.includes(m.id) && session.level >= m.minLevel);
+
+  // Always: Home + up to 3 from active modules
+  const navMods = activeMods.slice(0, 3);
+  const manageAvail = session.level >= 40;
+
+  let html = `<a class="bn-item active" href="hub-v2.html">
+    <div class="bn-icon">🏠</div><span>Home</span>
+  </a>`;
+
+  navMods.forEach(m => {
+    html += `<a class="bn-item" href="${m.navHref}">
+      <div class="bn-icon">${m.navIcon}</div><span>${m.navLabel}</span>
+    </a>`;
+  });
+
+  if(manageAvail && navMods.length < 3) {
+    html += `<a class="bn-item" href="#" onclick="openManage();return false;">
+      <div class="bn-icon">⚙️</div><span>Manage</span>
+    </a>`;
+  } else if(manageAvail) {
+    // Replace last nav item with manage
+    html = html.split('<a class="bn-item" href="').slice(0,-1).join('<a class="bn-item" href="') + 
+      `</a><a class="bn-item" href="#" onclick="openManage();return false;"><div class="bn-icon">⚙️</div><span>Manage</span></a>`;
+    // simpler: just always add manage at end if director+
+  }
+
+  // Always 4 items: home + 2 module shortcuts + manage(if eligible) or 3 shortcuts
+  const el = document.getElementById('bottom-nav');
+  if(el) {
+    const items = ['home', ...navMods.map(m=>m.id), manageAvail?'manage':''].filter(Boolean).slice(0,4);
+    let out = `<a class="bn-item active" href="hub-v2.html"><div class="bn-icon">🏠</div><span>Home</span></a>`;
+    activeMods.slice(0, manageAvail ? 2 : 3).forEach(m => {
+      out += `<a class="bn-item" href="${m.navHref}"><div class="bn-icon">${m.navIcon}</div><span>${m.navLabel}</span></a>`;
+    });
+    if(manageAvail) {
+      out += `<a class="bn-item" href="#" onclick="openManage();return false;"><div class="bn-icon">⚙️</div><span>Manage</span></a>`;
+    } else if(activeMods.length < 3) {
+      out += `<a class="bn-item" href="#" onclick="openWizard();return false;"><div class="bn-icon">🧩</div><span>My Tools</span></a>`;
+    }
+    el.innerHTML = out;
+  }
+}
+
+// ── RENDER HUB ────────────────────────────────────────────────
+function renderHub(session) {
+  const activeIds = getActiveModules(session);
+  const activeMods = MODULE_DEFS.filter(m => activeIds.includes(m.id) && session.level >= m.minLevel);
+  const main = document.getElementById('main-content');
+
+  if(!activeMods.length) {
+    main.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">🧩</div>
+      <div class="empty-title">Choose Your Tools</div>
+      <div class="empty-sub">Tap below to pick the tools you want.<br>Your hub will show only what you need.</div>
+      <div class="empty-btn" onclick="openWizard()">Set Up My Hub</div>
+    </div>`;
+    return;
+  }
+
+  // Quick links strip
+  let html = `<div class="quick-row">
+    <div class="quick-pill gold" onclick="openWizard()" style="cursor:pointer;">🧩 My Tools</div>
+    ${QUICK_LINKS.map(l=>`<a class="quick-pill" href="${l.href}" ${l.ext?'target="_blank"':''}>${l.label}</a>`).join('')}
+  </div>`;
+
+  // Module sections
+  activeMods.forEach(mod => {
+    html += `<div class="module-section">
+      <div class="mod-hdr">
+        <div class="mod-icon">${mod.icon}</div>
+        <div class="mod-title">${mod.name}</div>
+      </div>
+      <div class="tool-grid">`;
+    mod.tools.forEach(tool => {
+      const style = `--mod-color:${mod.color};`;
+      const badge = tool.badge ? `<span class="tc-new">${tool.badge}</span>` : '';
+      const extIcon = tool.ext ? `<span class="tc-ext">↗</span>` : '';
+      const target = tool.ext ? 'target="_blank"' : '';
+      if(tool.wide) {
+        html += `<a class="tool-card wide" href="${tool.href}" ${target} style="${style}">
+          ${badge}${extIcon}
+          <div class="tc-icon">${tool.icon}</div>
+          <div class="tc-body"><div class="tc-name">${tool.name}</div><div class="tc-sub">${tool.sub}</div></div>
+        </a>`;
+      } else {
+        html += `<a class="tool-card" href="${tool.href}" ${target} style="${style}">
+          ${badge}${extIcon}
+          <div class="tc-icon">${tool.icon}</div>
+          <div class="tc-name">${tool.name}</div>
+          <div class="tc-sub">${tool.sub}</div>
+        </a>`;
+      }
+    });
+    html += `</div></div>`;
+  });
+
+  main.innerHTML = html;
+  renderBottomNav(session);
+}
+
+// ── WIZARD ────────────────────────────────────────────────────
+function openWizard() {
+  const session = AUTH.getSession();
+  const activeIds = getActiveModules(session);
+  const eligible = MODULE_DEFS.filter(m => session.level >= m.minLevel);
+  const locked   = MODULE_DEFS.filter(m => session.level < m.minLevel);
+
+  document.getElementById('wiz-module-list').innerHTML =
+    eligible.map(m => `
+      <div class="wiz-mod ${activeIds.includes(m.id)?'selected':''}" id="wm-${m.id}" onclick="toggleWizMod('${m.id}')">
+        <div class="wiz-mod-icon" style="background:${m.color}18;">${m.icon}</div>
+        <div class="wiz-mod-body">
+          <div class="wiz-mod-name">${m.name}</div>
+          <div class="wiz-mod-desc">${m.desc}</div>
+        </div>
+        <div class="wiz-mod-check ${activeIds.includes(m.id)?'checked':''}">${activeIds.includes(m.id)?'✓':''}</div>
+      </div>`).join('') +
+    (locked.length ? `<div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--sub);text-transform:uppercase;letter-spacing:.08em;margin:12px 0 6px;">Unlocks as you grow</div>
+      ${locked.map(m=>`<div class="wiz-mod locked">
+        <div class="wiz-mod-icon" style="background:rgba(107,124,147,.08);">${m.icon}</div>
+        <div class="wiz-mod-body">
+          <div class="wiz-mod-name">${m.name}</div>
+          <div class="wiz-mod-desc">${m.desc}</div>
+          <span class="wiz-level-badge">🔒 ${Object.values(ROLES||{}).find(r=>r.level===m.minLevel)?.label||'Level '+m.minLevel}+</span>
+        </div>
+      </div>`).join('')}` : '');
+
+  document.getElementById('wizard-overlay').style.display = 'flex';
+}
+
+function toggleWizMod(id) {
+  const el = document.getElementById(`wm-${id}`);
+  const ch = el.querySelector('.wiz-mod-check');
+  el.classList.toggle('selected');
+  ch.classList.toggle('checked');
+  ch.textContent = el.classList.contains('selected') ? '✓' : '';
+}
+
+function saveWizard() {
+  const session = AUTH.getSession();
+  const selected = [...document.querySelectorAll('.wiz-mod.selected')].map(el=>el.id.replace('wm-',''));
+  saveModulePrefs(session.agentId, selected);
+  document.getElementById('wizard-overlay').style.display = 'none';
+  renderHub(session);
+  updateHeroBadges(session, selected);
+}
+
+function skipWizard() {
+  const session = AUTH.getSession();
+  const all = MODULE_DEFS.filter(m=>session.level>=m.minLevel).map(m=>m.id);
+  saveModulePrefs(session.agentId, all);
+  document.getElementById('wizard-overlay').style.display = 'none';
+  renderHub(session);
+  updateHeroBadges(session, all);
+}
+
+// ── MANAGE PANEL ──────────────────────────────────────────────
+function openManage() {
+  const session = AUTH.getSession();
+  const body = document.getElementById('manage-body');
+  const activeIds = getActiveModules(session);
+
+  // My modules section
+  let html = `<div class="manage-section-title">Your Active Tools</div>
+    <div style="background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:4px 14px;margin-bottom:20px;">
+    ${MODULE_DEFS.map(m=>{
+      const eligible = session.level >= m.minLevel;
+      const isOn = activeIds.includes(m.id);
+      return `<div class="mod-toggle-row">
+        <div>
+          <div class="mod-toggle-label">${m.icon} ${m.name}</div>
+          <div class="mod-toggle-sub">${m.desc}</div>
+        </div>
+        <div class="toggle-switch${eligible?(isOn?' on':''):' locked'}"
+          id="mytog-${m.id}" ${eligible?`onclick="toggleMyModule('${m.id}')"`:''}
+          title="${eligible?'':'Unlock at level '+m.minLevel}">
+          <div class="toggle-knob"></div>
+        </div>
+      </div>`;
+    }).join('')}
+    </div>`;
+
+  // Team section
+  const myAgents = getDownlineAgents(session);
+  if(myAgents.length) {
+    html += `<div class="manage-section-title" style="margin-top:4px;">Team Members (${myAgents.length})</div>
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--sub);margin-bottom:10px;line-height:1.6;">
+        Toggle which tools each agent sees. Changes take effect on their next login.
+      </div>`;
+
+    myAgents.forEach(agent => {
+      const agLevel = ROLES[agent.role]?.level || 0;
+      const agentSession = { agentId: agent.id, level: agLevel };
+      const agActive = getActiveModules(agentSession);
+      const eligMods = MODULE_DEFS.filter(m => agLevel >= m.minLevel);
+      const initials = agent.name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
+      const roleColor = ROLES[agent.role]?.color || '#6B7C93';
+
+      html += `<div class="agent-row" id="ar-${agent.id}">
+        <div class="agent-row-hdr" onclick="toggleAgentRow('${agent.id}')">
+          <div class="agent-avatar" style="background:${roleColor}22;color:${roleColor};">${initials}</div>
+          <div class="agent-info">
+            <div class="agent-name">${agent.name}</div>
+            <div class="agent-role-tag">${ROLES[agent.role]?.label||agent.role}${agent.phpId?' · PHP '+agent.phpId:''}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--sub);">${agActive.length} tools</div>
+            <span class="agent-chevron">▾</span>
+          </div>
+        </div>
+        <div class="agent-modules">
+          ${eligMods.length ? eligMods.map(m=>{
+            const isOn = agActive.includes(m.id);
+            return `<div class="mod-toggle-row">
+              <div>
+                <div class="mod-toggle-label">${m.icon} ${m.name}</div>
+                <div class="mod-toggle-sub">${m.desc}</div>
+              </div>
+              <div class="toggle-switch ${isOn?'on':''}" id="atog-${agent.id}-${m.id}"
+                onclick="toggleAgentModule('${agent.id}','${m.id}')">
+                <div class="toggle-knob"></div>
+              </div>
+            </div>`;
+          }).join('') : `<div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--sub);padding:8px 0;">No eligible modules for this role yet.</div>`}
+        </div>
+      </div>`;
+    });
+  } else {
+    html += `<div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--sub);text-align:center;padding:24px 0;">
+      No agents in your downline yet.
+    </div>`;
+  }
+
+  body.innerHTML = html;
+  document.getElementById('manage-overlay').classList.add('open');
+}
+
+function closeManage() {
+  document.getElementById('manage-overlay').classList.remove('open');
+}
+
+function toggleAgentRow(id) {
+  document.getElementById(`ar-${id}`)?.classList.toggle('open');
+}
+
+function toggleMyModule(moduleId) {
+  const session = AUTH.getSession();
+  const active = getActiveModules(session);
+  const idx = active.indexOf(moduleId);
+  if(idx>-1) active.splice(idx,1); else active.push(moduleId);
+  saveModulePrefs(session.agentId, active);
+  const tog = document.getElementById(`mytog-${moduleId}`);
+  if(tog) tog.classList.toggle('on');
+  renderHub(session);
+  updateHeroBadges(session, active);
+}
+
+function toggleAgentModule(agentId, moduleId) {
+  const agentObj = typeof AGENTS!=='undefined' ? AGENTS.find(a=>a.id===agentId) : null;
+  const agLevel = agentObj ? (ROLES[agentObj.role]?.level||0) : 0;
+  const agentSession = { agentId, level: agLevel };
+  const active = getActiveModules(agentSession);
+  const idx = active.indexOf(moduleId);
+  if(idx>-1) active.splice(idx,1); else active.push(moduleId);
+  saveModulePrefs(agentId, active);
+  const tog = document.getElementById(`atog-${agentId}-${moduleId}`);
+  if(tog) tog.classList.toggle('on');
+  // Update tool count badge
+  const row = document.getElementById(`ar-${agentId}`);
+  const countEl = row?.querySelector('.agent-row-hdr [style*="tools"]');
+  if(countEl) countEl.textContent = active.length + ' tools';
+}
+
+function getDownlineAgents(session) {
+  if(typeof AGENTS==='undefined') return [];
+  if(session.level >= 95) return AGENTS.filter(a=>a.id!==session.agentId).slice(0,60);
+  return AGENTS.filter(a=>a.uplineId===session.agentId);
+}
+
+// ── HERO BADGES ───────────────────────────────────────────────
+function updateHeroBadges(session, activeIds) {
+  const bar = document.getElementById('hero-bar');
+  if(!bar) return;
+  const mods = MODULE_DEFS.filter(m=>activeIds.includes(m.id));
+  bar.innerHTML = mods.map(m=>`<div class="hb-chip active">${m.icon} ${m.name}</div>`).join('') +
+    `<div class="hb-chip" onclick="openWizard()" style="cursor:pointer;">+ Edit</div>`;
+}
+
+// ── NOTIFICATIONS ─────────────────────────────────────────────
+function showNotif(text) {
+  const el = document.getElementById('notif-strip');
+  const txt = document.getElementById('notif-text');
+  if(!el || !txt) return;
+  txt.textContent = text;
+  el.style.display = 'flex';
+}
+
+function checkNotifications(session) {
+  // Show Miami contest reminder during contest period
+  const now = new Date();
+  const contestStart = new Date('2026-09-01');
+  const contestEnd = new Date('2026-11-30');
+  if(now >= contestStart && now <= contestEnd) {
+    const seen = localStorage.getItem(SK_NOTIF + '_miami');
+    if(!seen) {
+      showNotif('🌴 Miami Challenge is LIVE — Sep 1 to Nov 30. Check your standing!');
+      localStorage.setItem(SK_NOTIF + '_miami', '1');
+    }
+  }
+}
 
 // ── INIT ──────────────────────────────────────────────────────
 (function init() {
-  if (!AUTH.require('hub.html')) return;
+  AUTH.require();
   const session = AUTH.getSession();
+  if(!session) return;
 
-  // Sidebar
-  buildSidebarNav(session);
+  // Topbar greeting
+  const hr = new Date().getHours();
+  document.getElementById('tb-greeting').textContent =
+    (hr<12?'Good morning':hr<17?'Good afternoon':'Good evening') + ', ' + session.name.split(' ')[0];
 
-  // Topbar
-  const hour = new Date().getHours();
-  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
-  document.getElementById('topbar-greeting').textContent = `${greeting}, ${session.name.split(' ')[0]}`;
-  document.getElementById('topbar-date').textContent = new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+  // Hero
+  document.getElementById('hero-name').textContent = session.name.split(' ')[0] + '\u2019s Hub';
+  document.getElementById('hero-role').textContent = (typeof ROLES!=='undefined' && ROLES[session.role]?.label) || session.role;
+  document.getElementById('hero-date').textContent = new Date().toLocaleDateString('en-US',
+    {weekday:'long', month:'long', day:'numeric', year:'numeric'});
 
-  // Show Monday sync notification for admins
-  if (session.level >= 60) renderMondaySyncBanner(session);
+  // Manage button (Director+)
+  if(session.level >= 40) document.getElementById('tb-manage-btn').style.display = 'inline-block';
 
-  // Show PMD Hub link for MD+
-  if (session.level >= 80) { const pl = document.getElementById('pmd-link'); if(pl) pl.style.display = 'inline-block'; }
-  if (session.level >= 60) { const rl = document.getElementById('roster-link'); if(rl) rl.style.display = 'inline-block'; }
+  // Hero badges
+  updateHeroBadges(session, getActiveModules(session));
 
-  // Render content
-  if (session.level <= 30) renderNewAgentView(session);
-  else renderLeaderView(session);
-})();
+  // Notifications
+  checkNotifications(session);
 
-// ── MONDAY SYNC BANNER ───────────────────────────────────────
-function renderMondaySyncBanner(session) {
-  try {
-    const raw = localStorage.getItem('dba_monday_agent_sync');
-    if (!raw) return;
-    const sync = JSON.parse(raw);
-    if (!sync.newAgents?.length && !sync.updatedAgents?.length) return;
-
-    // Only show if checked recently (within 24h)
-    const age = Date.now() - new Date(sync.checkedAt).getTime();
-    if (age > 86400000) return;
-
-    const banner = document.getElementById('monday-sync-banner');
-    if (!banner) return;
-
-    const newCount = sync.newAgents?.length || 0;
-    const updCount = sync.updatedAgents?.length || 0;
-    let html = '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">'
-      + '<div style="flex:1;">'
-      + '<div style="font-family:Barlow Condensed,sans-serif;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--gold);margin-bottom:6px;">'
-      + '☁ Monday.com Agent Sync — ' + new Date(sync.checkedAt).toLocaleTimeString() + '</div>'
-      + '<div style="font-size:12px;color:rgba(255,255,255,.6);margin-bottom:8px;">'
-      + 'Board has <strong style="color:var(--cream);">' + sync.totalOnBoard + '</strong> agents · auth.js has <strong style="color:var(--cream);">' + sync.totalInAuth + '</strong>';
-
-    if (newCount) html += ' · <strong style="color:#2DCA73;">' + newCount + ' new agent' + (newCount>1?'s':'') + ' on board not in auth.js</strong>';
-    if (updCount) html += ' · <strong style="color:#5DADE2;">' + updCount + ' field update' + (updCount>1?'s':'') + ' available</strong>';
-    html += '</div>';
-
-    if (newCount > 0) {
-      html += '<div style="font-size:11px;color:var(--gold);font-family:Barlow Condensed,sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Suggested auth.js additions:</div>';
-      html += '<pre style="background:var(--navy);border:1px solid rgba(255,255,255,.1);border-radius:3px;padding:10px 12px;font-size:11px;color:#E8C97A;overflow-x:auto;margin-bottom:8px;">';
-      sync.newAgents.forEach(a => {
-        html += '  {\n'
-          + '    id: "' + a.id + '", name: "' + a.name + '",\n'
-          + '    pin: "' + (a.pin !== 'XXXX' ? a.pin : 'SET_PIN') + '", role: "' + mapRoleLabel(a.role) + '",\n'
-          + '    phpId: "' + (a.phpId||'') + '", phone: "' + (a.phone||'') + '",\n'
-          + '    email: "' + (a.email||'') + '",\n'
-          + '    licenseStates: [], enrollmentDate: "", uplineId: null\n'
-          + '  },\n';
-      });
-      html += '</pre>';
-      html += '<button onclick="copyAgentSnippet()" style="background:var(--gold);color:var(--navy);border:none;padding:6px 14px;border-radius:3px;font-family:Barlow Condensed,sans-serif;font-size:11px;font-weight:700;cursor:pointer;margin-right:8px;">Copy Snippet</button>';
-    }
-
-    if (updCount > 0) {
-      html += '<div style="margin-top:8px;font-size:11px;color:rgba(255,255,255,.5);">';
-      sync.updatedAgents.forEach(a => {
-        html += '&#8635; <strong style="color:var(--cream);">' + a.name + '</strong>: ';
-        html += Object.entries(a.changes).map(([k,v]) => k + ' → "' + v + '"').join(', ');
-        html += '<br>';
-      });
-      html += '</div>';
-    }
-
-    html += '</div>'
-      + '<button onclick="dismissSyncBanner()" style="background:transparent;border:none;color:var(--slate);font-size:16px;cursor:pointer;flex-shrink:0;">&#x2715;</button>'
-      + '</div>';
-
-    banner.innerHTML = html;
-    banner.style.display = 'block';
-  } catch(e) { console.warn('Banner error:', e); }
-}
-
-function mapRoleLabel(label) {
-  if (!label) return 'trainee';
-  const l = label.toLowerCase();
-  if (l.includes('super')) return 'super_admin';
-  if (l.includes('agency builder')) return 'agency_builder';
-  if (l.includes('sr. exec') || l.includes('senior exec')) return 'senior_exec_board';
-  if (l.includes('exec board')) return 'exec_board_council';
-  if (l.includes('senior board')) return 'senior_board_council';
-  if (l.includes('board council')) return 'board_council';
-  if (l.includes('chairman')) return 'chairmans_council';
-  if (l.includes('president')) return 'presidents_council';
-  if (l.includes('evp')) return 'evp';
-  if (l.includes('svp')) return 'svp';
-  if (l.includes('executive md') || l.includes('exec md')) return 'executive_md';
-  if (l.includes('senior md')) return 'senior_md';
-  if (l.includes('marketing director') || l.includes('mktg')) return 'marketing_director';
-  if (l.includes('producing') || l.includes('prod md')) return 'producing_md';
-  if (l.includes('director')) return 'director';
-  if (l.includes('field associate') || l.includes('field assoc')) return 'field_associate';
-  if (l.includes('associate')) return 'associate';
-  return 'trainee';
-}
-
-function copyAgentSnippet() {
-  try {
-    const sync = JSON.parse(localStorage.getItem('dba_monday_agent_sync')||'{}');
-    const snippets = (sync.newAgents||[]).map(a =>
-      '  {\n'
-      + '    id: "' + a.id + '", name: "' + a.name + '",\n'
-      + '    pin: "' + (a.pin !== 'XXXX' ? a.pin : 'SET_PIN') + '", role: "' + mapRoleLabel(a.role) + '",\n'
-      + '    phpId: "' + (a.phpId||'') + '", phone: "' + (a.phone||'') + '",\n'
-      + '    email: "' + (a.email||'') + '",\n'
-      + '    licenseStates: [], enrollmentDate: "", uplineId: null\n'
-      + '  },'
-    ).join('\n');
-    navigator.clipboard.writeText(snippets).then(() => {
-      const b = document.querySelector('#monday-sync-banner button');
-      if (b) { const t = b.textContent; b.textContent = '✓ Copied!'; setTimeout(()=>b.textContent=t, 2000); }
-    });
-  } catch(e) {}
-}
-
-function dismissSyncBanner() {
-  const b = document.getElementById('monday-sync-banner');
-  if (b) b.style.display = 'none';
-  localStorage.removeItem('dba_monday_agent_sync');
-}
-
-// ── SIDEBAR ───────────────────────────────────────────────────
-function buildSidebarNav(session) {
-  document.getElementById('sb-av').textContent = getInitials(session.name);
-  document.getElementById('sb-name').textContent = session.name;
-  document.getElementById('sb-role').textContent = getRoleLabel(session.role);
-
-  const nav = document.getElementById('sb-nav');
-  const lvl = session.level;
-
-  const sections = [
-    { label:'Daily Work', items:[
-      { icon:'🏠', label:'Command Center',     href:'hub.html',          min:0 },
-      { icon:'⭐', label:'Top 25 Prospects',   href:'top25.html',        min:0,  badge:'LIVE' },
-      { icon:'📞', label:'Call Tracker',        href:'tracker.html',      min:0 },
-      { icon:'🏆', label:'Leaderboard',          href:'leaderboard.html',  min:0 },
-      { icon:'📊', label:'Agent Activity Board',  href:'agent-leaderboard.html', min:0, badge:'NEW' },
-      { icon:'💬', label:'Team Messages',          href:'messages.html',          min:0, badge:'NEW' },
-      { icon:'🏆', label:'Rewards & Milestones',   href:'rewards.html',           min:0, badge:'NEW' },
-      { icon:'📈', label:'MD Promotion Tracker',   href:'md-tracker.html',        min:0, badge:'NEW' },
-      { icon:'🎯', label:'Recruiting Command',     href:'recruiting.html',        min:0, badge:'NEW' },
-      { icon:'📊', label:'Performance 2026',      href:'performance.html',  min:0,  badge:'YTD' },
-      { icon:'📋', label:'Agent Portal',         href:'portal.html',       min:0 },
-    ]},
-    { label:'Tools', items:[
-      { icon:'💰', label:'Income Calculator',   href:'income-calculator.html', min:0,  badge:'NEW' },
-      { icon:'📊', label:'Analytics Dashboard', href:'analytics.html',    min:0, badge:'NEW' },
-      { icon:'👥', label:'Lead Dashboard',      href:'analytics.html',min:0,badge:'NEW' },
-      { icon:'📧', label:'Drip Campaign',       href:'drip-campaign.html', min:0 },
-      { icon:'🔄', label:'Monday.com Sync',     href:'monday-sync.html',   min:60 },
-      { icon:'📊', label:'My Clients & Points', href:'my-clients.html',   min:0, badge:'NEW' },
-      { icon:'🏆', label:'Agency MD Tracker',   href:'agency-md-tracker.html', min:60, badge:'NEW' },
-    ]},
-    { label:'Team & Events', items:[
-      { icon:'🎯', label:'Promotions',          href:'promotions.html',   min:0 },
-      { icon:'🙏', label:'Thankful Thursday',  href:'recognitions.html', min:0, badge:'NEW' },
-      { icon:'📅', label:'BOM Tracker',          href:'bom.html',          min:0 },
-      { icon:'🏅', label:'Incentives',           href:'incentives.html',   min:0  },
-      { icon:'🎰', label:'Lights Out 2026',      href:'lights-out.html',   min:0,  badge:'AUG' },
-    ]},
-    { label:'Training & Growth', items:[
-      { icon:'📚', label:'Training Hub',         href:'training.html',     min:0  },
-      { icon:'🎯', label:'Coverage Finder Quiz', href:'client-questionnaire.html', min:0, badge:'NEW' },
-      { icon:'📋', label:'Client Pre-Qual',     href:'prequal.html',      min:0 },
-      { icon:'📢', label:'Marketing Hub',        href:'marketing.html',    min:0 },
-      { icon:'📝', label:'Financial Survey',     href:'survey.html',       min:0  },
-    ]},
-    { label:'Leadership', items:[
-      { icon:'⚙️', label:'Agency OS',            href:'os.html',           min:60 },
-      { icon:'🖥️', label:'PMD Hub',              href:'pmd-hub.html',      min:60, badge:'PRO' },
-      { icon:'📋', label:'BMP Platform',         href:'bmp-platform.html', min:60, badge:'PRO' },
-    ]},
-    { label:'Admin', items:[
-      { icon:'🗄️', label:'Board Setup',         href:'monday-setup.html',  min:60, badge:'' },
-      { icon:'👥', label:'Agent Roster',         href:'agents.html',       min:60 },
-      { icon:'🔬', label:'Board Test Tool',      href:'monday-test.html',  min:60 },
-    ]},
-  ];
-
-  sections.forEach(s => {
-    const hasVisible = s.items.some(i => lvl >= i.min);
-    if (!hasVisible) return;
-    const sec = document.createElement('div');
-    sec.className = 'nav-section';
-    sec.textContent = s.label;
-    nav.appendChild(sec);
-    s.items.forEach(item => {
-      const a = document.createElement('a');
-      a.className = 'nav-item' + (item.href === 'hub.html' ? ' active' : '') + (lvl < item.min ? ' locked' : '');
-      a.href = lvl >= item.min ? item.href : '#';
-      let inner = `<span class="icon">${item.icon}</span>${item.label}`;
-      if (item.badge && lvl >= item.min) inner += `<span class="new-badge">${item.badge}</span>`;
-      if (lvl < item.min) inner += `<span style="margin-left:auto;font-size:9px;opacity:0.5;">🔒</span>`;
-      a.innerHTML = inner;
-      nav.appendChild(a);
-    });
-  });
-}
-
-// ── PHP SYSTEM FLOW CARD (for new agent hub view) ─────────────
-function buildSystemFlowCard(session) {
-  const roleToStep = {
-    trainee:'WEEK 1', associate:'MONTH 1',
-    field_associate:'MONTH 1 ON', director:'MONTH 3–6',
-    producing_md:'MONTH 6–12', marketing_director:'MONTH 6–12'
-  };
-  const myStep = roleToStep[session.role] || 'WEEK 1';
-  const steps = PHP_SYSTEM_FLOW || [];
-
-  return `<div style="background:var(--navy-mid);border:1px solid var(--border);border-radius:6px;padding:16px 18px;margin-bottom:18px;">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
-      <div style="font-family:Barlow Condensed,sans-serif;font-size:12px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:0.1em;">🗺️ PHP System Flow — Your Journey</div>
-      <a href="promotions.html" style="font-size:11px;color:var(--gold);text-decoration:none;border:1px solid var(--border);padding:4px 10px;border-radius:3px;">Full Promotion Guide →</a>
-    </div>
-    <div style="display:flex;gap:0;overflow-x:auto;padding-bottom:4px;">
-      ${steps.map((s,i) => {
-        const isMine = s.week === myStep;
-        const isDone = steps.indexOf(s) < steps.findIndex(x=>x.week===myStep);
-        return `<div style="flex-shrink:0;min-width:160px;max-width:200px;margin-right:${i<steps.length-1?'0':'0'};">
-          <div style="display:flex;align-items:center;">
-            <div style="text-align:center;width:100%;padding:10px 12px;background:${isMine?'rgba(201,168,76,0.12)':isDone?'rgba(39,174,96,0.07)':'var(--navy-light)'};border:1px solid ${isMine?'var(--gold)':isDone?'rgba(39,174,96,0.3)':'var(--border)'};border-radius:4px;position:relative;">
-              ${isMine?'<div style="position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:var(--gold);color:var(--navy);font-size:8px;font-family:\'Barlow Condensed\',sans-serif;font-weight:700;padding:1px 7px;border-radius:2px;letter-spacing:0.06em;white-space:nowrap;">YOU ARE HERE</div>':''}
-              <div style="font-size:9px;color:${isMine?'var(--gold)':isDone?'#2ecc71':'var(--slate)'};font-family:Barlow Condensed,sans-serif;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:4px;">${s.week}</div>
-              <div style="font-size:12px;font-weight:600;color:${isMine?'var(--cream)':isDone?'rgba(250,246,238,0.6)':'rgba(250,246,238,0.5)'};line-height:1.3;margin-bottom:6px;">${s.stage}</div>
-              <div style="font-size:10px;color:${isMine?'#C0392B':'rgba(192,57,43,0.5)'};font-weight:700;font-family:Barlow Condensed,sans-serif;letter-spacing:0.05em;">${s.milestone}</div>
-              ${isMine?`<div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:3px;">${s.tasks.slice(0,3).map(t=>`<span style="background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.25);border-radius:2px;padding:2px 6px;font-size:9px;">${t}</span>`).join('')}${s.tasks.length>3?`<span style="font-size:9px;color:var(--slate);">+${s.tasks.length-3} more</span>`:''}</div>`:''}
-            </div>
-            ${i<steps.length-1?`<div style="width:20px;flex-shrink:0;text-align:center;color:${isDone?'#2ecc71':'var(--slate)'};font-size:16px;">›</div>`:''}
-          </div>
-        </div>`;
-      }).join('')}
-    </div>
-  </div>`;
-}
-
-// ── NEW AGENT VIEW ────────────────────────────────────────────
-function renderNewAgentView(session) {
-  const stats = DEMO_STATS[session.agentId] || {};
-  const CIRCUM = 2 * Math.PI * 46;
-  const callPct = Math.min(100, Math.round((stats.calls||0) / 20 * 100));
-  const dash = CIRCUM * (1 - callPct/100);
-
-  const ROLE_TO_WEEK = {
-    trainee:'WEEK 1', associate:'MONTH 1', field_associate:'MONTH 1 ON',
-    director:'MONTH 3\u20136', producing_md:'MONTH 6\u201312', marketing_director:'MONTH 6\u201312'
-  };
-  const myFlowWeek  = ROLE_TO_WEEK[session.role] || 'WEEK 1';
-  const myFlowStep  = (PHP_SYSTEM_FLOW || []).find(s => s.week === myFlowWeek) || PHP_SYSTEM_FLOW[0];
-  const myFlowLinks = {
-    trainee:        ['top25.html',   'tracker.html', 'bom.html'],
-    associate:      ['tracker.html', 'bom.html',     'training.html'],
-    field_associate:['tracker.html', 'promotions.html','training.html'],
-    director:       ['tracker.html', 'portal.html',  'promotions.html'],
-    producing_md:   ['tracker.html', 'promotions.html','os.html'],
-    marketing_director:['tracker.html','os.html',   'pmd-hub.html']
-  };
-  const myLinks = myFlowLinks[session.role] || myFlowLinks.trainee;
-
-  document.getElementById('main-content').innerHTML = `
-    ${buildPromotionProgress()}
-    ${buildLightsOutBanner()}
-
-    <div style="background:linear-gradient(135deg,rgba(201,168,76,0.06) 0%,transparent 60%);border:1px solid var(--border);border-radius:6px;padding:18px 20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
-      <div>
-        <div style="font-family:Cormorant Garamond,serif;font-size:20px;color:var(--gold);">Welcome to Dynasty Builders Academy</div>
-        <div style="font-size:12px;color:var(--slate);margin-top:3px;">Making Dreams Come True, One Policy at a Time</div>
-      </div>
-      <div style="font-size:11px;color:var(--slate);border:1px solid var(--border);padding:6px 12px;border-radius:3px;">
-        PHP Level ${ROLES[session.role]?.phpLevel||1} &nbsp;·&nbsp; <strong style="color:var(--gold)">${getRoleLabel(session.role)}</strong>
-      </div>
-    </div>
-
-    ${buildSystemFlowCard(session)}
-
-    <div class="section-hdr" style="margin-top:0;"><h2>Next Actions — ${myFlowStep.stage}</h2></div>
-    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;">
-      ${myFlowStep.tasks.slice(0, 3).map((task, i) => `
-        <a class="action-card" href="${myLinks[i] || 'tracker.html'}">
-          <div class="action-num">${i + 1}</div>
-          <div class="action-body"><h3>${task}</h3><p>${myFlowStep.milestone} &mdash; ${myFlowStep.week}</p></div>
-          <div style="margin-left:auto;color:var(--gold);font-size:16px;">&rarr;</div>
-        </a>`).join('')}
-    </div>
-
-    <div class="grid2" style="margin-bottom:20px;">
-      <div class="card">
-        <div class="card-title">📞 Today's Progress</div>
-        <div style="display:flex;align-items:center;gap:20px;">
-          <div class="ring-wrap">
-            <svg class="ring-svg" width="110" height="110" viewBox="0 0 110 110">
-              <circle class="ring-track" cx="55" cy="55" r="46"/>
-              <circle class="ring-fill" cx="55" cy="55" r="46"
-                stroke-dasharray="${CIRCUM}" stroke-dashoffset="${dash}"
-                stroke="${callPct>=100?'#27AE60':'#C9A84C'}"/>
-            </svg>
-            <div style="margin-top:-100px;height:100px;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;">
-              <div style="font-family:Barlow Condensed,sans-serif;font-size:26px;font-weight:800;color:var(--gold-light);">${stats.calls||0}</div>
-              <div style="font-size:10px;color:var(--slate);">of 20 calls</div>
-            </div>
-            <div style="margin-top:14px;"></div>
-          </div>
-          <div style="flex:1;">
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
-              <div style="background:var(--navy);border-radius:3px;padding:9px;text-align:center;">
-                <div style="font-family:Barlow Condensed,sans-serif;font-size:20px;font-weight:800;color:var(--gold-light);">${stats.contacts||0}</div>
-                <div style="font-size:10px;color:var(--slate);">Contacts</div>
-              </div>
-              <div style="background:var(--navy);border-radius:3px;padding:9px;text-align:center;">
-                <div style="font-family:Barlow Condensed,sans-serif;font-size:20px;font-weight:800;color:var(--gold-light);">${stats.appts||0}</div>
-                <div style="font-size:10px;color:var(--slate);">Appts Set</div>
-              </div>
-            </div>
-            <a href="tracker.html" style="display:block;background:var(--gold);color:var(--navy);text-align:center;padding:9px;border-radius:3px;font-family:Barlow Condensed,sans-serif;font-size:13px;font-weight:700;text-decoration:none;letter-spacing:0.05em;">Open Tracker →</a>
-          </div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title">💡 AI Business Coach</div>
-        ${buildChatUI('agent')}
-      </div>
-    </div>
-
-    <div class="section-hdr"><h2>Your Toolkit</h2></div>
-    ${buildAgentToolGrid()}
-
-    <div class="card" style="margin-top:20px;">
-      <div class="card-title">🔗 Quick Links</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
-        <a href="https://app.phpbamboo.com/agent/signin" target="_blank" style="display:flex;align-items:center;gap:8px;padding:10px 13px;border:1px solid var(--border);border-radius:3px;text-decoration:none;color:var(--cream);font-size:12px;transition:border-color 0.2s;" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'"><span style="font-size:16px;">🎋</span>PHP Bamboo</a>
-        <a href="training.html" style="display:flex;align-items:center;gap:8px;padding:10px 13px;border:1px solid var(--border);border-radius:3px;text-decoration:none;color:var(--cream);font-size:12px;transition:border-color 0.2s;" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'"><span style="font-size:16px;">📚</span>Training Hub</a>
-        <a href="income-calculator.html" style="display:flex;align-items:center;gap:8px;padding:10px 13px;border:1px solid var(--border);border-radius:3px;text-decoration:none;color:var(--cream);font-size:12px;transition:border-color 0.2s;" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'"><span style="font-size:16px;">💰</span>Income Calculator</a>
-      </div>
-    </div>`;
-
-  initChat('agent', `You are a PHP Agency business coach for Dynasty Builders Academy. Agent: ${session.name}, ${getRoleLabel(session.role)}. Be encouraging, practical, and action-oriented. Keep responses to 2-3 sentences. Reference specific actions they can take TODAY.`);
-}
-
-// ── LEADER VIEW ───────────────────────────────────────────────
-function renderLeaderView(session) {
-  const totals = Object.values(DEMO_STATS).reduce((a,s) => ({
-    calls:a.calls+s.calls, contacts:a.contacts+s.contacts,
-    appts:a.appts+s.appts, recruits:a.recruits+s.recruits, pts:a.pts+s.pts
-  }), {calls:0, contacts:0, appts:0, recruits:0, pts:0});
-
-  document.getElementById('main-content').innerHTML = `
-    ${buildLightsOutBanner()}
-
-    <div class="grid4" style="margin-bottom:18px;">
-      <div class="kpi"><div class="kpi-label">Team Calls (Week)</div><div class="kpi-val">${totals.calls.toLocaleString()}</div><div class="kpi-sub">${Math.round(totals.contacts/totals.calls*100)}% contact rate</div></div>
-      <div class="kpi"><div class="kpi-label">Appts Set</div><div class="kpi-val">${totals.appts.toLocaleString()}</div><div class="kpi-sub">This week</div></div>
-      <div class="kpi"><div class="kpi-label">Recruits (Week)</div><div class="kpi-val">${totals.recruits.toLocaleString()}</div><div class="kpi-sub">Team total</div></div>
-      <div class="kpi"><div class="kpi-label">Production Pts</div><div class="kpi-val" style="color:var(--gold)">${totals.pts.toLocaleString()}</div><div class="kpi-sub">Toward contest tiers</div></div>
-    </div>
-
-    <div class="section-hdr"><h2>Leader Toolkit</h2></div>
-    ${buildLeaderToolGrid(session.level)}
-
-    <div class="grid2" style="margin-bottom:20px;">
-      <div class="card">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-          <div class="card-title" style="margin:0;">👥 Team Production</div>
-          <a href="leaderboard.html" class="view-all">Full Board →</a>
-        </div>
-        ${buildTeamTable(session.level)}
-      </div>
-      <div class="card">
-        <div class="card-title">🤖 AI Strategy Coach</div>
-        ${buildChatUI('leader')}
-      </div>
-    </div>
-
-    <div class="grid3">
-      <div class="card">
-        <div class="card-title">⚡ Quick Actions</div>
-        <div style="display:flex;flex-direction:column;gap:7px;">
-          <a href="tracker.html" style="display:flex;align-items:center;gap:9px;padding:10px 13px;border:1px solid var(--border);border-radius:3px;text-decoration:none;color:var(--cream);font-size:12px;transition:border-color 0.2s;" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'"><span>📞</span>Log My Calls</a>
-          <a href="bom.html" style="display:flex;align-items:center;gap:9px;padding:10px 13px;border:1px solid var(--border);border-radius:3px;text-decoration:none;color:var(--cream);font-size:12px;transition:border-color 0.2s;" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'"><span>📅</span>BOM Tracker</a>
-          <a href="portal.html" style="display:flex;align-items:center;gap:9px;padding:10px 13px;border:1px solid var(--border);border-radius:3px;text-decoration:none;color:var(--cream);font-size:12px;transition:border-color 0.2s;" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'"><span>🔗</span>Referral Pipeline</a>
-          ${session.level>=80?`<a href="os.html" style="display:flex;align-items:center;gap:9px;padding:10px 13px;border:1px solid var(--border);border-radius:3px;text-decoration:none;color:var(--cream);font-size:12px;transition:border-color 0.2s;" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'"><span>⚙️</span>Agency OS</a>`:''}
-          ${session.level>=100?`<a href="agents.html" style="display:flex;align-items:center;gap:9px;padding:10px 13px;border:1px solid var(--border);border-radius:3px;text-decoration:none;color:var(--cream);font-size:12px;transition:border-color 0.2s;" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'"><span>➕</span>Add Agent</a>`:''}
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title">📊 Contest Progress</div>
-        ${buildContestMini()}
-      </div>
-      <div class="card">
-        <div class="card-title">🔗 Resources</div>
-        <div style="display:flex;flex-direction:column;gap:7px;">
-          <a href="https://app.phpbamboo.com/agent/signin" target="_blank" style="display:flex;align-items:center;gap:9px;padding:10px 13px;border:1px solid var(--border);border-radius:3px;text-decoration:none;color:var(--cream);font-size:12px;transition:border-color 0.2s;" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'"><span>🎋</span>PHP Bamboo</a>
-          <a href="https://integrity.com/integrityconnect/" target="_blank" style="display:flex;align-items:center;gap:9px;padding:10px 13px;border:1px solid var(--border);border-radius:3px;text-decoration:none;color:var(--cream);font-size:12px;transition:border-color 0.2s;" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'"><span>🔗</span>Integrity Connect</a>
-          <a href="https://forms.monday.com/forms/a891293776828ac931aa0382f6838197" target="_blank" style="display:flex;align-items:center;gap:9px;padding:10px 13px;border:1px solid var(--border);border-radius:3px;text-decoration:none;color:var(--cream);font-size:12px;transition:border-color 0.2s;" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'"><span>📋</span>BOM Captains Form</a>
-          <a href="survey.html" style="display:flex;align-items:center;gap:9px;padding:10px 13px;border:1px solid var(--border);border-radius:3px;text-decoration:none;color:var(--cream);font-size:12px;transition:border-color 0.2s;" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'"><span>📊</span>Client Survey</a>
-        </div>
-      </div>
-    </div>`;
-
-  initChat('leader', `You are an executive strategy coach for Dynasty Builders Academy (PHP Agency). Leader: ${session.name} (${getRoleLabel(session.role)}). Team context: ${AGENTS.length} agents, ${totals.calls} calls this week, ${totals.recruits} recruits, ${totals.pts} team pts. PHP Lights Out 2026: Bronze 10R/10K, Silver 20R/20K, Gold 30R/30K (Aug 3–6 Las Vegas). Be direct and strategic. 2-3 sentences.`);
-}
-
-// ── TOOL GRIDS ────────────────────────────────────────────────
-function buildAgentToolGrid() {
-  const tools = [
-    { icon:'📞', name:'Call Tracker',       desc:'Log daily calls & prospects',     href:'tracker.html',           badge:'' },
-    { icon:'🎯', name:'Opportunity Page',      desc:'Recruit video funnel landing page',   href:'opportunity.html',       badge:'NEW' },
-    { icon:'💼', name:'Client Funnel',         desc:'Life insurance client landing page',   href:'client.html',            badge:'NEW' },
-    { icon:'🚀', name:'Recruit Funnel',         desc:'Full recruiting funnel page',          href:'recruit.html',           badge:'' },
-    { icon:'📋', name:'Agent Portal',        desc:'Referrals, clients & scripts',    href:'portal.html',            badge:'' },
-    { icon:'💰', name:'Income Calculator',   desc:'Project your earnings at any level',href:'income-calculator.html',badge:'NEW' },
-    { icon:'🏆', name:'Leaderboard',         desc:'Live team rankings',              href:'leaderboard.html',       badge:'' },
-    { icon:'📝', name:'Client Survey',       desc:'Financial needs analysis',        href:'survey.html',            badge:'' },
-    { icon:'🎰', name:'Lights Out 2026',     desc:'Contest tiers & countdown',       href:'lights-out.html',        badge:'AUG' },
-    { icon:'📚', name:'Training Hub',        desc:'Scripts, products & AI roleplay', href:'training.html',          badge:'' },
-    { icon:'🏅', name:'Incentives',          desc:'DBA milestones & rewards',        href:'incentives.html',        badge:'' },
-  ];
-  return `<div class="tool-grid">${tools.map(t=>`
-    <a class="tool-card" href="${t.href}">
-      ${t.badge ? `<div class="tc-badge new">${t.badge}</div>` : ''}
-      <div class="tc-icon">${t.icon}</div>
-      <div class="tc-name">${t.name}</div>
-      <div class="tc-desc">${t.desc}</div>
-    </a>`).join('')}</div>`;
-}
-
-function buildLeaderToolGrid(level) {
-  const tools = [
-    // ── PRIORITY TOOLS (shown first as requested) ──
-    { icon:'📞', name:'Call Tracker',        desc:'Log my daily production',          href:'tracker.html',           min:0,  badge:'' },
-    { icon:'📢', name:'Marketing Hub',       desc:'Campaign kits & AI content',        href:'marketing.html',         min:0, badge:'' },
-    { icon:'🎯', name:'Promotions',          desc:'Track team promotion progress',     href:'promotions.html',        min:0, badge:'' },
-    { icon:'📜', name:'Licensing Tracker',   desc:'Agent licensing journey tracking',  href:'licensing.html',         min:0, badge:'NEW' },
-    { icon:'📊', name:'My Clients & Points', desc:'Personal client &amp; recruit tracker with points', href:'my-clients.html', min:0, badge:'NEW' },
-    { icon:'🙏', name:'Thankful Thursday',   desc:'Weekly team recognition — top producers, paid points, cash flow', href:'recognitions.html', min:0, badge:'NEW' },
-    { icon:'🎰', name:'Lights Out 2026',     desc:'Contest progress & countdown',      href:'lights-out.html',        min:0, badge:'AUG' },
-    // ── REST OF TOOLS ──
-    { icon:'💰', name:'Income Calculator',   desc:'Project earnings by level & volume',href:'income-calculator.html', min:0,  badge:'NEW' },
-    { icon:'📊', name:'Analytics Dashboard', desc:'Weekly KPIs & trend charts',        href:'analytics.html',         min:0, badge:'NEW' },
-    { icon:'📊', name:'Agent Dashboard',     desc:'Unified view — activity, BOM, licensing, incentives', href:'agent-dashboard.html', min:0, badge:'NEW' },
-    { icon:'🎯', name:'Incentive Tracker',   desc:'June 2026 — all agents, all incentives', href:'incentive-tracker.html', min:0, badge:'JUNE' },
-    { icon:'🏆', name:'Survey Leaderboard',  desc:'Agent prospecting via survey tool', href:'survey-leaderboard.html', min:0, badge:'NEW' },
-    { icon:'📧', name:'Drip Campaign',       desc:'7-step email education sequence',   href:'drip-campaign.html',     min:0, badge:'' },
-    { icon:'⚙️', name:'Agency OS',           desc:'Full leadership command center',    href:'os.html',                min:60, badge:'' },
-    { icon:'🖥️', name:'PMD Hub',             desc:'Commission files, org chart & AI',  href:'pmd-hub.html',           min:60, badge:'PRO' },
-    { icon:'📋', name:'BMP Platform',        desc:'Business management platform',      href:'bmp-platform.html',      min:60, badge:'PRO' },
-    { icon:'👥', name:'Agent Roster',        desc:'View, edit and sync all agents',    href:'agents.html',            min:60, badge:'' },
-    { icon:'🏆', name:'Agency MD Tracker',   desc:'June 2026 MD promotion push — all 88 agents, 4 criteria', href:'agency-md-tracker.html', min:60, badge:'NEW' },
-    { icon:'🔄', name:'Monday.com Sync',     desc:'Push data to Monday.com boards',    href:'monday-sync.html',       min:60, badge:'' },
-    { icon:'👥', name:'Lead Dashboard',      desc:'Referral sources & conversions',    href:'analytics.html',         min:0, badge:'NEW' },
-  ];
-  return `<div class="tool-grid">${tools.map(t => {
-    const locked = level < t.min;
-    return `<a class="tool-card ${locked?'locked':''}" href="${locked?'#':t.href}">
-      ${t.badge ? `<div class="tc-badge ${locked?'md':'new'}">${t.badge}</div>` : ''}
-      <div class="tc-icon">${t.icon}</div>
-      <div class="tc-name">${t.name}</div>
-      <div class="tc-desc">${t.desc}${locked?' <span style="color:var(--danger);">🔒</span>':''}</div>
-    </a>`;
-  }).join('')}</div>`;
-}
-
-// ── PROMOTION PROGRESS BANNER ─────────────────────────────────
-function buildPromotionProgress() {
-  const s = AUTH.getSession();
-  if (!s) return '';
-  const role  = s.role || 'trainee';
-  const rDef  = ROLES[role] || {};
-  const comm  = rDef.comm || '—';
-  const color = rDef.color || 'var(--gold)';
-
-  // Full PHP 16-level promotion requirements
-  const NEXT = {
-    trainee:             { label:'Associate (40%)',                    req:'1 personal recruit + 1 submitted app by Jun 7 (Fast Track) · or standard path: 3 recruits + 3 apps + $3,000 pts',                                     color:'#BB8FCE' },
-    associate:           { label:'Field Associate (50%)',              req:'5 team recruits · 5 apps · $5,000 team pts · 1 direct recruit',                                                                                          color:'#5DADE2' },
-    field_associate:     { label:'Director (60%)',                     req:'10 team recruits · 10 apps · $10,000 team pts · 2 direct recruits',                                                                                      color:'#27AE60' },
-    director:            { label:'Producing MD (70%)',                 req:'25 team recruits · 15 team apps · 3 direct FAs · 15 licensed agents · $25,000 team pts',                                                                color:'#E8C97A' },
-    producing_md:        { label:'Marketing Director (75%)',           req:'25 recruits · 25 apps · $25,000 paid pts · 15 licensed agents · 3 direct FAs or 1 FA + 1 Director · Jun–Sep checkpoints apply',                        color:'#C9A84C' },
-    marketing_director:  { label:'Senior MD (77%)',                    req:'$100K+ annual team GV · Maintain MD production · Active baseshop with 5+ licensed agents',                                                              color:'#C9A84C' },
-    senior_md:           { label:'Executive MD (78%)',                 req:'$250K+ annual team GV · Maintain senior production · Build leadership depth in baseshop',                                                               color:'#C9A84C' },
-    executive_md:        { label:'SVP (79%)',                          req:'$500K+ annual team GV · Multiple promoted MDs in baseshop · National recognition qualifier',                                                            color:'#C9A84C' },
-    svp:                 { label:'EVP (80%)',                          req:'$1M+ annual team GV · Full agency system built · Consistent leadership development track record',                                                        color:'#C9A84C' },
-    evp:                 { label:"President's Council (81%)",          req:'$2M+ annual GV · Multi-level agency growth · Recognized national leadership',                                                                           color:'#C9A84C' },
-    presidents_council:  { label:"Chairman's Council (82%)",           req:'$5M+ annual GV · Sustained elite production across full agency',                                                                                        color:'#C9A84C' },
-    chairmans_council:   { label:'Board Council (82.5%)',              req:'$10M+ annual GV · Board-level recognition · Full system replication demonstrated',                                                                      color:'#C9A84C' },
-    board_council:       { label:'Senior Board Council (83%)',         req:'$15M+ annual GV · Pinnacle leadership track',                                                                                                           color:'#C9A84C' },
-    senior_board_council:{ label:'Executive Board Council (83.5%)',    req:'$20M+ annual GV · Highest leadership designation path',                                                                                                 color:'#C9A84C' },
-    exec_board_council:  { label:'Sr. Executive Board Council (84%)',  req:'$30M+ annual GV · Top-tier PHP national leadership',                                                                                                    color:'#C9A84C' },
-  };
-
-  const next = NEXT[role];
-  if (!next) {
-    // Senior exec board or admin — at top
-    return '<div style="background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.2);border-radius:6px;padding:12px 18px;margin-bottom:12px;display:flex;align-items:center;gap:12px;">'
-      + '<div style="font-size:1.4rem;">&#127942;</div>'
-      + '<div><div style="font-family:Barlow Condensed,sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:' + color + ';">' + getRoleLabel(role) + ' &mdash; ' + comm + ' Commission</div>'
-      + '<div style="font-size:12px;color:rgba(255,255,255,.4);margin-top:2px;">Senior Leadership Level &mdash; Continue building your agency</div></div>'
-      + '</div>';
+  // First-login wizard — show if no prefs saved
+  if(!loadModulePrefs(session.agentId)) {
+    setTimeout(()=>openWizard(), 350);
   }
 
-  return '<div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:6px;padding:14px 18px;margin-bottom:12px;">'
-    + '<div style="display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap;">'
-    + '<div style="font-size:1.4rem;flex-shrink:0;margin-top:2px;">&#128200;</div>'
-    + '<div style="flex:1;min-width:200px;">'
-    + '<div style="font-family:Barlow Condensed,sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--slate);margin-bottom:2px;">Current: ' + getRoleLabel(role) + ' &mdash; ' + comm + '</div>'
-    + '<div style="font-family:Barlow Condensed,sans-serif;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:' + next.color + ';margin-bottom:4px;">&#8594; Next: ' + next.label + '</div>'
-    + '<div style="font-size:11px;color:rgba(255,255,255,.4);line-height:1.6;">' + next.req + '</div>'
-    + '</div>'
-    + '<div style="display:flex;gap:7px;flex-shrink:0;flex-wrap:wrap;align-self:center;">'
-    + '<a href="promotions.html" style="font-size:11px;background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.25);color:var(--gold);text-decoration:none;padding:6px 12px;border-radius:3px;font-family:Barlow Condensed,sans-serif;font-weight:700;white-space:nowrap;">View Progress &#8594;</a>'
-    + '<a href="tracker.html" style="font-size:11px;background:rgba(39,174,96,.1);border:1px solid rgba(39,174,96,.25);color:#2DCA73;text-decoration:none;padding:6px 12px;border-radius:3px;font-family:Barlow Condensed,sans-serif;font-weight:700;white-space:nowrap;">Log Activity</a>'
-    + '</div></div></div>';
-}// ── LIGHTS OUT BANNER ─────────────────────────────────────────
-function buildLightsOutBanner() {
-  const target = new Date('2026-08-03T00:00:00');
-  const now = new Date();
-  const diff = target - now;
-  if (diff <= 0) return '';
-  const days  = Math.floor(diff / 86400000);
-  const hours = Math.floor((diff % 86400000) / 3600000);
-  const mins  = Math.floor((diff % 3600000) / 60000);
-  return `
-  <div class="lights-out-banner">
-    <div>
-      <div class="lo-title">PHP Lights Out 2026 · Las Vegas</div>
-      <div class="lo-name">MGM Grand Garden Arena</div>
-      <div class="lo-sub">Aug 3–6, 2026 · Tony Robbins · Patrick Bet-David · Guenther Steiner</div>
-    </div>
-    <div class="countdown">
-      <div class="cd-unit"><div class="cd-num">${days}</div><div class="cd-lbl">Days</div></div>
-      <div class="cd-unit"><div class="cd-num">${hours}</div><div class="cd-lbl">Hours</div></div>
-      <div class="cd-unit"><div class="cd-num">${mins}</div><div class="cd-lbl">Mins</div></div>
-    </div>
-    <div class="lo-action">
-      <a href="lights-out.html" class="lo-link secondary">🏆 View Contest Tiers</a>
-      <a href="https://app.phpbamboo.com/agent/home/events/view/16" target="_blank" class="lo-link primary">Register Now ↗</a>
-    </div>
-  </div>`;
-}
-
-// ── TEAM TABLE ────────────────────────────────────────────────
-function buildTeamTable(level) {
-  const sorted = AGENTS
-    .map(a => ({...a, stats: DEMO_STATS[a.id]||{}}))
-    .sort((a,b) => (b.stats.pts||0)-(a.stats.pts||0))
-    .slice(0, 8);
-  const maxPts = sorted[0]?.stats?.pts || 1;
-  const rows = sorted.map((ag, i) => {
-    const s = ag.stats;
-    const pct = Math.round(((s.pts||0)/maxPts)*100);
-    const rc = {admin:'badge-md',agency_builder:'badge-md',marketing_director:'badge-md',director:'badge-dir',field_associate:'badge-fa',associate:'badge-assoc',trainee:'badge-train'}[ag.role]||'badge-train';
-    return `<tr>
-      <td style="width:24px;font-family:Barlow Condensed,sans-serif;font-size:14px;font-weight:800;color:${i<3?'var(--gold)':'var(--slate)'};">${['🥇','🥈','🥉'][i]||i+1}</td>
-      <td><div style="display:flex;align-items:center;gap:7px;"><div class="av">${getInitials(ag.name)}</div><div style="font-size:12px;font-weight:600;">${ag.name}</div></div></td>
-      <td><span class="badge ${rc}">${getRoleLabel(ag.role)}</span></td>
-      <td style="text-align:right;font-family:Barlow Condensed,sans-serif;font-size:13px;font-weight:600;">${s.calls||0}</td>
-      <td style="text-align:right;font-family:Barlow Condensed,sans-serif;font-size:13px;font-weight:700;color:var(--gold-light);">${(s.pts||0).toLocaleString()}</td>
-      <td><div class="prog-bar"><div class="prog-fill" style="width:${pct}%"></div></div></td>
-    </tr>`;
-  }).join('');
-  return `<div class="tbl-wrap"><table>
-    <thead><tr><th>#</th><th>Agent</th><th>Level</th><th style="text-align:right;">Calls</th><th style="text-align:right;">Points</th><th>Rank</th></tr></thead>
-    <tbody>${rows}</tbody>
-  </table></div>`;
-}
-
-// ── CONTEST MINI ──────────────────────────────────────────────
-function buildContestMini() {
-  const session = AUTH.getSession();
-  const myStats = DEMO_STATS[session.agentId] || {};
-  const rec = myStats.recruits || 0;
-  const pts = myStats.pts || 0;
-  const TIERS = [{name:'Bronze',rec:10,pts:10000},{name:'Silver',rec:20,pts:20000},{name:'Gold',rec:30,pts:30000}];
-  const next = TIERS.find(t => rec < t.rec || pts < t.pts) || TIERS[2];
-  const rPct = Math.min(100, Math.round(rec/next.rec*100));
-  const pPct = Math.min(100, Math.round(pts/next.pts*100));
-  return `
-    <div style="font-size:12px;color:var(--slate);margin-bottom:10px;">Next: <strong style="color:var(--gold)">${next.name}</strong> · ${next.rec}R / ${next.pts.toLocaleString()}pts</div>
-    <div style="font-size:11px;color:var(--slate);margin-bottom:4px;">Recruits: ${rec} / ${next.rec}</div>
-    <div style="height:7px;background:rgba(201,168,76,0.1);border-radius:3px;overflow:hidden;margin-bottom:10px;">
-      <div style="height:7px;background:${rPct>=100?'var(--success)':'var(--gold)'};border-radius:3px;width:${rPct}%;transition:width 0.7s;"></div>
-    </div>
-    <div style="font-size:11px;color:var(--slate);margin-bottom:4px;">Points: ${pts.toLocaleString()} / ${next.pts.toLocaleString()}</div>
-    <div style="height:7px;background:rgba(201,168,76,0.1);border-radius:3px;overflow:hidden;margin-bottom:12px;">
-      <div style="height:7px;background:${pPct>=100?'var(--success)':'var(--gold)'};border-radius:3px;width:${pPct}%;transition:width 0.7s;"></div>
-    </div>
-    <a href="incentives.html" style="font-size:12px;color:var(--gold);text-decoration:none;">Full Contest Dashboard →</a>`;
-}
-
-// ── AI CHAT ───────────────────────────────────────────────────
-
-function buildChatUI(id) {
-  const prompts = id === 'leader'
-    ? ['Who needs coaching?','Write team motivation','Lights Out strategy','Recruiting focus']
-    : ['What to say on first call?','Handle objection','BOM invite script','What are living benefits?'];
-  return `<div class="chat-box">
-    <div class="chat-prompts">${prompts.map(p=>`<span class="chip" onclick="sendChip('${id}','${p.replace(/'/g,"\\'")}')">${p}</span>`).join('')}</div>
-    <div class="chat-msgs" id="msgs-${id}">
-      <div class="msg ai"><div class="name">Dynasty AI Coach</div>Ready to help — ask me anything about scripts, strategy, recruiting, or production.</div>
-    </div>
-    <div class="chat-input-row">
-      <input class="chat-input" id="input-${id}" placeholder="Ask your coach…" onkeydown="if(event.key==='Enter')sendChat('${id}')">
-      <button class="chat-send" onclick="sendChat('${id}')">Send</button>
-    </div>
-  </div>`;
-}
-
-function initChat(id, sys) { chatSystems[id]=sys; chatHistory[id]=[]; }
-function sendChip(id, text) { document.getElementById('input-'+id).value=text; sendChat(id); }
-
-async function sendChat(id) {
-  const input = document.getElementById('input-'+id);
-  const msg = input.value.trim();
-  if (!msg) return;
-  input.value = '';
-  const msgs = document.getElementById('msgs-'+id);
-  msgs.innerHTML += `<div class="msg user">${msg}</div>`;
-  msgs.innerHTML += `<div class="msg ai typing" id="typing-${id}"><div class="name">Dynasty AI Coach</div><span></span><span></span><span></span></div>`;
-  msgs.scrollTop = msgs.scrollHeight;
-  chatHistory[id] = chatHistory[id]||[];
-  chatHistory[id].push({role:'user',content:msg});
-  if (chatHistory[id].length > 10) chatHistory[id] = chatHistory[id].slice(-10);
-  const reply = await askAI(chatHistory[id], chatSystems[id]);
-  document.getElementById('typing-'+id)?.remove();
-  const txt = reply || '(AI coach offline — check API configuration)';
-  chatHistory[id].push({role:'assistant',content:txt});
-  msgs.innerHTML += `<div class="msg ai"><div class="name">Dynasty AI Coach</div>${txt}</div>`;
-  msgs.scrollTop = msgs.scrollHeight;
-}
-
-// ── UTILS ─────────────────────────────────────────────────────
-function toggleSidebar() {
-  document.getElementById('sidebar').classList.toggle('open');
-  document.getElementById('sb-overlay').classList.toggle('open');
-}
-function toast(msg) {
-  const t=document.getElementById('toast'); t.textContent=msg;
-  t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3000);
-}
+  // Render
+  renderHub(session);
+})();
 </script>
 </body>
 </html>
