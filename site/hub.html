@@ -364,6 +364,8 @@ const MODULE_DEFS = [
     navIcon: '⚙️', navLabel: 'Ops', navHref: 'roster-admin.html',
     tools: [
       { icon:'👥', name:'Roster Admin',     sub:'Manage agent records',      href:'roster-admin.html', wide:true },
+      { icon:'📜', name:'Licensing Tracker', sub:'Agent licensing journey',    href:'licensing.html', wide:true },
+      { icon:'⚡', name:'BMP Platform',      sub:'Production desk & income',   href:'bmp-platform.html' },
       { icon:'📊', name:'Analytics',        sub:'Lead & campaign data',      href:'analytics.html' },
       { icon:'🔗', name:'Monday Sync',      sub:'Board integration',         href:'monday-setup.html' },
       { icon:'💬', name:'Messages',         sub:'Team communications',       href:'messages.html' },
@@ -401,7 +403,7 @@ function renderBottomNav(session) {
   const navMods = activeMods.slice(0, 3);
   const manageAvail = session.level >= 40;
 
-  let html = `<a class="bn-item active" href="hub-v2.html">
+  let html = `<a class="bn-item active" href="hub.html">
     <div class="bn-icon">🏠</div><span>Home</span>
   </a>`;
 
@@ -426,7 +428,7 @@ function renderBottomNav(session) {
   const el = document.getElementById('bottom-nav');
   if(el) {
     const items = ['home', ...navMods.map(m=>m.id), manageAvail?'manage':''].filter(Boolean).slice(0,4);
-    let out = `<a class="bn-item active" href="hub-v2.html"><div class="bn-icon">🏠</div><span>Home</span></a>`;
+    let out = `<a class="bn-item active" href="hub.html"><div class="bn-icon">🏠</div><span>Home</span></a>`;
     activeMods.slice(0, manageAvail ? 2 : 3).forEach(m => {
       out += `<a class="bn-item" href="${m.navHref}"><div class="bn-icon">${m.navIcon}</div><span>${m.navLabel}</span></a>`;
     });

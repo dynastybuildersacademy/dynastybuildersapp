@@ -878,10 +878,14 @@ function renderAll() {
   dotsEl.innerHTML = slides.map((s,i) => `<div class="nav-dot" onclick="goToSlide(${i})" data-idx="${i}"></div>`).join('');
 
   // Admin bar
-  document.getElementById('admin-bar').innerHTML = isAdmin
-    ? `<button class="btn-sm" onclick="openConfigModal()">&#9432; How scoring works</button>
-       <button class="btn-sm btn-gold-sm" onclick="openPptxModal()" style="background:rgba(201,168,76,.15);border-color:rgba(201,168,76,.4);color:#E8C97A;">&#11015; Export PowerPoint</button>`
-    : '';
+  const adminBar = document.getElementById('admin-bar');
+  if(adminBar) {
+    adminBar.style.display = isAdmin ? 'flex' : 'none';
+    adminBar.innerHTML = isAdmin
+      ? `<button class="btn-sm" onclick="openConfigModal()">&#9432; How scoring works</button>
+         <button class="btn-sm btn-gold-sm" onclick="openPptxModal()" style="background:rgba(201,168,76,.15);border-color:rgba(201,168,76,.4);color:#E8C97A;">&#11015; Export PowerPoint</button>`
+      : '';
+  }
 
   goToSlide(Math.min(currentSlide, slides.length-1));
 }

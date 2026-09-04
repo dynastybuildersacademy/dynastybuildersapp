@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Miami Contest Tracker · DBA</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Barlow:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="auth.js"></script>
+<style>
+:root {
+  --navy:#0A1628;--navy2:#0F1E38;--navy3:#132240;--s1:#1A2E50;--s2:#1E3458;
+  --gold:#C9A84C;--gold2:#E8C97A;
+  --green:#2DCA73;--red:#E74C3C;--blue:#3498DB;--purple:#9B59B6;
+  --miami:#FF6B35;--miami2:#FF9A6C; /* Miami sunset orange */
+  --text:#E8EDF5;--muted:#6B7C93;--border:rgba(201,168,76,.18);
+  --card:rgba(15,30,56,.7);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--navy);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh;}
+
+/* ── TOP NAV ── */
+.topnav{display:flex;align-items:center;justify-content:space-between;padding:10px 18px;
+  background:rgba(10,22,40,.95);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;}
+.topnav-title{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;
+  letter-spacing:.05em;color:var(--gold2);}
+.topnav-title span{color:var(--miami);}
+.topnav a{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);text-decoration:none;}
+.topnav a:hover{color:var(--gold);}
+
+/* ── HERO BANNER ── */
+.hero{background:linear-gradient(135deg,#0d0020 0%,#1a004d 40%,#0a1a00 70%,#1a1000 100%);
+  padding:28px 20px 20px;text-align:center;position:relative;overflow:hidden;border-bottom:1px solid var(--border);}
+.hero::before{content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 30% 50%,rgba(255,107,53,.1),transparent 60%),
+              radial-gradient(ellipse at 70% 30%,rgba(128,0,200,.12),transparent 55%);
+  pointer-events:none;}
+.hero-eyebrow{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--miami);margin-bottom:6px;}
+.hero-title{font-family:'Barlow Condensed',sans-serif;font-size:32px;font-weight:900;
+  color:#fff;line-height:1;margin-bottom:2px;}
+.hero-title span{color:var(--miami);}
+.hero-sub{font-family:'Barlow Condensed',sans-serif;font-size:14px;color:var(--gold2);
+  letter-spacing:.08em;margin-bottom:12px;}
+.hero-dates{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);
+  border-radius:20px;display:inline-block;padding:4px 14px;margin-bottom:16px;}
+.hero-stats{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+.hero-stat{background:rgba(255,255,255,.05);border:1px solid rgba(201,168,76,.2);
+  border-radius:8px;padding:8px 16px;text-align:center;}
+.hero-stat-val{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;color:var(--gold2);}
+.hero-stat-lbl{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;}
+
+/* ── STATUS BAR ── */
+.status-bar{background:rgba(15,30,56,.9);border-bottom:1px solid var(--border);
+  padding:8px 18px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;}
+.status-item{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);}
+.status-item strong{color:var(--text);}
+.status-badge{padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.06em;}
+.badge-provisional{background:rgba(255,152,0,.15);color:#FFA726;border:1px solid rgba(255,152,0,.3);}
+.badge-live{background:rgba(45,202,115,.12);color:var(--green);border:1px solid rgba(45,202,115,.3);}
+.badge-monitoring{background:rgba(52,152,219,.1);color:var(--blue);border:1px solid rgba(52,152,219,.25);}
+
+/* ── MAIN LAYOUT ── */
+.page{max-width:900px;margin:0 auto;padding:16px 16px 60px;}
+.section{margin-bottom:24px;}
+.section-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.section-title{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;
+  letter-spacing:.06em;text-transform:uppercase;color:var(--gold2);}
+.section-title span{color:var(--miami);}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;}
+.card-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media(max-width:520px){.card-row{grid-template-columns:1fr;}}
+
+/* ── TOP 2 DYNASTY CARDS ── */
+.top2-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media(max-width:520px){.top2-grid{grid-template-columns:1fr;}}
+.top2-card{background:linear-gradient(135deg,rgba(15,30,56,.9),rgba(10,22,40,.95));
+  border:1.5px solid var(--gold);border-radius:14px;padding:16px;position:relative;overflow:hidden;}
+.top2-card::before{content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 80% 10%,rgba(255,107,53,.08),transparent 55%);
+  pointer-events:none;}
+.top2-card.silver{border-color:rgba(192,192,192,.4);}
+.top2-rank{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:900;
+  color:var(--gold2);line-height:1;}
+.top2-rank.silver{color:#c0c0c0;}
+.miami-watch-badge{background:linear-gradient(90deg,rgba(255,107,53,.2),rgba(255,107,53,.08));
+  border:1px solid rgba(255,107,53,.4);border-radius:20px;padding:3px 10px;
+  font-family:'DM Mono',monospace;font-size:9px;color:var(--miami);letter-spacing:.08em;
+  display:inline-block;margin-bottom:8px;}
+.top2-name{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;
+  color:var(--text);margin-bottom:10px;}
+.top2-scores{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.score-box{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+  border-radius:8px;padding:8px 10px;text-align:center;}
+.score-box.official{border-color:rgba(255,107,53,.25);background:rgba(255,107,53,.06);}
+.score-lbl{font-family:'DM Mono',monospace;font-size:8px;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px;}
+.score-val{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;color:var(--gold2);}
+.score-val.official-val{color:var(--miami);}
+.score-move{font-size:11px;margin-top:2px;}
+
+/* ── OFFICIAL LEADERBOARD TABLE ── */
+.lb-table{width:100%;border-collapse:collapse;}
+.lb-table th{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--muted);padding:6px 10px;text-align:left;
+  border-bottom:1px solid var(--border);}
+.lb-table td{padding:10px 10px;border-bottom:1px solid rgba(26,46,80,.5);
+  font-size:13px;vertical-align:middle;}
+.lb-table tr:hover td{background:rgba(255,255,255,.02);}
+.rank-num{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;
+  color:var(--gold2);width:36px;}
+.rank-num.top1{color:#FFD700;}
+.rank-num.top2{color:#C0C0C0;}
+.rank-num.top3{color:#CD7F32;}
+.contestant-name{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;}
+.biz-code{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);}
+.move-chip{display:inline-flex;align-items:center;gap:3px;font-family:'DM Mono',monospace;
+  font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;}
+.move-up{background:rgba(45,202,115,.12);color:var(--green);}
+.move-down{background:rgba(231,76,60,.1);color:var(--red);}
+.move-same{background:rgba(107,124,147,.1);color:var(--muted);}
+.dynasty-match{font-family:'DM Mono',monospace;font-size:9px;color:var(--gold);
+  background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.2);
+  border-radius:10px;padding:2px 8px;margin-left:6px;}
+.review-match{color:var(--miami);background:rgba(255,107,53,.08);border-color:rgba(255,107,53,.2);}
+
+/* ── CATEGORY BREAKDOWN ── */
+.cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;}
+.cat-card{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:8px;padding:10px;}
+.cat-card-title{font-family:'DM Mono',monospace;font-size:8px;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;line-height:1.3;}
+.cat-card-val{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;color:var(--gold2);}
+.cat-card-period{font-family:'DM Mono',monospace;font-size:9px;color:var(--miami);margin-top:2px;}
+
+/* ── EVENTS / ALERTS ── */
+.events-list{display:flex;flex-direction:column;gap:8px;}
+.event-row{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:8px;
+  padding:10px 14px;display:flex;align-items:flex-start;gap:10px;}
+.event-icon{font-size:16px;flex-shrink:0;margin-top:1px;}
+.event-text{font-size:13px;line-height:1.5;}
+.event-text strong{color:var(--gold2);}
+.event-time{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);margin-top:3px;}
+.event-fire{border-color:rgba(255,107,53,.3);background:rgba(255,107,53,.05);}
+.event-alert{border-color:rgba(201,168,76,.25);background:rgba(201,168,76,.04);}
+
+/* ── BUTTONS ── */
+.btn-refresh{background:linear-gradient(135deg,var(--miami),rgba(255,107,53,.7));
+  border:none;border-radius:8px;color:#fff;font-family:'Barlow Condensed',sans-serif;
+  font-size:14px;font-weight:800;letter-spacing:.05em;padding:9px 18px;cursor:pointer;}
+.btn-refresh:hover{opacity:.88;}
+.btn-sm{background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:6px;
+  color:var(--text);font-family:'DM Mono',monospace;font-size:10px;padding:5px 12px;cursor:pointer;}
+.btn-sm:hover{background:rgba(255,255,255,.1);}
+.btn-manual-entry{background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.3);
+  border-radius:6px;color:var(--gold2);font-family:'DM Mono',monospace;
+  font-size:10px;padding:5px 12px;cursor:pointer;}
+
+/* ── EMPTY STATE ── */
+.empty-state{text-align:center;padding:32px 20px;}
+.empty-state-icon{font-size:36px;margin-bottom:10px;}
+.empty-state-title{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;
+  color:var(--gold2);margin-bottom:6px;}
+.empty-state-sub{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);line-height:1.7;}
+
+/* ── RANK HISTORY CHART ── */
+.history-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(26,46,80,.4);}
+.history-date{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);width:80px;flex-shrink:0;}
+.history-bar-wrap{flex:1;height:14px;background:rgba(255,255,255,.05);border-radius:3px;overflow:hidden;}
+.history-bar{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--miami),var(--miami2));}
+.history-rank{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;
+  color:var(--gold2);width:36px;text-align:right;flex-shrink:0;}
+
+/* ── TABS ── */
+.tabs{display:flex;gap:4px;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:0;}
+.tab{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;
+  padding:8px 14px;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;
+  margin-bottom:-1px;transition:all .15s;}
+.tab.active{color:var(--gold2);border-color:var(--gold);}
+.tab:hover:not(.active){color:var(--text);}
+.tab-content{display:none;}
+.tab-content.active{display:block;}
+
+/* ── MATCH ADMIN ── */
+.match-row{display:flex;align-items:center;justify-content:space-between;
+  padding:8px 0;border-bottom:1px solid rgba(26,46,80,.4);gap:8px;flex-wrap:wrap;}
+.match-names{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.match-arrow{color:var(--muted);font-size:12px;}
+.match-status{font-family:'DM Mono',monospace;font-size:9px;}
+
+/* ── TOAST ── */
+.toast-wrap{position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:var(--s1);border:1px solid var(--border);border-radius:8px;padding:10px 16px;
+  font-family:'DM Mono',monospace;font-size:12px;color:var(--text);
+  animation:slideIn .2s ease;box-shadow:0 4px 20px rgba(0,0,0,.4);}
+@keyframes slideIn{from{transform:translateX(60px);opacity:0;}to{transform:none;opacity:1;}}
+</style>
+</head>
+<body>
+<div id="toast-wrap" class="toast-wrap"></div>
+
+<!-- TOP NAV -->
+<div class="topnav">
+  <div class="topnav-title">🌴 Dynasty <span>Miami</span> Tracker</div>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <span id="nav-user" style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);"></span>
+    <a href="hub.html">← Hub</a>
+  </div>
+</div>
+
+<!-- HERO BANNER -->
+<div class="hero">
+  <div class="hero-eyebrow">Official Champions Contest · Dynasty Builders Academy</div>
+  <div class="hero-title">ROAD TO <span>MIAMI</span></div>
+  <div class="hero-sub">Champions Weekend 2026</div>
+  <div class="hero-dates">📅 September 1 – November 30, 2026 · All deadlines America/Chicago</div>
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <div class="hero-stat-val" id="stat-days">95</div>
+      <div class="hero-stat-lbl">Days Left</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-val" id="stat-registered">7</div>
+      <div class="hero-stat-lbl">Registered</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-val" id="stat-dynasty">0</div>
+      <div class="hero-stat-lbl">Dynasty Matched</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-val" id="stat-lastcheck">—</div>
+      <div class="hero-stat-lbl">Last Checked</div>
+    </div>
+  </div>
+</div>
+
+<!-- STATUS BAR -->
+<div class="status-bar">
+  <div class="status-item">
+    <span class="status-badge badge-provisional" id="contest-status-badge">PROVISIONAL</span>
+    &nbsp; Contest opens Sep 1, 2026
+  </div>
+  <div class="status-item">
+    Official data: <strong id="official-source-lbl">contest.agencycalculators.com</strong>
+  </div>
+  <div class="status-item" id="monitoring-status">
+    <span class="status-badge badge-monitoring">MONITORING</span>
+    &nbsp; Auto: Monday 8AM PT
+  </div>
+  <div style="display:flex;gap:6px;">
+    <button class="btn-refresh" onclick="refreshLeaderboard()">🔄 Refresh Official Board</button>
+    <button class="btn-sm" onclick="openManualEntry()">✏ Manual Entry</button>
+  </div>
+</div>
+
+<!-- MAIN PAGE -->
+<div class="page">
+
+  <!-- TABS -->
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('dashboard')">Dashboard</div>
+    <div class="tab" onclick="switchTab('leaderboard')">🌴 Miami Board</div>
+    <div class="tab" onclick="switchTab('categories')">Categories</div>
+    <div class="tab" onclick="switchTab('history')">History</div>
+    <div class="tab" onclick="switchTab('events')">Events</div>
+    <div class="tab admin-only" onclick="switchTab('admin')" style="display:none;">Admin</div>
+  </div>
+
+  <!-- ── DASHBOARD TAB ── -->
+  <div id="tab-dashboard" class="tab-content active">
+
+    <!-- TOP 2 DYNASTY -->
+    <div class="section">
+      <div class="section-hdr">
+        <div class="section-title">⭐ Dynasty Top 2 · <span>Miami Watch</span></div>
+      </div>
+      <div class="top2-grid" id="top2-grid">
+        <!-- rendered by JS -->
+      </div>
+    </div>
+
+    <!-- QUICK BOARD PREVIEW -->
+    <div class="section">
+      <div class="section-hdr">
+        <div class="section-title">🌴 Official Miami Leaderboard</div>
+        <button class="btn-sm" onclick="switchTab('leaderboard')">Full Board →</button>
+      </div>
+      <div class="card" id="dashboard-board-preview">
+        <!-- rendered by JS -->
+      </div>
+    </div>
+
+    <!-- RECENT EVENTS -->
+    <div class="section">
+      <div class="section-hdr">
+        <div class="section-title">🔥 Recent Events</div>
+      </div>
+      <div class="events-list" id="dashboard-events">
+        <!-- rendered by JS -->
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── MIAMI FINALIST WATCH TAB ── -->
+  <div id="tab-leaderboard" class="tab-content">
+    <div class="section-hdr" style="margin-bottom:12px;">
+      <div class="section-title">🌴 Miami Finalist Watch</div>
+      <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);">
+        Source: <strong style="color:var(--text);">Champions Contest · Public Leaderboard</strong>
+        &nbsp;·&nbsp; Last updated: <span id="board-last-updated">—</span>
+      </div>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden;">
+      <table class="lb-table" id="official-lb-table">
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Contestant</th>
+            <th>Biz Code</th>
+            <th>Score</th>
+            <th>Move</th>
+            <th>Dynasty</th>
+            <th>Div</th>
+          </tr>
+        </thead>
+        <tbody id="lb-tbody"></tbody>
+      </table>
+    </div>
+    <div style="margin-top:10px;font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);text-align:center;">
+      Official data last checked: <span id="board-check-time">—</span> &nbsp;·&nbsp;
+      Official data last changed: <span id="board-change-time">—</span>
+    </div>
+  </div>
+
+  <!-- ── CATEGORIES TAB ── -->
+  <div id="tab-categories" class="tab-content">
+    <div class="section-hdr" style="margin-bottom:12px;">
+      <div class="section-title">Future MD — 7 Categories</div>
+    </div>
+    <div class="cat-grid" id="cat-grid-fmd"></div>
+
+    <div class="section-hdr" style="margin:18px 0 12px;">
+      <div class="section-title">Marketing Director — 14 Categories</div>
+    </div>
+    <div class="cat-grid" id="cat-grid-md"></div>
+  </div>
+
+  <!-- ── HISTORY TAB ── -->
+  <div id="tab-history" class="tab-content">
+    <div class="section-hdr" style="margin-bottom:12px;">
+      <div class="section-title">Official Rank History</div>
+    </div>
+    <div id="history-container">
+      <div class="card">
+        <div class="empty-state">
+          <div class="empty-state-icon">📈</div>
+          <div class="empty-state-title">History builds as the contest runs</div>
+          <div class="empty-state-sub">Each time the leaderboard is refreshed, a snapshot is saved.<br>Rankings will chart here from Sep 1 onward.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── EVENTS TAB ── -->
+  <div id="tab-events" class="tab-content">
+    <div class="section-hdr" style="margin-bottom:12px;">
+      <div class="section-title">Change Detection Log</div>
+    </div>
+    <div class="events-list" id="all-events-list">
+      <!-- rendered by JS -->
+    </div>
+  </div>
+
+  <!-- ── ADMIN TAB ── -->
+  <div id="tab-admin" class="tab-content">
+    <div class="section">
+      <div class="section-title" style="margin-bottom:12px;">Participant Matching</div>
+      <div class="card">
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:12px;">
+          Link Dynasty participants to their official contest entries. Matches by business code are applied automatically.
+        </div>
+        <div id="match-list"></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title" style="margin-bottom:12px;">Monitoring Schedule</div>
+      <div class="card">
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <label style="font-family:'DM Mono',monospace;font-size:11px;display:flex;align-items:center;gap:8px;">
+            Refresh frequency:
+            <select id="refresh-freq" onchange="saveConfig()" style="background:var(--s2);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:4px 10px;font-family:'DM Mono',monospace;font-size:11px;">
+              <option value="monday">Monday only (8AM PT)</option>
+              <option value="daily">Daily</option>
+              <option value="manual">Manual only</option>
+            </select>
+          </label>
+          <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);">
+            Alert thresholds — notify when Dynasty agent reaches:
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <label style="font-family:'DM Mono',monospace;font-size:10px;display:flex;align-items:center;gap:5px;">
+              <input type="checkbox" id="alert-top10" onchange="saveConfig()" checked> Top 10
+            </label>
+            <label style="font-family:'DM Mono',monospace;font-size:10px;display:flex;align-items:center;gap:5px;">
+              <input type="checkbox" id="alert-top5" onchange="saveConfig()" checked> Top 5
+            </label>
+            <label style="font-family:'DM Mono',monospace;font-size:10px;display:flex;align-items:center;gap:5px;">
+              <input type="checkbox" id="alert-top2" onchange="saveConfig()" checked> Top 2 (Finalist range)
+            </label>
+            <label style="font-family:'DM Mono',monospace;font-size:10px;display:flex;align-items:center;gap:5px;">
+              <input type="checkbox" id="alert-rules" onchange="saveConfig()" checked> Rule changes
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title" style="margin-bottom:12px;">Rules Monitor</div>
+      <div class="card">
+        <div id="rules-monitor-status">
+          <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);">
+            Rules fingerprint: <span id="rules-hash">not yet captured</span><br>
+            Last checked: <span id="rules-last-check">—</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- MANUAL ENTRY MODAL -->
+<div id="manual-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:center;justify-content:center;">
+  <div style="background:var(--navy2);border:1px solid var(--border);border-radius:14px;padding:20px;max-width:480px;width:94%;max-height:90vh;overflow-y:auto;">
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;color:var(--gold2);margin-bottom:4px;">
+      ✏ Manual Leaderboard Entry
+    </div>
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:16px;">
+      Use when automated fetch is unavailable. Enter exactly what the official leaderboard shows.
+    </div>
+    <div id="manual-form-rows" style="display:flex;flex-direction:column;gap:8px;"></div>
+    <div style="display:flex;gap:8px;margin-top:16px;">
+      <button class="btn-refresh" onclick="saveManualEntry()" style="flex:2;">✓ Save Official Data</button>
+      <button class="btn-sm" onclick="closeManualEntry()" style="flex:1;">Cancel</button>
+    </div>
+    <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);margin-top:10px;">
+      ⓘ This data is stored as OFFICIAL MIAMI · Source: Manual entry. It does not affect Dynasty scoring.
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════
+// DYNASTY MIAMI CONTEST TRACKER
+// Source of truth: contest.agencycalculators.com (public leaderboard)
+// Dynasty data: separate, never combined with official scores
+// ══════════════════════════════════════════════════════════════════
+
+const SK_MIAMI = 'dba_miami_tracker_v1';
+const OFFICIAL_URL = 'https://contest.agencycalculators.com/?p=board';
+const RULES_URL    = 'https://contest.agencycalculators.com/?p=rules';
+const ACTIVITY_URL = 'https://contest.agencycalculators.com/?p=activity';
+
+const CONTEST_START = new Date('2026-09-01T00:00:00-05:00');
+const CONTEST_END   = new Date('2026-11-30T23:59:59-05:00');
+
+// ── Known Dynasty agents for auto-matching by business code ──────
+const DYNASTY_AGENTS = [
+  { id:'obi001',    name:'Obi & Jennifer Iroezi',   phpId:'10146',  isDynasty:true, isTop2Candidate:true },
+  { id:'blesses',   name:'Blessing Ikejemba',        phpId:'82854',  isDynasty:true },
+  { id:'cherry',    name:'Cherryjane Okeke',         phpId:'1069795',isDynasty:true },
+  { id:'jacinta',   name:'Jacinta Abanobi',          phpId:'1353757',isDynasty:true },
+  // add more as they register
+];
+
+// ── FMD 7 Categories ─────────────────────────────────────────────
+const FMD_CATS = [
+  { id:'sep_recruits',  label:'Personal Recruits',    period:'September' },
+  { id:'oct_recruits',  label:'Personal Recruits',    period:'October' },
+  { id:'nov_recruits',  label:'Personal Recruits',    period:'November' },
+  { id:'licensed_90d', label:'Personal Licensed',    period:'90-Day' },
+  { id:'sep_paid',      label:'Personal Paid Points', period:'September' },
+  { id:'oct_paid',      label:'Personal Paid Points', period:'October' },
+  { id:'nov_paid',      label:'Personal Paid Points', period:'November' },
+];
+
+// ── MD 14 Categories ─────────────────────────────────────────────
+const MD_CATS = [
+  { id:'md_sep_rec',    label:'Personal Recruits',         period:'September' },
+  { id:'md_oct_rec',    label:'Personal Recruits',         period:'October' },
+  { id:'md_nov_rec',    label:'Personal Recruits',         period:'November' },
+  { id:'md_lic_90d',    label:'Personal Licensed',         period:'90-Day' },
+  { id:'md_sep_awr',    label:'Assocs With a Recruit',     period:'September' },
+  { id:'md_oct_awr',    label:'Assocs With a Recruit',     period:'October' },
+  { id:'md_nov_awr',    label:'Assocs With a Recruit',     period:'November' },
+  { id:'md_sep_awa',    label:'Assocs With an App',        period:'September' },
+  { id:'md_oct_awa',    label:'Assocs With an App',        period:'October' },
+  { id:'md_nov_awa',    label:'Assocs With an App',        period:'November' },
+  { id:'md_leg_deep',   label:'Take a Leg Deep',           period:'90-Day' },
+  { id:'md_sep_paid',   label:'Personal Paid Points',      period:'September' },
+  { id:'md_oct_paid',   label:'Personal Paid Points',      period:'October' },
+  { id:'md_nov_paid',   label:'Personal Paid Points',      period:'November' },
+];
+
+// ── STORE ─────────────────────────────────────────────────────────
+function loadStore() {
+  try { return JSON.parse(localStorage.getItem(SK_MIAMI)||'{}'); } catch(e) { return {}; }
+}
+function saveStore(s) { localStorage.setItem(SK_MIAMI, JSON.stringify(s)); }
+
+function initStore() {
+  const s = loadStore();
+  if(!s.snapshots)        s.snapshots = [];       // array of leaderboard snapshots
+  if(!s.events)           s.events = [];           // change detection log
+  if(!s.matches)          s.matches = {};          // dynastyId -> officialContestantId
+  if(!s.manualOverride)   s.manualOverride = null; // when automated fetch blocked
+  if(!s.config)           s.config = { freq:'monday', alertTop10:true, alertTop5:true, alertTop2:true, alertRules:true };
+  if(!s.rulesHash)        s.rulesHash = null;
+  if(!s.rulesLastCheck)   s.rulesLastCheck = null;
+  if(!s.lastCheck)        s.lastCheck = null;
+  if(!s.lastChange)       s.lastChange = null;
+  return s;
+}
+
+// ── SEED initial known registrants (from Aug 27 leaderboard fetch) ──
+function seedKnownRegistrants(store) {
+  if(store.snapshots.length > 0) return; // already seeded
+  const now = new Date().toISOString();
+  const known = [
+    { rank:null, name:'BLESSING IKEJEMBA',     bizCode:'82854',   joined:'2026-08-27', score:null, div:'FMD', prev:null },
+    { rank:null, name:'Cherryjane Okeke',       bizCode:'1069795', joined:'2026-08-27', score:null, div:'FMD', prev:null },
+    { rank:null, name:'Joe & Crystal Walker',   bizCode:'69012',   joined:'2026-08-26', score:null, div:'FMD', prev:null },
+    { rank:null, name:'Aaron Mputu',            bizCode:'00043',   joined:'2026-08-26', score:null, div:'FMD', prev:null },
+    { rank:null, name:'Obi & Jennifer Iroezi',  bizCode:'10146',   joined:'2026-08-26', score:null, div:'FMD', prev:null },
+    { rank:null, name:'Alexandria Edwards',     bizCode:'1014829', joined:'2026-08-26', score:null, div:'FMD', prev:null },
+    { rank:null, name:'Sasha Dukes',            bizCode:'1251925', joined:'2026-08-26', score:null, div:'FMD', prev:null },
+  ];
+  store.snapshots.push({
+    ts: now,
+    source: 'seed',
+    status: 'provisional',
+    note: 'Pre-contest registration — contest opens Sep 1, 2026. No categories scored yet.',
+    contestants: known,
+    categoriesScored: 0,
+    totalCategories: 14,
+  });
+  store.lastCheck = now;
+  // Auto-match Dynasty agents by business code
+  known.forEach(c => {
+    const match = DYNASTY_AGENTS.find(d => d.phpId === c.bizCode);
+    if(match && !store.matches[match.id]) {
+      store.matches[match.id] = { officialName: c.name, bizCode: c.bizCode, matchType:'auto_biz_code', ts: now };
+    }
+  });
+  store.events.push({
+    ts: now,
+    type:'seed',
+    icon:'📋',
+    text:'Initial leaderboard snapshot loaded. 7 contestants registered. Contest opens September 1, 2026.',
+  });
+  saveStore(store);
+}
+
+// ── UTILITY ──────────────────────────────────────────────────────
+function fmtTs(iso) {
+  if(!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-US',{month:'short',day:'numeric'}) + ' ' +
+         d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+}
+
+function moveChip(curr, prev) {
+  if(curr == null || prev == null) return '<span class="move-chip move-same">—</span>';
+  const diff = prev - curr; // positive = moved up (rank number went down)
+  if(diff > 0) return `<span class="move-chip move-up">⬆ +${diff}</span>`;
+  if(diff < 0) return `<span class="move-chip move-down">⬇ ${diff}</span>`;
+  return '<span class="move-chip move-same">→</span>';
+}
+
+function daysLeft() {
+  const now = new Date();
+  if(now < CONTEST_START) {
+    const d = Math.ceil((CONTEST_START - now) / 86400000);
+    return `${d}d to start`;
+  }
+  const d = Math.ceil((CONTEST_END - now) / 86400000);
+  return d > 0 ? `${d}` : '0';
+}
+
+function toast(msg, dur=3000) {
+  const wrap = document.getElementById('toast-wrap');
+  const el = document.createElement('div');
+  el.className = 'toast'; el.textContent = msg;
+  wrap.appendChild(el);
+  setTimeout(() => el.remove(), dur);
+}
+
+// ── DYNASTY RANK ENGINE (simplified — mirrors md-tracker scoring) ─
+function getDynastyRankings(store) {
+  // Pull from md-tracker localStorage if available
+  try {
+    const mdData = JSON.parse(localStorage.getItem('dba_md_tracker_v2') || '[]');
+    if(!mdData.length) return [];
+    // Score each run: sort by score ascending (golf scoring)
+    return mdData
+      .map(run => {
+        const tot = run.apps?.flat().reduce((s,a) => ({
+          apps: s.apps + (parseFloat(a.a)||0),
+          pts:  s.pts  + (parseFloat(a.p)||0),
+        }), {apps:0, pts:0}) || {apps:0,pts:0};
+        const recruits = run.recruits?.flat().length || 0;
+        return { agentId: run.agentId, agentName: run.agentName, phpId: run.phpId,
+                 recruits, apps: tot.apps, pts: tot.pts, runId: run.id };
+      })
+      .sort((a,b) => b.recruits - a.recruits); // placeholder sort
+  } catch(e) { return []; }
+}
+
+// ── RENDER: HERO STATS ────────────────────────────────────────────
+function renderHeroStats(store) {
+  const latest = store.snapshots[store.snapshots.length - 1];
+  const matched = Object.keys(store.matches).length;
+  document.getElementById('stat-days').textContent = daysLeft();
+  document.getElementById('stat-registered').textContent = latest?.contestants?.length || 7;
+  document.getElementById('stat-dynasty').textContent = matched;
+  document.getElementById('stat-lastcheck').textContent =
+    store.lastCheck ? fmtTs(store.lastCheck).split(' ')[0] : '—';
+}
+
+// ── RENDER: TOP 2 CARDS ───────────────────────────────────────────
+function renderTop2(store) {
+  const grid = document.getElementById('top2-grid');
+  const latest = store.snapshots[store.snapshots.length - 1];
+  const dynRankings = getDynastyRankings(store);
+
+  // Find Obi & Jennifer and Jacinta (known top Dynasty candidates) or use dynRankings
+  const top2Agents = DYNASTY_AGENTS.filter(a => a.isDynasty).slice(0, 2);
+
+  grid.innerHTML = top2Agents.map((agent, i) => {
+    const matchInfo = store.matches[agent.id];
+    const officialEntry = matchInfo && latest
+      ? latest.contestants.find(c => c.bizCode === matchInfo.bizCode)
+      : null;
+    const dynRank = i + 1; // placeholder until Dynasty scoring is wired
+    const officialRank = officialEntry?.rank;
+    const prevRank = officialEntry?.prev;
+    const isGold = i === 0;
+
+    return `<div class="top2-card ${isGold ? '' : 'silver'}">
+      <div class="miami-watch-badge">🌴 MIAMI WATCH</div>
+      <div class="top2-rank ${isGold ? '' : 'silver'}">${isGold ? '🥇' : '🥈'} DYNASTY #${dynRank}</div>
+      <div class="top2-name">${agent.name}</div>
+      <div class="top2-scores">
+        <div class="score-box">
+          <div class="score-lbl">Dynasty Rank</div>
+          <div class="score-val">#${dynRank}</div>
+          <div class="score-move" style="color:var(--muted);font-size:10px;">Internal · DBA</div>
+        </div>
+        <div class="score-box official">
+          <div class="score-lbl">Official Miami</div>
+          <div class="score-val official-val">${officialRank ? '#'+officialRank : '—'}</div>
+          <div class="score-move">${moveChip(officialRank, prevRank)}</div>
+        </div>
+      </div>
+      <div style="margin-top:8px;font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);">
+        Biz code: ${agent.phpId} · ${matchInfo ? '✓ Matched' : '⚠ Not yet matched'}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── RENDER: BOARD PREVIEW & FULL TABLE ───────────────────────────
+function renderLeaderboard(store) {
+  const latest = store.snapshots[store.snapshots.length - 1];
+  if(!latest) return;
+
+  const now = new Date();
+  const isPreContest = now < CONTEST_START;
+  const statusNote = isPreContest
+    ? 'Contest opens September 1, 2026. No categories scored yet — registration only.'
+    : `${latest.categoriesScored || 0} of ${latest.totalCategories || 14} categories scored`;
+
+  // Update timestamps
+  const upEl = document.getElementById('board-last-updated');
+  const ckEl = document.getElementById('board-check-time');
+  const chEl = document.getElementById('board-change-time');
+  if(upEl) upEl.textContent = fmtTs(latest.ts);
+  if(ckEl) ckEl.textContent = fmtTs(store.lastCheck);
+  if(chEl) chEl.textContent = fmtTs(store.lastChange) || 'No changes detected yet';
+
+  // Dashboard preview
+  const preview = document.getElementById('dashboard-board-preview');
+  if(preview) {
+    if(isPreContest) {
+      preview.innerHTML = `<div style="text-align:center;padding:16px;">
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:8px;">${statusNote}</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;color:var(--gold2);margin-bottom:10px;">${latest.contestants.length} contestants registered and ready</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;">
+          ${latest.contestants.map(c => {
+            const isDyn = DYNASTY_AGENTS.find(d => d.phpId === c.bizCode);
+            return `<div style="background:${isDyn ? 'rgba(201,168,76,.1)' : 'rgba(255,255,255,.04)'};
+              border:1px solid ${isDyn ? 'rgba(201,168,76,.3)' : 'var(--border)'};
+              border-radius:8px;padding:6px 12px;font-family:'DM Mono',monospace;font-size:10px;">
+              ${isDyn ? '⭐ ' : ''}${c.name}
+              <span style="color:var(--muted);font-size:9px;"> · ${c.bizCode}</span>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>`;
+    }
+  }
+
+  // Full leaderboard table
+  const tbody = document.getElementById('lb-tbody');
+  if(!tbody) return;
+  tbody.innerHTML = latest.contestants.map((c, i) => {
+    const rank = c.rank || (i + 1);
+    const dynMatch = DYNASTY_AGENTS.find(d => d.phpId === c.bizCode);
+    const rankCls = rank === 1 ? 'top1' : rank === 2 ? 'top2' : rank === 3 ? 'top3' : '';
+    return `<tr>
+      <td><div class="rank-num ${rankCls}">${rank}</div></td>
+      <td>
+        <div class="contestant-name">${c.name}</div>
+        <div class="biz-code">Joined ${c.joined || '—'}</div>
+      </td>
+      <td><span class="biz-code">${c.bizCode || '—'}</span></td>
+      <td><span style="font-family:'Barlow Condensed',sans-serif;font-weight:700;">${c.score != null ? c.score : '—'}</span></td>
+      <td>${moveChip(c.rank, c.prev)}</td>
+      <td>${dynMatch
+        ? `<span class="dynasty-match">⭐ ${dynMatch.name.split(' ')[0]}</span>`
+        : '<span style="color:var(--muted);font-size:10px;">—</span>'}</td>
+      <td><span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);">${c.div || 'FMD'}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+// ── RENDER: CATEGORIES ────────────────────────────────────────────
+function renderCategories(store) {
+  const latest = store.snapshots[store.snapshots.length - 1];
+  const renderGrid = (cats, elId) => {
+    const el = document.getElementById(elId);
+    if(!el) return;
+    el.innerHTML = cats.map(cat => {
+      const data = latest?.categoryData?.[cat.id];
+      return `<div class="cat-card">
+        <div class="cat-card-title">${cat.label}</div>
+        <div class="cat-card-val">${data?.leader || '—'}</div>
+        <div class="cat-card-period">${cat.period}</div>
+        ${data ? `<div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);margin-top:4px;">Leader: ${data.leaderName || '—'}</div>` : ''}
+      </div>`;
+    }).join('');
+  };
+  renderGrid(FMD_CATS, 'cat-grid-fmd');
+  renderGrid(MD_CATS, 'cat-grid-md');
+}
+
+// ── RENDER: EVENTS ────────────────────────────────────────────────
+function renderEvents(store) {
+  const events = [...store.events].reverse().slice(0, 50);
+  const renderList = (el) => {
+    if(!el) return;
+    if(!events.length) {
+      el.innerHTML = `<div class="card"><div class="empty-state">
+        <div class="empty-state-icon">📡</div>
+        <div class="empty-state-title">Monitoring active</div>
+        <div class="empty-state-sub">Changes detected on the official leaderboard will appear here.</div>
+      </div></div>`;
+      return;
+    }
+    el.innerHTML = events.map(e => `
+      <div class="event-row ${e.type==='movement'?'event-fire':e.type==='alert'?'event-alert':''}">
+        <div class="event-icon">${e.icon || '📋'}</div>
+        <div>
+          <div class="event-text">${e.text}</div>
+          <div class="event-time">${fmtTs(e.ts)} · ${e.source || 'Official leaderboard'}</div>
+        </div>
+      </div>`).join('');
+  };
+  renderList(document.getElementById('dashboard-events'));
+  renderList(document.getElementById('all-events-list'));
+}
+
+// ── RENDER: MATCH ADMIN ───────────────────────────────────────────
+function renderMatchAdmin(store) {
+  const el = document.getElementById('match-list');
+  if(!el) return;
+  const latest = store.snapshots[store.snapshots.length - 1];
+  el.innerHTML = DYNASTY_AGENTS.map(agent => {
+    const match = store.matches[agent.id];
+    const official = match && latest
+      ? latest.contestants.find(c => c.bizCode === match.bizCode)
+      : null;
+    return `<div class="match-row">
+      <div class="match-names">
+        <span style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;">⭐ ${agent.name}</span>
+        <span class="match-arrow">↔</span>
+        <span style="font-size:13px;color:${match ? 'var(--gold2)' : 'var(--muted)'};">
+          ${match ? match.officialName : 'Not matched'}
+        </span>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;">
+        ${match
+          ? `<span class="dynasty-match" style="color:var(--green);">✓ ${match.matchType}</span>`
+          : `<span class="dynasty-match review-match">⚠ REVIEW</span>`}
+        <button class="btn-sm" onclick="openMatchEditor('${agent.id}')">Edit</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── RENDER: HISTORY ───────────────────────────────────────────────
+function renderHistory(store) {
+  const el = document.getElementById('history-container');
+  if(!el) return;
+
+  // Find snapshots with actual rank data
+  const ranked = store.snapshots.filter(s => s.contestants.some(c => c.rank != null));
+  if(!ranked.length) return; // keep empty state
+
+  // For each Dynasty agent, plot their rank over time
+  DYNASTY_AGENTS.filter(a => a.isDynasty).forEach(agent => {
+    const history = ranked.map(snap => {
+      const c = snap.contestants.find(x => x.bizCode === agent.phpId);
+      return { ts: snap.ts, rank: c?.rank };
+    }).filter(h => h.rank != null);
+    if(!history.length) return;
+
+    const maxRank = Math.max(...history.map(h => h.rank));
+    const div = document.createElement('div');
+    div.className = 'card'; div.style.marginBottom = '12px';
+    div.innerHTML = `<div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;color:var(--gold2);margin-bottom:10px;">
+      ⭐ ${agent.name} — Official Rank History
+    </div>
+    ${history.map(h => `<div class="history-row">
+      <div class="history-date">${fmtTs(h.ts)}</div>
+      <div class="history-bar-wrap"><div class="history-bar" style="width:${Math.round((1 - (h.rank-1)/maxRank)*100)}%"></div></div>
+      <div class="history-rank">#${h.rank}</div>
+    </div>`).join('')}`;
+    el.innerHTML = '';
+    el.appendChild(div);
+  });
+}
+
+// ── MAIN REFRESH (fetch official leaderboard via Claude proxy) ────
+async function refreshLeaderboard() {
+  toast('🔄 Fetching official leaderboard…');
+  const store = initStore();
+
+  try {
+    // Try fetching via Claude API proxy (which can fetch external URLs)
+    const res = await fetch('/api/claude', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        system: `You are a leaderboard data extractor. Fetch the URL and return ONLY a JSON object with this structure:
+{
+  "status": "provisional|live|closed",
+  "contestantsCount": number,
+  "categoriesScored": number,
+  "contestants": [
+    { "rank": number|null, "name": "string", "bizCode": "string", "score": number|null, "div": "MD|FMD", "joined": "string" }
+  ],
+  "note": "string"
+}
+No markdown, no explanation, only valid JSON. If you cannot fetch, return {"error":"fetch_failed"}.`,
+        messages: [{ role: 'user', content: `Fetch and parse the leaderboard at: ${OFFICIAL_URL}\nReturn the structured JSON only.` }]
+      })
+    });
+
+    if(res.ok) {
+      const data = await res.json();
+      const txt = data.content?.[0]?.text || '';
+      try {
+        const parsed = JSON.parse(txt.replace(/```json|```/g,'').trim());
+        if(!parsed.error && parsed.contestants) {
+          applyLeaderboardUpdate(store, parsed, 'auto_fetch');
+          return;
+        }
+      } catch(e) {}
+    }
+  } catch(e) {}
+
+  // Fallback: show manual entry prompt
+  toast('⚠ Auto-fetch unavailable — use manual entry or check site directly', 4000);
+  updateMonitoringStatus('REQUIRES REVIEW');
+  openManualEntry();
+}
+
+function applyLeaderboardUpdate(store, parsed, source) {
+  const now = new Date().toISOString();
+  const latest = store.snapshots[store.snapshots.length - 1];
+
+  // Detect changes
+  const changes = [];
+  if(latest) {
+    parsed.contestants.forEach(c => {
+      const prev = latest.contestants.find(x => x.bizCode === c.bizCode || x.name === c.name);
+      if(!prev) {
+        changes.push({ type:'new_contestant', icon:'🆕', text:`New contestant registered: <strong>${c.name}</strong> (${c.bizCode})` });
+      } else if(prev.rank != null && c.rank != null && prev.rank !== c.rank) {
+        const diff = prev.rank - c.rank;
+        const dir = diff > 0 ? `⬆ ${diff} positions` : `⬇ ${Math.abs(diff)} positions`;
+        changes.push({ type:'movement', icon:'🔥', text:`<strong>${c.name}</strong> moved from #${prev.rank} to #${c.rank} · ${dir}` });
+
+        // Check Dynasty alerts
+        const isDyn = DYNASTY_AGENTS.find(d => d.phpId === c.bizCode);
+        if(isDyn) {
+          if(c.rank <= 2)  changes.push({ type:'alert', icon:'🏆', text:`DYNASTY AGENT IN OFFICIAL TOP 2: <strong>${c.name}</strong> — Finalist range!` });
+          else if(c.rank <= 5)  changes.push({ type:'alert', icon:'🌟', text:`DYNASTY AGENT IN OFFICIAL TOP 5: <strong>${c.name}</strong> at #${c.rank}` });
+          else if(c.rank <= 10) changes.push({ type:'alert', icon:'🎯', text:`DYNASTY AGENT IN OFFICIAL TOP 10: <strong>${c.name}</strong> at #${c.rank}` });
+        }
+      }
+      c.prev = prev?.rank || null;
+    });
+  }
+
+  // Snapshot
+  store.snapshots.push({
+    ts: now, source, status: parsed.status || 'provisional',
+    note: parsed.note || '',
+    contestants: parsed.contestants,
+    categoriesScored: parsed.categoriesScored || 0,
+    totalCategories: 14,
+  });
+
+  // Events
+  changes.forEach(ch => store.events.push({ ts: now, ...ch, source: 'Official leaderboard' }));
+  if(!changes.length) {
+    store.events.push({ ts: now, icon:'✓', type:'check', source:'Official leaderboard',
+      text:'Leaderboard checked — no changes detected.' });
+  }
+
+  store.lastCheck = now;
+  if(changes.length) store.lastChange = now;
+
+  // Re-match by biz code
+  parsed.contestants.forEach(c => {
+    const match = DYNASTY_AGENTS.find(d => d.phpId === c.bizCode);
+    if(match && !store.matches[match.id]) {
+      store.matches[match.id] = { officialName: c.name, bizCode: c.bizCode, matchType:'auto_biz_code', ts: now };
+    }
+  });
+
+  saveStore(store);
+  renderAll(store);
+  toast(`✓ Updated — ${changes.length} change(s) detected`);
+}
+
+function updateMonitoringStatus(status) {
+  const el = document.getElementById('monitoring-status');
+  if(!el) return;
+  if(status === 'REQUIRES REVIEW') {
+    el.innerHTML = `<span class="status-badge" style="background:rgba(231,76,60,.1);color:var(--red);border:1px solid rgba(231,76,60,.25);">REQUIRES REVIEW</span> &nbsp; Set status manually`;
+  }
+}
+
+// ── MANUAL ENTRY ──────────────────────────────────────────────────
+function openManualEntry() {
+  const store = initStore();
+  const latest = store.snapshots[store.snapshots.length - 1];
+  const contestants = latest?.contestants || DYNASTY_AGENTS.map(a => ({ name: a.name, bizCode: a.phpId }));
+
+  const modal = document.getElementById('manual-modal');
+  const rows = document.getElementById('manual-form-rows');
+
+  rows.innerHTML = `<div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:8px;letter-spacing:.08em;text-transform:uppercase;">Enter official ranks as shown on contest.agencycalculators.com</div>` +
+    contestants.map((c, i) => `<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+      <div style="flex:1;font-size:13px;font-family:'Barlow Condensed',sans-serif;font-weight:700;">${c.name}</div>
+      <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);width:60px;">${c.bizCode}</div>
+      <input type="number" id="me-rank-${i}" placeholder="Rank" min="1"
+        style="width:64px;background:var(--s2);border:1px solid var(--border);color:var(--text);
+               border-radius:6px;padding:4px 8px;font-family:'DM Mono',monospace;font-size:12px;" value="${c.rank||''}">
+      <input type="number" id="me-score-${i}" placeholder="Score"
+        style="width:72px;background:var(--s2);border:1px solid var(--border);color:var(--text);
+               border-radius:6px;padding:4px 8px;font-family:'DM Mono',monospace;font-size:12px;" value="${c.score!=null?c.score:''}">
+    </div>`).join('') +
+    `<div style="margin-top:10px;">
+      <input type="text" id="me-note" placeholder="Notes (optional)"
+        style="width:100%;background:var(--s2);border:1px solid var(--border);color:var(--text);
+               border-radius:6px;padding:6px 10px;font-family:'DM Mono',monospace;font-size:11px;">
+    </div>`;
+
+  modal.style.display = 'flex';
+  modal.dataset.contestants = JSON.stringify(contestants);
+}
+
+function closeManualEntry() {
+  document.getElementById('manual-modal').style.display = 'none';
+}
+
+function saveManualEntry() {
+  const modal = document.getElementById('manual-modal');
+  const contestants = JSON.parse(modal.dataset.contestants || '[]');
+  const updated = contestants.map((c, i) => ({
+    ...c,
+    rank:  parseInt(document.getElementById(`me-rank-${i}`)?.value) || null,
+    score: parseFloat(document.getElementById(`me-score-${i}`)?.value) ?? null,
+  }));
+  const note = document.getElementById('me-note')?.value || '';
+
+  const store = initStore();
+  applyLeaderboardUpdate(store, {
+    status: new Date() < CONTEST_START ? 'provisional' : 'live',
+    contestants: updated,
+    categoriesScored: 0,
+    note: note || 'Manual entry by admin',
+  }, 'manual_entry');
+
+  closeManualEntry();
+}
+
+// ── MATCH EDITOR ──────────────────────────────────────────────────
+function openMatchEditor(dynastyId) {
+  const store = initStore();
+  const agent = DYNASTY_AGENTS.find(a => a.id === dynastyId);
+  const latest = store.snapshots[store.snapshots.length - 1];
+  const officialOptions = latest?.contestants || [];
+
+  const bizCode = prompt(
+    `Link ${agent?.name} to official contestant.\nEnter official business code (e.g. 10146):\n\nRegistered codes: ${officialOptions.map(c=>c.bizCode+' → '+c.name).join(', ')}`,
+    agent?.phpId || ''
+  );
+  if(!bizCode) return;
+
+  const match = officialOptions.find(c => c.bizCode === bizCode);
+  if(!match) { toast('⚠ Business code not found in latest snapshot'); return; }
+
+  store.matches[dynastyId] = {
+    officialName: match.name, bizCode: match.bizCode,
+    matchType: 'manual_admin', ts: new Date().toISOString()
+  };
+  saveStore(store);
+  renderAll(store);
+  toast(`✓ Matched ${agent?.name} → ${match.name}`);
+}
+
+// ── CONFIG ────────────────────────────────────────────────────────
+function saveConfig() {
+  const store = initStore();
+  store.config = {
+    freq:       document.getElementById('refresh-freq')?.value || 'monday',
+    alertTop10: document.getElementById('alert-top10')?.checked ?? true,
+    alertTop5:  document.getElementById('alert-top5')?.checked ?? true,
+    alertTop2:  document.getElementById('alert-top2')?.checked ?? true,
+    alertRules: document.getElementById('alert-rules')?.checked ?? true,
+  };
+  saveStore(store); toast('✓ Config saved');
+}
+
+function loadConfig(store) {
+  const c = store.config || {};
+  const fq = document.getElementById('refresh-freq');
+  if(fq) fq.value = c.freq || 'monday';
+  const checks = ['alert-top10','alert-top5','alert-top2','alert-rules'];
+  const keys   = ['alertTop10','alertTop5','alertTop2','alertRules'];
+  checks.forEach((id,i) => { const el = document.getElementById(id); if(el) el.checked = c[keys[i]] ?? true; });
+}
+
+// ── TABS ──────────────────────────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  const tabs = ['dashboard','leaderboard','categories','history','events','admin'];
+  const tabEls = document.querySelectorAll('.tab');
+  const idx = tabs.indexOf(name);
+  if(tabEls[idx]) tabEls[idx].classList.add('active');
+  const tc = document.getElementById(`tab-${name}`);
+  if(tc) tc.classList.add('active');
+}
+
+// ── RENDER ALL ────────────────────────────────────────────────────
+function renderAll(store) {
+  renderHeroStats(store);
+  renderTop2(store);
+  renderLeaderboard(store);
+  renderCategories(store);
+  renderEvents(store);
+  renderHistory(store);
+  renderMatchAdmin(store);
+  loadConfig(store);
+  const _set = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
+  _set('board-last-updated', fmtTs(store.lastCheck));
+  _set('board-check-time',   fmtTs(store.lastCheck));
+  _set('board-change-time',  fmtTs(store.lastChange) || 'No changes yet');
+  _set('rules-hash',         store.rulesHash || 'not yet captured');
+  _set('rules-last-check',   fmtTs(store.rulesLastCheck));
+}
+
+// ── SCHEDULED CHECK (on load, if due) ────────────────────────────
+function checkIfScheduledRefreshDue(store) {
+  if(store.config?.freq === 'manual') return;
+  if(!store.lastCheck) { return; } // Don't auto-fetch on first load — use Refresh button
+  const last = new Date(store.lastCheck);
+  const now = new Date();
+  const hoursSince = (now - last) / 3600000;
+  if(store.config?.freq === 'daily' && hoursSince >= 23) { refreshLeaderboard(); return; }
+  if(store.config?.freq === 'monday') {
+    const isMonday = now.getDay() === 1;
+    const isAM = now.getHours() >= 8;
+    if(isMonday && isAM && last.getDay() !== 1) { refreshLeaderboard(); return; }
+  }
+}
+
+// ── INIT ──────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  AUTH.require();
+  const session = AUTH.getSession();
+  if(session) {
+    document.getElementById('nav-user').textContent = session.name;
+    // Show admin tab for admins
+    if(['admin','super_admin','agency_builder','marketing_director'].includes(session.role)) {
+      document.querySelectorAll('.admin-only').forEach(el => el.style.display = '');
+    }
+  }
+
+  const store = initStore();
+  seedKnownRegistrants(store);
+  renderAll(store);
+  checkIfScheduledRefreshDue(store);
+  });
+</script>
+</body>
+</html>

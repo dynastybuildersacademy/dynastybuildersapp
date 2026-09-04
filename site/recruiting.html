@@ -432,6 +432,8 @@ body::before{content:"";position:fixed;inset:0;
     <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center;">
       <div class="section-head" style="flex:1;margin:0;min-width:0;"><div class="sh-title">Prospects</div><div class="sh-line"></div><div class="sh-count" id="p-count">0</div></div>
       <button class="qa-btn primary" onclick="openProspectModal()" style="flex-shrink:0;">+ Add Prospect</button>
+      <button class="qa-btn" onclick="openContactsPicker()" style="flex-shrink:0;background:rgba(52,152,219,.15);border-color:rgba(52,152,219,.4);color:#5DADE2;">📱 From Contacts</button>
+      <button class="qa-btn" onclick="syncToTop25Monday()" id="sync-top25-btn" style="flex-shrink:0;background:rgba(201,168,76,.1);border-color:rgba(201,168,76,.3);color:#E8C97A;">⬡ Sync Top 25</button>
     </div>
     <div class="search-bar">
       <input class="search-input" type="text" id="prospect-search" placeholder="Search name, phone, relationship, agent…" oninput="renderProspects()">
@@ -982,9 +984,18 @@ function saveProspect() {
   const first = document.getElementById('pm-first').value.trim();
   if(!first) { toast('First name required'); return; }
   const id = editingProspectId || 'p-'+Date.now();
+  const phone = document.getElementById('pm-phone').value.trim().replace(/\D/g,'');
+  // Duplicate check by phone number
+  if(phone && !editingProspectId) {
+    const dupe = prospects.find(p => p.phone && p.phone === phone);
+    if(dupe) {
+      toast(`⚠ ${dupe.firstName} ${dupe.lastName} already exists with this number`);
+      return;
+    }
+  }
   const rec = {
     id, firstName:first, lastName:document.getElementById('pm-last').value.trim(),
-    phone:document.getElementById('pm-phone').value.trim().replace(/\D/g,''),
+    phone,
     email:document.getElementById('pm-email').value.trim(),
     relationship:document.getElementById('pm-rel').value.trim(),
     agentId:document.getElementById('pm-agent').value,
@@ -1420,6 +1431,219 @@ document.addEventListener('DOMContentLoaded',()=>{
     });
   });
 });
+
+
+// ════════════════════════════════════════════════════════════════
+// CONTACTS PICKER — Browser Contact Picker API
+// ════════════════════════════════════════════════════════════════
+let _allContacts = [], _selectedContacts = new Set();
+
+async function openContactsPicker() {
+  const modal = document.getElementById('contacts-modal');
+  const list  = document.getElementById('contact-list');
+  const status= document.getElementById('contacts-status');
+  _selectedContacts.clear();
+
+  // Check Contact Picker API support
+  if('contacts' in navigator && 'select' in navigator.contacts) {
+    status.textContent = '⏳ Opening contacts…';
+    modal.style.display = 'flex';
+    list.innerHTML = '';
+    try {
+      const props = ['name','tel','email'];
+      const opts  = { multiple: true };
+      _allContacts = await navigator.contacts.select(props, opts);
+      if(!_allContacts.length) { status.textContent = 'No contacts selected from picker.'; return; }
+      status.textContent = '';
+      renderContactList(_allContacts);
+    } catch(e) {
+      // User cancelled or error — fall back to manual list
+      status.textContent = 'Could not open system contacts. Enter contacts manually below.';
+      _allContacts = [];
+      renderContactList([]);
+    }
+  } else {
+    // Not supported — show modal with manual entry hint
+    modal.style.display = 'flex';
+    list.innerHTML = '';
+    status.textContent = '';
+    _allContacts = [];
+    renderContactList([]);
+  }
+}
+
+function renderContactList(contacts) {
+  const list  = document.getElementById('contact-list');
+  const status= document.getElementById('contacts-status');
+  const existingPhones = new Set(prospects.map(p => p.phone).filter(Boolean));
+
+  if(!contacts.length) {
+    list.innerHTML = `<div style="text-align:center;padding:20px;font-family:'DM Mono',monospace;
+      font-size:11px;color:#6B7C93;line-height:1.8;">
+      📱 Contact Picker not supported on this browser.<br>
+      Use <strong style="color:#E8C97A;">+ Add Prospect</strong> to enter manually,<br>
+      or use Chrome on Android for full contact access.
+    </div>`;
+    return;
+  }
+
+  list.innerHTML = contacts.map((c, i) => {
+    const name  = (c.name?.[0] || '').trim();
+    const phone = (c.tel?.[0]  || '').replace(/\D/g,'');
+    const email = c.email?.[0] || '';
+    const isDupe= phone && existingPhones.has(phone);
+    const id    = `c-${i}`;
+
+    return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;
+      background:${isDupe ? 'rgba(231,76,60,.06)' : 'rgba(255,255,255,.03)'};
+      border:1px solid ${isDupe ? 'rgba(231,76,60,.25)' : 'rgba(255,255,255,.07)'};
+      border-radius:8px;cursor:${isDupe ? 'default':'pointer'};"
+      onclick="${isDupe ? '' : `toggleContact(${i})`}" id="${id}">
+      <div style="width:20px;height:20px;border-radius:50%;border:2px solid ${isDupe ? '#E74C3C':'rgba(201,168,76,.4)'};
+        display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;"
+        id="${id}-check"></div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;
+          color:${isDupe ? '#6B7C93':'#E8EDF5'};">${name || '(no name)'}</div>
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:#6B7C93;">
+          ${phone ? phone.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3') : ''}
+          ${email ? ' · ' + email : ''}
+          ${isDupe ? ' · <span style="color:#E74C3C;">already in prospects</span>' : ''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleContact(i) {
+  const id = `c-${i}`;
+  const el = document.getElementById(id);
+  const ch = document.getElementById(`${id}-check`);
+  if(_selectedContacts.has(i)) {
+    _selectedContacts.delete(i);
+    el.style.background = 'rgba(255,255,255,.03)';
+    el.style.borderColor = 'rgba(255,255,255,.07)';
+    ch.style.background = '';
+    ch.textContent = '';
+  } else {
+    _selectedContacts.add(i);
+    el.style.background = 'rgba(201,168,76,.08)';
+    el.style.borderColor = 'rgba(201,168,76,.3)';
+    ch.style.background = '#C9A84C';
+    ch.textContent = '✓';
+    ch.style.color = '#0A1628';
+  }
+  const btn = document.querySelector('#contacts-modal button');
+  const sel = _selectedContacts.size;
+  const btnEl = document.querySelector('#contacts-modal [onclick="importSelectedContacts()"]');
+  if(btnEl) btnEl.textContent = sel ? `✓ Import ${sel} Contact${sel>1?'s':''}` : '✓ Import Selected';
+}
+
+function filterContacts() {
+  const q = document.getElementById('contact-search').value.toLowerCase();
+  const visible = _allContacts.filter(c =>
+    (c.name?.[0]||'').toLowerCase().includes(q) ||
+    (c.tel?.[0]||'').includes(q)
+  );
+  renderContactList(visible);
+}
+
+function importSelectedContacts() {
+  const existingPhones = new Set(prospects.map(p => p.phone).filter(Boolean));
+  let added = 0, dupes = 0;
+
+  [..._selectedContacts].forEach(i => {
+    const ct = _allContacts[i];
+    if(!ct) return;
+    const phone = (ct.tel?.[0] || '').replace(/\D/g,'');
+    if(phone && existingPhones.has(phone)) { dupes++; return; }
+
+    const nameParts = (ct.name?.[0] || '').trim().split(' ');
+    const rec = {
+      id: 'p-' + Date.now() + '-' + i,
+      firstName: nameParts[0] || '',
+      lastName: nameParts.slice(1).join(' ') || '',
+      phone, email: ct.email?.[0] || '',
+      relationship: '', agentId: '', status: 'new',
+      qualities: [], notes: '',
+      source: 'contacts_import',
+      createdAt: new Date().toISOString(),
+    };
+    prospects.push(rec);
+    existingPhones.add(phone);
+    added++;
+  });
+
+  saveAll();
+  renderProspects();
+  closeContactsPicker();
+  toast(`✓ ${added} contact${added!==1?'s':''} imported${dupes ? ' · '+dupes+' duplicate(s) skipped' : ''}`);
+}
+
+function closeContactsPicker() {
+  document.getElementById('contacts-modal').style.display = 'none';
+  _allContacts = [];
+  _selectedContacts.clear();
+}
+
+// ════════════════════════════════════════════════════════════════
+// SYNC TO TOP 25 (MONDAY.COM)
+// ════════════════════════════════════════════════════════════════
+async function syncToTop25Monday() {
+  const session = AUTH.getSession();
+  const btn = document.getElementById('sync-top25-btn');
+
+  if(!session?.top25BoardId) {
+    toast('⚠ No Top 25 board linked. Ask your MD to configure your board ID in admin.');
+    return;
+  }
+
+  if(!prospects.length) { toast('⚠ No prospects to sync'); return; }
+
+  btn.textContent = '⏳ Syncing…';
+  btn.disabled = true;
+
+  // Top 25 = top prospects sorted by status priority
+  const PRIORITY = { hot:0, warm:1, contacted:2, new:3 };
+  const top25 = [...prospects]
+    .filter(p => p.status !== 'converted' && p.status !== 'not-interested')
+    .sort((a,b) => (PRIORITY[a.status]??9) - (PRIORITY[b.status]??9))
+    .slice(0, 25);
+
+  let synced = 0, errors = 0;
+
+  for(const p of top25) {
+    const fullName = [p.firstName, p.lastName].filter(Boolean).join(' ');
+    const mutation = `mutation {
+      create_item(
+        board_id: ${session.top25BoardId},
+        item_name: "${fullName.replace(/"/g,'\"')}",
+        column_values: "{\"status\":{\"label\":\"${capitalize(p.status||'new')}\"},\"text\":\"${(p.phone||'').replace(/"/g,'\"')}\",\"text7\":\"${(p.relationship||'').replace(/"/g,'\"')}\",\"long_text\":\"${(p.notes||'').replace(/"/g,'\"')}\"}",
+        create_labels_if_missing: true
+      ) { id }
+    }`;
+
+    try {
+      const res = await fetch('/api/monday', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ query: mutation })
+      });
+      const data = await res.json();
+      if(data?.data?.create_item?.id) synced++;
+      else errors++;
+    } catch(e) { errors++; }
+  }
+
+  btn.textContent = '⬡ Sync Top 25';
+  btn.disabled = false;
+
+  if(synced > 0) {
+    toast(`✓ ${synced} prospects synced to Monday Top 25 board${errors ? ' · '+errors+' errors' : ''}`);
+  } else {
+    toast('⚠ Sync failed — check Monday.com connection and board ID');
+  }
+}
+
+function capitalize(s) { return s ? s[0].toUpperCase() + s.slice(1) : ''; }
+
 </script>
-</body>
-</html>
