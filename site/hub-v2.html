@@ -137,10 +137,10 @@ html,body{height:100%;background:var(--navy);color:var(--text);font-family:'Barl
 .wiz-mod-name{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;
   color:var(--text);margin-bottom:2px;}
 .wiz-mod-desc{font-family:'DM Mono',monospace;font-size:10px;color:var(--sub);line-height:1.5;}
-.wiz-mod-check{width:22px;height:22px;border-radius:50%;border:2px solid var(--border);
+.wiz-mod-check{width:24px;height:24px;border-radius:50%;border:2px solid var(--border);
   display:flex;align-items:center;justify-content:center;flex-shrink:0;
-  font-size:12px;color:var(--gold);transition:all .15s;}
-.wiz-mod.selected .wiz-mod-check{background:var(--gold);border-color:var(--gold);color:#000;}
+  font-size:13px;color:var(--gold);transition:all .15s;}
+.wiz-mod-check.checked,.wiz-mod.selected .wiz-mod-check{background:var(--gold);border-color:var(--gold);color:#0A1628;font-weight:900;}
 .wiz-level-badge{font-family:'DM Mono',monospace;font-size:9px;padding:2px 8px;
   border-radius:10px;background:rgba(107,124,147,.15);color:var(--sub);
   display:inline-block;margin-top:4px;}
@@ -243,6 +243,12 @@ html,body{height:100%;background:var(--navy);color:var(--text);font-family:'Barl
 </div>
 
 <!-- HERO -->
+<!-- NOTIFICATION STRIP -->
+<div id="notif-strip" style="display:none;background:rgba(201,168,76,.12);border-bottom:1px solid rgba(201,168,76,.25);padding:8px 16px;font-family:'DM Mono',monospace;font-size:11px;color:var(--gold2);display:flex;align-items:center;justify-content:space-between;">
+  <span id="notif-text"></span>
+  <span onclick="document.getElementById('notif-strip').style.display='none'" style="cursor:pointer;font-size:14px;color:var(--sub);">✕</span>
+</div>
+
 <div class="hero">
   <div class="hero-name" id="hero-name">Welcome</div>
   <div class="hero-role" id="hero-role"></div>
@@ -253,21 +259,8 @@ html,body{height:100%;background:var(--navy);color:var(--text);font-family:'Barl
 <!-- MAIN CONTENT -->
 <div class="main" id="main-content"></div>
 
-<!-- BOTTOM NAV -->
-<div class="bottom-nav">
-  <a class="bn-item active" href="hub-v2.html">
-    <div class="bn-icon">🏠</div><span>Home</span>
-  </a>
-  <a class="bn-item" href="tracker.html">
-    <div class="bn-icon">📞</div><span>Activity</span>
-  </a>
-  <a class="bn-item" href="leaderboard.html">
-    <div class="bn-icon">🏆</div><span>Leaders</span>
-  </a>
-  <a class="bn-item" href="training.html">
-    <div class="bn-icon">📚</div><span>Training</span>
-  </a>
-</div>
+<!-- BOTTOM NAV — rendered dynamically -->
+<div class="bottom-nav" id="bottom-nav"></div>
 
 <!-- ONBOARDING WIZARD -->
 <div class="wizard-overlay" id="wizard-overlay" style="display:none;">
@@ -276,8 +269,11 @@ html,body{height:100%;background:var(--navy);color:var(--text);font-family:'Barl
       <div class="wiz-title">Welcome to DBA Hub 👋</div>
       <div class="wiz-sub">Let's set up your personal workspace.<br>Choose the tools you want — you can change these any time.</div>
       <div class="wiz-modules" id="wiz-module-list"></div>
-      <button class="wiz-btn" onclick="saveWizard()">Set Up My Hub</button>
-      <span class="wiz-skip" onclick="skipWizard()">Skip — show me everything available</span>
+      <div style="display:flex;gap:8px;margin-bottom:14px;">
+        <button class="wiz-btn" onclick="saveWizard()" style="flex:2;">✓ Save My Hub</button>
+        <button onclick="skipWizard()" style="flex:1;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:10px;color:var(--sub);font-family:'DM Mono',monospace;font-size:11px;padding:14px;cursor:pointer;">All tools</button>
+      </div>
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--sub);text-align:center;line-height:1.6;">You can change this any time by tapping <strong style="color:var(--gold);">🧩 My Tools</strong> on the hub.</div>
     </div>
   </div>
 </div>
@@ -295,191 +291,197 @@ html,body{height:100%;background:var(--navy);color:var(--text);font-family:'Barl
 
 <script>
 // ══════════════════════════════════════════════════════════════
-// DBA HUB v2 — MODULAR EDITION
-// All 57 existing pages untouched. This is a new front door.
+// DBA HUB v2.1 — MODULAR EDITION — PHASE 2
 // ══════════════════════════════════════════════════════════════
 
 const SK_MODULES = 'dba_hub_v2_modules';
+const SK_NOTIF   = 'dba_hub_v2_notif_seen';
 
 // ── MODULE DEFINITIONS ────────────────────────────────────────
-// minLevel: minimum role level to see this module
-// defaultOn: auto-activated for eligible agents (no wizard needed)
 const MODULE_DEFS = [
   {
-    id: 'basics',
-    icon: '🌱',
-    name: 'Getting Started',
-    desc: 'Training, forms, and income calculator',
-    minLevel: 0,
-    defaultOn: true,
-    color: '#2DCA73',
+    id: 'basics', icon: '🌱', name: 'Getting Started',
+    desc: 'Training, forms and income calculator',
+    minLevel: 0, defaultOn: true, color: '#2DCA73',
+    navIcon: '📚', navLabel: 'Training', navHref: 'training.html',
     tools: [
-      { icon:'📚', name:'Training Hub',       sub:'Videos & study guides',      href:'training.html' },
-      { icon:'💰', name:'Income Calculator',  sub:'Project your earnings',      href:'income-calculator.html' },
-      { icon:'📋', name:'Client Prequal',     sub:'Intake form for clients',    href:'prequal.html' },
-      { icon:'🎋', name:'PHP Bamboo',         sub:'Official PHP platform',      href:'https://app.phpbamboo.com/agent/signin', ext:true },
+      { icon:'📚', name:'Training Hub',      sub:'Videos & study guides',     href:'training.html', wide:true },
+      { icon:'💰', name:'Income Calculator', sub:'Project your earnings',     href:'income-calculator.html' },
+      { icon:'📋', name:'Client Prequal',    sub:'Client intake form',        href:'prequal.html' },
+      { icon:'🎋', name:'PHP Bamboo',        sub:'Official PHP platform',     href:'https://app.phpbamboo.com/agent/signin', ext:true },
     ]
   },
   {
-    id: 'my_numbers',
-    icon: '📊',
-    name: 'My Numbers',
-    desc: 'Track activity, progress and promotion path',
-    minLevel: 0,
-    defaultOn: true,
-    color: '#3498DB',
+    id: 'my_numbers', icon: '📊', name: 'My Numbers',
+    desc: 'Track activity, progress and your promotion path',
+    minLevel: 0, defaultOn: true, color: '#3498DB',
+    navIcon: '📞', navLabel: 'Activity', navHref: 'tracker.html',
     tools: [
-      { icon:'📞', name:'Activity Log',       sub:'Log calls & contacts',       href:'tracker.html', wide:true },
-      { icon:'📈', name:'My Progress',        sub:'Promotion path & milestones',href:'promotions.html' },
-      { icon:'🏆', name:'Leaderboard',        sub:'Team rankings',              href:'leaderboard.html' },
-      { icon:'🎯', name:'Rewards',            sub:'Milestone bonuses',          href:'rewards.html' },
+      { icon:'📞', name:'Activity Log',      sub:'Log calls & contacts daily', href:'tracker.html', wide:true },
+      { icon:'🎯', name:'My Promotion',      sub:'Track promotion progress',  href:'md-tracker.html' },
+      { icon:'🏆', name:'Leaderboard',       sub:'Team rankings this week',   href:'agent-leaderboard.html' },
+      { icon:'🎁', name:'Rewards',           sub:'Milestone bonuses',         href:'rewards.html' },
     ]
   },
   {
-    id: 'recruiting',
-    icon: '🤝',
-    name: 'Recruiting',
-    desc: 'Prospects, appointments and Top 25 worksheet',
-    minLevel: 20,
-    defaultOn: false,
-    color: '#E67E22',
+    id: 'recruiting', icon: '🤝', name: 'Recruiting',
+    desc: 'Build your prospect pipeline and schedule appointments',
+    minLevel: 20, defaultOn: false, color: '#E67E22',
+    navIcon: '🤝', navLabel: 'Recruit', navHref: 'top25.html',
     tools: [
-      { icon:'📝', name:'Top 25 Worksheet',  sub:'Your prospect pipeline',     href:'top25.html', wide:true },
-      { icon:'🔍', name:'Recruiting Center',  sub:'Prospects & appointments',   href:'recruiting.html' },
-      { icon:'📅', name:'BOM Tracker',        sub:'Business opportunity mtgs',  href:'bom.html' },
+      { icon:'📝', name:'Top 25 Worksheet', sub:'Your prospect pipeline',    href:'top25.html', wide:true },
+      { icon:'🔍', name:'Recruiting Center', sub:'Prospects & appointments', href:'recruiting.html' },
+      { icon:'📅', name:'BOM Tracker',      sub:'Business opportunity mtgs', href:'bom.html' },
     ]
   },
   {
-    id: 'contest',
-    icon: '🌴',
-    name: 'Contest & Recognition',
-    desc: 'Miami challenge, incentives and leaderboards',
-    minLevel: 30,
-    defaultOn: false,
-    color: '#FF6B35',
+    id: 'contest', icon: '🌴', name: 'Contest & Recognition',
+    desc: 'Miami challenge standings and weekly recognition',
+    minLevel: 30, defaultOn: false, color: '#FF6B35',
+    navIcon: '🌴', navLabel: 'Miami', navHref: 'miami-tracker.html',
     tools: [
-      { icon:'🌴', name:'Miami Tracker',      sub:'Road to Miami 2026',         href:'miami-tracker.html', wide:true, badge:'NEW' },
-      { icon:'🏅', name:'Incentives',         sub:'Contests & prizes',          href:'incentives.html' },
-      { icon:'⭐', name:'Recognitions',        sub:'Thankful Thursday',          href:'recognitions.html' },
+      { icon:'🌴', name:'Miami Tracker',    sub:'Road to Miami 2026',         href:'miami-tracker.html', wide:true, badge:'LIVE' },
+      { icon:'⭐', name:'Thankful Thursday', sub:'Weekly recognition show',   href:'recognitions.html' },
+      { icon:'🏅', name:'Incentives',        sub:'Contests & prizes',         href:'incentives.html' },
     ]
   },
   {
-    id: 'team_builder',
-    icon: '🏗',
-    name: 'Team Builder',
-    desc: 'MD tracker, roster and team communications',
-    minLevel: 40,
-    defaultOn: false,
-    color: '#9B59B6',
+    id: 'team_builder', icon: '🏗', name: 'Team Builder',
+    desc: 'Run promotion trackers, manage your team and communicate',
+    minLevel: 40, defaultOn: false, color: '#9B59B6',
+    navIcon: '👥', navLabel: 'Team', navHref: 'messages.html',
     tools: [
-      { icon:'📈', name:'MD Promo Tracker',  sub:'90-day promotion runs',      href:'md-tracker.html', wide:true },
-      { icon:'👥', name:'Agent Roster',      sub:'Team directory',             href:'agents.html' },
-      { icon:'💬', name:'Team Messages',     sub:'Announcements & DMs',        href:'messages.html' },
-      { icon:'🏆', name:'Thankful Thursday', sub:'Weekly recognition show',    href:'recognitions.html' },
+      { icon:'📈', name:'MD Promo Tracker', sub:'90-day promotion runs',     href:'md-tracker.html', wide:true },
+      { icon:'🌴', name:'Miami Tracker',    sub:'Official contest standings', href:'miami-tracker.html' },
+      { icon:'💬', name:'Team Messages',    sub:'Announcements & DMs',       href:'messages.html' },
+      { icon:'⭐', name:'Thankful Thursday', sub:'Weekly recognition',        href:'recognitions.html' },
     ]
   },
   {
-    id: 'operations',
-    icon: '⚙️',
-    name: 'Operations',
-    desc: 'Agency OS, analytics and admin tools',
-    minLevel: 60,
-    defaultOn: false,
-    color: '#C9A84C',
+    id: 'operations', icon: '⚙️', name: 'Operations',
+    desc: 'Agency analytics, roster and admin tools',
+    minLevel: 60, defaultOn: false, color: '#C9A84C',
+    navIcon: '⚙️', navLabel: 'Ops', navHref: 'roster-admin.html',
     tools: [
-      { icon:'⚙️', name:'Agency OS',         sub:'Leadership operations',      href:'os.html', wide:true },
-      { icon:'📊', name:'Analytics',         sub:'Lead & campaign data',       href:'analytics.html' },
-      { icon:'👥', name:'Roster Admin',      sub:'Manage agent records',       href:'roster-admin.html' },
-      { icon:'🔗', name:'Monday Sync',       sub:'Board integration',          href:'monday-setup.html' },
+      { icon:'👥', name:'Roster Admin',     sub:'Manage agent records',      href:'roster-admin.html', wide:true },
+      { icon:'📊', name:'Analytics',        sub:'Lead & campaign data',      href:'analytics.html' },
+      { icon:'🔗', name:'Monday Sync',      sub:'Board integration',         href:'monday-setup.html' },
+      { icon:'💬', name:'Messages',         sub:'Team communications',       href:'messages.html' },
     ]
   },
 ];
 
-// ── QUICK LINKS (always visible) ──────────────────────────────
+// Quick links always visible in scroll strip
 const QUICK_LINKS = [
-  { label:'PHP Bamboo',           href:'https://app.phpbamboo.com/agent/signin' },
-  { label:'🔗 Integrity Connect', href:'https://integrity.com/integrityconnect/' },
-  { label:'Schedule 1-on-1',      href:'schedule-1on1.html' },
-  { label:'Client Survey',        href:'survey.html' },
+  { label:'🎋 PHP Bamboo',      href:'https://app.phpbamboo.com/agent/signin', ext:true },
+  { label:'📋 Prequal Form',    href:'prequal.html' },
+  { label:'📞 Log Activity',    href:'tracker.html' },
+  { label:'🌴 Miami Tracker',   href:'miami-tracker.html' },
 ];
 
-// ── LOAD / SAVE MODULE PREFS ──────────────────────────────────
+// ── STORE ─────────────────────────────────────────────────────
 function loadModulePrefs(agentId) {
-  try {
-    const raw = localStorage.getItem(SK_MODULES);
-    if(!raw) return null;
-    const all = JSON.parse(raw);
-    return all[agentId] || null;
-  } catch { return null; }
+  try { const r=JSON.parse(localStorage.getItem(SK_MODULES)||'{}'); return r[agentId]||null; } catch { return null; }
 }
 function saveModulePrefs(agentId, prefs) {
-  try {
-    const raw = localStorage.getItem(SK_MODULES);
-    const all = raw ? JSON.parse(raw) : {};
-    all[agentId] = prefs;
-    localStorage.setItem(SK_MODULES, JSON.stringify(all));
-  } catch {}
+  try { const r=JSON.parse(localStorage.getItem(SK_MODULES)||'{}'); r[agentId]=prefs; localStorage.setItem(SK_MODULES,JSON.stringify(r)); } catch {}
 }
 function getActiveModules(session) {
-  const prefs = loadModulePrefs(session.agentId);
-  if(prefs) return prefs;
-  // Default: all eligible modules that are defaultOn
-  return MODULE_DEFS
-    .filter(m => session.level >= m.minLevel && m.defaultOn)
-    .map(m => m.id);
+  const p = loadModulePrefs(session.agentId);
+  if(p) return p;
+  return MODULE_DEFS.filter(m => session.level >= m.minLevel && m.defaultOn).map(m => m.id);
+}
+
+// ── BOTTOM NAV — built from top 4 active modules ──────────────
+function renderBottomNav(session) {
+  const activeIds = getActiveModules(session);
+  const activeMods = MODULE_DEFS.filter(m => activeIds.includes(m.id) && session.level >= m.minLevel);
+
+  // Always: Home + up to 3 from active modules
+  const navMods = activeMods.slice(0, 3);
+  const manageAvail = session.level >= 40;
+
+  let html = `<a class="bn-item active" href="hub-v2.html">
+    <div class="bn-icon">🏠</div><span>Home</span>
+  </a>`;
+
+  navMods.forEach(m => {
+    html += `<a class="bn-item" href="${m.navHref}">
+      <div class="bn-icon">${m.navIcon}</div><span>${m.navLabel}</span>
+    </a>`;
+  });
+
+  if(manageAvail && navMods.length < 3) {
+    html += `<a class="bn-item" href="#" onclick="openManage();return false;">
+      <div class="bn-icon">⚙️</div><span>Manage</span>
+    </a>`;
+  } else if(manageAvail) {
+    // Replace last nav item with manage
+    html = html.split('<a class="bn-item" href="').slice(0,-1).join('<a class="bn-item" href="') + 
+      `</a><a class="bn-item" href="#" onclick="openManage();return false;"><div class="bn-icon">⚙️</div><span>Manage</span></a>`;
+    // simpler: just always add manage at end if director+
+  }
+
+  // Always 4 items: home + 2 module shortcuts + manage(if eligible) or 3 shortcuts
+  const el = document.getElementById('bottom-nav');
+  if(el) {
+    const items = ['home', ...navMods.map(m=>m.id), manageAvail?'manage':''].filter(Boolean).slice(0,4);
+    let out = `<a class="bn-item active" href="hub-v2.html"><div class="bn-icon">🏠</div><span>Home</span></a>`;
+    activeMods.slice(0, manageAvail ? 2 : 3).forEach(m => {
+      out += `<a class="bn-item" href="${m.navHref}"><div class="bn-icon">${m.navIcon}</div><span>${m.navLabel}</span></a>`;
+    });
+    if(manageAvail) {
+      out += `<a class="bn-item" href="#" onclick="openManage();return false;"><div class="bn-icon">⚙️</div><span>Manage</span></a>`;
+    } else if(activeMods.length < 3) {
+      out += `<a class="bn-item" href="#" onclick="openWizard();return false;"><div class="bn-icon">🧩</div><span>My Tools</span></a>`;
+    }
+    el.innerHTML = out;
+  }
 }
 
 // ── RENDER HUB ────────────────────────────────────────────────
 function renderHub(session) {
   const activeIds = getActiveModules(session);
-  const activeModules = MODULE_DEFS.filter(m =>
-    activeIds.includes(m.id) && session.level >= m.minLevel
-  );
-
+  const activeMods = MODULE_DEFS.filter(m => activeIds.includes(m.id) && session.level >= m.minLevel);
   const main = document.getElementById('main-content');
 
-  if(!activeModules.length) {
+  if(!activeMods.length) {
     main.innerHTML = `<div class="empty-state">
       <div class="empty-icon">🧩</div>
-      <div class="empty-title">No modules active</div>
-      <div class="empty-sub">Tap the button below to pick your tools.<br>Your hub will show only what you need.</div>
-      <div class="empty-btn" onclick="openWizard()">Choose My Tools</div>
+      <div class="empty-title">Choose Your Tools</div>
+      <div class="empty-sub">Tap below to pick the tools you want.<br>Your hub will show only what you need.</div>
+      <div class="empty-btn" onclick="openWizard()">Set Up My Hub</div>
     </div>`;
     return;
   }
 
   // Quick links strip
   let html = `<div class="quick-row">
-    <div class="quick-pill gold" onclick="openWizard()">🧩 My Tools</div>
-    ${QUICK_LINKS.map(l=>`<a class="quick-pill" href="${l.href}" ${l.href.startsWith('http')?'target="_blank"':''}>${l.label}</a>`).join('')}
+    <div class="quick-pill gold" onclick="openWizard()" style="cursor:pointer;">🧩 My Tools</div>
+    ${QUICK_LINKS.map(l=>`<a class="quick-pill" href="${l.href}" ${l.ext?'target="_blank"':''}>${l.label}</a>`).join('')}
   </div>`;
 
-  // Modules
-  activeModules.forEach(mod => {
+  // Module sections
+  activeMods.forEach(mod => {
     html += `<div class="module-section">
       <div class="mod-hdr">
         <div class="mod-icon">${mod.icon}</div>
         <div class="mod-title">${mod.name}</div>
       </div>
       <div class="tool-grid">`;
-
     mod.tools.forEach(tool => {
-      const cssColor = `--mod-color:${mod.color};`;
-      const extIcon = tool.ext ? `<span class="tc-ext">↗</span>` : '';
+      const style = `--mod-color:${mod.color};`;
       const badge = tool.badge ? `<span class="tc-new">${tool.badge}</span>` : '';
+      const extIcon = tool.ext ? `<span class="tc-ext">↗</span>` : '';
       const target = tool.ext ? 'target="_blank"' : '';
-
       if(tool.wide) {
-        html += `<a class="tool-card wide" href="${tool.href}" ${target} style="${cssColor}">
+        html += `<a class="tool-card wide" href="${tool.href}" ${target} style="${style}">
           ${badge}${extIcon}
           <div class="tc-icon">${tool.icon}</div>
-          <div class="tc-body">
-            <div class="tc-name">${tool.name}</div>
-            <div class="tc-sub">${tool.sub}</div>
-          </div>
+          <div class="tc-body"><div class="tc-name">${tool.name}</div><div class="tc-sub">${tool.sub}</div></div>
         </a>`;
       } else {
-        html += `<a class="tool-card" href="${tool.href}" ${target} style="${cssColor}">
+        html += `<a class="tool-card" href="${tool.href}" ${target} style="${style}">
           ${badge}${extIcon}
           <div class="tc-icon">${tool.icon}</div>
           <div class="tc-name">${tool.name}</div>
@@ -491,62 +493,50 @@ function renderHub(session) {
   });
 
   main.innerHTML = html;
+  renderBottomNav(session);
 }
 
-// ── ONBOARDING WIZARD ─────────────────────────────────────────
+// ── WIZARD ────────────────────────────────────────────────────
 function openWizard() {
   const session = AUTH.getSession();
   const activeIds = getActiveModules(session);
-
-  // Build module list
   const eligible = MODULE_DEFS.filter(m => session.level >= m.minLevel);
   const locked   = MODULE_DEFS.filter(m => session.level < m.minLevel);
 
-  let html = eligible.map(m => `
-    <div class="wiz-mod ${activeIds.includes(m.id) ? 'selected' : ''}"
-      id="wm-${m.id}" onclick="toggleWizMod('${m.id}')">
-      <div class="wiz-mod-icon">${m.icon}</div>
-      <div class="wiz-mod-body">
-        <div class="wiz-mod-name">${m.name}</div>
-        <div class="wiz-mod-desc">${m.desc}</div>
-      </div>
-      <div class="wiz-mod-check">${activeIds.includes(m.id) ? '✓' : ''}</div>
-    </div>`).join('');
-
-  if(locked.length) {
-    html += `<div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--sub);
-      text-transform:uppercase;letter-spacing:.08em;margin:10px 0 6px;">Unlocks as you grow</div>`;
-    html += locked.map(m => `
-      <div class="wiz-mod locked">
-        <div class="wiz-mod-icon">${m.icon}</div>
+  document.getElementById('wiz-module-list').innerHTML =
+    eligible.map(m => `
+      <div class="wiz-mod ${activeIds.includes(m.id)?'selected':''}" id="wm-${m.id}" onclick="toggleWizMod('${m.id}')">
+        <div class="wiz-mod-icon" style="background:${m.color}18;">${m.icon}</div>
         <div class="wiz-mod-body">
           <div class="wiz-mod-name">${m.name}</div>
           <div class="wiz-mod-desc">${m.desc}</div>
-          <span class="wiz-level-badge">🔒 Level ${m.minLevel}+</span>
         </div>
-      </div>`).join('');
-  }
+        <div class="wiz-mod-check ${activeIds.includes(m.id)?'checked':''}">${activeIds.includes(m.id)?'✓':''}</div>
+      </div>`).join('') +
+    (locked.length ? `<div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--sub);text-transform:uppercase;letter-spacing:.08em;margin:12px 0 6px;">Unlocks as you grow</div>
+      ${locked.map(m=>`<div class="wiz-mod locked">
+        <div class="wiz-mod-icon" style="background:rgba(107,124,147,.08);">${m.icon}</div>
+        <div class="wiz-mod-body">
+          <div class="wiz-mod-name">${m.name}</div>
+          <div class="wiz-mod-desc">${m.desc}</div>
+          <span class="wiz-level-badge">🔒 ${Object.values(ROLES||{}).find(r=>r.level===m.minLevel)?.label||'Level '+m.minLevel}+</span>
+        </div>
+      </div>`).join('')}` : '');
 
-  document.getElementById('wiz-module-list').innerHTML = html;
   document.getElementById('wizard-overlay').style.display = 'flex';
 }
 
 function toggleWizMod(id) {
   const el = document.getElementById(`wm-${id}`);
-  const check = el.querySelector('.wiz-mod-check');
-  if(el.classList.contains('selected')) {
-    el.classList.remove('selected');
-    check.textContent = '';
-  } else {
-    el.classList.add('selected');
-    check.textContent = '✓';
-  }
+  const ch = el.querySelector('.wiz-mod-check');
+  el.classList.toggle('selected');
+  ch.classList.toggle('checked');
+  ch.textContent = el.classList.contains('selected') ? '✓' : '';
 }
 
 function saveWizard() {
   const session = AUTH.getSession();
-  const selected = [...document.querySelectorAll('.wiz-mod.selected')]
-    .map(el => el.id.replace('wm-', ''));
+  const selected = [...document.querySelectorAll('.wiz-mod.selected')].map(el=>el.id.replace('wm-',''));
   saveModulePrefs(session.agentId, selected);
   document.getElementById('wizard-overlay').style.display = 'none';
   renderHub(session);
@@ -555,75 +545,88 @@ function saveWizard() {
 
 function skipWizard() {
   const session = AUTH.getSession();
-  const all = MODULE_DEFS.filter(m => session.level >= m.minLevel).map(m => m.id);
+  const all = MODULE_DEFS.filter(m=>session.level>=m.minLevel).map(m=>m.id);
   saveModulePrefs(session.agentId, all);
   document.getElementById('wizard-overlay').style.display = 'none';
   renderHub(session);
   updateHeroBadges(session, all);
 }
 
-// ── MANAGE (Director+) ────────────────────────────────────────
+// ── MANAGE PANEL ──────────────────────────────────────────────
 function openManage() {
   const session = AUTH.getSession();
   const body = document.getElementById('manage-body');
+  const activeIds = getActiveModules(session);
 
-  // My own modules section
-  let html = `<div class="manage-section-title" style="margin-bottom:12px;">Your modules</div>
-    <div style="background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:20px;">
-    ${MODULE_DEFS.map(m => {
+  // My modules section
+  let html = `<div class="manage-section-title">Your Active Tools</div>
+    <div style="background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:4px 14px;margin-bottom:20px;">
+    ${MODULE_DEFS.map(m=>{
       const eligible = session.level >= m.minLevel;
-      const activeIds = getActiveModules(session);
       const isOn = activeIds.includes(m.id);
       return `<div class="mod-toggle-row">
         <div>
           <div class="mod-toggle-label">${m.icon} ${m.name}</div>
           <div class="mod-toggle-sub">${m.desc}</div>
         </div>
-        <div class="toggle-switch ${eligible ? (isOn ? 'on':'') : 'locked'}"
-          id="mytog-${m.id}"
-          onclick="${eligible ? `toggleMyModule('${m.id}')` : ''}">
+        <div class="toggle-switch${eligible?(isOn?' on':''):' locked'}"
+          id="mytog-${m.id}" ${eligible?`onclick="toggleMyModule('${m.id}')"`:''}
+          title="${eligible?'':'Unlock at level '+m.minLevel}">
           <div class="toggle-knob"></div>
         </div>
       </div>`;
     }).join('')}
     </div>`;
 
-  // Team section — agents in downline
+  // Team section
   const myAgents = getDownlineAgents(session);
   if(myAgents.length) {
-    html += `<div class="manage-section-title" style="margin-top:4px;margin-bottom:12px;">Team members (${myAgents.length})</div>`;
-    html += myAgents.map(agent => {
-      const agentPrefs = getActiveModules({agentId: agent.id, level: ROLES[agent.role]?.level || 0});
+    html += `<div class="manage-section-title" style="margin-top:4px;">Team Members (${myAgents.length})</div>
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--sub);margin-bottom:10px;line-height:1.6;">
+        Toggle which tools each agent sees. Changes take effect on their next login.
+      </div>`;
+
+    myAgents.forEach(agent => {
+      const agLevel = ROLES[agent.role]?.level || 0;
+      const agentSession = { agentId: agent.id, level: agLevel };
+      const agActive = getActiveModules(agentSession);
+      const eligMods = MODULE_DEFS.filter(m => agLevel >= m.minLevel);
       const initials = agent.name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
-      const eligibleMods = MODULE_DEFS.filter(m => (ROLES[agent.role]?.level || 0) >= m.minLevel);
-      return `<div class="agent-row" id="ar-${agent.id}">
+      const roleColor = ROLES[agent.role]?.color || '#6B7C93';
+
+      html += `<div class="agent-row" id="ar-${agent.id}">
         <div class="agent-row-hdr" onclick="toggleAgentRow('${agent.id}')">
-          <div class="agent-avatar">${initials}</div>
+          <div class="agent-avatar" style="background:${roleColor}22;color:${roleColor};">${initials}</div>
           <div class="agent-info">
             <div class="agent-name">${agent.name}</div>
-            <div class="agent-role-tag">${ROLES[agent.role]?.label || agent.role} · ${agent.phpId || '—'}</div>
+            <div class="agent-role-tag">${ROLES[agent.role]?.label||agent.role}${agent.phpId?' · PHP '+agent.phpId:''}</div>
           </div>
-          <span class="agent-chevron">▾</span>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--sub);">${agActive.length} tools</div>
+            <span class="agent-chevron">▾</span>
+          </div>
         </div>
         <div class="agent-modules">
-          ${eligibleMods.map(m => {
-            const isOn = agentPrefs.includes(m.id);
+          ${eligMods.length ? eligMods.map(m=>{
+            const isOn = agActive.includes(m.id);
             return `<div class="mod-toggle-row">
               <div>
                 <div class="mod-toggle-label">${m.icon} ${m.name}</div>
                 <div class="mod-toggle-sub">${m.desc}</div>
               </div>
-              <div class="toggle-switch ${isOn ? 'on' : ''}"
-                id="atog-${agent.id}-${m.id}"
+              <div class="toggle-switch ${isOn?'on':''}" id="atog-${agent.id}-${m.id}"
                 onclick="toggleAgentModule('${agent.id}','${m.id}')">
                 <div class="toggle-knob"></div>
               </div>
             </div>`;
-          }).join('')}
-          ${eligibleMods.length === 0 ? '<div style="font-family:\'DM Mono\',monospace;font-size:10px;color:var(--sub);padding:8px 0;">No eligible modules for this role.</div>' : ''}
+          }).join('') : `<div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--sub);padding:8px 0;">No eligible modules for this role yet.</div>`}
         </div>
       </div>`;
-    }).join('');
+    });
+  } else {
+    html += `<div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--sub);text-align:center;padding:24px 0;">
+      No agents in your downline yet.
+    </div>`;
   }
 
   body.innerHTML = html;
@@ -634,88 +637,108 @@ function closeManage() {
   document.getElementById('manage-overlay').classList.remove('open');
 }
 
-function toggleAgentRow(agentId) {
-  const el = document.getElementById(`ar-${agentId}`);
-  el.classList.toggle('open');
+function toggleAgentRow(id) {
+  document.getElementById(`ar-${id}`)?.classList.toggle('open');
 }
 
 function toggleMyModule(moduleId) {
   const session = AUTH.getSession();
   const active = getActiveModules(session);
   const idx = active.indexOf(moduleId);
-  if(idx > -1) active.splice(idx,1); else active.push(moduleId);
+  if(idx>-1) active.splice(idx,1); else active.push(moduleId);
   saveModulePrefs(session.agentId, active);
   const tog = document.getElementById(`mytog-${moduleId}`);
-  tog.classList.toggle('on');
+  if(tog) tog.classList.toggle('on');
   renderHub(session);
   updateHeroBadges(session, active);
 }
 
 function toggleAgentModule(agentId, moduleId) {
-  const agentObj = typeof AGENTS !== 'undefined' ? AGENTS.find(a => a.id === agentId) : null;
-  const agentSession = {
-    agentId,
-    level: agentObj ? (ROLES[agentObj.role]?.level || 0) : 0
-  };
+  const agentObj = typeof AGENTS!=='undefined' ? AGENTS.find(a=>a.id===agentId) : null;
+  const agLevel = agentObj ? (ROLES[agentObj.role]?.level||0) : 0;
+  const agentSession = { agentId, level: agLevel };
   const active = getActiveModules(agentSession);
   const idx = active.indexOf(moduleId);
-  if(idx > -1) active.splice(idx,1); else active.push(moduleId);
+  if(idx>-1) active.splice(idx,1); else active.push(moduleId);
   saveModulePrefs(agentId, active);
   const tog = document.getElementById(`atog-${agentId}-${moduleId}`);
   if(tog) tog.classList.toggle('on');
+  // Update tool count badge
+  const row = document.getElementById(`ar-${agentId}`);
+  const countEl = row?.querySelector('.agent-row-hdr [style*="tools"]');
+  if(countEl) countEl.textContent = active.length + ' tools';
 }
 
-// Get agents whose uplineId === this session's agentId (direct downline)
 function getDownlineAgents(session) {
-  if(typeof AGENTS === 'undefined') return [];
-  return AGENTS.filter(a =>
-    a.uplineId === session.agentId ||
-    (session.level >= 95) // admins see everyone
-  ).slice(0,50);
+  if(typeof AGENTS==='undefined') return [];
+  if(session.level >= 95) return AGENTS.filter(a=>a.id!==session.agentId).slice(0,60);
+  return AGENTS.filter(a=>a.uplineId===session.agentId);
 }
 
 // ── HERO BADGES ───────────────────────────────────────────────
 function updateHeroBadges(session, activeIds) {
   const bar = document.getElementById('hero-bar');
-  const activeMods = MODULE_DEFS.filter(m => activeIds.includes(m.id));
-  bar.innerHTML = activeMods.map(m =>
-    `<div class="hb-chip active">${m.icon} ${m.name}</div>`
-  ).join('') + `<div class="hb-chip" onclick="openWizard()" style="cursor:pointer;">+ Add tools</div>`;
+  if(!bar) return;
+  const mods = MODULE_DEFS.filter(m=>activeIds.includes(m.id));
+  bar.innerHTML = mods.map(m=>`<div class="hb-chip active">${m.icon} ${m.name}</div>`).join('') +
+    `<div class="hb-chip" onclick="openWizard()" style="cursor:pointer;">+ Edit</div>`;
+}
+
+// ── NOTIFICATIONS ─────────────────────────────────────────────
+function showNotif(text) {
+  const el = document.getElementById('notif-strip');
+  const txt = document.getElementById('notif-text');
+  if(!el || !txt) return;
+  txt.textContent = text;
+  el.style.display = 'flex';
+}
+
+function checkNotifications(session) {
+  // Show Miami contest reminder during contest period
+  const now = new Date();
+  const contestStart = new Date('2026-09-01');
+  const contestEnd = new Date('2026-11-30');
+  if(now >= contestStart && now <= contestEnd) {
+    const seen = localStorage.getItem(SK_NOTIF + '_miami');
+    if(!seen) {
+      showNotif('🌴 Miami Challenge is LIVE — Sep 1 to Nov 30. Check your standing!');
+      localStorage.setItem(SK_NOTIF + '_miami', '1');
+    }
+  }
 }
 
 // ── INIT ──────────────────────────────────────────────────────
 (function init() {
-  if(!AUTH.require('hub.html')) return;
+  AUTH.require();
   const session = AUTH.getSession();
+  if(!session) return;
 
-  // Topbar
-  const hour = new Date().getHours();
-  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
-  document.getElementById('tb-greeting').textContent = `${greeting}, ${session.name.split(' ')[0]}`;
+  // Topbar greeting
+  const hr = new Date().getHours();
+  document.getElementById('tb-greeting').textContent =
+    (hr<12?'Good morning':hr<17?'Good afternoon':'Good evening') + ', ' + session.name.split(' ')[0];
 
   // Hero
-  document.getElementById('hero-name').textContent = session.name.split(' ')[0] + '\'s Hub';
-  document.getElementById('hero-role').textContent = ROLES[session.role]?.label || session.role;
+  document.getElementById('hero-name').textContent = session.name.split(' ')[0] + '\u2019s Hub';
+  document.getElementById('hero-role').textContent = (typeof ROLES!=='undefined' && ROLES[session.role]?.label) || session.role;
   document.getElementById('hero-date').textContent = new Date().toLocaleDateString('en-US',
     {weekday:'long', month:'long', day:'numeric', year:'numeric'});
 
-  // Show manage button for Director+
-  if(session.level >= 40) {
-    document.getElementById('tb-manage-btn').style.display = 'inline-block';
-  }
+  // Manage button (Director+)
+  if(session.level >= 40) document.getElementById('tb-manage-btn').style.display = 'inline-block';
 
   // Hero badges
-  const active = getActiveModules(session);
-  updateHeroBadges(session, active);
+  updateHeroBadges(session, getActiveModules(session));
 
-  // First login wizard — show if no prefs saved yet
-  const prefs = loadModulePrefs(session.agentId);
-  if(!prefs) {
-    // Small delay so hub renders first
-    setTimeout(() => openWizard(), 400);
+  // Notifications
+  checkNotifications(session);
+
+  // First-login wizard — show if no prefs saved
+  if(!loadModulePrefs(session.agentId)) {
+    setTimeout(()=>openWizard(), 350);
   }
 
-  // Render hub
+  // Render
   renderHub(session);
 })();
 </script>
