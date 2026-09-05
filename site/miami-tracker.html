@@ -238,8 +238,8 @@ body{background:var(--navy);color:var(--text);font-family:'Barlow',sans-serif;mi
 <!-- STATUS BAR -->
 <div class="status-bar">
   <div class="status-item">
-    <span class="status-badge badge-provisional" id="contest-status-badge">PROVISIONAL</span>
-    &nbsp; Contest opens Sep 1, 2026
+    <span class="status-badge badge-live" id="contest-status-badge">PROVISIONAL</span>
+    &nbsp; Sep 1 – Nov 30, 2026 · 6 of 14 categories scored
   </div>
   <div class="status-item">
     Official data: <strong id="official-source-lbl">contest.agencycalculators.com</strong>
@@ -521,8 +521,8 @@ function initStore() {
   if(!s.config)           s.config = { freq:'monday', alertTop10:true, alertTop5:true, alertTop2:true, alertRules:true };
   if(!s.rulesHash)        s.rulesHash = null;
   if(!s.rulesLastCheck)   s.rulesLastCheck = null;
-  if(!s.lastCheck)        s.lastCheck = null;
-  if(!s.lastChange)       s.lastChange = null;
+  if(!s.lastCheck)        s.lastCheck = '2026-09-04T07:00:00.000Z';
+  if(!s.lastChange)       s.lastChange = '2026-09-04T07:00:00.000Z';
   return s;
 }
 
@@ -531,21 +531,28 @@ function seedKnownRegistrants(store) {
   if(store.snapshots.length > 0) return; // already seeded
   const now = new Date().toISOString();
   const known = [
-    { rank:null, name:'BLESSING IKEJEMBA',     bizCode:'82854',   joined:'2026-08-27', score:null, div:'FMD', prev:null },
-    { rank:null, name:'Cherryjane Okeke',       bizCode:'1069795', joined:'2026-08-27', score:null, div:'FMD', prev:null },
-    { rank:null, name:'Joe & Crystal Walker',   bizCode:'69012',   joined:'2026-08-26', score:null, div:'FMD', prev:null },
-    { rank:null, name:'Aaron Mputu',            bizCode:'00043',   joined:'2026-08-26', score:null, div:'FMD', prev:null },
-    { rank:null, name:'Obi & Jennifer Iroezi',  bizCode:'10146',   joined:'2026-08-26', score:null, div:'FMD', prev:null },
-    { rank:null, name:'Alexandria Edwards',     bizCode:'1014829', joined:'2026-08-26', score:null, div:'FMD', prev:null },
-    { rank:null, name:'Sasha Dukes',            bizCode:'1251925', joined:'2026-08-26', score:null, div:'FMD', prev:null },
+    { rank:1,  name:'Aaron Mputu',                   bizCode:'00043',   score:33.5, div:'FMD', prev:1,    move:'–',  updated:'Sep 1' },
+    { rank:2,  name:'Earnest & Sharon Sears Jr',      bizCode:'16650',   score:34.5, div:'FMD', prev:4,    move:'▲2', updated:'Sep 4' },
+    { rank:3,  name:'Sasha Dukes',                    bizCode:'1251925', score:36.5, div:'FMD', prev:5,    move:'▲2', updated:'Sep 4' },
+    { rank:4,  name:'Alexandria Edwards',              bizCode:'1014829', score:37.5, div:'FMD', prev:2,    move:'▼2', updated:'Sep 1' },
+    { rank:5,  name:'Obi & Jennifer Iroezi',          bizCode:'10146',   score:42.5, div:'FMD', prev:3,    move:'▼2', updated:'Sep 2' },
+    { rank:6,  name:'BLESSING IKEJEMBA',              bizCode:'82854',   score:49.5, div:'FMD', prev:null, move:'–',  updated:'–'    },
+    { rank:6,  name:'Cherryjane Okeke',               bizCode:'1069795', score:49.5, div:'FMD', prev:null, move:'–',  updated:'–'    },
+    { rank:6,  name:'Emrin Bodian',                   bizCode:'33917',   score:49.5, div:'FMD', prev:null, move:'–',  updated:'–'    },
+    { rank:6,  name:'Mayra Munguia',                  bizCode:'79830',   score:49.5, div:'FMD', prev:null, move:'–',  updated:'–'    },
+    { rank:6,  name:'Alan & Alicia Diaz',             bizCode:'39414',   score:49.5, div:'FMD', prev:null, move:'–',  updated:'–'    },
+    { rank:6,  name:'Rodney and Melanie Flowers',     bizCode:'1217491', score:49.5, div:'FMD', prev:null, move:'–',  updated:'–'    },
+    { rank:6,  name:'Nkechinyere Ezeikpe',            bizCode:'1374119', score:49.5, div:'FMD', prev:null, move:'–',  updated:'–'    },
+    { rank:6,  name:'Joe & Crystal Walker',           bizCode:'69012',   score:49.5, div:'FMD', prev:null, move:'–',  updated:'–'    },
+    { rank:6,  name:'Diana Hernandez',                bizCode:'277022',  score:49.5, div:'FMD', prev:null, move:'–',  updated:'–'    },
   ];
   store.snapshots.push({
     ts: now,
-    source: 'seed',
+    source: 'seed_live',
     status: 'provisional',
-    note: 'Pre-contest registration — contest opens Sep 1, 2026. No categories scored yet.',
+    note: 'Live standings as of Sep 4, 2026 · 6 of 14 categories scored · FMD division',
     contestants: known,
-    categoriesScored: 0,
+    categoriesScored: 6,
     totalCategories: 14,
   });
   store.lastCheck = now;
@@ -559,8 +566,26 @@ function seedKnownRegistrants(store) {
   store.events.push({
     ts: now,
     type:'seed',
-    icon:'📋',
-    text:'Initial leaderboard snapshot loaded. 7 contestants registered. Contest opens September 1, 2026.',
+    icon:'🌴',
+    text:'Live standings loaded — Sep 4, 2026. 14 contestants. Aaron Mputu leads at 33.5 golf score. Obi & Jennifer Iroezi at #5 (42.5). 6 of 14 categories scored.',
+  });
+  store.events.push({
+    ts: now,
+    type:'movement',
+    icon:'🔥',
+    text:'Obi & Jennifer Iroezi moved from #3 to #5 · ▼2 positions since Sep 3.',
+  });
+  store.events.push({
+    ts: now,
+    type:'movement',
+    icon:'🔥',
+    text:'Earnest & Sharon Sears Jr moved from #4 to #2 · ▲2 positions since Sep 3.',
+  });
+  store.events.push({
+    ts: now,
+    type:'alert',
+    icon:'📊',
+    text:'Category leaders: Personal Recruits & Paid Points → Aaron Mputu. Assoc With App → Earnest & Sharon Sears Jr. Licensed & Take a Leg Deep → Joe & Crystal Walker.',
   });
   saveStore(store);
 }
@@ -625,7 +650,7 @@ function renderHeroStats(store) {
   const latest = store.snapshots[store.snapshots.length - 1];
   const matched = Object.keys(store.matches).length;
   document.getElementById('stat-days').textContent = daysLeft();
-  document.getElementById('stat-registered').textContent = latest?.contestants?.length || 7;
+  document.getElementById('stat-registered').textContent = latest?.contestants?.length || 14;
   document.getElementById('stat-dynasty').textContent = matched;
   document.getElementById('stat-lastcheck').textContent =
     store.lastCheck ? fmtTs(store.lastCheck).split(' ')[0] : '—';
