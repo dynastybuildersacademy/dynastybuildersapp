@@ -93,6 +93,8 @@ select option{background:var(--navy-mid);}
   <div class="tab" onclick="switchTab('mindset',this)">🧠 Mindset</div>
   <div class="tab" onclick="switchTab('consciousness',this)">⬆ Power vs Force</div>
   <div class="tab" onclick="switchTab('roleplay',this)">🎭 AI Role-Play</div>
+  <div class="tab" onclick="switchTab('bookclub',this)">📚 Book Club</div>
+  <div class="tab" onclick="switchTab('teambuilder',this)">🏗 Team Builder</div>
 </div>
 <div class="content">
 
@@ -172,6 +174,42 @@ select option{background:var(--navy-mid);}
     </a>
   </div>
   <div id="consciousness-modules"></div>
+</div>
+
+
+<!-- BOOK CLUB -->
+<div class="panel" id="panel-bookclub">
+  <div class="page-title">📚 Book Club & Reading Reports</div>
+  <div class="page-sub">The DBA library of transformational books. Work through these in order — each one will compound your results. Write your key insight after each chapter and share it with your team.</div>
+
+  <div class="rp-card" style="margin-bottom:16px;">
+    <div class="rp-card-title">⬆ Power vs Force — Dr. David Hawkins</div>
+    <p style="font-size:13px;line-height:1.8;color:rgba(250,246,238,.9);margin-bottom:10px;">
+      The foundational DBA book. Every leader, every agent. Hawkins calibrated 17 levels of human consciousness on a scale from 1–1000 and showed that Force depletes while Power sustains. The shift from 175 (Pride) to 200 (Courage) is the biggest career leap you'll ever make.
+    </p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <a href="consciousness-assessment.html" style="display:inline-block;background:linear-gradient(135deg,#C9A84C,#E8C97A);color:#0A1628;font-weight:700;font-family:'Barlow Condensed',sans-serif;font-size:14px;letter-spacing:.04em;padding:9px 20px;border-radius:8px;text-decoration:none;">⬆ Take the Assessment</a>
+      <a href="training.html#consciousness" onclick="setTimeout(()=>switchTab('consciousness',document.querySelector('.tab:nth-child(7)')),100)" style="display:inline-block;background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.3);color:#E8C97A;font-weight:700;font-family:'Barlow Condensed',sans-serif;font-size:14px;padding:9px 20px;border-radius:8px;text-decoration:none;">📖 Study Guide →</a>
+    </div>
+  </div>
+
+  <div id="bookclub-modules"></div>
+</div>
+
+
+<!-- TEAM BUILDER -->
+<div class="panel" id="panel-teambuilder">
+  <div class="page-title">🏗 Team Builder Training</div>
+  <div class="page-sub">For Directors and above. How to build, lead, and duplicate a high-performing team. These principles separate agents who produce from leaders who build legacies.</div>
+
+  <div class="rp-card" style="margin-bottom:20px;">
+    <div class="rp-card-title">🎯 The DBA Leadership Standard</div>
+    <p style="font-size:13px;line-height:1.8;color:rgba(250,246,238,.9);">
+      Great leaders don't manage people — they build systems, raise calibration, and create environments where others can become their best selves. Your team will never sustainably outperform its leader's level of consciousness, work ethic, or belief.
+    </p>
+  </div>
+
+  <div id="teambuilder-modules"></div>
 </div>
 
 <!-- ROLEPLAY -->
@@ -625,6 +663,187 @@ buildModules('consciousness-modules', [
       <li>If you lead from Love (500) → your team will run through walls for the mission</li>
     </ul>
     <p style="margin-top:10px;font-size:13px;color:rgba(250,246,238,.7);">The fastest way to raise your team's output is to raise your own level. The assessment tells you where to start.</p>` },
+]);
+
+// ── BOOK CLUB ────────────────────────────────────────────────
+buildModules('bookclub-modules', [
+  { title: '1 — Power vs Force  ·  Dr. David Hawkins', body: `
+    <p><strong style="color:var(--gold-light);">Calibration range: 200–600 is your leadership zone.</strong></p>
+    <p style="margin:10px 0;">The premise: every human emotion, thought pattern, and action calibrates at a measurable level of consciousness. Below 200 is Force — it consumes energy from others. Above 200 is Power — it gives energy to others.</p>
+    <p style="margin-bottom:8px;"><strong>Key Insights:</strong></p>
+    <ul>
+      <li>Your clients feel your level before you open your mouth. Calibrate at Acceptance (350) and they will lean in.</li>
+      <li>Fear (100) and Desire (125) drive most untrained agents. Courage (200) is where careers begin.</li>
+      <li>Pride (175) is the most dangerous level — it feels like confidence but creates resistance in others.</li>
+      <li>Love (500) is not emotion — it is a state of being where service becomes effortless and results multiply.</li>
+    </ul>
+    <p style="margin-top:10px;"><strong style="color:var(--gold-light);">Book Report Prompt:</strong> What level do you honestly calibrate at in the field today? What is ONE daily practice that would raise it?</p>
+    <div style="margin-top:12px;"><a href="consciousness-assessment.html" style="color:var(--gold-light);text-decoration:underline;">→ Take the full self-assessment</a></div>` },
+
+  { title: '2 — The Magic of Thinking Big  ·  David J. Schwartz', body: `
+    <p><strong style="color:var(--gold-light);">Your belief in your potential determines your potential.</strong></p>
+    <p style="margin:10px 0;">Schwartz proves that success is not determined by intelligence, talent, or education — it is determined by the SIZE of your thinking. Small thinkers set small goals, attract small people, and produce small results.</p>
+    <p style="margin-bottom:8px;"><strong>Key Insights:</strong></p>
+    <ul>
+      <li>Excusitis — the failure disease. The most successful people have the same obstacles and just don't mention them.</li>
+      <li>Think big enough that your current actions feel insufficient. That discomfort is growth.</li>
+      <li>The environment you put yourself in every day sets the upper limit of your thinking.</li>
+      <li>Believe BIG. The size of your success is determined by the size of your belief.</li>
+    </ul>
+    <p style="margin-top:10px;"><strong style="color:var(--gold-light);">Book Report Prompt:</strong> Where are you thinking too small in your business right now? Write your 1-year vision as if failure were impossible.</p>` },
+
+  { title: '3 — Atomic Habits  ·  James Clear', body: `
+    <p><strong style="color:var(--gold-light);">You do not rise to the level of your goals. You fall to the level of your systems.</strong></p>
+    <p style="margin:10px 0;">Clear's framework: tiny 1% improvements compound into extraordinary results. Your habits are not your actions — they are your identity. The key is not motivation; it is architecture.</p>
+    <p style="margin-bottom:8px;"><strong>Key Insights:</strong></p>
+    <ul>
+      <li>Habit loop: Cue → Craving → Response → Reward. Design your environment to make good habits obvious and bad habits invisible.</li>
+      <li>"I am an agent who calls 20 people a day" beats "I need to make more calls." Identity drives behavior.</li>
+      <li>Implementation intention: "I will [behavior] at [time] in [location]." Removes decision fatigue.</li>
+      <li>Habit stacking: anchor new habits to existing ones. After morning coffee → Top 25 review.</li>
+    </ul>
+    <p style="margin-top:10px;"><strong style="color:var(--gold-light);">Book Report Prompt:</strong> What is ONE atomic habit you can stack into your existing morning routine that would have the highest impact on your production?</p>` },
+
+  { title: '4 — Go-Giver  ·  Bob Burg & John David Mann', body: `
+    <p><strong style="color:var(--gold-light);">Your influence is determined by how abundantly you place others' interests first.</strong></p>
+    <p style="margin:10px 0;">The parable that reframes success: the most prosperous people are not the best takers — they are the most extraordinary givers. The Go-Giver's five laws change how you sell, recruit, and lead.</p>
+    <p style="margin-bottom:8px;"><strong>The Five Laws:</strong></p>
+    <ul>
+      <li><strong>Value:</strong> Your true worth is determined by how much more you give in value than you take in payment.</li>
+      <li><strong>Compensation:</strong> Your income is determined by how many people you serve and how well you serve them.</li>
+      <li><strong>Influence:</strong> Your influence is determined by how abundantly you place others' interests first.</li>
+      <li><strong>Authenticity:</strong> The most valuable gift you have to offer is yourself.</li>
+      <li><strong>Receptivity:</strong> The key to effective giving is to stay open to receiving.</li>
+    </ul>
+    <p style="margin-top:10px;"><strong style="color:var(--gold-light);">Book Report Prompt:</strong> How does the Law of Value change the way you approach an appointment? Write a new opening statement from a Go-Giver frame.</p>` },
+
+  { title: '5 — The 21 Irrefutable Laws of Leadership  ·  John C. Maxwell', body: `
+    <p><strong style="color:var(--gold-light);">Everything rises and falls on leadership.</strong></p>
+    <p style="margin:10px 0;">Maxwell's foundational work on what leadership actually is and isn't. Every law is a lesson that directly applies to building your baseshop. These laws don't bend — you either work with them or against them.</p>
+    <p style="margin-bottom:8px;"><strong>Laws most critical for DBA leaders:</strong></p>
+    <ul>
+      <li><strong>Law of the Lid:</strong> Your organization can only grow as high as your leadership capacity. Raise the lid first.</li>
+      <li><strong>Law of Influence:</strong> Leadership is influence — nothing more, nothing less.</li>
+      <li><strong>Law of Process:</strong> Leadership develops daily, not in a day.</li>
+      <li><strong>Law of Reproduction:</strong> Leaders reproduce other leaders. If you are only producing agents, you are not leading — you are managing.</li>
+      <li><strong>Law of Buy-In:</strong> People buy into the leader before they buy into the vision.</li>
+    </ul>
+    <p style="margin-top:10px;"><strong style="color:var(--gold-light);">Book Report Prompt:</strong> Which of the 21 Laws do you most need to develop right now? Write three specific actions to strengthen it this month.</p>` },
+
+  { title: '6 — Think and Grow Rich  ·  Napoleon Hill', body: `
+    <p><strong style="color:var(--gold-light);">Whatever the mind can conceive and believe, it can achieve.</strong></p>
+    <p style="margin:10px 0;">The original success blueprint — studied by every major leader for 80 years. Hill interviewed 500 of the most successful people of his era and distilled 13 principles that drive all wealth creation.</p>
+    <p style="margin-bottom:8px;"><strong>The 13 Principles (DBA application):</strong></p>
+    <ul>
+      <li><strong>Desire:</strong> Burning, obsessive desire — not a wish. What is your definite major purpose?</li>
+      <li><strong>Faith:</strong> Visualization and belief in attainment. Faith is a state you create — not one you wait for.</li>
+      <li><strong>Autosuggestion:</strong> What you say to yourself in your car, in the mirror, before calls.</li>
+      <li><strong>Specialized Knowledge:</strong> PHP products, recruiting scripts, promotion requirements. Mastery compounds.</li>
+      <li><strong>Mastermind:</strong> Your Thankful Thursday. Your MD group. Alliance of minds is where breakthroughs happen.</li>
+      <li><strong>Persistence:</strong> The sustained effort necessary to induce faith. Most agents quit before the compound curve.</li>
+    </ul>
+    <p style="margin-top:10px;"><strong style="color:var(--gold-light);">Book Report Prompt:</strong> Write your definite chief aim in the present tense with a specific date and amount. Read it aloud each morning this week.</p>` },
+
+  { title: '7 — The Compound Effect  ·  Darren Hardy', body: `
+    <p><strong style="color:var(--gold-light);">Small, consistent actions are invisible until they are undeniable.</strong></p>
+    <p style="margin:10px 0;">Hardy's thesis: success is the result of small, smart choices compounded over time — not big breaks or dramatic moments. The person who logs 10 contacts a day for 365 days runs circles around the person who occasionally has a 50-call day.</p>
+    <p style="margin-bottom:8px;"><strong>Key Insights:</strong></p>
+    <ul>
+      <li>Momentum: the compound curve. Your results feel flat for months, then explode. Most quit right before the curve.</li>
+      <li>Choices + Behaviors + Habits + Time = Compound Effect. The formula is not complicated. The discipline is.</li>
+      <li>Influences: your associations, your inputs (podcasts, books, conversations), your environment.</li>
+      <li>Acceleration: once you have momentum, add fuel. Don't rest — race.</li>
+    </ul>
+    <p style="margin-top:10px;"><strong style="color:var(--gold-light);">Book Report Prompt:</strong> Track your top 3 daily non-negotiables for 30 days. What would compound if you never missed a day?</p>` },
+]);
+
+// ── TEAM BUILDER TRAINING ─────────────────────────────────────
+buildModules('teambuilder-modules', [
+  { title: '1 — The Duplication Principle', body: `
+    <p><strong style="color:var(--gold-light);">You can only grow as fast as you can duplicate yourself.</strong></p>
+    <p style="margin:10px 0;">The difference between a high-producing agent and a leader: a high producer earns from their own effort. A leader earns from the duplicated effort of many. Duplication is the engine of the PHP model — but it only works if you are teaching what you are doing.</p>
+    <ul>
+      <li><strong>Principle 1:</strong> Only teach what you do consistently. Duplicated inconsistency is a liability.</li>
+      <li><strong>Principle 2:</strong> Simple duplicates. Complex dies. Every system you teach must be executable by a brand-new agent on day 3.</li>
+      <li><strong>Principle 3:</strong> Teach the why before the how. Agents who understand why are self-correcting.</li>
+      <li><strong>Principle 4:</strong> Show before you tell. Always bring new agents to real appointments before they run their own.</li>
+      <li><strong>DBA standard:</strong> Every MD should be able to go on a 30-day trip and return to a growing team. If the team shrinks when you leave, you have not duplicated — you have created dependence.</li>
+    </ul>
+    <p style="margin-top:10px;"><strong style="color:var(--gold-light);">Action step:</strong> Write your "Day 1–30" agent onboarding process in a single page. If you cannot write it, you cannot duplicate it.</p>` },
+
+  { title: '2 — Recruiting as a Leadership Function', body: `
+    <p><strong style="color:var(--gold-light);">You are not recruiting employees. You are offering a life change.</strong></p>
+    <p style="margin:10px 0;">Most agents recruit from need (they need overrides) and their prospects feel it. The highest-producing recruiters recruit from abundance — they are genuinely sharing an opportunity they believe in, and they qualify out the unserious.</p>
+    <ul>
+      <li><strong>Position, not pitch:</strong> "I lead a team of insurance professionals here in [city] — we are selectively expanding. I don't know if it's for you, but it might be worth a 20-minute conversation."</li>
+      <li><strong>Qualify hard:</strong> The more you qualify, the more seriously they take the opportunity. "We are looking for people who are serious about changing their financial situation — is that you?"</li>
+      <li><strong>Set the expectation:</strong> "This takes 90 days of consistent effort to see results. Is that something you can commit to?" Most cannot — and that's fine.</li>
+      <li><strong>The edification multiplier:</strong> How you introduce your upline to a recruit doubles their belief before the presentation starts. Edify specifically: "My MD Obi Iroezi built his team from zero and broke $100K in 18 months."</li>
+    </ul>
+    <p style="margin-top:10px;"><strong style="color:var(--gold-light);">Script drill:</strong> Practice the position statement and the qualifying question with a partner until it sounds natural, not rehearsed.</p>` },
+
+  { title: '3 — Running Effective Team Meetings', body: `
+    <p><strong style="color:var(--gold-light);">Your weekly meeting sets the tone for your team's entire week.</strong></p>
+    <p style="margin:10px 0;">Every Thankful Thursday, every team Zoom, every one-on-one — these are where culture is built or eroded. A high-energy, high-expectation meeting creates momentum. A disorganized, complaint-filled meeting kills it.</p>
+    <p style="margin-bottom:8px;"><strong>The DBA Meeting Formula (60 minutes):</strong></p>
+    <ul>
+      <li><strong>0–5 min:</strong> Energy opener — recognition, music, a short motivational quote. Set the tone.</li>
+      <li><strong>5–15 min:</strong> Weekly recognitions — sub points, recruits, cash flow. Public acknowledgment is fuel.</li>
+      <li><strong>15–30 min:</strong> One deep training topic — not a summary of everything, one thing done thoroughly.</li>
+      <li><strong>30–45 min:</strong> Role-play or live appointment debrief. Practice in front of the team.</li>
+      <li><strong>45–55 min:</strong> Goals and commitments for the week. Each person states one public commitment.</li>
+      <li><strong>55–60 min:</strong> Close with energy — "DBA, let's go!" ends every meeting the same way.</li>
+    </ul>
+    <p style="margin-top:10px;"><strong style="color:var(--gold-light);">Standard:</strong> Every agent should leave your meeting MORE energized than when they arrived.</p>` },
+
+  { title: '4 — One-on-One Coaching Framework', body: `
+    <p><strong style="color:var(--gold-light);">You cannot lead 20 people. You can lead 5 who lead 4 each.</strong></p>
+    <p style="margin:10px 0;">The highest-leverage activity a leader can do is a focused, structured one-on-one with a developing agent. 20 minutes done right is worth more than 2 hours of group training.</p>
+    <p style="margin-bottom:8px;"><strong>The DBA One-on-One Structure:</strong></p>
+    <ul>
+      <li><strong>Check-in (2 min):</strong> "How are you on a scale of 1–10 this week? What's one thing that went well?"</li>
+      <li><strong>Numbers review (5 min):</strong> Contacts made, appointments run, applications submitted. What does the tracker show?</li>
+      <li><strong>One bottleneck (5 min):</strong> "What is the one thing that's holding you back most right now?" Solve ONLY that thing. Resist fixing everything.</li>
+      <li><strong>Skill drill (5 min):</strong> Role-play one scenario — the objection they faced, the close they almost had.</li>
+      <li><strong>Commitment (3 min):</strong> "What is your one commitment for this week that I can hold you to next time?"</li>
+    </ul>
+    <p style="margin-top:10px;"><strong style="color:var(--gold-light);">Rule:</strong> Never leave a one-on-one without a specific commitment from the agent. Accountability without commitment is just conversation.</p>` },
+
+  { title: '5 — Building a Culture of Recognition', body: `
+    <p><strong style="color:var(--gold-light);">People work for money. They run through walls for recognition.</strong></p>
+    <p style="margin:10px 0;">Recognition is the most underutilized leadership tool in the industry. PHP understands this — their entire contest structure is built around public acknowledgment. DBA leaders who master recognition have teams that never stop recruiting.</p>
+    <ul>
+      <li><strong>Immediate recognition:</strong> Text the agent the moment they submit an app. "You just submitted your third app this week — you are ON FIRE. Screenshot this." Speed matters.</li>
+      <li><strong>Public recognition:</strong> Name drop in the team Zoom, in the WhatsApp group, in Thankful Thursday. Make heroes publicly.</li>
+      <li><strong>Tiered recognition:</strong> Milestones, 1K club, comma checks, first promoted MD — each one gets a moment.</li>
+      <li><strong>Progress recognition:</strong> Recognize effort AND results. "You made 30 contacts this week with zero apps — that is the activity that creates the breakthrough."</li>
+      <li><strong>Never criticize publicly:</strong> Correct privately, always. Public correction is a culture killer.</li>
+    </ul>
+    <p style="margin-top:10px;"><strong style="color:var(--gold-light);">DBA standard:</strong> Every agent on your team should hear their name recognized publicly at least once per week.</p>` },
+
+  { title: '6 — The 90-Day MD Promotion Playbook', body: `
+    <p><strong style="color:var(--gold-light);">Your most important job as a leader is promoting your first MD.</strong></p>
+    <p style="margin:10px 0;">When you promote your first Marketing Director, you have crossed the line from agent to leader. Everything changes — your income, your leverage, your lifestyle. The 90-day run is the vehicle. Here is how to run it properly.</p>
+    <p style="margin-bottom:8px;"><strong>Month 1 — Build the Foundation:</strong></p>
+    <ul>
+      <li>Identify the right candidate: coachable, hungry, has a why larger than themselves.</li>
+      <li>Set the 90-day targets together. Make them co-own the goal, not just know it.</li>
+      <li>Daily check-in for the first 30 days. They are building habits — be present.</li>
+      <li>Run joint appointments. Show the standard before you set the standard.</li>
+    </ul>
+    <p style="margin-bottom:8px;"><strong>Month 2 — Increase Accountability:</strong></p>
+    <ul>
+      <li>Weekly tracker review. Numbers don't lie — address gaps with curiosity, not criticism.</li>
+      <li>Introduce them to your upline leadership. Edification expands belief.</li>
+      <li>Begin teaching them to recruit. A promoted MD who cannot recruit is a producer, not a leader.</li>
+    </ul>
+    <p style="margin-bottom:8px;"><strong>Month 3 — Prepare for Promotion:</strong></p>
+    <ul>
+      <li>Confirm requirements are on track. Use the MD Promo Tracker weekly.</li>
+      <li>Begin building their vision for THEIR first MD promotion.</li>
+      <li>Celebrate publicly at every milestone. The team is watching what success looks like.</li>
+    </ul>
+    <p style="margin-top:10px;"><strong style="color:var(--gold-light);">Remember:</strong> You promote your downline by developing them — not by doing it for them. The goal is a self-sufficient leader, not a dependent producer.</p>` },
 ]);
 
 // ── ROLE-PLAY ─────────────────────────────────────────────────
