@@ -983,6 +983,26 @@ const VALUE_HEADER_HINTS = {
 };
 const NAME_HEADER_HINTS = ['name','agent','producer'];
 
+// ── DBA TEAM FILTER ───────────────────────────────────────────
+// Only agents whose Upline MD Name matches one of these are shown
+// in Thankful Thursday recognition slides.
+const DBA_UPLINE_MDS = [
+  'blessing ikejemba',
+  'obi & jennifer iroezi', 'obi and jennifer iroezi',
+  'nkem', 'nkechinyere',
+  'calista', 'callista',
+  'cherryjane', 'cherry jane', 'cherryjane okeke',
+  'mayra', 'mayra munguia',
+  'emrin', 'emrin bodian',
+  'gbenga',
+];
+
+function isDBAMember(uplineMD) {
+  if(!uplineMD) return false;
+  const u = String(uplineMD).toLowerCase().trim();
+  return DBA_UPLINE_MDS.some(md => u.includes(md));
+}
+
 // Categories where values are dollar amounts — displayed with $ formatting.
 // recruits are whole numbers.
 const DOLLAR_CATS = new Set(['producers','paidpoints','cashflow']);
@@ -1052,12 +1072,25 @@ async function handleMultiFiles(fileList) {
         // Dollar categories: threshold >= $1,000. Recruits: >= 1.
         const threshold = (detectedCat && detectedCat !== 'recruits') ? 1000 : 1;
 
+        // Detect Upline MD Name column for DBA team filtering
+        const uplineCol = headers.find(h => {
+          const hl = h.toLowerCase();
+          return hl.includes('upline md') || hl.includes('upline_md') || hl.includes('md name');
+        }) || null;
+
         const entries = rows.map(r => {
           const name = String(r[nameCol]||'').trim();
           const rawVal = String(r[valueCol]||'').trim();
           const numeric = parseFloat(rawVal.replace(/[^0-9.\-]/g,'')) || 0;
-          return { name, rawVal, numeric };
-        }).filter(r => r.name && r.numeric >= threshold);
+          const uplineMD = uplineCol ? String(r[uplineCol]||'').trim() : '';
+          return { name, rawVal, numeric, uplineMD };
+        }).filter(r => {
+          if(!r.name || r.numeric < threshold) return false;
+          // If we found an upline MD column, filter to DBA team only
+          if(uplineCol) return isDBAMember(r.uplineMD);
+          // No upline column — pass through (manual entry mode)
+          return true;
+        });
 
         if (!entries.length) { resolve({ file, error: 'No entries meet the minimum threshold (' + (threshold === 1000 ? '$1,000' : '1') + ')' }); return; }
 
@@ -1220,6 +1253,12 @@ renderAll();
 
     <!-- Week selector -->
     <div style="margin-bottom:14px;">
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:#2DCA73;
+        background:rgba(45,202,115,.08);border:1px solid rgba(45,202,115,.2);
+        border-radius:6px;padding:7px 10px;margin-bottom:10px;line-height:1.7;">
+        🔍 <strong>DBA Team Filter Active</strong><br>
+        Blessing Ikejemba · Obi &amp; Jennifer Iroezi · Nkem &amp; Calista · CherryJane · Mayra · Emrin · Gbenga
+      </div>
       <label style="font-family:'DM Mono',monospace;font-size:10px;color:#6B7C93;
         display:block;margin-bottom:5px;">WEEK</label>
       <select id="pptx-week-select" style="width:100%;background:#1A2E50;border:1px solid rgba(201,168,76,.25);
