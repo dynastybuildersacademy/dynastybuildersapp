@@ -342,6 +342,33 @@ select option{background:var(--navy-mid);}
 
 
 <!-- ROLEPLAY -->
+<!-- BOOK CLUB -->
+<div class="panel" id="panel-bookclub">
+  <div class="page-title">📚 Book Club</div>
+  <div class="page-sub">DBA's monthly reading program. Study together, grow together. Each book compounds the last.</div>
+
+  <!-- CURRENT BOOK: 3 FEET FROM GOLD -->
+  <div id="bc-current"></div>
+  <div id="bc-current-modules"></div>
+
+  <!-- NEXT BOOK: POWER VS FORCE (locked) -->
+  <div id="bc-next"></div>
+
+  <!-- PAST BOOKS -->
+  <div id="bc-past"></div>
+</div>
+
+<!-- TEAM BUILDER -->
+<div class="panel" id="panel-teambuilder">
+  <div class="page-title">🏗 Team Builder Training</div>
+  <div class="page-sub">For Directors and above. How to build, lead, and duplicate a high-performing team.</div>
+  <div class="rp-card" style="margin-bottom:20px;">
+    <div class="rp-card-title">🎯 The DBA Leadership Standard</div>
+    <p style="font-size:13px;line-height:1.8;color:rgba(250,246,238,.9);">Great leaders don't manage people — they build systems, raise calibration, and create environments where others become their best selves. Your team will never sustainably outperform its leader's level of consciousness, work ethic, or belief.</p>
+  </div>
+  <div id="teambuilder-modules"></div>
+</div>
+
 <div class="panel" id="panel-roleplay">
   <div class="page-title">AI Role-Play Coach</div>
   <div class="page-sub">Practice scripts with an AI prospect. After 5 exchanges you get scored on rapport, discovery, and pitch clarity.</div>
@@ -877,97 +904,154 @@ buildModules('consciousness-modules', [
 
 
 
-// ── BOOK CLUB ────────────────────────────────────────────────
-buildModules('bookclub-modules', [
-  { title: '1 — Power vs Force  ·  Dr. David Hawkins', body: `
-    <p><strong style="color:var(--gold-light);">Calibration range: 200–600 is your leadership zone.</strong></p>
-    <p style="margin:10px 0;">The premise: every human emotion, thought pattern, and action calibrates at a measurable level of consciousness. Below 200 is Force — it consumes energy from others. Above 200 is Power — it gives energy to others.</p>
-    <p style="margin-bottom:8px;"><strong>Key Insights:</strong></p>
-    <ul>
-      <li>Your clients feel your level before you open your mouth. Calibrate at Acceptance (350) and they will lean in.</li>
-      <li>Fear (100) and Desire (125) drive most untrained agents. Courage (200) is where careers begin.</li>
-      <li>Pride (175) is the most dangerous level — it feels like confidence but creates resistance in others.</li>
-      <li>Love (500) is not emotion — it is a state of being where service becomes effortless and results multiply.</li>
-    </ul>
-    <p style="margin-top:10px;"><strong style="color:var(--gold-light);">Book Report Prompt:</strong> What level do you honestly calibrate at in the field today? What is ONE daily practice that would raise it?</p>
-    <div style="margin-top:12px;"><a href="consciousness-assessment.html" style="color:var(--gold-light);text-decoration:underline;">→ Take the full self-assessment</a></div>` },
+// ── BOOK CLUB ─────────────────────────────────────────────────
+// ── BOOK CLUB ─────────────────────────────────────────────────
+(function renderBookClub() {
+  const session = typeof AUTH !== 'undefined' ? AUTH.getSession() : null;
+  const isAdmin = session && session.level >= 95;
 
-  { title: '2 — The Magic of Thinking Big  ·  David J. Schwartz', body: `
-    <p><strong style="color:var(--gold-light);">Your belief in your potential determines your potential.</strong></p>
-    <p style="margin:10px 0;">Schwartz proves that success is not determined by intelligence, talent, or education — it is determined by the SIZE of your thinking. Small thinkers set small goals, attract small people, and produce small results.</p>
-    <p style="margin-bottom:8px;"><strong>Key Insights:</strong></p>
-    <ul>
-      <li>Excusitis — the failure disease. The most successful people have the same obstacles and just don't mention them.</li>
-      <li>Think big enough that your current actions feel insufficient. That discomfort is growth.</li>
-      <li>The environment you put yourself in every day sets the upper limit of your thinking.</li>
-      <li>Believe BIG. The size of your success is determined by the size of your belief.</li>
-    </ul>
-    <p style="margin-top:10px;"><strong style="color:var(--gold-light);">Book Report Prompt:</strong> Where are you thinking too small in your business right now? Write your 1-year vision as if failure were impossible.</p>` },
+  // Current book header
+  const currentEl = document.getElementById('bc-current');
+  if(currentEl) {
+    currentEl.innerHTML =
+      '<div class="rp-card" style="margin-bottom:12px;border-color:rgba(201,168,76,.4);">' +
+        '<div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:14px;">' +
+          '<div style="font-size:44px;flex-shrink:0;">📖</div>' +
+          '<div>' +
+            '<div style="font-family:\'DM Mono\',monospace;font-size:10px;color:#2DCA73;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px;">📌 Current Book — September 2026</div>' +
+            '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:26px;font-weight:900;color:#E8C97A;line-height:1.1;">3 Feet From Gold</div>' +
+            '<div style="font-family:\'DM Mono\',monospace;font-size:11px;color:#8A9BB5;margin-top:3px;">Sharon L. Lechter &amp; Greg S. Reid · Napoleon Hill Foundation</div>' +
+          '</div>' +
+        '</div>' +
+        '<p style="font-size:13px;line-height:1.8;color:rgba(250,246,238,.9);margin-bottom:10px;">Inspired by Napoleon Hill\'s timeless principle: most people quit right before their breakthrough. Based on interviews with the world\'s top achievers, this book reveals what separates those who push through from those who walk away — and how to recognize when you\'re three feet from gold.</p>' +
+        '<div style="background:rgba(201,168,76,.08);border-radius:8px;padding:10px 14px;font-size:12px;color:rgba(250,246,238,.8);line-height:1.9;"><strong style="color:#E8C97A;">Core message:</strong> Every successful person you admire was once exactly where you are — uncertain, doubting, grinding. They didn\'t have more talent. They just didn\'t quit.</div>' +
+      '</div>';
+  }
 
-  { title: '3 — Atomic Habits  ·  James Clear', body: `
-    <p><strong style="color:var(--gold-light);">You do not rise to the level of your goals. You fall to the level of your systems.</strong></p>
-    <p style="margin:10px 0;">Clear's framework: tiny 1% improvements compound into extraordinary results. Your habits are not your actions — they are your identity. The key is not motivation; it is architecture.</p>
-    <p style="margin-bottom:8px;"><strong>Key Insights:</strong></p>
-    <ul>
-      <li>Habit loop: Cue → Craving → Response → Reward. Design your environment to make good habits obvious and bad habits invisible.</li>
-      <li>"I am an agent who calls 20 people a day" beats "I need to make more calls." Identity drives behavior.</li>
-      <li>Implementation intention: "I will [behavior] at [time] in [location]." Removes decision fatigue.</li>
-      <li>Habit stacking: anchor new habits to existing ones. After morning coffee → Top 25 review.</li>
-    </ul>
-    <p style="margin-top:10px;"><strong style="color:var(--gold-light);">Book Report Prompt:</strong> What is ONE atomic habit you can stack into your existing morning routine that would have the highest impact on your production?</p>` },
+  // Next book (locked/unlocked)
+  const nextEl = document.getElementById('bc-next');
+  if(nextEl) {
+    if(isAdmin) {
+      nextEl.innerHTML =
+        '<div class="rp-card" style="margin-bottom:16px;border-color:rgba(155,89,182,.35);">' +
+          '<div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:12px;">' +
+            '<div style="font-size:44px;flex-shrink:0;">⬆</div>' +
+            '<div>' +
+              '<div style="font-family:\'DM Mono\',monospace;font-size:10px;color:#C39BD3;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px;">📅 Next Book — October 2026 · Admin Preview</div>' +
+              '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:24px;font-weight:900;color:#C39BD3;line-height:1.1;">Power vs Force</div>' +
+              '<div style="font-family:\'DM Mono\',monospace;font-size:11px;color:#8A9BB5;margin-top:3px;">Dr. David R. Hawkins</div>' +
+            '</div>' +
+          '</div>' +
+          '<p style="font-size:13px;line-height:1.8;color:rgba(250,246,238,.85);margin-bottom:10px;">The science of consciousness — why Force depletes and Power attracts. Hawkins calibrated human emotions on a scale from 1–1000. This book will fundamentally change how you understand your own leadership, client relationships, and team-building. Study guide and modules already live in the Power vs Force tab.</p>' +
+          '<div style="font-family:\'DM Mono\',monospace;font-size:10px;color:#6B7C93;">Full study materials unlock for all when this becomes the current book.</div>' +
+        '</div>';
+    } else {
+      nextEl.innerHTML =
+        '<div style="background:rgba(10,22,40,.4);border:1px solid rgba(107,124,147,.15);border-radius:12px;padding:16px 14px;margin-bottom:16px;display:flex;align-items:center;gap:14px;opacity:.65;">' +
+          '<div style="font-size:32px;filter:grayscale(1);">🔒</div>' +
+          '<div>' +
+            '<div style="font-family:\'DM Mono\',monospace;font-size:10px;color:#6B7C93;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px;">📅 Next Book — Coming October 2026</div>' +
+            '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:20px;font-weight:900;color:rgba(250,246,238,.35);">Power vs Force</div>' +
+            '<div style="font-family:\'DM Mono\',monospace;font-size:11px;color:#6B7C93;">Dr. David R. Hawkins · Unlocks next month</div>' +
+          '</div>' +
+        '</div>';
+    }
+  }
 
-  { title: '4 — Go-Giver  ·  Bob Burg & John David Mann', body: `
-    <p><strong style="color:var(--gold-light);">Your influence is determined by how abundantly you place others' interests first.</strong></p>
-    <p style="margin:10px 0;">The parable that reframes success: the most prosperous people are not the best takers — they are the most extraordinary givers. The Go-Giver's five laws change how you sell, recruit, and lead.</p>
-    <p style="margin-bottom:8px;"><strong>The Five Laws:</strong></p>
-    <ul>
-      <li><strong>Value:</strong> Your true worth is determined by how much more you give in value than you take in payment.</li>
-      <li><strong>Compensation:</strong> Your income is determined by how many people you serve and how well you serve them.</li>
-      <li><strong>Influence:</strong> Your influence is determined by how abundantly you place others' interests first.</li>
-      <li><strong>Authenticity:</strong> The most valuable gift you have to offer is yourself.</li>
-      <li><strong>Receptivity:</strong> The key to effective giving is to stay open to receiving.</li>
-    </ul>
-    <p style="margin-top:10px;"><strong style="color:var(--gold-light);">Book Report Prompt:</strong> How does the Law of Value change the way you approach an appointment? Write a new opening statement from a Go-Giver frame.</p>` },
+  // Past books
+  const pastEl = document.getElementById('bc-past');
+  if(pastEl) {
+    const PAST = [
+      { e:'💡', t:'Think and Grow Rich',  a:'Napoleon Hill',  m:'August 2026',   k:'The 13 principles of sustained success. Whatever the mind can conceive and believe, it can achieve.' },
+      { e:'🔄', t:'The Compound Effect',   a:'Darren Hardy',   m:'July 2026',     k:'Small consistent actions compound invisibly until they are undeniable. Never miss a day.' },
+      { e:'🤝', t:'The Go-Giver',          a:'Burg & Mann',    m:'June 2026',     k:'Your influence is determined by how abundantly you place others\' interests first.' },
+    ];
+    pastEl.innerHTML = '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:14px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#8A9BB5;margin-bottom:10px;">📋 Past Books</div>' +
+      PAST.map(b =>
+        '<div style="background:rgba(15,30,56,.35);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;gap:12px;">' +
+          '<div style="font-size:26px;flex-shrink:0;opacity:.6;">' + b.e + '</div>' +
+          '<div>' +
+            '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:16px;font-weight:800;color:rgba(250,246,238,.55);">' + b.t + '</div>' +
+            '<div style="font-family:\'DM Mono\',monospace;font-size:10px;color:#6B7C93;">' + b.a + ' · ' + b.m + '</div>' +
+            '<div style="font-family:\'DM Mono\',monospace;font-size:11px;color:rgba(250,246,238,.45);margin-top:4px;line-height:1.6;">' + b.k + '</div>' +
+          '</div>' +
+        '</div>'
+      ).join('');
+  }
+})();
 
-  { title: '5 — The 21 Irrefutable Laws of Leadership  ·  John C. Maxwell', body: `
-    <p><strong style="color:var(--gold-light);">Everything rises and falls on leadership.</strong></p>
-    <p style="margin:10px 0;">Maxwell's foundational work on what leadership actually is and isn't. Every law is a lesson that directly applies to building your baseshop. These laws don't bend — you either work with them or against them.</p>
-    <p style="margin-bottom:8px;"><strong>Laws most critical for DBA leaders:</strong></p>
+// ── 3 FEET FROM GOLD — Study Modules ─────────────────────────
+buildModules('bc-current-modules', [
+  { title: '1 — The Principle: Three Feet from Gold', body: `
+    <p><strong style="color:var(--gold-light);">The most dangerous moment in any pursuit is right before the breakthrough.</strong></p>
+    <p style="margin:10px 0;">Napoleon Hill documented the story of a gold miner who sold his equipment for scrap — just three feet before he would have struck one of the richest gold veins ever found. The buyer brought in an expert, dug three more feet, and became wealthy. The original miner died broke.</p>
     <ul>
-      <li><strong>Law of the Lid:</strong> Your organization can only grow as high as your leadership capacity. Raise the lid first.</li>
-      <li><strong>Law of Influence:</strong> Leadership is influence — nothing more, nothing less.</li>
-      <li><strong>Law of Process:</strong> Leadership develops daily, not in a day.</li>
-      <li><strong>Law of Reproduction:</strong> Leaders reproduce other leaders. If you are only producing agents, you are not leading — you are managing.</li>
-      <li><strong>Law of Buy-In:</strong> People buy into the leader before they buy into the vision.</li>
+      <li>This is not a metaphor. Hill documented this pattern across 500+ successful people: the breakthrough almost always comes immediately after the hardest moment of doubt.</li>
+      <li>Your last month of low production, your hardest rejection week, the morning you wanted to call your MD and quit — those were probably your three feet.</li>
+      <li>The question is not whether the gold is there. The question is whether you will still be holding the shovel when it appears.</li>
     </ul>
-    <p style="margin-top:10px;"><strong style="color:var(--gold-light);">Book Report Prompt:</strong> Which of the 21 Laws do you most need to develop right now? Write three specific actions to strengthen it this month.</p>` },
+    <p style="margin-top:10px;"><strong style="color:var(--gold-light);">Reflection:</strong> When was the last time you quit something early? What would have happened if you had stayed three more feet?</p>` },
 
-  { title: '6 — Think and Grow Rich  ·  Napoleon Hill', body: `
-    <p><strong style="color:var(--gold-light);">Whatever the mind can conceive and believe, it can achieve.</strong></p>
-    <p style="margin:10px 0;">The original success blueprint — studied by every major leader for 80 years. Hill interviewed 500 of the most successful people of his era and distilled 13 principles that drive all wealth creation.</p>
-    <p style="margin-bottom:8px;"><strong>The 13 Principles (DBA application):</strong></p>
+  { title: '2 — Find Your Why Before Your How', body: `
+    <p><strong style="color:var(--gold-light);">"Why do you want to be successful?" Most people have never honestly answered this.</strong></p>
+    <p style="margin:10px 0;">Lechter and Reid interviewed dozens of world-class achievers and found one pattern: those who sustain success are driven by something larger than themselves. Commission checks don't keep agents making calls at 8pm. A why does.</p>
     <ul>
-      <li><strong>Desire:</strong> Burning, obsessive desire — not a wish. What is your definite major purpose?</li>
-      <li><strong>Faith:</strong> Visualization and belief in attainment. Faith is a state you create — not one you wait for.</li>
-      <li><strong>Autosuggestion:</strong> What you say to yourself in your car, in the mirror, before calls.</li>
-      <li><strong>Specialized Knowledge:</strong> PHP products, recruiting scripts, promotion requirements. Mastery compounds.</li>
-      <li><strong>Mastermind:</strong> Your Thankful Thursday. Your MD group. Alliance of minds is where breakthroughs happen.</li>
-      <li><strong>Persistence:</strong> The sustained effort necessary to induce faith. Most agents quit before the compound curve.</li>
+      <li><strong>Surface why:</strong> "I want to make more money." This is a what, not a why. Go deeper.</li>
+      <li><strong>Intermediate why:</strong> "I want to provide for my family." Closer — what happens to them if you do?</li>
+      <li><strong>Core why:</strong> "My kids will never grow up seeing their parents stressed about money the way I did." That's a why that runs at 5am and through rejection.</li>
+      <li><strong>DBA application:</strong> A team that knows their why outperforms a team that knows every product. Build the why first.</li>
     </ul>
-    <p style="margin-top:10px;"><strong style="color:var(--gold-light);">Book Report Prompt:</strong> Write your definite chief aim in the present tense with a specific date and amount. Read it aloud each morning this week.</p>` },
+    <p style="margin-top:10px;"><strong style="color:var(--gold-light);">Action step:</strong> Write your why in 2 sentences. Put it in your phone. Read it before every call block this week.</p>` },
 
-  { title: '7 — The Compound Effect  ·  Darren Hardy', body: `
-    <p><strong style="color:var(--gold-light);">Small, consistent actions are invisible until they are undeniable.</strong></p>
-    <p style="margin:10px 0;">Hardy's thesis: success is the result of small, smart choices compounded over time — not big breaks or dramatic moments. The person who logs 10 contacts a day for 365 days runs circles around the person who occasionally has a 50-call day.</p>
-    <p style="margin-bottom:8px;"><strong>Key Insights:</strong></p>
+  { title: '3 — The Mentorship Principle', body: `
+    <p><strong style="color:var(--gold-light);">Every person in this book had at least one mentor who saw more in them than they saw in themselves.</strong></p>
+    <p style="margin:10px 0;">Lechter and Reid didn't just interview successful people — they specifically asked: who helped you push through when you wanted to quit? Without exception, the answer involved someone who refused to let them stop digging.</p>
     <ul>
-      <li>Momentum: the compound curve. Your results feel flat for months, then explode. Most quit right before the curve.</li>
-      <li>Choices + Behaviors + Habits + Time = Compound Effect. The formula is not complicated. The discipline is.</li>
-      <li>Influences: your associations, your inputs (podcasts, books, conversations), your environment.</li>
-      <li>Acceleration: once you have momentum, add fuel. Don't rest — race.</li>
+      <li><strong>The mentor's job is not to carry you.</strong> It is to stay in the room with you when you want to leave it.</li>
+      <li><strong>In PHP:</strong> Your upline MD is your mentor. Joint appointments, one-on-ones, the 9pm check-in text — this is the mentorship system operating.</li>
+      <li><strong>Be the mentor your team needs.</strong> The agent who texts "I'm thinking about quitting" is three feet from gold. What you do next determines their trajectory.</li>
+      <li><strong>Find your mentors too.</strong> Events, this training, your upline leadership — these are your mentorship inputs.</li>
     </ul>
-    <p style="margin-top:10px;"><strong style="color:var(--gold-light);">Book Report Prompt:</strong> Track your top 3 daily non-negotiables for 30 days. What would compound if you never missed a day?</p>` },
+    <p style="margin-top:10px;"><strong style="color:var(--gold-light);">Reflection:</strong> Who on your team is closest to quitting right now? When did you last reach out to them specifically?</p>` },
+
+  { title: '4 — Passion + Talent + Association', body: `
+    <p><strong style="color:var(--gold-light);">Three inputs. Every sustained high achiever has all three. Most people are missing one.</strong></p>
+    <div style="display:flex;flex-direction:column;gap:8px;margin:12px 0;">
+      <div style="background:rgba(201,168,76,.08);border-radius:8px;padding:10px 14px;">
+        <strong style="color:#E8C97A;">Passion:</strong> <span style="font-size:12px;color:rgba(250,246,238,.8);">Are you genuinely excited about what life insurance does for families? Find the part you are excited about and lead from there. Manufactured passion doesn't survive rejection.</span>
+      </div>
+      <div style="background:rgba(52,152,219,.08);border-radius:8px;padding:10px 14px;">
+        <strong style="color:#5DADE2;">Talent:</strong> <span style="font-size:12px;color:rgba(250,246,238,.8);">Skill is built, not born. Role-play presentations. Know your products cold. Know the promotion requirements. The agent who can answer every question with confidence closes more.</span>
+      </div>
+      <div style="background:rgba(45,202,115,.08);border-radius:8px;padding:10px 14px;">
+        <strong style="color:#2DCA73;">Association:</strong> <span style="font-size:12px;color:rgba(250,246,238,.8);">You are the average of your five closest influences. Thankful Thursday, team calls, training events — this is not optional culture. This is the association that raises your average.</span>
+      </div>
+    </div>
+    <p style="margin-top:10px;"><strong style="color:var(--gold-light);">Honest audit:</strong> Which of the three is weakest for you right now? Write one specific action to strengthen it this month.</p>` },
+
+  { title: '5 — Failure Is Feedback, Not Verdict', body: `
+    <p><strong style="color:var(--gold-light);">"Every adversity carries with it the seed of an equal or greater benefit." — Napoleon Hill</strong></p>
+    <p style="margin:10px 0;">Every person Lechter and Reid interviewed had a story of catastrophic failure — not a setback, a collapse. And every one described that collapse as the turning point, not the endpoint. The failure didn't define them. How they chose to interpret it did.</p>
+    <ul>
+      <li>A failed appointment is a lesson in positioning, not a verdict on your future.</li>
+      <li>A week of rejections is data about your approach, not a commentary on your worth.</li>
+      <li>An agent who quits is a signal to examine your follow-up and culture, not a reason to stop recruiting.</li>
+      <li><strong>Applied:</strong> Most breakthroughs follow a failure that looked final. Are you still in the room to receive the benefit?</li>
+    </ul>
+    <p style="margin-top:10px;"><strong style="color:var(--gold-light);">Book Report Prompt:</strong> Describe one failure in your business that you now recognize as a turning point. What was the "seed of benefit" inside it?</p>` },
+
+  { title: '6 — Taking Purposeful Action', body: `
+    <p><strong style="color:var(--gold-light);">Knowing and not doing is the same as not knowing.</strong></p>
+    <p style="margin:10px 0;">The final lesson of 3 Feet from Gold: success is not primarily mindset, mentors, or passion — it is purposeful daily action taken consistently over time. The gold doesn't come to those who believe harder. It comes to those who keep digging.</p>
+    <ul>
+      <li><strong>Purposeful:</strong> Every action tied to a clear goal — not "make calls" but "set 3 protection appointments by noon."</li>
+      <li><strong>Daily:</strong> The compound effect only works if the input is consistent. Three months of daily activity creates what three weeks of intensity cannot.</li>
+      <li><strong>Despite conditions:</strong> The agents who become MDs are not the ones who had the best conditions — they are the ones who kept digging regardless.</li>
+      <li><strong>DBA standard:</strong> Log your activity every day. If you cannot measure it, you cannot improve it.</li>
+    </ul>
+    <p style="margin-top:10px;"><strong style="color:var(--gold-light);">Commitment:</strong> What is your non-negotiable daily action for the next 30 days? Write it and share it with your MD at your next one-on-one.</p>` },
 ]);
+
 
 // ── TEAM BUILDER TRAINING ─────────────────────────────────────
 buildModules('teambuilder-modules', [
