@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Breakthrough Training — Dynasty Builders Academy</title>
+<style>
+  :root{
+    --navy-dark:#13213D; --navy:#1E2F55; --navy-light:#2A3F6B;
+    --gold:#C9A227; --gold-light:#E8C766;
+    --white:#FFFFFF; --offwhite:#F7F6F3;
+    --text-dark:#20242E; --text-muted:#5B5F6B;
+    --card-line:#E2E1DC; --red-muted:#A8483F;
+    --head: Cambria, Georgia, serif;
+    --body: Calibri, Arial, sans-serif;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; height:100%; background:#0A1020; font-family:var(--body); overscroll-behavior:none; }
+  #stageWrap{
+    position:relative; width:100%; height:100vh; display:flex; align-items:center; justify-content:center;
+    overflow:hidden;
+  }
+  #stage{
+    position:relative; width:min(96vw, 177.78vh); height:min(54vw, 100vh);
+    max-width:1280px; max-height:720px; aspect-ratio:16/9;
+    background:var(--white); border-radius:6px; overflow:hidden;
+    box-shadow:0 30px 70px rgba(0,0,0,0.55);
+  }
+  .slide{
+    position:absolute; inset:0; display:none;
+    padding:5.5% 5%; color:var(--text-dark);
+  }
+  .slide.active{ display:block; }
+  .slide.dark{ background:var(--navy-dark); color:var(--white); }
+  .slide.light{ background:var(--white); color:var(--text-dark); }
+
+  .kicker{
+    font-family:var(--body); font-size:0.78vw; font-weight:700; letter-spacing:2px;
+    color:var(--gold); text-transform:uppercase; opacity:0; margin:0 0 0.6%;
+  }
+  .dark .kicker{ color:var(--gold-light); }
+  .title{
+    font-family:var(--head); font-weight:700; font-size:2.4vw; line-height:1.15;
+    margin:0 0 1%; opacity:0;
+  }
+  .subtitle{
+    font-family:var(--body); font-size:1vw; font-style:italic; color:var(--text-muted);
+    margin:0 0 2%; opacity:0;
+  }
+  .dark .subtitle{ color:#C7CEDE; }
+  .anim{ animation: riseIn 0.55s ease forwards; }
+  @keyframes riseIn{ from{ opacity:0; transform:translateY(14px);} to{ opacity:1; transform:translateY(0);} }
+
+  .footer-brand{
+    position:absolute; left:5%; bottom:4%; font-size:0.62vw; font-weight:700; letter-spacing:1.5px;
+    color:#9AA0AC; opacity:0;
+  }
+  .dark .footer-brand{ color:#8C97AD; }
+
+  /* circles */
+  .circle{
+    border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .icon-svg{ width:52%; height:52%; }
+
+  /* cards */
+  .card{
+    background:var(--offwhite); border:1px solid var(--card-line); border-radius:10px;
+    opacity:0;
+  }
+  .dark .card, .card.on-navy{ background:var(--navy); border-color:var(--navy-light); }
+
+  /* generic layout helpers */
+  .row-flex{ display:flex; align-items:center; }
+  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:1.4%; }
+  .grid3{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:1.4%; }
+
+  /* decorative blobs */
+  .blob{ position:absolute; border-radius:50%; opacity:0.9; }
+
+  /* nav controls */
+  #navBtns{ position:absolute; inset:0; display:flex; z-index:5; }
+  #navBtns .zone{ flex:1; cursor:pointer; }
+  #hud{
+    position:fixed; left:0; right:0; bottom:0; display:flex; align-items:center; gap:14px;
+    padding:10px 18px; background:rgba(10,16,32,0.85); z-index:10;
+  }
+  #progressTrack{ flex:1; height:5px; background:#2A3350; border-radius:3px; overflow:hidden; }
+  #progressFill{ height:100%; background:linear-gradient(90deg, var(--gold), var(--gold-light)); width:0%; transition:width .35s ease; }
+  .hud-btn{
+    background:#1E2A47; border:1px solid #33406A; color:#E8EAF2; border-radius:6px;
+    padding:7px 12px; font-family:var(--body); font-size:12.5px; cursor:pointer;
+  }
+  .hud-btn:hover{ background:#28345A; }
+  #counter{ color:#B9C0D4; font-size:12.5px; font-family:var(--body); min-width:52px; text-align:center; }
+
+  #notesPanel{
+    position:fixed; right:16px; bottom:56px; width:340px; max-width:80vw; max-height:40vh; overflow:auto;
+    background:#161E33; border:1px solid #2E3A5C; border-radius:10px; padding:14px 16px; color:#D7DCEA;
+    font-size:13px; line-height:1.5; display:none; z-index:11;
+  }
+  #notesPanel.show{ display:block; }
+  #notesPanel h4{ margin:0 0 6px; color:var(--gold-light); font-family:var(--head); font-size:14px; }
+
+  @media (max-width: 700px){
+    .title{ font-size:4.4vw; }
+    .kicker{ font-size:1.6vw; }
+    .subtitle{ font-size:2vw; }
+    #notesPanel{ width:88vw; right:6vw; }
+  }
+</style>
+</head>
+<body>
+
+<div id="stageWrap">
+  <div id="stage"></div>
+  <div id="navBtns">
+    <div class="zone" id="zonePrev"></div>
+    <div class="zone" id="zoneNext"></div>
+  </div>
+</div>
+
+<div id="hud">
+  <button class="hud-btn" id="prevBtn">&larr; Prev</button>
+  <div id="progressTrack"><div id="progressFill"></div></div>
+  <div id="counter">1 / 14</div>
+  <button class="hud-btn" id="nextBtn">Next &rarr;</button>
+  <button class="hud-btn" id="notesBtn">Notes</button>
+  <button class="hud-btn" id="fsBtn">Fullscreen</button>
+</div>
+
+<div id="notesPanel"><h4>Speaker notes</h4><div id="notesText"></div></div>
+
+<script>
+// ---------------- Icon library (hand-drawn, original, minimal line style) ----------------
+const ICONS = {
+  chart: `<polyline points="3,17 9,10 13,13 21,4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="21" cy="4" r="1.6" fill="currentColor"/>`,
+  clipboard: `<rect x="5" y="4" width="14" height="17" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><rect x="8.5" y="2" width="7" height="3.4" rx="1" fill="currentColor"/><polyline points="8,13 11,16 16,9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`,
+  eyeSlash: `<path d="M3 12s3.6-6.5 9-6.5 9 6.5 9 6.5-3.6 6.5-9 6.5S3 12 3 12z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="2.6" fill="none" stroke="currentColor" stroke-width="2"/><line x1="3" y1="3" x2="21" y2="21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>`,
+  guilt: `<circle cx="7" cy="13" r="3.2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17" cy="13" r="3.2" fill="none" stroke="currentColor" stroke-width="2"/><line x1="12" y1="4" x2="12" y2="9" stroke="currentColor" stroke-width="2"/><line x1="4" y1="9" x2="20" y2="9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="9" x2="7" y2="9.8" stroke="currentColor" stroke-width="2"/><line x1="12" y1="9" x2="17" y2="9.8" stroke="currentColor" stroke-width="2"/>`,
+  battery: `<rect x="2.5" y="8" width="16" height="8" rx="1.6" fill="none" stroke="currentColor" stroke-width="2"/><rect x="20" y="10.5" width="2" height="3" fill="currentColor"/><rect x="5" y="10.5" width="3" height="3" fill="currentColor"/>`,
+  warn: `<path d="M12 3 L22 20 H2 Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><line x1="12" y1="10" x2="12" y2="14.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="17" r="1.1" fill="currentColor"/>`,
+  arrowDown: `<line x1="12" y1="4" x2="12" y2="18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><polyline points="6,13 12,19 18,13" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>`,
+  shield: `<path d="M12 3 L20 6.5 V12 C20 17 16.5 20 12 21.5 C7.5 20 4 17 4 12 V6.5 Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>`,
+  hands: `<path d="M4 13 L9 9 L13 12 L11 15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 13 L15 9 L11 12 L13 15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="16.5" r="2" fill="none" stroke="currentColor" stroke-width="2"/>`,
+  heart: `<path d="M12 20 C5 15 2 11 2 7.5 C2 4.8 4.2 3 6.6 3 C8.4 3 10 4 12 6.2 C14 4 15.6 3 17.4 3 C19.8 3 22 4.8 22 7.5 C22 11 19 15 12 20 Z" fill="currentColor"/>`,
+  book: `<path d="M3 5 C6 3.5 9 3.5 12 5 C15 3.5 18 3.5 21 5 V19 C18 17.5 15 17.5 12 19 C9 17.5 6 17.5 3 19 Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" stroke-width="2"/>`,
+  bolt: `<polygon points="13,2 4,14 11,14 9,22 20,9 13,9" fill="currentColor"/>`,
+  flag: `<line x1="5" y1="2" x2="5" y2="22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M5 4 H18 L15 8 L18 12 H5 Z" fill="currentColor"/>`,
+  phone: `<path d="M6 3 H9 L11 8 L8.5 9.7 C9.6 12.2 11.8 14.4 14.3 15.5 L16 13 L21 15 V18 C21 19.7 19.5 21.1 17.8 20.9 C10.6 20 4 13.4 3.1 6.2 C2.9 4.5 4.3 3 6 3 Z" fill="currentColor"/>`,
+  userPlus: `<circle cx="9" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M2 21 C2 16.5 5 14 9 14 C13 14 16 16.5 16 21" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="18" y1="8" x2="18" y2="14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="15" y1="11" x2="21" y2="11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>`,
+  chartBar: `<line x1="4" y1="21" x2="20" y2="21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><rect x="6" y="13" width="3.4" height="8" fill="currentColor"/><rect x="10.3" y="9" width="3.4" height="12" fill="currentColor"/><rect x="14.6" y="5" width="3.4" height="16" fill="currentColor"/>`,
+  route: `<circle cx="5" cy="6" r="2.4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="19" cy="18" r="2.4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M7 7 C 10 7, 8 17, 17 17" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="3,3" stroke-linecap="round"/>`,
+};
+function icon(name, colorClass){ return `<svg class="icon-svg ${colorClass||''}" viewBox="0 0 24 24">${ICONS[name]}</svg>`; }
+function circle(name, size, bg, color){
+  return `<div class="circle" style="width:${size};height:${size};background:${bg};color:${color}">${icon(name)}</div>`;
+}
+
+// ---------------- Slide content builders ----------------
+function kicker(t){ return `<div class="kicker anim" style="animation-delay:.05s">${t}</div>`; }
+function title(t, size){ return `<div class="title anim" style="animation-delay:.15s;${size?`font-size:${size}`:''}">${t}</div>`; }
+function subtitle(t){ return `<div class="subtitle anim" style="animation-delay:.28s">${t}</div>`; }
+function brand(){ return `<div class="footer-brand anim" style="animation-delay:.9s">DYNASTY BUILDERS ACADEMY &middot; BREAKTHROUGH TRAINING</div>`; }
+
+function assessCard(tag, txt, delay){
+  return `<div class="card anim" style="animation-delay:${delay}s;padding:3.2% 3%;">
+    <div style="font-family:var(--body);font-size:0.68vw;font-weight:700;letter-spacing:1px;color:var(--navy);margin-bottom:6%;">${tag}</div>
+    <div style="font-family:var(--body);font-size:0.95vw;line-height:1.4;">${txt}</div>
+  </div>`;
+}
+function hijackRow(name, iconName, txt, delay, last){
+  return `<div class="anim" style="animation-delay:${delay}s;display:flex;align-items:center;gap:3%;padding:2.6% 0;${last?'':'border-bottom:1px solid var(--navy-light);'}">
+    ${circle(iconName,'3.6vw','var(--navy-light)','var(--gold-light)')}
+    <div style="font-family:var(--head);font-size:1.3vw;font-weight:700;color:var(--gold-light);width:14%;">${name}</div>
+    <div style="font-family:var(--body);font-size:1vw;color:#D9DEEA;flex:1;">${txt}</div>
+  </div>`;
+}
+function actionRow(area, iconName, txt, delay){
+  return `<div class="card anim" style="animation-delay:${delay}s;display:flex;align-items:center;gap:2.5%;padding:2.2% 3%;margin-bottom:1.4%;">
+    ${circle(iconName,'3.4vw','var(--navy)','#fff')}
+    <div style="flex:1;">
+      <div style="font-family:var(--body);font-size:0.68vw;font-weight:700;letter-spacing:1px;color:var(--navy);">${area.toUpperCase()}</div>
+      <div style="font-family:var(--body);font-size:0.98vw;margin-top:0.4%;">${txt}</div>
+    </div>
+  </div>`;
+}
+function statCard(big, sub, delay){
+  return `<div class="card anim" style="animation-delay:${delay}s;text-align:center;padding:6% 4%;">
+    <div style="margin:0 auto 8%;width:3.4vw;height:3.4vw;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 10px rgba(0,0,0,0.08);">
+      ${icon('arrowDown','')}
+    </div>
+    <div style="font-family:var(--head);font-size:1.5vw;font-weight:700;color:var(--red-muted);">&darr; ${big}</div>
+    <div style="font-family:var(--body);font-size:0.88vw;margin-top:6%;color:var(--text-dark);">${sub}</div>
+  </div>`;
+}
+function scriptureCard(name, iconName, verse, delay){
+  return `<div class="card on-navy anim" style="animation-delay:${delay}s;text-align:center;padding:6% 4%;">
+    ${circle(iconName,'3.6vw','var(--navy-light)','var(--gold-light)').replace('display:flex','margin:0 auto 8%;display:flex')}
+    <div style="font-family:var(--head);font-size:1.15vw;font-weight:700;color:var(--gold-light);margin:6% 0 6%;">${name}</div>
+    <div style="font-family:var(--body);font-size:0.82vw;font-style:italic;color:#E4E8F1;line-height:1.4;">${verse}</div>
+  </div>`;
+}
+function exerciseRow(n, t, txt, delay){
+  return `<div class="anim" style="animation-delay:${delay}s;display:flex;align-items:flex-start;gap:2.5%;margin-bottom:5%;">
+    <div style="width:3.2vw;height:3.2vw;border-radius:50%;background:var(--gold);color:var(--navy-dark);display:flex;align-items:center;justify-content:center;font-family:var(--head);font-size:1.3vw;font-weight:700;flex-shrink:0;">${n}</div>
+    <div>
+      <div style="font-family:var(--head);font-size:1.15vw;font-weight:700;color:var(--gold-light);margin-bottom:0.6%;">${t}</div>
+      <div style="font-family:var(--body);font-size:0.95vw;color:#D9DEEA;">${txt}</div>
+    </div>
+  </div>`;
+}
+function pathNode(label, sub, delay, big, color, textColor){
+  return `<div class="anim" style="animation-delay:${delay}s;text-align:center;">
+    <div style="width:${big?'6.2vw':'5.6vw'};height:${big?'6.2vw':'5.6vw'};border-radius:50%;background:${color};margin:0 auto 8%;display:flex;align-items:center;justify-content:center;font-family:var(--head);font-weight:700;font-size:0.95vw;color:${textColor};padding:4%;text-align:center;">${label}</div>
+    <div style="font-family:var(--body);font-size:0.78vw;color:#C7CEDE;">${sub}</div>
+  </div>`;
+}
+
+// ---------------- Build each slide's HTML ----------------
+const slides = [];
+
+// 1. Title
+slides.push({
+  cls:'dark', notes:'Welcome the room. Frame this as a working session, not a lecture — they will assess, see the pattern, and practice a shift in 30 minutes. (0:00–1:00)',
+  html: `
+    <div class="blob anim" style="animation-delay:0s;width:36%;height:64%;background:var(--navy-light);top:-20%;right:-8%;"></div>
+    <div class="blob anim" style="animation-delay:0s;width:24%;height:44%;background:var(--navy);bottom:-14%;left:-10%;"></div>
+    <div class="kicker anim" style="color:var(--gold-light);animation-delay:.1s;">DYNASTY BUILDERS ACADEMY</div>
+    <div class="title anim" style="font-size:3.4vw;animation-delay:.25s;">The Breakthrough Training</div>
+    <div class="subtitle anim" style="font-size:1.15vw;animation-delay:.45s;max-width:70%;">Overcoming Shame, Guilt, Apathy &amp; Fear in Prospecting, Recruiting and Production</div>
+    <div class="anim" style="animation-delay:.65s;display:inline-block;background:var(--gold);color:var(--navy-dark);font-weight:700;font-size:0.85vw;padding:2.2% 3%;margin-top:2%;border-radius:3px;">30-MINUTE TRAINING</div>
+    <div class="anim" style="position:absolute;left:5%;bottom:8%;animation-delay:1s;font-size:0.78vw;font-style:italic;color:#8C97AD;">"Making Dreams Come True, One Policy at a Time"</div>
+  `
+});
+
+// 2. Why This Matters
+slides.push({
+  cls:'light', notes:'Read both paragraphs. Pause after "market condition" — let it land before moving to the card on the right. (1:00–3:00)',
+  html: `
+    ${kicker('The Premise')}
+    ${title('Your Numbers Follow Your State')}
+    <div style="display:grid;grid-template-columns:1.35fr 1fr;gap:4%;margin-top:4%;">
+      <div>
+        <p class="anim" style="animation-delay:.3s;font-size:0.98vw;line-height:1.5;">Two agents can get identical scripts, identical leads, and identical training. One books the appointment, invites the recruit, and follows up on the production paperwork. The other quietly doesn't.</p>
+        <p class="anim" style="animation-delay:.5s;font-size:0.98vw;line-height:1.5;">The difference usually isn't skill. It's which inner state is driving the activity that day — shame, guilt, apathy, and fear all quietly shrink activity long before a market condition does.</p>
+        <p class="anim" style="animation-delay:.7s;font-size:0.98vw;font-weight:700;color:var(--navy);line-height:1.5;">Today we name the pattern, see exactly where it costs you, and practice the shift — right here, in the room.</p>
+      </div>
+      <div class="card anim" style="animation-delay:.5s;text-align:center;padding:8% 6%;">
+        ${circle('chart','3.6vw','var(--navy)','var(--gold)').replace('display:flex','margin:0 auto 10%;display:flex')}
+        <div style="font-family:var(--head);font-weight:700;font-size:1.15vw;">Activity is the output.</div>
+        <div style="font-family:var(--head);font-weight:700;font-size:1.15vw;color:var(--navy);margin-top:2%;">State is the input.</div>
+        <div style="font-family:var(--body);font-size:0.82vw;font-style:italic;color:var(--text-muted);margin-top:10%;">Change the input, and the output changes on its own — without needing more willpower.</div>
+      </div>
+    </div>
+    ${brand()}
+  `
+});
+
+// 3. Today's path
+{
+  const steps = [
+    {n:'5',l:'Assess',s:'Name your current pattern',color:'var(--gold)',tc:'var(--navy-dark)'},
+    {n:'6',l:'See It',s:'How it hijacks the business',color:'var(--navy)',tc:'#fff'},
+    {n:'8',l:'The Shift',s:'Courage, willingness, love',color:'var(--navy)',tc:'#fff'},
+    {n:'8',l:'Practice',s:'Do it in the room',color:'var(--navy)',tc:'#fff'},
+    {n:'3',l:'Commit',s:'One action for this week',color:'var(--navy)',tc:'#fff'},
+  ];
+  let stepsHtml = `<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-top:6%;">`;
+  steps.forEach((st,i)=>{
+    stepsHtml += `<div class="anim" style="animation-delay:${0.35+i*0.12}s;text-align:center;width:18%;">
+      <div style="width:4.6vw;height:4.6vw;border-radius:50%;background:${st.color};color:${st.tc};display:flex;align-items:center;justify-content:center;font-family:var(--head);font-weight:700;font-size:1.7vw;margin:0 auto;">${st.n}</div>
+      <div style="font-family:var(--head);font-weight:700;font-size:1vw;margin-top:8%;">${st.l}</div>
+      <div style="font-family:var(--body);font-size:0.75vw;color:var(--text-muted);margin-top:3%;">${st.s}</div>
+    </div>`;
+  });
+  stepsHtml += `</div>`;
+  slides.push({
+    cls:'light', notes:'Walk the five-step path quickly. This is a map, not content yet — keep it under a minute. (3:00–4:00)',
+    html: `${kicker('Today\u2019s Path')}${title('30 Minutes, Five Moves')}
+      <div class="anim" style="animation-delay:.3s;font-size:0.78vw;font-style:italic;color:var(--text-muted);">minutes per step</div>
+      ${stepsHtml}${brand()}`
+  });
+}
+
+// 4. Assessment part 1
+slides.push({
+  cls:'light', notes:'Have agents rate each item silently in their own notes or a handout. Don\u2019t discuss answers aloud yet — this is self-assessment, not confession. (4:00–6:30)',
+  html: `${kicker('Initial Assessment &mdash; Part 1 of 2')}${title('Shame &amp; Guilt in Your Business')}
+    ${subtitle('Rate each statement honestly: 0 = never true, 1 = sometimes, 2 = often, 3 = almost always.')}
+    <div class="grid2" style="margin-top:2%;">
+      ${assessCard('SHAME &middot; PROSPECTING','I avoid contacting certain prospects because I worry they\u2019ll see me as pushy.', .4)}
+      ${assessCard('SHAME &middot; RECRUITING','I hold back on inviting people into DBA because I\u2019m afraid of how I\u2019ll be seen.', .5)}
+      ${assessCard('GUILT &middot; PROSPECTING','I feel guilty asking my warm market for referrals.', .6)}
+      ${assessCard('GUILT &middot; RECRUITING','I feel guilty pushing my downline to do the activities I know work.', .7)}
+    </div>${brand()}`
+});
+
+// 5. Assessment part 2
+slides.push({
+  cls:'light', notes:'Continue rating. Read the scoring guidance aloud. Ask for a show of hands ONLY on "did one cluster stand out to you" — no need to share which one. (6:30–9:00)',
+  html: `${kicker('Initial Assessment &mdash; Part 2 of 2')}${title('Apathy &amp; Fear in Your Business')}
+    <div class="grid2" style="margin-top:3%;">
+      ${assessCard('APATHY &middot; PRODUCTION','I\u2019ve quietly lowered my activity because it feels like the numbers won\u2019t change anyway.', .35)}
+      ${assessCard('APATHY &middot; RECRUITING','I\u2019ve stopped following up with prospects who went quiet.', .45)}
+      ${assessCard('FEAR &middot; PROSPECTING','I put off calls because I\u2019m afraid of hearing no.', .55)}
+      ${assessCard('FEAR &middot; RECRUITING','I avoid recruiting conversations because rejection feels too personal.', .65)}
+    </div>
+    <div class="card on-navy anim" style="animation-delay:.85s;margin-top:3%;padding:2.6% 3%;display:flex;align-items:center;gap:2%;color:#fff;">
+      ${circle('clipboard','3vw','var(--navy-light)','var(--gold)')}
+      <div style="font-size:0.88vw;line-height:1.4;">Scoring: 5 or more across a 4-item cluster means that state is currently steering your daily activity — that\u2019s your starting point today, not a verdict on you.</div>
+    </div>${brand()}`
+});
+
+// 6. How lower states hijack
+slides.push({
+  cls:'dark', notes:'Walk each of the four rows. Ask the room: "Which one of these have you caught yourself doing this month?" Take 1-2 verbal answers if the room is warm. (9:00–13:00)',
+  html: `${kicker('See The Pattern')}${title('How Each State Hijacks Activity')}
+    <div style="margin-top:3%;">
+      ${hijackRow('Shame','eyeSlash','Delays the invite and the ask — avoids being seen as "too much."', .35)}
+      ${hijackRow('Guilt','guilt','Softens the follow-up and the referral ask until it disappears entirely.', .5)}
+      ${hijackRow('Apathy','battery','Quietly drops dials and appointments — "it won\u2019t change anything" becomes the excuse.', .65)}
+      ${hijackRow('Fear','warn','Avoids the call, the conversation, the close — rejection is treated as a verdict.', .8, true)}
+    </div>${brand()}`
+});
+
+// 7. The cost
+slides.push({
+  cls:'light', notes:'These are illustrative, not their personal data — say so explicitly so no one feels targeted. Move briskly. (13:00–15:00)',
+  html: `${kicker('The Cost')}${title('What This Actually Costs')}
+    ${subtitle('Illustrative patterns we see across baseshops — the exact numbers vary, but the shape doesn\u2019t.')}
+    <div class="grid3" style="margin-top:3%;">
+      ${statCard('Dials','Fear turns "I\u2019ll call after lunch" into "I\u2019ll call tomorrow."', .4)}
+      ${statCard('Invites','Shame keeps a strong prospect off the recruiting list entirely.', .5)}
+      ${statCard('Follow-ups','Apathy lets a warm lead go cold from silence, not rejection.', .6)}
+    </div>${brand()}`
+});
+
+// 8. Breakthrough path
+slides.push({
+  cls:'dark', notes:'This is the core reframe of the whole training. Go slow here. Courage is the threshold; willingness/acceptance and love are what sustain it. (15:00–17:00)',
+  html: `${kicker('The Shift')}${title('The Breakthrough Path')}
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8%;position:relative;">
+      ${pathNode('Lower States','Shame &middot; Guilt<br>Apathy &middot; Fear', .35, true, 'var(--navy-light)', '#fff')}
+      <div class="anim" style="animation-delay:.5s;flex:1;height:2px;background:var(--gold-light);margin:0 -2%;position:relative;top:-3.6vw;"></div>
+      ${pathNode('Courage','Act despite<br>the fear', .6, false, 'var(--gold)', 'var(--navy-dark)')}
+      <div class="anim" style="animation-delay:.75s;flex:1;height:2px;background:var(--gold-light);margin:0 -2%;position:relative;top:-3.2vw;"></div>
+      ${pathNode('Willingness &amp; Acceptance','Open to no,<br>open to coaching', .8, false, 'var(--gold)', 'var(--navy-dark)')}
+      <div class="anim" style="animation-delay:.95s;flex:1;height:2px;background:var(--gold-light);margin:0 -2%;position:relative;top:-3.2vw;"></div>
+      ${pathNode('Love','Serve the<br>person, not the sale', 1.0, false, 'var(--gold)', 'var(--navy-dark)')}
+    </div>${brand()}`
+});
+
+// 9-11: action slides
+function actionSlide(kickerTxt, titleTxt, subTxt, rows, delayBase){
+  let rowsHtml = '';
+  rows.forEach((r,i)=> rowsHtml += actionRow(r.area, r.icon, r.txt, delayBase + i*0.15));
+  return `${kicker(kickerTxt)}${title(titleTxt)}${subtitle(subTxt)}<div style="margin-top:2%;">${rowsHtml}</div>${brand()}`;
+}
+slides.push({
+  cls:'light', notes:'For each row, ask an agent to commit out loud to trying it this week. (17:00–19:00)',
+  html: actionSlide('The Shift, Applied','Courage in Action','Facing the fear and acting anyway',
+    [{area:'Prospecting',icon:'phone',txt:'Make the call before you feel ready — dial at 60%, not 100%.'},
+     {area:'Recruiting',icon:'userPlus',txt:'Extend the invite even when you\u2019re unsure how it\u2019ll land.'},
+     {area:'Production',icon:'chartBar',txt:'Submit the paperwork today instead of "getting to it" tomorrow.'}], .35)
+});
+slides.push({
+  cls:'light', notes:'Emphasize that "no" is data. If anyone has a recent no, invite them to reframe it live in the room. (19:00–21:00)',
+  html: actionSlide('The Shift, Applied','Willingness &amp; Acceptance in Action','Letting "no" be data, not a verdict',
+    [{area:'Prospecting',icon:'phone',txt:'Treat each no as one step closer to the next yes — log it and move on.'},
+     {area:'Recruiting',icon:'userPlus',txt:'Ask a declined prospect what held them back — and actually listen.'},
+     {area:'Production',icon:'chartBar',txt:'Accept coaching on a stalled case without treating it as criticism.'}], .35)
+});
+slides.push({
+  cls:'light', notes:'This is the deepest shift — slow down. Ask: "Whose face comes to mind when you think of someone who needs what you offer?" (21:00–23:00)',
+  html: actionSlide('The Shift, Applied','Love in Action','The business becomes service, not a transaction',
+    [{area:'Prospecting',icon:'phone',txt:'Call because their family genuinely needs the protection — not because you need the sale.'},
+     {area:'Recruiting',icon:'userPlus',txt:'Invite people because you see something in them worth building, not to hit a number.'},
+     {area:'Production',icon:'chartBar',txt:'Finish the case because a family is waiting on it — not just because it\u2019s owed.'}], .35)
+});
+
+// 12. Scripture anchors
+slides.push({
+  cls:'light', notes:'Optional slide — skip or linger based on your audience. If skipping, jump straight to slide 13. (23:00–24:00)',
+  html: `${kicker('Anchors')}${title('Scripture Anchors &amp; Affirmations')}
+    ${subtitle('Optional — for teams who welcome faith-based framing alongside the model.')}
+    <div class="grid3" style="margin-top:3%;">
+      ${scriptureCard('Courage','shield','"Be strong and courageous... for the Lord your God is with you." &mdash; Joshua 1:9', .4)}
+      ${scriptureCard('Willingness &amp; Acceptance','hands','"Not my will, but yours, be done." &mdash; Luke 22:42', .5)}
+      ${scriptureCard('Love','heart','"My peace I give to you, not as the world gives." &mdash; John 14:27', .6)}
+    </div>${brand()}`
+});
+
+// 13. Exercises
+slides.push({
+  cls:'dark', notes:'Give a full 60 seconds of real silence for exercise 1 — they should actually send the text/make the call right now. Same for 2 and 3. (24:00–28:00)',
+  html: `${kicker('Practice It Now')}${title('Do This Before You Leave the Room')}
+    <div style="margin-top:4%;">
+      ${exerciseRow(1,'The Courage Rep','Right now, pull up your phone and send one text or make one call you\u2019ve been putting off.', .35)}
+      ${exerciseRow(2,'The Acceptance Line','Write down the last "no" you got, and next to it write: "That\u2019s information, not a verdict."', .55)}
+      ${exerciseRow(3,'The Love Reframe','Pick one person on your list. Write one sentence about what THEY need — before your next call to them.', .75)}
+    </div>${brand()}`
+});
+
+// 14. Commit
+slides.push({
+  cls:'dark', notes:'Have each agent say their one action out loud to a partner. Close with the DBA tagline and dismiss on time. (28:00–30:00)',
+  html: `<div class="blob anim" style="animation-delay:0s;width:30%;height:56%;background:var(--navy);top:-16%;left:-10%;"></div>
+    ${kicker('Commit')}${title('Your One Action This Week')}
+    <div class="card on-navy anim" style="animation-delay:.4s;margin-top:4%;padding:3% 3%;">
+      <div style="font-style:italic;font-size:1vw;color:#C7CEDE;">"This week, the one courage action I will not skip is..."</div>
+      <div style="border-top:1px dashed var(--gold-light);margin-top:5%;"></div>
+    </div>
+    <div class="anim" style="animation-delay:.65s;display:flex;align-items:center;gap:2.5%;margin-top:5%;">
+      ${circle('flag','4vw','var(--navy)','var(--gold)')}
+      <div style="font-size:0.95vw;color:#D9DEEA;">Say it out loud to the person next to you — spoken commitments get kept far more often than silent ones.</div>
+    </div>
+    <div class="anim" style="position:absolute;left:5%;bottom:8%;animation-delay:1s;font-size:0.78vw;font-style:italic;color:#8C97AD;">"Making Dreams Come True, One Policy at a Time"</div>`
+});
+
+// ---------------- Runtime ----------------
+let idx = 0;
+const stage = document.getElementById('stage');
+
+function render(){
+  stage.innerHTML = '';
+  slides.forEach((s, i) => {
+    const div = document.createElement('div');
+    div.className = 'slide ' + s.cls + (i === idx ? ' active' : '');
+    div.innerHTML = s.html;
+    stage.appendChild(div);
+  });
+  document.getElementById('counter').textContent = (idx+1) + ' / ' + slides.length;
+  document.getElementById('progressFill').style.width = ((idx+1)/slides.length*100) + '%';
+  document.getElementById('notesText').textContent = slides[idx].notes;
+}
+function go(delta){
+  idx = Math.min(slides.length-1, Math.max(0, idx+delta));
+  render();
+}
+document.getElementById('prevBtn').onclick = ()=>go(-1);
+document.getElementById('nextBtn').onclick = ()=>go(1);
+document.getElementById('zonePrev').onclick = ()=>go(-1);
+document.getElementById('zoneNext').onclick = ()=>go(1);
+document.getElementById('notesBtn').onclick = ()=>document.getElementById('notesPanel').classList.toggle('show');
+document.getElementById('fsBtn').onclick = ()=>{
+  const el = document.documentElement;
+  if(!document.fullscreenElement){ el.requestFullscreen && el.requestFullscreen(); }
+  else{ document.exitFullscreen && document.exitFullscreen(); }
+};
+document.addEventListener('keydown', (e)=>{
+  if(e.key === 'ArrowRight' || e.key === ' ') go(1);
+  if(e.key === 'ArrowLeft') go(-1);
+});
+
+render();
+</script>
+</body>
+</html>
