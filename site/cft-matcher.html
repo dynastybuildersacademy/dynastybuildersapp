@@ -761,21 +761,38 @@ Dynasty Builders Academy`;
 }
 
 // ── GOOGLE CALENDAR ───────────────────────────────────────────
-function connectGoogle() {
-  const clientId = ''; // Set via env — if not configured, show instructions
+let _googleClientId = null;
+
+async function getGoogleClientId() {
+  if(_googleClientId) return _googleClientId;
+  try {
+    const res = await fetch('/api/config');
+    const data = await res.json();
+    _googleClientId = data.googleClientId || '';
+  } catch(e) {
+    _googleClientId = '';
+  }
+  return _googleClientId;
+}
+
+async function connectGoogle() {
+  const btn = document.querySelector('.google-btn');
+  if(btn) { btn.disabled = true; btn.innerHTML = '⏳ Connecting…'; }
+
+  const clientId = await getGoogleClientId();
+
   if(!clientId) {
-    // Show the manual availability fallback
     document.getElementById('cal-connect-box').innerHTML = `
-      <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--orange);line-height:1.8;text-align:left;">
-        ⚙️ <strong>Google OAuth not configured</strong><br>
-        To enable automatic calendar sync:<br>
-        1. Add GOOGLE_CLIENT_ID to your Netlify environment variables<br>
-        2. Redeploy the site<br><br>
-        <strong>In the meantime</strong>, use the manual availability grid below — it works the same way for matching.
+      <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--orange);line-height:1.8;text-align:left;padding:12px;background:rgba(230,126,34,.06);border-radius:8px;border:1px solid rgba(230,126,34,.2);">
+        ⚙️ <strong>Google Client ID not found</strong><br>
+        The env var is set but may need a redeploy to take effect.<br><br>
+        <strong>Fix:</strong> Go to Netlify → Deploys → Trigger deploy → Deploy site<br><br>
+        <strong>In the meantime</strong>, use the manual availability grid below — it works identically for matching.
       </div>`;
     toast('ℹ Use the manual availability grid below');
     return;
   }
+
   // OAuth flow
   const redirectUri = window.location.origin + '/cft-matcher.html';
   const scope = 'https://www.googleapis.com/auth/calendar.readonly';
@@ -809,6 +826,24 @@ function toast(msg, dur=3000) {
   document.getElementById('pref-date').value = today;
   document.getElementById('inv-date').value = today;
 
+  // Pre-fetch Google Client ID to show correct state on connect button
+  getGoogleClientId().then(clientId => {
+    const box = document.getElementById('cal-connect-box');
+    if(clientId && box) {
+      box.classList.add('ready');
+      const hint = box.querySelector('.cal-hint');
+      if(hint) hint.textContent = 'Google Calendar integration is configured and ready.';
+    }
+  });
+
+  // Check for OAuth callback (code in URL)
+  const urlParams = new URLSearchParams(window.location.search);
+  const oauthCode = urlParams.get('code');
+  if(oauthCode) {
+    window.history.replaceState({}, '', window.location.pathname);
+    handleOAuthCallback(oauthCode);
+  }
+
   // Load existing profile into form
   const profile = loadMyProfile();
   if(profile) {
@@ -829,6 +864,123 @@ function toast(msg, dur=3000) {
     if(authEmail) document.getElementById('cft-email').value = authEmail;
   }
 })();
+
+// ── GOOGLE OAUTH CALLBACK HANDLER ────────────────────────────
+async function handleOAuthCallback(code) {
+  const statusEl = document.getElementById('cal-status');
+  if(statusEl) statusEl.innerHTML = '<div style="font-family:DM Mono,monospace;font-size:11px;color:var(--gold);">⏳ Completing Google sign-in…</div>';
+
+  // Switch to availability tab
+  const avTab = document.querySelector('[onclick*="availability"]');
+  if(avTab) avTab.click();
+
+  try {
+    const redirectUri = window.location.origin + '/cft-matcher.html';
+    const res = await fetch('/api/gcal', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'exchange', code, redirectUri }),
+    });
+    const data = await res.json();
+
+    if(data.access_token) {
+      localStorage.setItem(SK.calToken, JSON.stringify({
+        access_token: data.access_token,
+        refresh_token: data.refresh_token || '',
+        expires_at: Date.now() + (data.expires_in || 3600) * 1000,
+        connected_at: new Date().toISOString(),
+      }));
+
+      // Fetch busy times and auto-populate availability grid
+      await syncCalendarToGrid(data.access_token);
+
+      const box = document.getElementById('cal-connect-box');
+      if(box) {
+        box.className = 'cal-connect-box cal-connected';
+        box.innerHTML = `
+          <div style="font-family:'DM Mono',monospace;font-size:12px;color:var(--green);margin-bottom:6px;">
+            ✅ Google Calendar connected
+          </div>
+          <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);line-height:1.7;">
+            Your free/busy times have been imported into the grid below. You can still manually adjust any slots.
+          </div>
+          <button onclick="disconnectGoogle()" style="margin-top:10px;font-family:'DM Mono',monospace;font-size:10px;
+            color:var(--muted);background:none;border:1px solid var(--border);border-radius:6px;padding:5px 12px;cursor:pointer;">
+            Disconnect
+          </button>`;
+      }
+      if(statusEl) statusEl.innerHTML = '';
+      toast('✅ Google Calendar connected — availability grid updated');
+    } else {
+      throw new Error(data.error_description || data.error || 'Token exchange failed');
+    }
+  } catch(e) {
+    if(statusEl) statusEl.innerHTML = `<div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--red);">⚠ Sign-in failed: ${e.message}</div>`;
+    toast('⚠ Google sign-in failed: ' + e.message);
+  }
+}
+
+async function syncCalendarToGrid(accessToken) {
+  // Get next 7 days of events to determine busy blocks
+  const now = new Date();
+  const weekOut = new Date(now.getTime() + 7 * 24 * 3600 * 1000);
+  try {
+    const res = await fetch('/api/gcal', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'listEvents',
+        token: accessToken,
+        calendarId: 'primary',
+        timeMin: now.toISOString(),
+        timeMax: weekOut.toISOString(),
+      }),
+    });
+    const data = await res.json();
+    const events = data.items || [];
+
+    // Mark slots as unavailable when calendar has events
+    const busySlots = new Set();
+    events.forEach(ev => {
+      if(!ev.start?.dateTime) return; // skip all-day
+      const start = new Date(ev.start.dateTime);
+      const dayIdx = (start.getDay() + 6) % 7; // Mon=0
+      const hour = start.getHours();
+      const slotIdx = Math.max(0, Math.min(6, Math.floor((hour - 8) / 2)));
+      busySlots.add(`${dayIdx}-${slotIdx}`);
+    });
+
+    // Toggle all non-busy slots ON (agent is available when no calendar events)
+    const avail = {};
+    DAYS.forEach((_, di) => {
+      SLOTS.forEach((_, si) => {
+        const key = `${di}-${si}`;
+        if(!busySlots.has(key)) avail[key] = true;
+      });
+    });
+    saveMyAvail(avail);
+    buildAvailGrid(); // re-render with new availability
+  } catch(e) {
+    console.warn('Calendar sync failed:', e);
+  }
+}
+
+function disconnectGoogle() {
+  localStorage.removeItem(SK.calToken);
+  const box = document.getElementById('cal-connect-box');
+  if(box) {
+    box.className = 'cal-connect-box';
+    box.innerHTML = `
+      <p style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:12px;line-height:1.7;">
+        Connect your Google Calendar to automatically show your availability. Your calendar is read-only — we never modify your events.
+      </p>
+      <button class="google-btn" onclick="connectGoogle()">
+        <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="#FBBC05" d="M10.53 28.59c-.5-1.45-.79-3-.79-4.59s.29-3.14.79-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/></svg>
+        Sign in with Google
+      </button>`;
+  }
+  toast('✓ Google Calendar disconnected');
+}
 </script>
 </body>
 </html>
