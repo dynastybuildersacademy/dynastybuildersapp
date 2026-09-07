@@ -1605,29 +1605,37 @@ let _contacts = [], _selectedContacts = new Set();
 
 async function openContactsPicker() {
   _selectedContacts.clear();
-  const modal = document.getElementById('contacts-import-modal');
-  modal.style.display = 'flex';
 
+  // Contact Picker API MUST be called synchronously from a user gesture.
+  // Call it first — before any await or DOM changes — or the browser blocks it.
   if('contacts' in navigator && 'select' in navigator.contacts) {
-    document.getElementById('contacts-import-status').textContent = '⏳ Opening your contacts…';
     try {
+      // This must be the FIRST thing that runs — no awaits before this line
       _contacts = await navigator.contacts.select(['name','tel','email'], {multiple: true});
-      document.getElementById('contacts-import-status').textContent = '';
-      renderContactsList(_contacts);
     } catch(e) {
-      if(e.name === 'AbortError') {
-        document.getElementById('contacts-import-status').textContent = 'Cancelled.';
-      } else {
-        document.getElementById('contacts-import-status').textContent = 'Could not open contacts: ' + e.message;
+      if(e.name !== 'AbortError') {
+        // Only show modal with error if it wasn't a user cancel
+        const modal = document.getElementById('contacts-import-modal');
+        modal.style.display = 'flex';
+        document.getElementById('contacts-import-status').textContent = '⚠ Could not open contacts: ' + e.message;
+        renderContactsList([]);
       }
-      _contacts = [];
-      renderContactsList([]);
+      return;
     }
+    // Success — now show modal with results
+    if(_contacts.length === 0) return; // user picked nothing
+    const modal = document.getElementById('contacts-import-modal');
+    modal.style.display = 'flex';
+    document.getElementById('contacts-import-status').textContent = '';
+    renderContactsList(_contacts);
   } else {
+    // Not supported — show modal with fallback message
+    const modal = document.getElementById('contacts-import-modal');
+    modal.style.display = 'flex';
     _contacts = [];
     renderContactsList([]);
     document.getElementById('contacts-import-status').textContent =
-      '⚠ Contact Picker not supported here. Use Chrome on Android for this feature. Or use Excel/CSV import instead.';
+      '⚠ Use Chrome on Android to access phone contacts. Or tap 📊 From Excel to import a spreadsheet.';
   }
 }
 
@@ -1643,11 +1651,14 @@ function renderContactsList(contacts) {
 
   if(!contacts.length) {
     list.innerHTML = `<div style="text-align:center;padding:24px;font-family:'DM Mono',monospace;font-size:11px;color:#6B7C93;line-height:1.8;">
-      No contacts loaded.<br>This feature requires Chrome on Android.<br>
-      <strong style="color:#E8C97A;">Use the 📊 From Excel button instead</strong> to import a bulk list.
+      No contacts to show.<br>
+      <strong style="color:#E8C97A;">Use the 📊 From Excel button</strong> to import a spreadsheet list.
     </div>`;
     return;
   }
+  // Update import button count
+  const btn = document.getElementById('import-contacts-btn');
+  if(btn) btn.textContent = `✓ Import All ${contacts.length} Contacts to Monday.com`;
 
   list.innerHTML = contacts.map((ct, i) => {
     const name = (ct.name?.[0] || '').trim();
