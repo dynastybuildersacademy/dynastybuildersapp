@@ -684,6 +684,42 @@ async function fetchAllItems(boardId){
   return all;
 }
 
+// ── PARSE ITEM ────────────────────────────────────────────────
+// Column IDs verified from board 7030392283 via API
+function parseItem(item){
+  const cv={};
+  item.column_values.forEach(c=>{cv[c.id]=c;});
+  const get=(id)=>cv[id]?.text||cv[id]?.label||cv[id]?.value||'';
+  return{
+    id:           item.id,
+    name:         item.name,
+    group_id:     item.group?.id||'',
+    group_title:  item.group?.title||'',
+    phone:        get('phone_number__1') || cv['phone_number__1']?.phone || '',
+    email:        get('dup__of_notes__1'),
+    occupation:   get('text76__1'),
+    contact_method: get('color_mkwqeqgq'),
+    status:       get('status'),
+    next_action:  get('dup__of_status_mkm9gppm'),
+    call_log:     get('dup__of_contact_method_mkmqyxkj'),
+    notes:        get('text4__1'),
+    next_appt:    get('date4'),
+    relationship: cv['relationship__1']?.text || cv['relationship__1']?.value || '',
+    rel_status:   get('relationship8__1'),
+    ri_ft_bom:    get('text69__1'),
+    outcome:      get('text75__1'),
+    purpose:      get('purpose_of_contact__1'),
+    follow_up:    cv['follow_up_planned__1']?.checked === true,
+    followup_date:get('date_of_follow_up__1'),
+    event_title:  get('event_title__1'),
+    event_status: get('event_status__1'),
+    duration:     cv['duration__1']?.number || 0,
+    person:       cv['person']?.persons_and_teams?.map(p=>p.id).join(', ') || '',
+    good_qualities: get('text7__1'),
+    _raw:         cv
+  };
+}
+
 async function saveLog(){
   const itemId=document.getElementById('modal-item-id').value;
   const callLog=document.getElementById('modal-call-log').value;
