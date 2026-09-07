@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Board ID Finder · DBA Admin</title>
+<script src="auth.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#0A1628;color:#E8EDF5;font-family:'Barlow',sans-serif;padding:20px;min-height:100vh;}
+h1{font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:900;color:#E8C97A;margin-bottom:6px;}
+.sub{font-family:'DM Mono',monospace;font-size:11px;color:#6B7C93;margin-bottom:20px;line-height:1.7;}
+table{width:100%;border-collapse:collapse;font-size:12px;}
+th{font-family:'DM Mono',monospace;font-size:10px;color:#6B7C93;text-align:left;padding:6px 10px;
+   border-bottom:1px solid rgba(255,255,255,.1);}
+td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.05);}
+.name{font-weight:700;color:#E8EDF5;}
+.board-id{font-family:'DM Mono',monospace;font-size:11px;color:#2DCA73;}
+.missing{color:#E74C3C;font-family:'DM Mono',monospace;font-size:11px;}
+.copy-btn{font-family:'DM Mono',monospace;font-size:9px;padding:3px 8px;background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.15);border-radius:4px;color:#E8EDF5;cursor:pointer;}
+#output{background:#0F1E38;border:1px solid rgba(201,168,76,.2);border-radius:10px;padding:16px;
+  margin-top:16px;font-family:'DM Mono',monospace;font-size:11px;line-height:1.8;
+  white-space:pre-wrap;color:#E8EDF5;}
+.btn{padding:10px 20px;background:linear-gradient(135deg,#C9A84C,#E8C97A);border:none;
+  border-radius:8px;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;
+  color:#0A1628;cursor:pointer;margin-right:8px;margin-top:12px;}
+.status{font-family:'DM Mono',monospace;font-size:11px;color:#6B7C93;margin-top:8px;}
+</style>
+</head>
+<body>
+<script>AUTH.require('board-finder.html');</script>
+<h1>🔍 Top 25 Board ID Finder</h1>
+<div class="sub">
+  Searches Monday.com for boards matching agent names.<br>
+  Run this once, then copy the results into auth.js to configure each agent's board.
+</div>
+
+<button class="btn" onclick="findBoards()">🔍 Search Monday.com for Boards</button>
+<button class="btn" style="background:rgba(255,255,255,.08);color:#E8EDF5;" onclick="copyOutput()">📋 Copy Output</button>
+<div class="status" id="status"></div>
+<div id="output" style="display:none;"></div>
+
+<h2 style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;color:#E8C97A;
+  margin-top:24px;margin-bottom:10px;">Agents Without Board IDs</h2>
+<table id="agent-table">
+  <tr>
+    <th>Agent</th><th>Auth ID</th><th>PHP Code</th><th>Board Found</th>
+  </tr>
+</table>
+
+<script>
+const session = AUTH.getSession();
+const MISSING_AGENTS = [
+  { name:'Antoine Penn',           id:'antpen9809', php:'1429809' },
+  { name:'Kimberly Randle',        id:'kimran8945', php:'1428945' },
+  { name:'Ayodele Olorode',        id:'ayoolo8545', php:'1428545' },
+  { name:'Henry Romero Maldonado', id:'henmal8357', php:'1428357' },
+  { name:'Candy Perez',            id:'canper8027', php:'1428027' },
+  { name:'Eunice Oduwole',         id:'eunodu5638', php:'1425638' },
+  { name:'Promise Emmanuel',       id:'proemm2121', php:'1422121' },
+  { name:'Kelvin Ekeh',            id:'keleke1773', php:'1421773' },
+  { name:'Ebenezer Augustine',     id:'ebeaug4168', php:'1404168' },
+];
+
+// Render table
+const tbody = document.getElementById('agent-table');
+MISSING_AGENTS.forEach(a => {
+  const tr = document.createElement('tr');
+  tr.id = 'row-' + a.id;
+  tr.innerHTML = `
+    <td class="name">${a.name}</td>
+    <td style="font-family:'DM Mono',monospace;font-size:11px;color:#6B7C93;">${a.id}</td>
+    <td style="font-family:'DM Mono',monospace;font-size:11px;color:#6B7C93;">${a.php}</td>
+    <td class="missing" id="board-${a.id}">⏳ Not searched yet</td>`;
+  tbody.appendChild(tr);
+});
+
+async function mondayQuery(query) {
+  const key = AUTH.getMondayKey();
+  const res = await fetch('/api/monday', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query })
+  });
+  return res.json();
+}
+
+async function findBoards() {
+  document.getElementById('status').textContent = '⏳ Fetching all boards from Monday.com…';
+  
+  try {
+    // Get all boards (paginate to cover all)
+    let allBoards = [], cursor = null;
+    do {
+      const cursorArg = cursor ? `, cursor: "${cursor}"` : '';
+      const res = await mondayQuery(`{ boards_by_workspace: boards(limit: 200${cursorArg}) { id name } }`);
+      const page = res?.data?.boards_by_workspace || [];
+      allBoards = allBoards.concat(page);
+      cursor = null; // boards endpoint doesn't paginate like items
+      if (page.length < 200) break;
+    } while(false);
+
+    document.getElementById('status').textContent = `✓ Got ${allBoards.length} boards. Matching…`;
+
+    const boardMap = {};
+    MISSING_AGENTS.forEach(agent => {
+      const fn = agent.name.split(' ')[0].toLowerCase();
+      const ln = agent.name.split(' ').slice(-1)[0].toLowerCase();
+      
+      // Try exact first+last match
+      let match = allBoards.find(b => {
+        const bn = b.name.toLowerCase();
+        return bn.includes(fn) && bn.includes(ln);
+      });
+      // Fallback: last name only
+      if(!match) match = allBoards.find(b => b.name.toLowerCase().includes(ln));
+      
+      const cell = document.getElementById('board-' + agent.id);
+      if(match) {
+        boardMap[agent.id] = { boardId: match.id, boardName: match.name, agent };
+        cell.innerHTML = `<span class="board-id">${match.id}</span> 
+          <span style="color:#6B7C93;font-size:10px;">${match.name}</span>
+          <button class="copy-btn" onclick="navigator.clipboard.writeText('${match.id}')">Copy</button>`;
+        cell.className = 'board-id';
+      } else {
+        cell.textContent = '❌ Not found — board may not exist yet';
+        cell.className = 'missing';
+        boardMap[agent.id] = null;
+      }
+    });
+
+    // Generate auth.js patch output
+    const found = Object.entries(boardMap).filter(([,v]) => v);
+    const output = document.getElementById('output');
+    output.style.display = 'block';
+    
+    if(found.length) {
+      output.textContent = '// Paste these top25BoardId values into auth.js for each agent:\n\n' +
+        found.map(([aid, v]) =>
+          `// ${v.agent.name} (${aid})\n  top25BoardId: "${v.boardId}",  // ${v.boardName}`
+        ).join('\n') +
+        '\n\n// auth.js update snippet:\n' +
+        found.map(([aid, v]) =>
+          `{ id:"${aid}", ... top25BoardId:"${v.boardId}" }`
+        ).join('\n');
+    } else {
+      output.textContent = 'No boards found. These agents may need boards created in Monday.com first.\n' +
+        'Go to Monday.com → Create board for each agent, then run this search again.';
+    }
+
+    document.getElementById('status').textContent = 
+      `✓ Done — ${found.length}/${MISSING_AGENTS.length} boards found`;
+
+  } catch(e) {
+    document.getElementById('status').textContent = '✗ Error: ' + e.message;
+  }
+}
+
+function copyOutput() {
+  const text = document.getElementById('output').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    document.getElementById('status').textContent = '✓ Copied to clipboard';
+  });
+}
+</script>
+</body>
+</html>

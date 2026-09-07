@@ -684,6 +684,289 @@ async function fetchAllItems(boardId){
   return all;
 }
 
+// ── RENDER ALL ────────────────────────────────────────────────
+function renderAll(){
+  const filtered=getFiltered();
+  updateStats(allProspects);
+  renderRows(filtered);
+}
+
+function updateStats(prospects){
+  const today=new Date().toISOString().slice(0,10);
+  const sv=id=>document.getElementById(id);
+  if(sv('sv-total'))    sv('sv-total').textContent    =prospects.length;
+  if(sv('sv-appt'))     sv('sv-appt').textContent     =prospects.filter(p=>/appointment/i.test(p.status)).length;
+  if(sv('sv-fu'))       sv('sv-fu').textContent       =prospects.filter(p=>p.follow_up).length;
+  if(sv('sv-today'))    sv('sv-today').textContent    =prospects.filter(p=>p.followup_date===today).length;
+  if(sv('sv-overdue'))  sv('sv-overdue').textContent  =prospects.filter(p=>p.followup_date&&p.followup_date<today).length;
+}
+
+function updateBadges(){
+  const today=new Date().toISOString().slice(0,10);
+  const fuCount=allProspects.filter(p=>p.follow_up||p.followup_date).length;
+  const overdueCount=allProspects.filter(p=>p.followup_date&&p.followup_date<today).length;
+  const fuBadge=document.getElementById('fuBadge');
+  if(fuBadge){fuBadge.textContent=fuCount;fuBadge.classList.toggle('hidden',fuCount===0);}
+  const clBadge=document.getElementById('callListBadge');
+  if(clBadge){clBadge.textContent=overdueCount;clBadge.classList.toggle('hidden',overdueCount===0);}
+}
+
+function applyStatFilter(type){
+  activeStatFilter=activeStatFilter===type?'':type;
+  document.querySelectorAll('.stat-box').forEach(b=>b.classList.remove('active'));
+  if(activeStatFilter){const el=document.querySelector(`.stat-box[data-type="${activeStatFilter}"]`);if(el)el.classList.add('active');}
+  renderRows(getFiltered());
+}
+function clearStatFilter(){activeStatFilter='';document.querySelectorAll('.stat-box').forEach(b=>b.classList.remove('active'));renderRows(getFiltered());}
+
+function getFiltered(){
+  const q=(document.getElementById('search-input')||{}).value?.toLowerCase()||'';
+  const status=(document.getElementById('filter-status')||{}).value||'';
+  const next=(document.getElementById('filter-next')||{}).value||'';
+  const fu=(document.getElementById('filter-followup')||{}).value||'';
+  const today=new Date().toISOString().slice(0,10);
+  return allProspects.filter(p=>{
+    if(q&&!p.name.toLowerCase().includes(q)&&!(p.phone||'').includes(q)&&!(p.occupation||'').toLowerCase().includes(q)) return false;
+    if(status&&p.status!==status) return false;
+    if(next&&p.next_action!==next) return false;
+    if(fu==='today'){if(p.followup_date!==today) return false;}
+    else if(fu==='overdue'){if(!(p.followup_date&&p.followup_date<today)) return false;}
+    else if(fu==='upcoming'){if(!(p.followup_date&&p.followup_date>today)) return false;}
+    else if(fu==='planned'){if(!p.follow_up) return false;}
+    if(activeStatFilter==='appt'&&!/appointment/i.test(p.status)) return false;
+    if(activeStatFilter==='followup'&&!p.follow_up) return false;
+    if(activeStatFilter==='today'&&p.followup_date!==today) return false;
+    if(activeStatFilter==='overdue'&&!(p.followup_date&&p.followup_date<today)) return false;
+    return true;
+  });
+}
+
+function filterCards(){ renderRows(getFiltered()); }
+
+// ── STATUS PILLS ───────────────────────────────────────────────
+function statusPill(label){
+  if(!label) return '';
+  const lo=label.toLowerCase();
+  const cls=lo.includes('appointment')||lo.includes('appt')?'pill-green':
+             lo.includes('warm')||lo.includes('interested')?'pill-gold':
+             lo.includes('not interested')||lo.includes('closed')?'pill-muted':
+             lo.includes('follow')?'pill-warn':
+             lo.includes('contact')?'pill-blue':'pill-muted';
+  return `<span class="pill ${cls}">${label}</span>`;
+}
+function actionPill(label){
+  if(!label) return '';
+  const lo=label.toLowerCase();
+  const cls=lo.includes('appointment')?'pill-green':lo.includes('call')?'pill-blue':lo.includes('text')||lo.includes('email')?'pill-purple':'pill-muted';
+  return `<span class="pill ${cls}">${label}</span>`;
+}
+function callPill(label){
+  if(!label) return '';
+  const lo=label.toLowerCase();
+  const cls=lo.includes('spoke')&&lo.includes('interested')&&!lo.includes('not')?'pill-green':
+             lo.includes('appointment')?'pill-green':
+             lo.includes('not interested')?'pill-muted':'pill-warn';
+  return `<span class="pill ${cls}">${label}</span>`;
+}
+
+// ── RENDER ROWS ────────────────────────────────────────────────
+function renderRows(prospects){
+  const container=document.getElementById('cards-container');
+  const countPill=document.getElementById('count-pill');
+  if(countPill) countPill.textContent=`${prospects.length} of ${allProspects.length}`;
+  if(!prospects.length){
+    container.innerHTML=`<div class="state-box"><div class="ico">🔍</div><div class="s-title">No matches</div><p>Try adjusting your filters.</p></div>`;
+    return;
+  }
+  const today=new Date().toISOString().slice(0,10);
+  container.innerHTML=prospects.map((p,i)=>{
+    const isOverdue=p.followup_date&&p.followup_date<today;
+    const isDueToday=p.followup_date===today;
+    const rowCls=isOverdue?'overdue':isDueToday?'due-today':'';
+    let fuDisplay='';
+    if(isOverdue) fuDisplay=`<span class="pill pill-danger">⚠ ${p.followup_date}</span>`;
+    else if(isDueToday) fuDisplay=`<span class="pill pill-warn">📅 Today</span>`;
+    else if(p.followup_date) fuDisplay=`<span style="font-family:DM Mono,monospace;font-size:11px;color:var(--muted);">${p.followup_date}</span>`;
+    const expanded=expandedId===p.id;
+    const nm=p.name.replace(/'/g,"\\'");
+    return `
+    <div class="prospect-row ${rowCls}" id="row-${p.id}">
+      <div class="row-main" onclick="toggleRow('${p.id}')">
+        <div class="row-num">${String(i+1).padStart(2,'0')}</div>
+        <div class="row-info">
+          <div class="row-name">${p.name}</div>
+          <div class="row-meta">${[p.occupation,p.phone?`📞 ${p.phone}`:''].filter(Boolean).join(' · ')}</div>
+        </div>
+        <div class="row-cell">${statusPill(p.status)||'<span style="color:var(--muted);font-size:11px;">—</span>'}</div>
+        <div class="row-cell hide-md">${actionPill(p.next_action)||'<span style="color:var(--muted);font-size:11px;">—</span>'}</div>
+        <div class="row-cell hide-sm">${callPill(p.call_log)||'<span style="color:var(--muted);font-size:11px;">—</span>'}</div>
+        <div class="row-cell hide-md">${fuDisplay||'<span style="color:var(--muted);font-size:11px;">—</span>'}</div>
+        <div class="row-actions" onclick="event.stopPropagation()">
+          ${p.phone?`<button class="qa-btn call" title="Call" onclick="callProspect('${p.id}','${(p.phone||'').replace(/'/g,"\\'")}','${nm}')">📞</button>`:''}
+          <button class="qa-btn" title="Log" onclick="openModal('${p.id}','${nm}')">📝</button>
+          <button class="qa-btn" style="font-size:11px;transition:transform .2s;${expanded?'transform:rotate(180deg)':''}" id="expand-${p.id}">▼</button>
+        </div>
+      </div>
+      <div class="row-detail ${expanded?'open':''}" id="detail-${p.id}">
+        <div class="detail-grid">
+          <div class="detail-item"><div class="d-label">Phone</div><div class="d-val">${p.phone?`<a href="tel:${p.phone}">${p.phone}</a>`:'—'}</div></div>
+          <div class="detail-item"><div class="d-label">Email</div><div class="d-val">${p.email?`<a href="mailto:${p.email}">${p.email}</a>`:'—'}</div></div>
+          <div class="detail-item"><div class="d-label">Occupation</div><div class="d-val">${p.occupation||'—'}</div></div>
+          <div class="detail-item"><div class="d-label">Contact Method</div><div class="d-val">${p.contact_method||'—'}</div></div>
+          <div class="detail-item"><div class="d-label">Next Appt</div><div class="d-val">${p.next_appt||'—'}</div></div>
+          <div class="detail-item"><div class="d-label">RI/FT/BOM</div><div class="d-val">${p.ri_ft_bom||'—'}</div></div>
+          <div class="detail-item"><div class="d-label">Rel. Status</div><div class="d-val">${p.rel_status||'—'}</div></div>
+          <div class="detail-item"><div class="d-label">Purpose</div><div class="d-val">${p.purpose||'—'}</div></div>
+        </div>
+        ${(p.notes||p.relationship)?`<div style="font-family:DM Mono,monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">Notes</div><div class="notes-box">${p.notes||p.relationship}</div>`:''}
+        ${p.outcome?`<div style="font-family:DM Mono,monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:8px 0 4px;">Last Outcome</div><div class="notes-box">${p.outcome}</div>`:''}
+        <div class="action-row">
+          ${p.phone?`<a href="tel:${p.phone}" class="btn btn-green btn-sm">📞 Call Now</a>`:''}
+          ${p.phone?`<a href="sms:${p.phone}" class="btn btn-ghost btn-sm">💬 Text</a>`:''}
+          ${p.email?`<a href="mailto:${p.email}" class="btn btn-ghost btn-sm">✉️ Email</a>`:''}
+          <button class="btn btn-accent btn-sm" onclick="openModal('${p.id}','${nm}')">📝 Log Activity</button>
+          <a href="${BOARD_URL()}/pulse/${p.id}" target="_blank" class="btn btn-ghost btn-sm">Open in Monday ↗</a>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleRow(id){
+  if(expandedId===id){
+    expandedId=null;
+    document.getElementById('detail-'+id)?.classList.remove('open');
+    const icon=document.getElementById('expand-'+id);
+    if(icon) icon.style.transform='';
+  }else{
+    if(expandedId){
+      document.getElementById('detail-'+expandedId)?.classList.remove('open');
+      const prev=document.getElementById('expand-'+expandedId);
+      if(prev) prev.style.transform='';
+    }
+    expandedId=id;
+    document.getElementById('detail-'+id)?.classList.add('open');
+    const icon=document.getElementById('expand-'+id);
+    if(icon) icon.style.transform='rotate(180deg)';
+  }
+}
+
+// ── CALL LIST ─────────────────────────────────────────────────
+let activeClTab='all';
+function setCLTab(type,el){
+  activeClTab=type;
+  document.querySelectorAll('.cl-tab').forEach(t=>t.classList.remove('active'));
+  if(el) el.classList.add('active');
+  renderCallList(type);
+}
+function renderCallList(type){
+  const today=new Date().toISOString().slice(0,10);
+  let filtered;
+  if(type==='today')     filtered=allProspects.filter(p=>p.followup_date===today);
+  else if(type==='overdue')   filtered=allProspects.filter(p=>p.followup_date&&p.followup_date<today);
+  else if(type==='nocontact') filtered=allProspects.filter(p=>!p.call_log&&!p.contact_method);
+  else if(type==='appt')      filtered=allProspects.filter(p=>/appointment/i.test(p.status));
+  else filtered=[...allProspects];
+  const sv=id=>{ const el=document.getElementById(id); if(el) el.textContent=filtered.length; };
+  document.getElementById('clt-all')       && (document.getElementById('clt-all').textContent=allProspects.length);
+  document.getElementById('clt-today')     && (document.getElementById('clt-today').textContent=allProspects.filter(p=>p.followup_date===today).length);
+  document.getElementById('clt-overdue')   && (document.getElementById('clt-overdue').textContent=allProspects.filter(p=>p.followup_date&&p.followup_date<today).length);
+  document.getElementById('clt-nocontact') && (document.getElementById('clt-nocontact').textContent=allProspects.filter(p=>!p.call_log&&!p.contact_method).length);
+  document.getElementById('clt-appt')      && (document.getElementById('clt-appt').textContent=allProspects.filter(p=>/appointment/i.test(p.status)).length);
+  const grid=document.getElementById('call-grid');
+  if(!grid) return;
+  if(!allProspects.length){grid.innerHTML='<div class="state-box"><div class="ico">📞</div><div class="s-title">No data</div><p>Load your prospects first.</p></div>';return;}
+  if(!filtered.length){grid.innerHTML='<div class="state-box"><div class="ico">✅</div><div class="s-title">All clear</div><p>No prospects in this category.</p></div>';return;}
+  grid.innerHTML=filtered.map(p=>{
+    const isOverdue=p.followup_date&&p.followup_date<today;
+    const isDueToday=p.followup_date===today;
+    const tags=[];
+    if(isOverdue) tags.push('<span class="pill pill-danger">⚠ Overdue</span>');
+    if(isDueToday) tags.push('<span class="pill pill-warn">📅 Today</span>');
+    if(!p.call_log&&!p.contact_method) tags.push('<span class="pill pill-muted">No Contact Yet</span>');
+    if(p.next_action) tags.push(actionPill(p.next_action));
+    if(p.group_title) tags.push(`<span class="pill pill-muted">${p.group_title}</span>`);
+    const nm=p.name.replace(/'/g,"\\'");
+    return `<div class="call-card">
+      <div class="call-card-name">${p.name}</div>
+      <div class="call-card-meta">
+        ${p.phone?`<span>📞 <a href="tel:${p.phone}" style="color:var(--accent2);text-decoration:none;">${p.phone}</a></span>`:''}
+        ${p.occupation?`<span>💼 ${p.occupation}</span>`:''}
+        ${p.status?`<span>Status: ${p.status}</span>`:''}
+        ${p.followup_date?`<span>Follow-up: ${p.followup_date}</span>`:''}
+        ${p.notes?`<span style="margin-top:4px;color:var(--text);">${p.notes.slice(0,80)}${p.notes.length>80?'…':''}</span>`:''}
+      </div>
+      ${tags.length?`<div class="call-card-tags">${tags.join('')}</div>`:''}
+      <div class="call-card-actions">
+        ${p.phone?`<a href="tel:${p.phone}" class="btn btn-green btn-sm" style="flex:1;justify-content:center;">📞 Call</a>`:''}
+        <button class="btn btn-accent btn-sm" style="flex:1;justify-content:center;" onclick="openModal('${p.id}','${nm}')">📝 Log</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── FOLLOW-UPS ────────────────────────────────────────────────
+function renderFollowUps(){
+  const today=new Date().toISOString().slice(0,10);
+  const withDates=allProspects.filter(p=>p.followup_date||p.follow_up)
+    .sort((a,b)=>(a.followup_date||'9999')>(b.followup_date||'9999')?1:-1);
+  const container=document.getElementById('fu-container');
+  if(!container) return;
+  if(!allProspects.length){container.innerHTML='<div class="state-box"><div class="ico">📅</div><p>Load prospects first.</p></div>';return;}
+  if(!withDates.length){container.innerHTML='<div class="state-box"><div class="ico">✅</div><div class="s-title">No follow-ups scheduled</div><p>Add follow-up dates in Monday.com.</p></div>';return;}
+  const overdue=withDates.filter(p=>p.followup_date&&p.followup_date<today);
+  const dueToday=withDates.filter(p=>p.followup_date===today);
+  const upcoming=withDates.filter(p=>p.followup_date&&p.followup_date>today);
+  const noDate=withDates.filter(p=>!p.followup_date&&p.follow_up);
+  const sec=(title,items,color)=>!items.length?'':
+    `<div style="margin-bottom:20px;">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:${color};margin-bottom:10px;display:flex;align-items:center;gap:8px;">
+        <div style="width:3px;height:12px;background:${color};border-radius:2px;"></div>${title}
+        <span style="font-family:'DM Mono',monospace;font-size:11px;opacity:.6;">(${items.length})</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        ${items.map(p=>{
+          const nm=p.name.replace(/'/g,"\\'");
+          return `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:12px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:14px;font-weight:600;">${p.name}</div>
+              <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-top:2px;">${[p.occupation,p.phone?`📞 ${p.phone}`:''].filter(Boolean).join(' · ')}</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+              ${p.followup_date?`<span style="font-family:'DM Mono',monospace;font-size:12px;color:${color};">${p.followup_date}</span>`:'<span class="pill pill-muted">No date</span>'}
+              ${statusPill(p.status)}${actionPill(p.next_action)}
+            </div>
+            <div style="display:flex;gap:6px;">
+              ${p.phone?`<a href="tel:${p.phone}" class="btn btn-green btn-sm">📞</a>`:''}
+              <button class="btn btn-accent btn-sm" onclick="openModal('${p.id}','${nm}')">📝 Log</button>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  container.innerHTML=sec('⚠ Overdue',overdue,'var(--danger)')+sec('📅 Due Today',dueToday,'var(--warn)')+sec('📆 Upcoming',upcoming,'var(--green)')+sec('📌 No Date Set',noDate,'var(--muted)');
+}
+
+// ── CALL PROSPECT / LOG MODAL ─────────────────────────────────
+function callProspect(id,phone,name){
+  window.location.href=`tel:${phone}`;
+  setTimeout(()=>openModal(id,name),2000);
+}
+function openModal(id,name){
+  document.getElementById('modal-item-id').value=id;
+  document.getElementById('modal-prospect-name').textContent=`📝 ${name}`;
+  document.getElementById('modal-notes').value='';
+  document.getElementById('modal-duration').value='';
+  document.getElementById('modal-status').value='';
+  document.getElementById('modal-next-action').value='';
+  document.getElementById('modal-call-log').value='Called — No Answer';
+  const tomorrow=new Date(); tomorrow.setDate(tomorrow.getDate()+1);
+  document.getElementById('modal-followup').value=tomorrow.toISOString().slice(0,10);
+  document.getElementById('log-modal').classList.add('open');
+}
+function closeModal(){ document.getElementById('log-modal').classList.remove('open'); }
+
+
 // ── PARSE ITEM ────────────────────────────────────────────────
 // Column IDs verified from board 7030392283 via API
 function parseItem(item){
