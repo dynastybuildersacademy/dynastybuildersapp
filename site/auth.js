@@ -2398,7 +2398,7 @@ const AGENTS = [
   { id:"kimran8945", phpId:"1428945", name:"Kimberly Randle", pin:"8945", role:"trainee", uplineId:"obi001", email:"kimberlyrandle79@yahoo.com", phone:"4242853314" },
   { id:"ayoolo8545", phpId:"1428545", name:"Ayodele Olorode", pin:"8545", role:"trainee", uplineId:"obi001", email:"ayoolorode@gmail.com", phone:"3237037827" },
   { id:"henmal8357", phpId:"1428357", name:"Henry Romero Maldonado", pin:"8357", role:"trainee", uplineId:"obi001", email:"contact@romerolocksley.com", phone:"5715350727" },
-  { id:"canper8027", phpId:"1428027", name:"Candy Perez", pin:"8027", role:"trainee", uplineId:"obi001", email:"cperez2017@gmail.com", phone:"6267863638" },
+  { id:"canper8027", phpId:"1428027", name:"Candy Perez", pin:"8027", role:"trainee", uplineId:"obi001", email:"cperez2017@gmail.com", phone:"6267863638", top25BoardId:"18428867821" },
   { id:"eunodu5638", phpId:"1425638", name:"Eunice Oduwole", pin:"5638", role:"trainee", uplineId:"obi001", email:"folukeobems@yahoo.com", phone:"5596142160" },
   { id:"proemm2121", phpId:"1422121", name:"Promise Emmanuel", pin:"2121", role:"trainee", uplineId:"obi001", email:"promisewisdom7@gmail.com", phone:"3233581765" },
   { id:"keleke1773", phpId:"1421773", name:"Kelvin Ekeh", pin:"1773", role:"trainee", uplineId:"obi001", email:"ekehkelvin44@gmail.com", phone:"8622319651" },
