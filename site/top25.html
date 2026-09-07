@@ -260,6 +260,10 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
   <div class="topbar-right">
     <button class="icon-btn" onclick="loadProspects()" id="refresh-btn">↻ Refresh</button>
     <button class="icon-btn primary" onclick="openPhotoCapture()" style="gap:6px;">📷 Add from Photo</button>
+    <button class="icon-btn" onclick="openContactsPicker()" style="gap:6px;background:rgba(52,152,219,.15);border-color:rgba(52,152,219,.3);color:#5DADE2;">📱 From Contacts</button>
+    <label class="icon-btn" style="gap:6px;cursor:pointer;background:rgba(45,202,115,.1);border-color:rgba(45,202,115,.3);color:var(--green);">
+      📊 From Excel<input type="file" id="excel-upload" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleExcelUpload(event)">
+    </label>
     <a href="tracker.html" class="icon-btn">📞 Tracker</a>
     <a href="portal.html" class="icon-btn">📋 Portal</a>
     <a href="hub.html" class="icon-btn">← Hub</a>
@@ -641,346 +645,44 @@ async function fetchAndRender(boardId){
 }
 
 async function fetchAllItems(boardId){
-  let all=[],cursor=null;
+  let all=[],cursor=null,pageNum=0;
+  const LIMIT=100; // Keep low to avoid Monday complexity limits
+  const statusEl=document.getElementById('cards-container');
   do{
-    const cursorArg=cursor?`, cursor: "${cursor}"`:'';
-    const res=await mondayQuery(`{ boards(ids: ${boardId}) { items_page(limit: 500${cursorArg}) { cursor items { ${ITEM_FRAGMENT} } } } }`);
+    pageNum++;
+    const cursorArg=cursor?`, cursor: "${cursor}"`:'';    if(pageNum>1&&statusEl){
+      statusEl.innerHTML=`<div class="state-box"><div class="ico"><span class="spinner"></span></div>
+        <p>Loading… ${all.length} prospects fetched (page ${pageNum})</p></div>`;
+    }
+    let res;
+    try{
+      res=await mondayQuery(`{ boards(ids: ${boardId}) { items_page(limit: ${LIMIT}${cursorArg}) { cursor items { ${ITEM_FRAGMENT} } } } }`);
+    }catch(e){
+      if(all.length>0){console.warn('[Top25] Page error after partial load:',e);break;}
+      throw e;
+    }
     if(!res) throw new Error('No response from Monday API');
-    // Log the raw response structure to diagnose issues
-    if(all.length===0) console.log('[Top25] API response structure:', JSON.stringify(res).slice(0,300));
     const page=res?.data?.boards?.[0]?.items_page;
-    if(!page && res?.errors?.length) throw new Error(res.errors[0]?.message||'Monday API error');
-    if(!page) throw new Error('Board not found or no access. Response: '+JSON.stringify(res).slice(0,200));
+    // Handle complexity errors — retry with simplified fragment
+    if(res?.errors?.length){
+      const msg=res.errors[0]?.message||'Monday API error';
+      if(msg.includes('complexity')&&all.length>0){
+        console.warn('[Top25] Complexity limit hit at page '+pageNum+'. Loaded '+all.length+' items.');
+        toast('⚠ Monday API complexity limit — showing '+all.length+' prospects. Try refreshing to load more.');
+        break;
+      }
+      throw new Error(msg);
+    }
+    if(!page) throw new Error('Board not found or no access.');
     const items=page?.items||[];
     all=all.concat(items);
     cursor=page?.cursor||null;
     if(items.length===0) break;
+    if(pageNum>=50){console.warn('[Top25] Safety stop at 50 pages ('+all.length+' items)');break;}
   }while(cursor);
-  console.log(`[Top25] Fetched ${all.length} items from board ${boardId}`);
+  console.log(`[Top25] Fetched ${all.length} items from board ${boardId} in ${pageNum} pages`);
   return all;
 }
-
-// ── PARSE ITEM ────────────────────────────────────────────────
-// Column IDs verified from board 7030392283 via API
-function parseItem(item){
-  const cv={};
-  item.column_values.forEach(c=>{cv[c.id]=c;});
-  const get=(id)=>cv[id]?.text||cv[id]?.label||cv[id]?.value||'';
-  return{
-    id:           item.id,
-    name:         item.name,
-    group_id:     item.group?.id||'',
-    group_title:  item.group?.title||'',
-    phone:        get('phone_number__1') || cv['phone_number__1']?.phone || '',
-    email:        get('dup__of_notes__1'),
-    occupation:   get('text76__1'),
-    contact_method: get('color_mkwqeqgq'),
-    status:       get('status'),
-    next_action:  get('dup__of_status_mkm9gppm'),
-    call_log:     get('dup__of_contact_method_mkmqyxkj'),
-    notes:        get('text4__1'),
-    next_appt:    get('date4'),
-    relationship: cv['relationship__1']?.text || cv['relationship__1']?.value || '',
-    rel_status:   get('relationship8__1'),
-    ri_ft_bom:    get('text69__1'),
-    outcome:      get('text75__1'),
-    purpose:      get('purpose_of_contact__1'),
-    follow_up:    cv['follow_up_planned__1']?.checked === true,
-    followup_date:get('date_of_follow_up__1'),
-    event_title:  get('event_title__1'),
-    event_status: get('event_status__1'),
-    duration:     cv['duration__1']?.number || 0,
-    person:       cv['person']?.persons_and_teams?.map(p=>p.id).join(', ') || '',
-    good_qualities: get('text7__1'),
-    _raw:         cv
-  };
-}
-
-// ── RENDER ALL ────────────────────────────────────────────────
-function renderAll(){
-  const filtered=getFiltered();
-  updateStats(allProspects);
-  renderRows(filtered);
-}
-
-function updateStats(prospects){
-  const today=new Date().toISOString().slice(0,10);
-  document.getElementById('sv-total').textContent=prospects.length;
-  document.getElementById('sv-appt').textContent=prospects.filter(p=>/appointment/i.test(p.status)).length;
-  document.getElementById('sv-fu').textContent=prospects.filter(p=>p.follow_up).length;
-  document.getElementById('sv-today').textContent=prospects.filter(p=>p.followup_date===today).length;
-  document.getElementById('sv-overdue').textContent=prospects.filter(p=>p.followup_date&&p.followup_date<today).length;
-}
-
-function updateBadges(){
-  const today=new Date().toISOString().slice(0,10);
-  const fuCount=allProspects.filter(p=>p.follow_up||p.followup_date).length;
-  const overdueCount=allProspects.filter(p=>p.followup_date&&p.followup_date<today).length;
-  const fuBadge=document.getElementById('fuBadge');
-  if(fuCount>0){fuBadge.textContent=fuCount;fuBadge.classList.remove('hidden');}
-  const clBadge=document.getElementById('callListBadge');
-  if(overdueCount>0){clBadge.textContent=overdueCount;clBadge.classList.remove('hidden');}
-}
-
-function getFiltered(){
-  const q=document.getElementById('search-input').value.toLowerCase();
-  const status=document.getElementById('filter-status').value;
-  const next=document.getElementById('filter-next').value;
-  const fu=document.getElementById('filter-followup').value;
-  const today=new Date().toISOString().slice(0,10);
-  return allProspects.filter(p=>{
-    if(q&&!p.name.toLowerCase().includes(q)&&!(p.phone||'').includes(q)&&!(p.occupation||'').toLowerCase().includes(q)) return false;
-    if(status&&p.status!==status) return false;
-    if(next&&p.next_action!==next) return false;
-    if(fu==='today'){if(p.followup_date!==today) return false;}
-    else if(fu==='overdue'){if(!(p.followup_date&&p.followup_date<today)) return false;}
-    else if(fu==='upcoming'){if(!(p.followup_date&&p.followup_date>today)) return false;}
-    else if(fu==='planned'){if(!p.follow_up) return false;}
-    // stat filter
-    if(activeStatFilter==='appt'&&!/appointment/i.test(p.status)) return false;
-    if(activeStatFilter==='followup'&&!p.follow_up) return false;
-    if(activeStatFilter==='today'&&p.followup_date!==today) return false;
-    if(activeStatFilter==='overdue'&&!(p.followup_date&&p.followup_date<today)) return false;
-    return true;
-  });
-}
-
-function filterCards(){
-  renderRows(getFiltered());
-}
-
-// ── STATUS PILL ────────────────────────────────────────────────
-function statusPill(label){
-  if(!label) return '';
-  const lo=label.toLowerCase();
-  const cls=lo.includes('appointment')||lo.includes('appt')?'pill-green':
-             lo.includes('warm')||lo.includes('interested')?'pill-gold':
-             lo.includes('not interested')||lo.includes('closed')?'pill-muted':
-             lo.includes('follow')?'pill-warn':
-             lo.includes('contact')?'pill-blue':'pill-muted';
-  return `<span class="pill ${cls}">${label}</span>`;
-}
-function actionPill(label){
-  if(!label) return '';
-  const lo=label.toLowerCase();
-  const cls=lo.includes('appointment')?'pill-green':lo.includes('call')?'pill-blue':lo.includes('text')||lo.includes('email')?'pill-purple':'pill-muted';
-  return `<span class="pill ${cls}">${label}</span>`;
-}
-function callPill(label){
-  if(!label) return '';
-  const lo=label.toLowerCase();
-  const cls=lo.includes('spoke')&&lo.includes('interested')&&!lo.includes('not')?'pill-green':
-             lo.includes('appointment')?'pill-green':
-             lo.includes('not interested')?'pill-muted':'pill-warn';
-  return `<span class="pill ${cls}">${label}</span>`;
-}
-
-// ── RENDER ROWS ────────────────────────────────────────────────
-function renderRows(prospects){
-  const container=document.getElementById('cards-container');
-  document.getElementById('count-pill').textContent=`${prospects.length} of ${allProspects.length}`;
-  if(!prospects.length){
-    container.innerHTML=`<div class="state-box"><div class="ico">🔍</div><div class="s-title">No matches</div><p>Try adjusting your filters above.</p></div>`;
-    return;
-  }
-  const today=new Date().toISOString().slice(0,10);
-  container.innerHTML=prospects.map((p,i)=>{
-    const isOverdue=p.followup_date&&p.followup_date<today;
-    const isDueToday=p.followup_date===today;
-    const rowCls=isOverdue?'overdue':isDueToday?'due-today':'';
-    let fuDisplay='';
-    if(isOverdue) fuDisplay=`<span class="pill pill-danger">⚠ ${p.followup_date}</span>`;
-    else if(isDueToday) fuDisplay=`<span class="pill pill-warn">📅 Today</span>`;
-    else if(p.followup_date) fuDisplay=`<span style="font-family:DM Mono,monospace;font-size:11px;color:var(--muted);">${p.followup_date}</span>`;
-    const expanded=expandedId===p.id;
-    return `
-    <div class="prospect-row ${rowCls}" id="row-${p.id}">
-      <div class="row-main" onclick="toggleRow('${p.id}')">
-        <div class="row-num">${String(i+1).padStart(2,'0')}</div>
-        <div class="row-info">
-          <div class="row-name">${p.name}</div>
-          <div class="row-meta">${[p.occupation,p.phone?`📞 ${p.phone}`:''].filter(Boolean).join(' · ')}</div>
-        </div>
-        <div class="row-cell">${statusPill(p.status)||'<span style="color:var(--muted);font-size:11px;">—</span>'}</div>
-        <div class="row-cell hide-md">${actionPill(p.next_action)||'<span style="color:var(--muted);font-size:11px;">—</span>'}</div>
-        <div class="row-cell hide-sm">${callPill(p.call_log)||'<span style="color:var(--muted);font-size:11px;">—</span>'}</div>
-        <div class="row-cell hide-md">${fuDisplay||'<span style="color:var(--muted);font-size:11px;">—</span>'}</div>
-        <div class="row-actions" onclick="event.stopPropagation()">
-          ${p.phone?`<button class="qa-btn call" title="Call" onclick="callProspect('${p.id}','${(p.phone||'').replace(/'/g,"\\'")}','${p.name.replace(/'/g,"\\'")}')">📞</button>`:''}
-          <button class="qa-btn" title="Log activity" onclick="openModal('${p.id}','${p.name.replace(/'/g,"\\'")}')">📝</button>
-          <button class="qa-btn" title="Expand" style="font-size:11px;transition:transform .2s;${expanded?'transform:rotate(180deg)':''}" id="expand-${p.id}">▼</button>
-        </div>
-      </div>
-      <div class="row-detail ${expanded?'open':''}" id="detail-${p.id}">
-        <div class="detail-grid">
-          <div class="detail-item"><div class="d-label">Phone</div><div class="d-val">${p.phone?`<a href="tel:${p.phone}">${p.phone}</a>`:'—'}</div></div>
-          <div class="detail-item"><div class="d-label">Email</div><div class="d-val">${p.email?`<a href="mailto:${p.email}">${p.email}</a>`:'—'}</div></div>
-          <div class="detail-item"><div class="d-label">Occupation</div><div class="d-val">${p.occupation||'—'}</div></div>
-          <div class="detail-item"><div class="d-label">Contact Method</div><div class="d-val">${p.contact_method||'—'}</div></div>
-          <div class="detail-item"><div class="d-label">Next Appt</div><div class="d-val">${p.next_appt||'—'}</div></div>
-          <div class="detail-item"><div class="d-label">RI / FT / BOM</div><div class="d-val">${p.ri_ft_bom||'—'}</div></div>
-          <div class="detail-item"><div class="d-label">Rel. Status</div><div class="d-val">${p.rel_status||'—'}</div></div>
-          <div class="detail-item"><div class="d-label">Purpose</div><div class="d-val">${p.purpose||'—'}</div></div>
-        </div>
-        ${(p.notes||p.relationship)?`<div style="font-family:\'DM Mono\',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">Notes</div><div class="notes-box">${p.notes||p.relationship}</div>`:''}
-        ${p.outcome?`<div style="font-family:\'DM Mono\',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">Last Outcome</div><div class="notes-box">${p.outcome}</div>`:''}
-        <div class="action-row">
-          ${p.phone?`<a href="tel:${p.phone}" class="btn btn-green btn-sm">📞 Call Now</a>`:''}
-          ${p.phone?`<a href="sms:${p.phone}" class="btn btn-ghost btn-sm">💬 Text</a>`:''}
-          ${p.email?`<a href="mailto:${p.email}" class="btn btn-ghost btn-sm">✉️ Email</a>`:''}
-          <button class="btn btn-accent btn-sm" onclick="openModal('${p.id}','${p.name.replace(/'/g,"\\'")}')">📝 Log Activity</button>
-          <a href="${BOARD_URL()}/pulse/${p.id}" target="_blank" class="btn btn-ghost btn-sm">Open in Monday ↗</a>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function toggleRow(id){
-  if(expandedId===id){
-    expandedId=null;
-    document.getElementById('detail-'+id)?.classList.remove('open');
-    const icon=document.getElementById('expand-'+id);
-    if(icon) icon.style.transform='';
-  }else{
-    if(expandedId){
-      document.getElementById('detail-'+expandedId)?.classList.remove('open');
-      const prev=document.getElementById('expand-'+expandedId);
-      if(prev) prev.style.transform='';
-    }
-    expandedId=id;
-    document.getElementById('detail-'+id)?.classList.add('open');
-    const icon=document.getElementById('expand-'+id);
-    if(icon) icon.style.transform='rotate(180deg)';
-  }
-}
-
-// ── CALL LIST ─────────────────────────────────────────────────
-let activeClTab='all';
-function setCLTab(type,el){
-  activeClTab=type;
-  document.querySelectorAll('.cl-tab').forEach(t=>t.classList.remove('active'));
-  if(el) el.classList.add('active');
-  renderCallList(type);
-}
-
-function renderCallList(type){
-  const today=new Date().toISOString().slice(0,10);
-  let filtered;
-  if(type==='today') filtered=allProspects.filter(p=>p.followup_date===today);
-  else if(type==='overdue') filtered=allProspects.filter(p=>p.followup_date&&p.followup_date<today);
-  else if(type==='nocontact') filtered=allProspects.filter(p=>!p.call_log||!p.contact_method);
-  else if(type==='appt') filtered=allProspects.filter(p=>/appointment/i.test(p.status));
-  else filtered=[...allProspects];
-
-  // Update tab counts
-  document.getElementById('clt-all').textContent=allProspects.length;
-  document.getElementById('clt-today').textContent=allProspects.filter(p=>p.followup_date===today).length;
-  document.getElementById('clt-overdue').textContent=allProspects.filter(p=>p.followup_date&&p.followup_date<today).length;
-  document.getElementById('clt-nocontact').textContent=allProspects.filter(p=>!p.call_log||!p.contact_method).length;
-  document.getElementById('clt-appt').textContent=allProspects.filter(p=>/appointment/i.test(p.status)).length;
-
-  const grid=document.getElementById('call-grid');
-  if(!allProspects.length){grid.innerHTML='<div class="state-box"><div class="ico">📞</div><div class="s-title">No data</div><p>Load your prospects first from the Prospects tab.</p></div>';return;}
-  if(!filtered.length){grid.innerHTML='<div class="state-box"><div class="ico">✅</div><div class="s-title">All clear</div><p>No prospects in this category.</p></div>';return;}
-
-  const today2=new Date().toISOString().slice(0,10);
-  grid.innerHTML=filtered.map(p=>{
-    const isOverdue=p.followup_date&&p.followup_date<today2;
-    const isDueToday=p.followup_date===today2;
-    const tags=[];
-    if(isOverdue) tags.push(`<span class="pill pill-danger">⚠ Overdue</span>`);
-    if(isDueToday) tags.push(`<span class="pill pill-warn">📅 Today</span>`);
-    if(!p.call_log&&!p.contact_method) tags.push(`<span class="pill pill-muted">No Contact Yet</span>`);
-    if(p.next_action) tags.push(actionPill(p.next_action));
-    if(p.group_title) tags.push(`<span class="pill pill-muted">${p.group_title}</span>`);
-    return `<div class="call-card">
-      <div class="call-card-name">${p.name}</div>
-      <div class="call-card-meta">
-        ${p.phone?`<span>📞 <a href="tel:${p.phone}" style="color:var(--accent2);text-decoration:none;">${p.phone}</a></span>`:''}
-        ${p.occupation?`<span>💼 ${p.occupation}</span>`:''}
-        ${p.status?`<span>Status: ${p.status}</span>`:''}
-        ${p.followup_date?`<span>Follow-up: ${p.followup_date}</span>`:''}
-        ${p.notes?`<span style="margin-top:4px;color:var(--text);">${p.notes.slice(0,80)}${p.notes.length>80?'…':''}</span>`:''}
-      </div>
-      ${tags.length?`<div class="call-card-tags">${tags.join('')}</div>`:''}
-      <div class="call-card-actions">
-        ${p.phone?`<a href="tel:${p.phone}" class="btn btn-green btn-sm" style="flex:1;justify-content:center;">📞 Call</a>`:''}
-        <button class="btn btn-accent btn-sm" style="flex:1;justify-content:center;" onclick="openModal('${p.id}','${p.name.replace(/'/g,"\\'")}')">📝 Log</button>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-// ── FOLLOW-UPS ────────────────────────────────────────────────
-function renderFollowUps(){
-  const today=new Date().toISOString().slice(0,10);
-  const withDates=allProspects
-    .filter(p=>p.followup_date||p.follow_up)
-    .sort((a,b)=>(a.followup_date||'9999')>(b.followup_date||'9999')?1:-1);
-
-  const container=document.getElementById('fu-container');
-  if(!allProspects.length){container.innerHTML='<div class="state-box"><div class="ico">📅</div><p>Load prospects first from the Prospects tab.</p></div>';return;}
-  if(!withDates.length){container.innerHTML='<div class="state-box"><div class="ico">✅</div><div class="s-title">No follow-ups scheduled</div><p>Add follow-up dates in Monday.com to see them here.</p></div>';return;}
-
-  const overdue=withDates.filter(p=>p.followup_date&&p.followup_date<today);
-  const dueToday=withDates.filter(p=>p.followup_date===today);
-  const upcoming=withDates.filter(p=>p.followup_date&&p.followup_date>today);
-  const noDate=withDates.filter(p=>!p.followup_date&&p.follow_up);
-
-  const renderSection=(title,items,color)=>items.length?`
-    <div style="margin-bottom:20px;">
-      <div style="font-family:\'Barlow Condensed\',sans-serif;font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:${color};margin-bottom:10px;display:flex;align-items:center;gap:8px;">
-        <div style="width:3px;height:12px;background:${color};border-radius:2px;"></div>${title} <span style="font-family:\'DM Mono\',monospace;font-size:11px;opacity:.6;">(${items.length})</span>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:6px;">
-        ${items.map(p=>`
-        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:12px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
-          <div style="flex:1;min-width:0;">
-            <div style="font-size:14px;font-weight:600;">${p.name}</div>
-            <div style="font-family:\'DM Mono\',monospace;font-size:11px;color:var(--muted);margin-top:2px;">${[p.occupation,p.phone?`📞 ${p.phone}`:''].filter(Boolean).join(' · ')}</div>
-          </div>
-          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-            ${p.followup_date?`<span style="font-family:\'DM Mono\',monospace;font-size:12px;color:${color};">${p.followup_date}</span>`:'<span class="pill pill-muted">No date</span>'}
-            ${statusPill(p.status)}
-            ${actionPill(p.next_action)}
-          </div>
-          <div style="display:flex;gap:6px;">
-            ${p.phone?`<a href="tel:${p.phone}" class="btn btn-green btn-sm">📞</a>`:''}
-            <button class="btn btn-accent btn-sm" onclick="openModal('${p.id}','${p.name.replace(/'/g,"\\'")}')">📝 Log</button>
-          </div>
-        </div>`).join('')}
-      </div>
-    </div>`:'';;
-
-  container.innerHTML=
-    renderSection('⚠ Overdue',overdue,'var(--danger)')+
-    renderSection('📅 Due Today',dueToday,'var(--warn)')+
-    renderSection('📆 Upcoming',upcoming,'var(--green)')+
-    renderSection('📌 No Date Set',noDate,'var(--muted)');
-}
-
-// ── CALL PROSPECT ─────────────────────────────────────────────
-function callProspect(id,phone,name){
-  window.location.href=`tel:${phone}`;
-  setTimeout(()=>openModal(id,name),2000);
-}
-
-// ── LOG MODAL ─────────────────────────────────────────────────
-function openModal(id,name){
-  document.getElementById('modal-item-id').value=id;
-  document.getElementById('modal-prospect-name').textContent=`📝 ${name}`;
-  document.getElementById('modal-notes').value='';
-  document.getElementById('modal-duration').value='';
-  document.getElementById('modal-status').value='';
-  document.getElementById('modal-next-action').value='';
-  document.getElementById('modal-call-log').value='Called — No Answer';
-  const tomorrow=new Date(); tomorrow.setDate(tomorrow.getDate()+1);
-  document.getElementById('modal-followup').value=tomorrow.toISOString().slice(0,10);
-  document.getElementById('log-modal').classList.add('open');
-}
-
-function closeModal(){ document.getElementById('log-modal').classList.remove('open'); }
 
 async function saveLog(){
   const itemId=document.getElementById('modal-item-id').value;
@@ -1575,6 +1277,351 @@ document.addEventListener('DOMContentLoaded',()=>{
   document.getElementById('board-picker-modal').addEventListener('click',e=>{if(e.target===document.getElementById('board-picker-modal')) closeBoardPicker();});
   loadProspects();
 });
+
+
+// ════════════════════════════════════════════════════════════════
+// CONTACTS PICKER IMPORT
+// ════════════════════════════════════════════════════════════════
+let _contacts = [], _selectedContacts = new Set();
+
+async function openContactsPicker() {
+  _selectedContacts.clear();
+  const modal = document.getElementById('contacts-import-modal');
+  modal.style.display = 'flex';
+
+  if('contacts' in navigator && 'select' in navigator.contacts) {
+    document.getElementById('contacts-import-status').textContent = '⏳ Opening your contacts…';
+    try {
+      _contacts = await navigator.contacts.select(['name','tel','email'], {multiple: true});
+      document.getElementById('contacts-import-status').textContent = '';
+      renderContactsList(_contacts);
+    } catch(e) {
+      if(e.name === 'AbortError') {
+        document.getElementById('contacts-import-status').textContent = 'Cancelled.';
+      } else {
+        document.getElementById('contacts-import-status').textContent = 'Could not open contacts: ' + e.message;
+      }
+      _contacts = [];
+      renderContactsList([]);
+    }
+  } else {
+    _contacts = [];
+    renderContactsList([]);
+    document.getElementById('contacts-import-status').textContent =
+      '⚠ Contact Picker not supported here. Use Chrome on Android for this feature. Or use Excel/CSV import instead.';
+  }
+}
+
+function closeContactsModal() {
+  document.getElementById('contacts-import-modal').style.display = 'none';
+  _contacts = [];
+  _selectedContacts.clear();
+}
+
+function renderContactsList(contacts) {
+  const list = document.getElementById('contacts-list');
+  const existingPhones = new Set(allProspects.map(p => (p.phone||'').replace(/\D/g,'')).filter(Boolean));
+
+  if(!contacts.length) {
+    list.innerHTML = `<div style="text-align:center;padding:24px;font-family:'DM Mono',monospace;font-size:11px;color:#6B7C93;line-height:1.8;">
+      No contacts loaded.<br>This feature requires Chrome on Android.<br>
+      <strong style="color:#E8C97A;">Use the 📊 From Excel button instead</strong> to import a bulk list.
+    </div>`;
+    return;
+  }
+
+  list.innerHTML = contacts.map((ct, i) => {
+    const name = (ct.name?.[0] || '').trim();
+    const phone = (ct.tel?.[0] || '').replace(/\D/g,'');
+    const email = ct.email?.[0] || '';
+    const isDupe = phone && existingPhones.has(phone);
+    const sel = _selectedContacts.has(i);
+    return `<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;
+      background:${isDupe?'rgba(231,76,60,.04)':sel?'rgba(201,168,76,.07)':'rgba(255,255,255,.03)'};
+      border:1px solid ${isDupe?'rgba(231,76,60,.2)':sel?'rgba(201,168,76,.3)':'rgba(255,255,255,.06)'};
+      border-radius:8px;cursor:${isDupe?'default':'pointer'};"
+      onclick="${isDupe?'':''+'toggleContact('+i+')'}"
+      id="ct-row-${i}">
+      <div style="width:20px;height:20px;border-radius:50%;border:2px solid ${isDupe?'#E74C3C':sel?'#C9A84C':'rgba(255,255,255,.2)'};
+        display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;
+        background:${sel&&!isDupe?'#C9A84C':'transparent'};color:${sel?'#0A1628':'transparent'};">
+        ${sel&&!isDupe?'✓':''}
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;
+          color:${isDupe?'#6B7C93':'#E8EDF5'};">${name||'(no name)'}</div>
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:#6B7C93;">
+          ${phone?phone.replace(/(\d{3})(\d{3})(\d{4})/,'($1) $2-$3'):''}
+          ${email?' · '+email:''}
+          ${isDupe?' · <span style="color:#E74C3C;">already in board</span>':''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleContact(i) {
+  if(_selectedContacts.has(i)) _selectedContacts.delete(i);
+  else _selectedContacts.add(i);
+  renderContactsList(_contacts);
+  const btn = document.getElementById('import-contacts-btn');
+  const n = _selectedContacts.size;
+  btn.textContent = n ? `✓ Import ${n} Contact${n!==1?'s':''} to Monday.com` : '✓ Import to Monday.com';
+}
+
+function filterContactsList() {
+  const q = document.getElementById('contacts-search').value.toLowerCase();
+  const filtered = q ? _contacts.filter(ct =>
+    (ct.name?.[0]||'').toLowerCase().includes(q) || (ct.tel?.[0]||'').includes(q)
+  ) : _contacts;
+  renderContactsList(filtered);
+}
+
+async function importSelectedContacts() {
+  const existingPhones = new Set(allProspects.map(p => (p.phone||'').replace(/\D/g,'')).filter(Boolean));
+  const toImport = [..._selectedContacts].map(i => _contacts[i]).filter(Boolean).map(ct => {
+    const nameParts = (ct.name?.[0]||'').trim().split(' ');
+    return {
+      name: (ct.name?.[0]||'').trim() || 'Unknown',
+      phone: (ct.tel?.[0]||'').replace(/\D/g,''),
+      email: ct.email?.[0] || '',
+    };
+  }).filter(p => !p.phone || !existingPhones.has(p.phone));
+
+  if(!toImport.length) {
+    document.getElementById('contacts-import-status').textContent = 'All selected contacts are already in the board.';
+    return;
+  }
+
+  const btn = document.getElementById('import-contacts-btn');
+  btn.disabled = true; btn.textContent = '⏳ Creating in Monday.com…';
+  const statusEl = document.getElementById('contacts-import-status');
+
+  try {
+    const result = await batchCreateProspects(toImport, (done, total) => {
+      statusEl.textContent = `Creating ${done}/${total}…`;
+    });
+    statusEl.textContent = `✓ ${result.created} prospects created in Monday.com.${result.failed?' '+result.failed+' failed.':''}`;
+    btn.textContent = '✓ Done';
+    closeContactsModal();
+    await loadProspects();
+    showToast(`✓ ${result.created} prospects imported from Contacts`);
+  } catch(e) {
+    statusEl.textContent = '✗ Error: ' + e.message;
+    btn.disabled = false; btn.textContent = '✓ Import to Monday.com';
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+// EXCEL / CSV IMPORT
+// ════════════════════════════════════════════════════════════════
+let _excelRows = [];
+let _colMap = { name: -1, phone: -1, email: -1, occupation: -1, notes: -1 };
+
+async function handleExcelUpload(event) {
+  const file = event.target.files[0];
+  if(!file) return;
+  event.target.value = ''; // reset so same file can be re-selected
+
+  const modal = document.getElementById('excel-preview-modal');
+  modal.style.display = 'flex';
+  document.getElementById('excel-import-status').textContent = '⏳ Reading file…';
+
+  try {
+    const rows = await parseFileToRows(file);
+    if(!rows || rows.length < 2) {
+      document.getElementById('excel-import-status').textContent = '⚠ File appears empty or unreadable.';
+      return;
+    }
+
+    const headers = rows[0];
+    _excelRows = rows.slice(1).filter(r => r.some(cell => String(cell||'').trim()));
+
+    // Auto-detect columns
+    headers.forEach((h, i) => {
+      const hl = String(h||'').toLowerCase();
+      if(_colMap.name < 0 && (hl.includes('name') || hl.includes('full'))) _colMap.name = i;
+      if(_colMap.phone < 0 && (hl.includes('phone') || hl.includes('mobile') || hl.includes('cell') || hl.includes('number'))) _colMap.phone = i;
+      if(_colMap.email < 0 && hl.includes('email')) _colMap.email = i;
+      if(_colMap.occupation < 0 && (hl.includes('occup') || hl.includes('job') || hl.includes('profession') || hl.includes('work'))) _colMap.occupation = i;
+      if(_colMap.notes < 0 && (hl.includes('note') || hl.includes('comment') || hl.includes('remark'))) _colMap.notes = i;
+    });
+
+    renderExcelColumnMap(headers);
+    renderExcelPreview(headers);
+    document.getElementById('excel-summary').textContent =
+      `${_excelRows.length} data rows found in "${file.name}". Map columns below, then import.`;
+    document.getElementById('excel-import-status').textContent = '';
+  } catch(e) {
+    document.getElementById('excel-import-status').textContent = '✗ Could not read file: ' + e.message;
+  }
+}
+
+async function parseFileToRows(file) {
+  const ext = file.name.split('.').pop().toLowerCase();
+
+  if(ext === 'csv') {
+    const text = await file.text();
+    return text.split('\n').map(line => {
+      // Handle quoted CSV fields
+      const result = [];
+      let current = '';
+      let inQuotes = false;
+      for(let i = 0; i < line.length; i++) {
+        if(line[i] === '"') { inQuotes = !inQuotes; continue; }
+        if(line[i] === ',' && !inQuotes) { result.push(current.trim()); current = ''; continue; }
+        current += line[i];
+      }
+      result.push(current.trim());
+      return result;
+    }).filter(r => r.length > 1);
+  }
+
+  // XLSX - use SheetJS if available, otherwise guide user to CSV
+  if(typeof XLSX !== 'undefined') {
+    const data = await file.arrayBuffer();
+    const wb = XLSX.read(data, {type:'array'});
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    return XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
+  }
+
+  // Fallback: prompt CSV
+  throw new Error('For Excel files, please save as CSV first (File → Save As → CSV). Or use Google Sheets to export as CSV.');
+}
+
+function renderExcelColumnMap(headers) {
+  const opts = `<option value="-1">— skip —</option>` +
+    headers.map((h,i) => `<option value="${i}">${h||'Column '+(i+1)}</option>`).join('');
+
+  const makeSelect = (field, label, defIdx) =>
+    `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+      <label style="font-family:'DM Mono',monospace;font-size:10px;color:#6B7C93;width:90px;flex-shrink:0;">${label}</label>
+      <select style="flex:1;background:#132240;border:1px solid rgba(255,255,255,.1);color:#E8EDF5;border-radius:6px;padding:5px 8px;font-family:'DM Mono',monospace;font-size:11px;"
+        id="col-${field}" onchange="_colMap.${field}=parseInt(this.value)">
+        ${opts.replace(`value="${defIdx}"`, `value="${defIdx}" selected`)}
+      </select>
+    </div>`;
+
+  document.getElementById('excel-col-map').innerHTML =
+    `<div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;color:#E8C97A;margin-bottom:10px;">Map Your Columns</div>` +
+    makeSelect('name', 'Full Name *', _colMap.name) +
+    makeSelect('phone', 'Phone', _colMap.phone) +
+    makeSelect('email', 'Email', _colMap.email) +
+    makeSelect('occupation', 'Occupation', _colMap.occupation) +
+    makeSelect('notes', 'Notes', _colMap.notes);
+}
+
+function renderExcelPreview(headers) {
+  const preview = _excelRows.slice(0, 8);
+  const colNums = [_colMap.name, _colMap.phone, _colMap.email].filter(i => i >= 0);
+  const visHeaders = colNums.map(i => headers[i]||('Col '+(i+1)));
+
+  document.getElementById('excel-preview-rows').innerHTML =
+    `<div style="font-family:'DM Mono',monospace;font-size:10px;color:#6B7C93;margin-bottom:6px;">Preview (first ${preview.length} rows):</div>
+    <div style="overflow-x:auto;">
+    <table style="width:100%;border-collapse:collapse;font-size:11px;">
+      <tr>${visHeaders.map(h=>`<th style="font-family:'DM Mono',monospace;font-size:9px;color:#6B7C93;padding:4px 8px;text-align:left;border-bottom:1px solid rgba(255,255,255,.1);">${h}</th>`).join('')}</tr>
+      ${preview.map(row=>`<tr>${colNums.map(ci=>`<td style="padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.05);color:#E8EDF5;white-space:nowrap;max-width:160px;overflow:hidden;text-overflow:ellipsis;">${String(row[ci]||'').slice(0,50)}</td>`).join('')}</tr>`).join('')}
+    </table></div>`;
+}
+
+async function importExcelToMonday() {
+  if(_colMap.name < 0) { alert('Please map at least the Name column.'); return; }
+
+  const existingPhones = new Set(allProspects.map(p => (p.phone||'').replace(/\D/g,'')).filter(Boolean));
+  const existingNames  = new Set(allProspects.map(p => p.name.toLowerCase()));
+
+  const toImport = _excelRows.map(row => ({
+    name:       String(row[_colMap.name]||'').trim(),
+    phone:      _colMap.phone >= 0 ? String(row[_colMap.phone]||'').replace(/\D/g,'') : '',
+    email:      _colMap.email >= 0 ? String(row[_colMap.email]||'').trim() : '',
+    occupation: _colMap.occupation >= 0 ? String(row[_colMap.occupation]||'').trim() : '',
+    notes:      _colMap.notes >= 0 ? String(row[_colMap.notes]||'').trim() : '',
+  })).filter(p => {
+    if(!p.name) return false;
+    if(p.phone && existingPhones.has(p.phone)) return false; // skip phone dupe
+    if(existingNames.has(p.name.toLowerCase())) return false; // skip name dupe
+    return true;
+  });
+
+  const skipped = _excelRows.length - toImport.length;
+  if(!toImport.length) {
+    document.getElementById('excel-import-status').textContent = `All ${_excelRows.length} rows already exist in the board (duplicates skipped).`;
+    return;
+  }
+
+  const btn = document.getElementById('excel-import-btn');
+  btn.disabled = true;
+  const statusEl = document.getElementById('excel-import-status');
+  statusEl.textContent = `Importing ${toImport.length} prospects (${skipped} duplicates skipped)…`;
+
+  try {
+    const result = await batchCreateProspects(toImport, (done, total) => {
+      btn.textContent = `⏳ ${done}/${total}…`;
+      statusEl.textContent = `Creating in Monday.com… ${done} of ${total}`;
+    });
+    statusEl.textContent = `✓ ${result.created} prospects created · ${skipped} duplicates skipped${result.failed?' · '+result.failed+' errors':''}.`;
+    btn.textContent = '✓ Done';
+    setTimeout(() => {
+      closeExcelModal();
+      loadProspects();
+    }, 2000);
+    showToast(`✓ ${result.created} prospects imported from ${result.created+result.failed} rows`);
+  } catch(e) {
+    statusEl.textContent = '✗ Error: ' + e.message;
+    btn.disabled = false;
+    btn.textContent = '✓ Import All to Monday.com';
+  }
+}
+
+function closeExcelModal() {
+  document.getElementById('excel-preview-modal').style.display = 'none';
+  _excelRows = [];
+  _colMap = { name: -1, phone: -1, email: -1, occupation: -1, notes: -1 };
+}
+
+// ── BATCH CREATE PROSPECTS IN MONDAY ─────────────────────────────
+async function batchCreateProspects(prospects, onProgress) {
+  const BATCH = 10;
+  let created = 0, failed = 0;
+
+  for(let i = 0; i < prospects.length; i += BATCH) {
+    const batch = prospects.slice(i, i + BATCH);
+    if(onProgress) onProgress(i, prospects.length);
+
+    const mutations = batch.map((p, j) => {
+      const itemName = (p.name || 'Unknown').replace(/"/g,'\\"').slice(0, 255);
+      const cv = {};
+      if(p.phone)      cv['phone_number__1']   = { phone: p.phone, countryShortName: 'US' };
+      if(p.email)      cv['dup__of_notes__1']   = p.email;
+      if(p.occupation) cv['text76__1']           = p.occupation;
+      if(p.notes)      cv['text4__1']            = p.notes;
+      return `p${j}: create_item(board_id: ${BOARD_ID}, group_id: "${NEW_PROSPECTS_GROUP}", item_name: "${itemName}", column_values: ${JSON.stringify(JSON.stringify(cv))}, create_labels_if_missing: true) { id name }`;
+    }).join('\n  ');
+
+    try {
+      const res = await mondayQuery(`mutation {\n  ${mutations}\n}`);
+      if(res?.errors?.length) failed += batch.length;
+      else created += batch.length;
+    } catch(e) {
+      failed += batch.length;
+    }
+
+    // Small delay between batches to avoid rate limiting
+    if(i + BATCH < prospects.length) await new Promise(r => setTimeout(r, 400));
+  }
+
+  if(onProgress) onProgress(prospects.length, prospects.length);
+  return { created, failed };
+}
+
+// Load SheetJS for Excel parsing
+if(!document.getElementById('xlsx-script')) {
+  const s = document.createElement('script');
+  s.id = 'xlsx-script';
+  s.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+  document.head.appendChild(s);
+}
 </script>
 
 <!-- ══ BOARD PICKER MODAL ══════════════════════════════════════ -->
@@ -1701,6 +1748,64 @@ document.addEventListener('DOMContentLoaded',()=>{
       </div>
     </div>
 
+  </div>
+</div>
+
+
+<!-- CONTACTS PICKER MODAL -->
+<div id="contacts-import-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:400;
+  display:none;align-items:flex-end;justify-content:center;">
+  <div style="background:#0F1E38;border:1px solid rgba(201,168,76,.2);border-radius:16px 16px 0 0;
+    width:100%;max-width:520px;max-height:88vh;overflow-y:auto;padding:20px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;color:#E8C97A;">📱 Import from Contacts</div>
+      <button onclick="closeContactsModal()" style="background:none;border:none;color:#6B7C93;font-size:20px;cursor:pointer;">✕</button>
+    </div>
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:#6B7C93;margin-bottom:12px;line-height:1.7;">
+      Select contacts to add as prospects. Duplicates by phone are skipped. All selected contacts will be created in Monday.com.
+    </div>
+    <input type="text" id="contacts-search" placeholder="Search contacts…" oninput="filterContactsList()"
+      style="width:100%;background:#132240;border:1px solid rgba(255,255,255,.1);color:#E8EDF5;
+        border-radius:8px;padding:8px 12px;font-family:'DM Mono',monospace;font-size:12px;
+        outline:none;margin-bottom:10px;">
+    <div id="contacts-list" style="max-height:340px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;"></div>
+    <div style="display:flex;gap:8px;margin-top:14px;">
+      <button onclick="importSelectedContacts()" style="flex:2;background:linear-gradient(135deg,#C9A84C,#E8C97A);
+        border:none;border-radius:8px;color:#0A1628;font-family:'Barlow Condensed',sans-serif;
+        font-size:16px;font-weight:900;padding:11px;cursor:pointer;" id="import-contacts-btn">
+        ✓ Import to Monday.com
+      </button>
+      <button onclick="closeContactsModal()" style="flex:1;background:rgba(255,255,255,.06);
+        border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#E8EDF5;
+        font-family:'DM Mono',monospace;font-size:11px;padding:11px;cursor:pointer;">Cancel</button>
+    </div>
+    <div id="contacts-import-status" style="font-family:'DM Mono',monospace;font-size:10px;color:#6B7C93;margin-top:8px;text-align:center;"></div>
+  </div>
+</div>
+
+<!-- EXCEL PREVIEW MODAL -->
+<div id="excel-preview-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:400;
+  align-items:flex-end;justify-content:center;">
+  <div style="background:#0F1E38;border:1px solid rgba(201,168,76,.2);border-radius:16px 16px 0 0;
+    width:100%;max-width:600px;max-height:90vh;overflow-y:auto;padding:20px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;color:#E8C97A;">📊 Excel / CSV Import</div>
+      <button onclick="closeExcelModal()" style="background:none;border:none;color:#6B7C93;font-size:20px;cursor:pointer;">✕</button>
+    </div>
+    <div id="excel-col-map" style="margin-bottom:14px;"></div>
+    <div id="excel-preview-rows" style="max-height:280px;overflow-y:auto;margin-bottom:14px;"></div>
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:#6B7C93;margin-bottom:12px;" id="excel-summary"></div>
+    <div style="display:flex;gap:8px;">
+      <button onclick="importExcelToMonday()" style="flex:2;background:linear-gradient(135deg,#C9A84C,#E8C97A);
+        border:none;border-radius:8px;color:#0A1628;font-family:'Barlow Condensed',sans-serif;
+        font-size:16px;font-weight:900;padding:11px;cursor:pointer;" id="excel-import-btn">
+        ✓ Import All to Monday.com
+      </button>
+      <button onclick="closeExcelModal()" style="flex:1;background:rgba(255,255,255,.06);
+        border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#E8EDF5;
+        font-family:'DM Mono',monospace;font-size:11px;padding:11px;cursor:pointer;">Cancel</button>
+    </div>
+    <div id="excel-import-status" style="font-family:'DM Mono',monospace;font-size:10px;color:#6B7C93;margin-top:8px;text-align:center;line-height:1.7;"></div>
   </div>
 </div>
 

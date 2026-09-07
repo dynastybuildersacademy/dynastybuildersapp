@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0">
+<title>CFT Matcher · Dynasty Builders</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Barlow:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="auth.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{
+  --navy:#0A1628;--navy2:#0F1E38;--s1:#132240;--s2:#1A2E50;
+  --gold:#C9A84C;--gold2:#E8C97A;--text:#E8EDF5;--muted:#6B7C93;
+  --border:rgba(201,168,76,.15);--green:#2DCA73;--red:#E74C3C;
+  --blue:#3498DB;--purple:#9B59B6;--orange:#E67E22;
+}
+html,body{min-height:100%;background:var(--navy);color:var(--text);font-family:'Barlow',sans-serif;}
+
+/* ── TOPBAR ────────────────────────────────────────────────── */
+.topbar{position:sticky;top:0;z-index:100;display:flex;align-items:center;
+  justify-content:space-between;padding:0 16px;height:52px;
+  background:rgba(10,22,40,.96);border-bottom:1px solid var(--border);
+  backdrop-filter:blur(8px);}
+.tb-title{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:900;
+  color:var(--gold2);letter-spacing:.04em;}
+.back{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);text-decoration:none;}
+
+/* ── TABS ──────────────────────────────────────────────────── */
+.tab-bar{display:flex;background:var(--navy2);border-bottom:1px solid var(--border);overflow-x:auto;}
+.tab-bar::-webkit-scrollbar{display:none;}
+.vtab{flex-shrink:0;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;
+  padding:12px 18px;border-bottom:3px solid transparent;color:var(--muted);cursor:pointer;
+  background:none;border-top:none;border-left:none;border-right:none;white-space:nowrap;
+  letter-spacing:.04em;}
+.vtab:hover{color:var(--text);}
+.vtab.active{color:var(--gold2);border-bottom-color:var(--gold);}
+
+.view{display:none;padding:16px 16px 80px;max-width:700px;margin:0 auto;}
+.view.active{display:block;}
+
+/* ── CARDS ─────────────────────────────────────────────────── */
+.card{background:var(--navy2);border:1px solid var(--border);border-radius:14px;
+  padding:16px;margin-bottom:14px;}
+.card-title{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;
+  color:var(--gold2);letter-spacing:.04em;margin-bottom:10px;}
+
+/* ── TRAINER CARD ──────────────────────────────────────────── */
+.trainer-card{background:var(--s1);border:1px solid var(--border);border-radius:12px;
+  padding:14px;margin-bottom:10px;position:relative;transition:border-color .15s;}
+.trainer-card:hover{border-color:rgba(201,168,76,.3);}
+.trainer-card.selected{border-color:var(--gold);background:rgba(201,168,76,.06);}
+.tc-row{display:flex;align-items:flex-start;gap:12px;}
+.tc-avatar{width:44px;height:44px;border-radius:50%;flex-shrink:0;
+  font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;
+  display:flex;align-items:center;justify-content:center;color:#0A1628;}
+.tc-name{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;color:var(--text);}
+.tc-role{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);}
+.tc-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px;}
+.tag{font-family:'DM Mono',monospace;font-size:9px;padding:2px 8px;border-radius:10px;
+  background:rgba(255,255,255,.06);color:var(--muted);border:1px solid rgba(255,255,255,.08);}
+.tag.avail{background:rgba(45,202,115,.1);color:var(--green);border-color:rgba(45,202,115,.25);}
+.tag.busy{background:rgba(231,76,60,.08);color:var(--red);border-color:rgba(231,76,60,.2);}
+.tag.level{background:rgba(201,168,76,.1);color:var(--gold2);border-color:rgba(201,168,76,.25);}
+.tc-check{position:absolute;top:14px;right:14px;width:22px;height:22px;border-radius:50%;
+  border:2px solid var(--border);display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:12px;transition:all .15s;}
+.trainer-card.selected .tc-check{background:var(--gold);border-color:var(--gold);color:#0A1628;font-weight:900;}
+.avail-strip{display:flex;gap:4px;margin-top:8px;flex-wrap:wrap;}
+.avail-slot{font-family:'DM Mono',monospace;font-size:9px;padding:3px 8px;border-radius:6px;
+  background:rgba(45,202,115,.08);border:1px solid rgba(45,202,115,.2);color:var(--green);}
+.avail-slot.booked{background:rgba(231,76,60,.08);border-color:rgba(231,76,60,.2);color:var(--red);
+  text-decoration:line-through;}
+
+/* ── FILTERS ───────────────────────────────────────────────── */
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.fchip{font-family:'DM Mono',monospace;font-size:10px;padding:5px 12px;border-radius:20px;
+  border:1px solid var(--border);background:var(--s1);color:var(--muted);cursor:pointer;}
+.fchip.active{background:rgba(201,168,76,.1);border-color:rgba(201,168,76,.3);color:var(--gold2);}
+
+/* ── FORM FIELDS ───────────────────────────────────────────── */
+.field{margin-bottom:12px;}
+.field-label{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:5px;}
+.field-input{width:100%;background:var(--s1);border:1px solid rgba(255,255,255,.1);
+  border-radius:8px;padding:9px 12px;color:var(--text);font-family:'Barlow',sans-serif;
+  font-size:14px;outline:none;transition:border-color .15s;}
+.field-input:focus{border-color:rgba(201,168,76,.4);}
+select.field-input option{background:var(--s2);}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+textarea.field-input{resize:vertical;min-height:80px;}
+
+/* ── AVAILABILITY GRID ─────────────────────────────────────── */
+.avail-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin:10px 0;}
+.avail-day{text-align:center;}
+.avail-day-label{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);
+  text-transform:uppercase;margin-bottom:3px;}
+.avail-slots{display:flex;flex-direction:column;gap:2px;}
+.slot-btn{font-family:'DM Mono',monospace;font-size:8px;padding:4px 2px;border-radius:4px;
+  border:1px solid rgba(255,255,255,.08);background:var(--s1);color:var(--muted);
+  cursor:pointer;text-align:center;transition:all .1s;}
+.slot-btn.on{background:rgba(45,202,115,.12);border-color:rgba(45,202,115,.3);color:var(--green);}
+.slot-btn:active{opacity:.7;}
+
+/* ── MATCH RESULT ──────────────────────────────────────────── */
+.match-score{display:inline-block;font-family:'Barlow Condensed',sans-serif;font-size:20px;
+  font-weight:900;padding:4px 12px;border-radius:10px;margin-left:8px;}
+.score-high{background:rgba(45,202,115,.15);color:var(--green);}
+.score-med{background:rgba(230,126,34,.12);color:var(--orange);}
+.score-low{background:rgba(107,124,147,.12);color:var(--muted);}
+
+/* ── BUTTONS ───────────────────────────────────────────────── */
+.btn-gold{width:100%;padding:13px;background:linear-gradient(135deg,var(--gold),#b8901f);
+  border:none;border-radius:10px;font-family:'Barlow Condensed',sans-serif;font-size:17px;
+  font-weight:900;letter-spacing:.04em;color:#0A1628;cursor:pointer;margin-top:6px;}
+.btn-gold:active{opacity:.88;}
+.btn-sm{padding:7px 14px;background:rgba(255,255,255,.06);border:1px solid var(--border);
+  border-radius:8px;font-family:'DM Mono',monospace;font-size:11px;color:var(--text);
+  cursor:pointer;}
+.btn-sm:hover{background:rgba(255,255,255,.1);}
+.btn-green{background:rgba(45,202,115,.12);border-color:rgba(45,202,115,.3);color:var(--green);}
+.btn-blue{background:rgba(52,152,219,.12);border-color:rgba(52,152,219,.3);color:var(--blue);}
+
+/* ── CAL CONNECT ────────────────────────────────────────────── */
+.cal-connect-box{background:rgba(66,133,244,.08);border:1px solid rgba(66,133,244,.25);
+  border-radius:12px;padding:16px;margin-bottom:16px;text-align:center;}
+.cal-connected{background:rgba(45,202,115,.06);border-color:rgba(45,202,115,.25);}
+.google-btn{display:inline-flex;align-items:center;gap:10px;background:#fff;border:none;
+  border-radius:8px;padding:10px 20px;font-family:'Barlow',sans-serif;font-size:14px;
+  font-weight:600;color:#3c4043;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.3);}
+.google-btn:hover{background:#f8f8f8;}
+
+/* ── INVITE PANEL ───────────────────────────────────────────── */
+.invite-card{background:var(--s1);border:1px solid rgba(45,202,115,.2);border-radius:10px;
+  padding:12px;margin-bottom:8px;display:flex;align-items:center;gap:12px;}
+.invite-name{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;flex:1;}
+.invite-email{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);}
+
+/* ── TOAST ─────────────────────────────────────────────────── */
+.toast-wrap{position:fixed;bottom:20px;right:16px;z-index:999;display:flex;flex-direction:column;gap:6px;}
+.toast{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:9px 14px;
+  font-family:'DM Mono',monospace;font-size:11px;color:var(--text);
+  animation:ti .2s ease;box-shadow:0 4px 20px rgba(0,0,0,.4);}
+@keyframes ti{from{transform:translateX(40px);opacity:0}to{transform:none;opacity:1}}
+
+/* ── PROFILE STATUS ─────────────────────────────────────────── */
+.status-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:5px;}
+.dot-green{background:var(--green);}
+.dot-orange{background:var(--orange);}
+.dot-gray{background:var(--muted);}
+</style>
+</head>
+<body>
+<div id="toast-wrap" class="toast-wrap"></div>
+
+<div class="topbar">
+  <div class="tb-title">🎯 CFT Matcher</div>
+  <a href="hub.html" class="back">← Hub</a>
+</div>
+
+<div class="tab-bar">
+  <button class="vtab active" onclick="switchView('match',this)">🔍 Find a Trainer</button>
+  <button class="vtab" onclick="switchView('availability',this)">📅 My Availability</button>
+  <button class="vtab" onclick="switchView('trainers',this)" id="trainers-tab">⭐ Trainer Roster</button>
+  <button class="vtab" onclick="switchView('invite',this)" id="invite-tab">📧 Invite</button>
+</div>
+
+<!-- ══ VIEW: FIND A TRAINER ═══════════════════════════════════ -->
+<div class="view active" id="view-match">
+  <div class="card">
+    <div class="card-title">What do you need training on?</div>
+    <div class="field">
+      <label class="field-label">Training Topic</label>
+      <select class="field-input" id="topic-select">
+        <option value="">Select a topic…</option>
+        <option value="sales">Sales Presentation & Closing</option>
+        <option value="prospecting">Prospecting & Cold Calling</option>
+        <option value="products">Product Knowledge (WL, IUL, Annuity)</option>
+        <option value="objections">Objection Handling</option>
+        <option value="recruiting">Recruiting Conversation</option>
+        <option value="bom">BOM Presentation</option>
+        <option value="licensing">Licensing Process</option>
+        <option value="field">Field Training (Joint Appointment)</option>
+        <option value="leadership">Leadership & Team Building</option>
+        <option value="digital">Digital Marketing & Social Media</option>
+      </select>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label class="field-label">Preferred Date</label>
+        <input class="field-input" type="date" id="pref-date">
+      </div>
+      <div class="field">
+        <label class="field-label">Preferred Time</label>
+        <select class="field-input" id="pref-time">
+          <option value="">Any time</option>
+          <option value="morning">Morning (8am–12pm)</option>
+          <option value="afternoon">Afternoon (12pm–5pm)</option>
+          <option value="evening">Evening (5pm–9pm)</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label class="field-label">Format</label>
+      <select class="field-input" id="pref-format">
+        <option value="any">Any format</option>
+        <option value="zoom">Zoom / Video call</option>
+        <option value="field">In-person / Field</option>
+        <option value="phone">Phone call</option>
+      </select>
+    </div>
+    <button class="btn-gold" onclick="findTrainers()">🔍 Find Available Trainers</button>
+  </div>
+
+  <div id="match-results"></div>
+</div>
+
+<!-- ══ VIEW: MY AVAILABILITY ══════════════════════════════════ -->
+<div class="view" id="view-availability">
+  <div class="card">
+    <div class="card-title">📅 Connect Google Calendar</div>
+    <div class="cal-connect-box" id="cal-connect-box">
+      <p style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:12px;line-height:1.7;">
+        Connect your Google Calendar to automatically show your availability to the matching system. Your calendar is read-only — we never modify your events.
+      </p>
+      <button class="google-btn" onclick="connectGoogle()">
+        <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="#FBBC05" d="M10.53 28.59c-.5-1.45-.79-3-.79-4.59s.29-3.14.79-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/></svg>
+        Sign in with Google
+      </button>
+    </div>
+    <div id="cal-status"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">⏰ Manual Availability</div>
+    <p style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:12px;line-height:1.7;">
+      Set your weekly recurring availability for field training. Toggle the time slots you're generally free.
+    </p>
+    <div class="avail-grid" id="avail-grid"></div>
+    <div style="margin-top:10px;display:flex;gap:8px;">
+      <button class="btn-sm btn-green" onclick="saveAvailability()">💾 Save Availability</button>
+      <button class="btn-sm" onclick="clearAvailability()">Clear All</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🎓 My CFT Profile</div>
+    <div class="field">
+      <label class="field-label">CFT Certified?</label>
+      <select class="field-input" id="cft-certified">
+        <option value="no">Not yet certified</option>
+        <option value="yes">Yes — PHP CFT Certified</option>
+      </select>
+    </div>
+    <div class="field">
+      <label class="field-label">Training Specialties (select all that apply)</label>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;" id="specialty-tags">
+        <div class="fchip" onclick="toggleSpec(this,'sales')">Sales</div>
+        <div class="fchip" onclick="toggleSpec(this,'prospecting')">Prospecting</div>
+        <div class="fchip" onclick="toggleSpec(this,'products')">Products</div>
+        <div class="fchip" onclick="toggleSpec(this,'objections')">Objections</div>
+        <div class="fchip" onclick="toggleSpec(this,'recruiting')">Recruiting</div>
+        <div class="fchip" onclick="toggleSpec(this,'bom')">BOM</div>
+        <div class="fchip" onclick="toggleSpec(this,'licensing')">Licensing</div>
+        <div class="fchip" onclick="toggleSpec(this,'field')">Field Training</div>
+        <div class="fchip" onclick="toggleSpec(this,'leadership')">Leadership</div>
+        <div class="fchip" onclick="toggleSpec(this,'digital')">Digital</div>
+      </div>
+    </div>
+    <div class="field">
+      <label class="field-label">Training Format</label>
+      <select class="field-input" id="cft-format">
+        <option value="any">Any format</option>
+        <option value="zoom">Zoom preferred</option>
+        <option value="field">In-person / Field preferred</option>
+        <option value="phone">Phone preferred</option>
+      </select>
+    </div>
+    <div class="field">
+      <label class="field-label">Bio / Training Style (optional)</label>
+      <textarea class="field-input" id="cft-bio" placeholder="e.g. I specialize in helping new agents get comfortable on the phone. I've personally made 5,000+ contacts and can walk you through my exact script and follow-up system."></textarea>
+    </div>
+    <div class="field">
+      <label class="field-label">Contact Email for Training Requests</label>
+      <input class="field-input" type="email" id="cft-email" placeholder="your@email.com">
+    </div>
+    <button class="btn-gold" onclick="saveCFTProfile()">💾 Save My Trainer Profile</button>
+  </div>
+</div>
+
+<!-- ══ VIEW: TRAINER ROSTER ════════════════════════════════════ -->
+<div class="view" id="view-trainers">
+  <div class="filters" id="roster-filters">
+    <div class="fchip active" onclick="filterRoster('',this)">All</div>
+    <div class="fchip" onclick="filterRoster('available',this)">✅ Available Now</div>
+    <div class="fchip" onclick="filterRoster('sales',this)">Sales</div>
+    <div class="fchip" onclick="filterRoster('field',this)">Field</div>
+    <div class="fchip" onclick="filterRoster('products',this)">Products</div>
+    <div class="fchip" onclick="filterRoster('recruiting',this)">Recruiting</div>
+    <div class="fchip" onclick="filterRoster('leadership',this)">Leadership</div>
+  </div>
+  <div id="roster-list"></div>
+</div>
+
+<!-- ══ VIEW: INVITE ════════════════════════════════════════════ -->
+<div class="view" id="view-invite">
+  <div class="card">
+    <div class="card-title">📧 Invite Available Trainers</div>
+    <p style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:14px;line-height:1.7;">
+      Select trainers to invite to a training session. We'll open your email client with a pre-filled invitation.
+    </p>
+
+    <div class="field">
+      <label class="field-label">Training Session Details</label>
+      <input class="field-input" type="text" id="inv-topic" placeholder="e.g. Cold Calling Masterclass with New Agents">
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label class="field-label">Date</label>
+        <input class="field-input" type="date" id="inv-date">
+      </div>
+      <div class="field">
+        <label class="field-label">Time</label>
+        <input class="field-input" type="time" id="inv-time" value="18:00">
+      </div>
+    </div>
+    <div class="field">
+      <label class="field-label">Zoom / Location Link</label>
+      <input class="field-input" type="text" id="inv-link" placeholder="https://zoom.us/j/…  or  address">
+    </div>
+    <div class="field">
+      <label class="field-label">Message to Trainers</label>
+      <textarea class="field-input" id="inv-message" placeholder="We have 5 new agents who need help with their sales presentation. We're looking for 30-60 minutes of coaching via Zoom…"></textarea>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Select Trainers to Invite</div>
+    <div id="invite-trainer-list"></div>
+    <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn-sm" onclick="selectAllAvailable()">Select All Available</button>
+      <button class="btn-sm" onclick="clearInviteSelection()">Clear</button>
+    </div>
+  </div>
+
+  <button class="btn-gold" id="send-invite-btn" onclick="sendInvites()">📧 Open Email Invitations</button>
+  <div id="invite-status" style="margin-top:10px;font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);text-align:center;"></div>
+</div>
+
+<script>
+AUTH.require('cft-matcher.html');
+const session = AUTH.getSession();
+const isAdmin = session && session.level >= 60;
+
+const SK = {
+  profiles: 'cft_trainer_profiles',
+  myProfile: 'cft_my_profile_' + (session?.agentId || 'anon'),
+  myAvail:   'cft_avail_' + (session?.agentId || 'anon'),
+  calToken:  'cft_cal_token_' + (session?.agentId || 'anon'),
+};
+
+const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const SLOTS = ['8am','10am','12pm','2pm','4pm','6pm','8pm'];
+
+// ── TAB SWITCHING ─────────────────────────────────────────────
+function switchView(id, el) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.vtab').forEach(t => t.classList.remove('active'));
+  document.getElementById('view-'+id).classList.add('active');
+  el.classList.add('active');
+  if(id === 'trainers') renderRoster();
+  if(id === 'invite')   renderInviteList();
+}
+
+// ── LOAD / SAVE HELPERS ───────────────────────────────────────
+function loadProfiles() {
+  try { return JSON.parse(localStorage.getItem(SK.profiles) || '{}'); } catch { return {}; }
+}
+function saveProfiles(profiles) {
+  localStorage.setItem(SK.profiles, JSON.stringify(profiles));
+}
+function loadMyAvail() {
+  try { return JSON.parse(localStorage.getItem(SK.myAvail) || '{}'); } catch { return {}; }
+}
+function saveMyAvail(avail) {
+  localStorage.setItem(SK.myAvail, JSON.stringify(avail));
+}
+function loadMyProfile() {
+  try { return JSON.parse(localStorage.getItem(SK.myProfile) || 'null'); } catch { return null; }
+}
+
+// ── AVAILABILITY GRID ─────────────────────────────────────────
+function buildAvailGrid() {
+  const saved = loadMyAvail();
+  const grid = document.getElementById('avail-grid');
+  grid.innerHTML = DAYS.map((day,di) => `
+    <div class="avail-day">
+      <div class="avail-day-label">${day}</div>
+      <div class="avail-slots">
+        ${SLOTS.map((slot,si) => {
+          const key = `${di}-${si}`;
+          const on = saved[key];
+          return `<div class="slot-btn ${on?'on':''}" id="slot-${key}"
+            onclick="toggleSlot('${key}',this)">${slot}</div>`;
+        }).join('')}
+      </div>
+    </div>`).join('');
+}
+
+function toggleSlot(key, el) {
+  el.classList.toggle('on');
+}
+
+function saveAvailability() {
+  const avail = {};
+  document.querySelectorAll('.slot-btn.on').forEach(el => {
+    const key = el.id.replace('slot-','');
+    avail[key] = true;
+  });
+  saveMyAvail(avail);
+  // Also save to global profiles
+  const profiles = loadProfiles();
+  if(!profiles[session.agentId]) profiles[session.agentId] = {};
+  profiles[session.agentId].availability = avail;
+  profiles[session.agentId].name = session.name;
+  profiles[session.agentId].role = session.role;
+  profiles[session.agentId].level = session.level;
+  profiles[session.agentId].agentId = session.agentId;
+  saveProfiles(profiles);
+  toast('✓ Availability saved');
+}
+
+function clearAvailability() {
+  document.querySelectorAll('.slot-btn').forEach(el => el.classList.remove('on'));
+}
+
+function toggleSpec(el, val) {
+  el.classList.toggle('active');
+}
+
+function getSelectedSpecs() {
+  return [...document.querySelectorAll('#specialty-tags .fchip.active')].map(el =>
+    el.getAttribute('onclick').match(/'(\w+)'/)[1]
+  );
+}
+
+// ── SAVE CFT PROFILE ──────────────────────────────────────────
+function saveCFTProfile() {
+  const avail = loadMyAvail();
+  const specs = getSelectedSpecs();
+  const profile = {
+    agentId:   session.agentId,
+    name:      session.name,
+    role:      session.role,
+    level:     session.level,
+    email:     document.getElementById('cft-email').value.trim(),
+    certified: document.getElementById('cft-certified').value === 'yes',
+    specialties: specs,
+    format:    document.getElementById('cft-format').value,
+    bio:       document.getElementById('cft-bio').value.trim(),
+    availability: avail,
+    updatedAt: new Date().toISOString(),
+  };
+
+  if(!profile.email) { toast('⚠ Add a contact email first'); return; }
+  if(!specs.length)  { toast('⚠ Select at least one specialty'); return; }
+
+  localStorage.setItem(SK.myProfile, JSON.stringify(profile));
+
+  // Save to shared profiles store
+  const profiles = loadProfiles();
+  profiles[session.agentId] = profile;
+  saveProfiles(profiles);
+
+  toast('✓ Trainer profile saved — you are now visible in the roster');
+}
+
+// ── FIND TRAINERS (MATCH) ─────────────────────────────────────
+const TOPIC_LABELS = {
+  sales:'Sales Presentation & Closing', prospecting:'Prospecting & Cold Calling',
+  products:'Product Knowledge', objections:'Objection Handling',
+  recruiting:'Recruiting', bom:'BOM Presentation', licensing:'Licensing',
+  field:'Field Training', leadership:'Leadership', digital:'Digital Marketing'
+};
+
+function getAvailSlots(avail, prefDay, prefTime) {
+  // prefTime: morning=0-1, afternoon=2-3, evening=4-6
+  if(!avail || !Object.keys(avail).length) return 0;
+  const total = Object.values(avail).filter(Boolean).length;
+  if(!prefDay && !prefTime) return total;
+
+  const date = prefDay ? new Date(prefDay) : null;
+  const dayIdx = date ? ((date.getDay() + 6) % 7) : null; // Mon=0
+  const timeRange = prefTime === 'morning' ? [0,1] : prefTime === 'afternoon' ? [2,3] : prefTime === 'evening' ? [4,6] : null;
+
+  let matched = 0;
+  Object.keys(avail).forEach(key => {
+    if(!avail[key]) return;
+    const [d, s] = key.split('-').map(Number);
+    if(dayIdx !== null && d !== dayIdx) return;
+    if(timeRange !== null && (s < timeRange[0] || s > timeRange[1])) return;
+    matched++;
+  });
+  return matched;
+}
+
+function scoreMatch(profile, topic, prefDay, prefTime, prefFormat) {
+  let score = 0;
+  // Specialty match
+  if(topic && profile.specialties && profile.specialties.includes(topic)) score += 40;
+  // CFT certified
+  if(profile.certified) score += 20;
+  // Level bonus
+  score += Math.min(25, (profile.level || 0) / 4);
+  // Availability
+  const slots = getAvailSlots(profile.availability, prefDay, prefTime);
+  score += Math.min(15, slots * 2);
+  // Format match
+  if(prefFormat && prefFormat !== 'any' && profile.format && profile.format !== 'any') {
+    if(profile.format === prefFormat) score += 10;
+  }
+  return Math.round(score);
+}
+
+function findTrainers() {
+  const topic    = document.getElementById('topic-select').value;
+  const prefDay  = document.getElementById('pref-date').value;
+  const prefTime = document.getElementById('pref-time').value;
+  const prefFormat = document.getElementById('pref-format').value;
+  const resultsEl = document.getElementById('match-results');
+
+  const profiles = loadProfiles();
+  const trainers = Object.values(profiles).filter(p =>
+    p.agentId !== session.agentId && p.email && p.specialties && p.specialties.length
+  );
+
+  if(!trainers.length) {
+    resultsEl.innerHTML = `<div class="card" style="text-align:center;padding:24px;">
+      <div style="font-size:32px;margin-bottom:10px;">🎯</div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;color:var(--gold2);">No trainers registered yet</div>
+      <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-top:6px;line-height:1.7;">Ask Directors and above to add their profiles under My Availability.</div>
+    </div>`;
+    return;
+  }
+
+  // Score and sort
+  const scored = trainers.map(p => ({ ...p, score: scoreMatch(p, topic, prefDay, prefTime, prefFormat) }))
+    .sort((a,b) => b.score - a.score);
+
+  const roleColor = r => (typeof ROLES !== 'undefined' && ROLES[r]) ? ROLES[r].color : '#6B7C93';
+  const roleName  = r => (typeof ROLES !== 'undefined' && ROLES[r]) ? ROLES[r].label : r;
+  const scoreClass = s => s >= 70 ? 'score-high' : s >= 40 ? 'score-med' : 'score-low';
+
+  resultsEl.innerHTML = `
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:10px;">
+      Found ${scored.length} trainer${scored.length!==1?'s':''} — sorted by match quality
+    </div>
+    ${scored.map(p => {
+      const slots = getAvailSlots(p.availability, prefDay, prefTime);
+      const avSlots = p.availability ? Object.keys(p.availability).filter(k => p.availability[k]).slice(0,6) : [];
+      const initials = p.name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
+      return `<div class="trainer-card">
+        <div class="tc-row">
+          <div class="tc-avatar" style="background:${roleColor(p.role)};">${initials}</div>
+          <div style="flex:1;min-width:0;">
+            <div class="tc-name">${p.name}
+              <span class="match-score ${scoreClass(p.score)}">${p.score}%</span>
+            </div>
+            <div class="tc-role">${roleName(p.role)}${p.certified?' · ⭐ CFT Certified':''}</div>
+            ${p.bio ? `<div style="font-size:12px;color:rgba(250,246,238,.7);margin-top:4px;line-height:1.5;">${p.bio.slice(0,120)}${p.bio.length>120?'…':''}</div>` : ''}
+            <div class="tc-tags">
+              ${(p.specialties||[]).map(s=>`<span class="tag ${s===topic?'level':''}">${TOPIC_LABELS[s]||s}</span>`).join('')}
+              <span class="tag ${slots>0?'avail':'busy'}">${slots>0?slots+' slots available':'No overlap found'}</span>
+              ${p.format&&p.format!=='any'?`<span class="tag">${p.format}</span>`:''}
+            </div>
+          </div>
+        </div>
+        ${avSlots.length ? `<div class="avail-strip">
+          ${avSlots.map(k => {
+            const [d,s] = k.split('-').map(Number);
+            return `<span class="avail-slot">${DAYS[d]} ${SLOTS[s]}</span>`;
+          }).join('')}
+          ${Object.keys(p.availability||{}).filter(k=>p.availability[k]).length > 6 ? '<span style="font-family:\'DM Mono\',monospace;font-size:9px;color:var(--muted);">+more</span>' : ''}
+        </div>` : ''}
+        <div style="display:flex;gap:8px;margin-top:10px;">
+          <a href="mailto:${p.email}?subject=${encodeURIComponent('Training Request — '+(TOPIC_LABELS[topic]||topic||'DBA'))}&body=${encodeURIComponent('Hi '+p.name.split(' ')[0]+',\n\nI\'d love to get some training on '+(TOPIC_LABELS[topic]||topic||'a topic')+'. Are you available'+(prefDay?' on '+prefDay:'')+' '+(prefTime||'')+' for a session?\n\nThanks,\n'+session.name)}"
+            class="btn-sm btn-green">📧 Email ${p.name.split(' ')[0]}</a>
+          <button class="btn-sm btn-blue" onclick="addToInviteQueue('${p.agentId}')">+ Add to Invite Queue</button>
+        </div>
+      </div>`;
+    }).join('')}`;
+}
+
+// ── ROSTER ────────────────────────────────────────────────────
+let rosterFilter = '';
+function filterRoster(val, el) {
+  rosterFilter = val;
+  document.querySelectorAll('#roster-filters .fchip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderRoster();
+}
+
+function renderRoster() {
+  const profiles = loadProfiles();
+  let trainers = Object.values(profiles).filter(p => p.email && p.specialties && p.specialties.length);
+
+  if(rosterFilter === 'available') {
+    const now = new Date();
+    const dayIdx = (now.getDay() + 6) % 7;
+    const hour = now.getHours();
+    const slotIdx = Math.floor((hour - 8) / 2);
+    const key = `${dayIdx}-${Math.max(0,Math.min(6,slotIdx))}`;
+    trainers = trainers.filter(p => p.availability && p.availability[key]);
+  } else if(rosterFilter) {
+    trainers = trainers.filter(p => p.specialties && p.specialties.includes(rosterFilter));
+  }
+
+  const el = document.getElementById('roster-list');
+  if(!trainers.length) {
+    el.innerHTML = `<div class="card" style="text-align:center;padding:24px;">
+      <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);">No trainers match this filter.</div>
+    </div>`;
+    return;
+  }
+
+  el.innerHTML = trainers.sort((a,b) => (b.certified?1:0) - (a.certified?1:0) || b.level - a.level)
+    .map(p => {
+      const roleColor = r => (typeof ROLES!=='undefined'&&ROLES[r]) ? ROLES[r].color : '#6B7C93';
+      const roleName  = r => (typeof ROLES!=='undefined'&&ROLES[r]) ? ROLES[r].label : r;
+      const initials = p.name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
+      const totalSlots = p.availability ? Object.values(p.availability).filter(Boolean).length : 0;
+      return `<div class="trainer-card">
+        <div class="tc-row">
+          <div class="tc-avatar" style="background:${roleColor(p.role)};">${initials}</div>
+          <div style="flex:1;">
+            <div class="tc-name">${p.name}${p.certified?' ⭐':''}</div>
+            <div class="tc-role">${roleName(p.role)}</div>
+            ${p.bio ? `<div style="font-size:12px;color:rgba(250,246,238,.7);margin-top:4px;line-height:1.5;">${p.bio.slice(0,150)}${p.bio.length>150?'…':''}</div>` : ''}
+            <div class="tc-tags" style="margin-top:6px;">
+              ${(p.specialties||[]).map(s=>`<span class="tag">${TOPIC_LABELS[s]||s}</span>`).join('')}
+              <span class="tag avail">${totalSlots} slots/week</span>
+              ${p.format&&p.format!=='any'?`<span class="tag">${p.format}</span>`:''}
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:10px;">
+          <a href="mailto:${p.email}" class="btn-sm btn-green">📧 Email</a>
+          ${isAdmin ? `<button class="btn-sm" onclick="removeTrainer('${p.agentId}')">🗑 Remove</button>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+}
+
+function removeTrainer(agentId) {
+  if(!isAdmin) return;
+  const profiles = loadProfiles();
+  delete profiles[agentId];
+  saveProfiles(profiles);
+  renderRoster();
+  toast('✓ Trainer removed from roster');
+}
+
+// ── INVITE SYSTEM ─────────────────────────────────────────────
+let inviteQueue = new Set();
+
+function addToInviteQueue(agentId) {
+  inviteQueue.add(agentId);
+  toast('✓ Added to invite queue — go to Invite tab');
+}
+
+function renderInviteList() {
+  const profiles = loadProfiles();
+  const trainers = Object.values(profiles).filter(p => p.email && p.specialties && p.specialties.length);
+  const el = document.getElementById('invite-trainer-list');
+
+  el.innerHTML = trainers.map(p => {
+    const selected = inviteQueue.has(p.agentId);
+    const totalSlots = p.availability ? Object.values(p.availability).filter(Boolean).length : 0;
+    return `<div class="invite-card ${selected?'':''}">
+      <div style="width:22px;height:22px;border-radius:50%;border:2px solid var(--border);
+        display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;
+        background:${selected?'var(--green)':'transparent'};border-color:${selected?'var(--green)':'var(--border)'};"
+        id="inv-chk-${p.agentId}"
+        onclick="toggleInviteSelect('${p.agentId}')">
+        ${selected ? '<span style="color:#0A1628;font-weight:900;font-size:12px;">✓</span>' : ''}
+      </div>
+      <div style="flex:1;">
+        <div class="invite-name">${p.name}${p.certified?' ⭐':''}</div>
+        <div class="invite-email">${p.email} · ${totalSlots} slots/week</div>
+        <div class="tc-tags" style="margin-top:4px;">
+          ${(p.specialties||[]).slice(0,3).map(s=>`<span class="tag">${TOPIC_LABELS[s]||s}</span>`).join('')}
+        </div>
+      </div>
+    </div>`;
+  }).join('') || `<div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);padding:16px;text-align:center;">No trainers with profiles yet.</div>`;
+}
+
+function toggleInviteSelect(agentId) {
+  if(inviteQueue.has(agentId)) inviteQueue.delete(agentId);
+  else inviteQueue.add(agentId);
+  renderInviteList();
+}
+
+function selectAllAvailable() {
+  const profiles = loadProfiles();
+  Object.values(profiles).filter(p => p.email).forEach(p => inviteQueue.add(p.agentId));
+  renderInviteList();
+}
+
+function clearInviteSelection() {
+  inviteQueue.clear();
+  renderInviteList();
+}
+
+function sendInvites() {
+  const topic = document.getElementById('inv-topic').value.trim();
+  const date  = document.getElementById('inv-date').value;
+  const time  = document.getElementById('inv-time').value;
+  const link  = document.getElementById('inv-link').value.trim();
+  const msg   = document.getElementById('inv-message').value.trim();
+
+  if(!topic) { toast('⚠ Add a session title first'); return; }
+  if(!inviteQueue.size) { toast('⚠ Select at least one trainer to invite'); return; }
+
+  const profiles = loadProfiles();
+  const selected = [...inviteQueue].map(id => profiles[id]).filter(Boolean);
+
+  const dateStr = date ? new Date(date + 'T12:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'}) : 'TBD';
+  const timeStr = time ? (() => { const [h,m] = time.split(':').map(Number); const ampm = h>=12?'PM':'AM'; return `${h%12||12}:${String(m).padStart(2,'0')} ${ampm}`; })() : 'TBD';
+
+  const subject = `Training Invite: ${topic} — ${dateStr}`;
+  const body = `Hi [Name],
+
+You're invited to facilitate a training session with Dynasty Builders Academy!
+
+📋 Topic: ${topic}
+📅 Date: ${dateStr}
+⏰ Time: ${timeStr} PT
+${link ? `🔗 Link: ${link}` : ''}
+
+${msg ? msg + '\n\n' : ''}Please reply to confirm your availability. If you cannot make this time, feel free to suggest an alternative.
+
+Thank you for your dedication to building our team!
+
+${session.name}
+Dynasty Builders Academy`;
+
+  // Open mailto for each selected trainer
+  let count = 0;
+  selected.forEach((p, i) => {
+    const personalBody = body.replace('[Name]', p.name.split(' ')[0]);
+    setTimeout(() => {
+      const a = document.createElement('a');
+      a.href = `mailto:${p.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(personalBody)}`;
+      a.click();
+    }, i * 800); // Stagger to avoid browser popup blocking
+    count++;
+  });
+
+  document.getElementById('invite-status').textContent = `✓ Opening ${count} email${count!==1?'s':''}… (check for blocked popups if they don't all open)`;
+  toast(`📧 ${count} invitation${count!==1?'s':''} opened in your email client`);
+}
+
+// ── GOOGLE CALENDAR ───────────────────────────────────────────
+function connectGoogle() {
+  const clientId = ''; // Set via env — if not configured, show instructions
+  if(!clientId) {
+    // Show the manual availability fallback
+    document.getElementById('cal-connect-box').innerHTML = `
+      <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--orange);line-height:1.8;text-align:left;">
+        ⚙️ <strong>Google OAuth not configured</strong><br>
+        To enable automatic calendar sync:<br>
+        1. Add GOOGLE_CLIENT_ID to your Netlify environment variables<br>
+        2. Redeploy the site<br><br>
+        <strong>In the meantime</strong>, use the manual availability grid below — it works the same way for matching.
+      </div>`;
+    toast('ℹ Use the manual availability grid below');
+    return;
+  }
+  // OAuth flow
+  const redirectUri = window.location.origin + '/cft-matcher.html';
+  const scope = 'https://www.googleapis.com/auth/calendar.readonly';
+  const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent(scope)}&access_type=offline&prompt=consent`;
+  window.location.href = url;
+}
+
+// ── TOAST ────────────────────────────────────────────────────
+function toast(msg, dur=3000) {
+  const wrap = document.getElementById('toast-wrap');
+  const el = document.createElement('div');
+  el.className = 'toast'; el.textContent = msg;
+  wrap.appendChild(el);
+  setTimeout(() => el.remove(), dur);
+}
+
+// ── CONSTANTS ────────────────────────────────────────────────
+
+// ── INIT ──────────────────────────────────────────────────────
+(function init() {
+  // Hide admin-only tabs from non-admins
+  if(!isAdmin) {
+    // Everyone can use match, availability, and roster — hide nothing
+  }
+
+  // Build availability grid
+  buildAvailGrid();
+
+  // Set default date to today
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('pref-date').value = today;
+  document.getElementById('inv-date').value = today;
+
+  // Load existing profile into form
+  const profile = loadMyProfile();
+  if(profile) {
+    document.getElementById('cft-email').value = profile.email || '';
+    document.getElementById('cft-certified').value = profile.certified ? 'yes' : 'no';
+    document.getElementById('cft-bio').value = profile.bio || '';
+    document.getElementById('cft-format').value = profile.format || 'any';
+    // Restore specialties
+    if(profile.specialties) {
+      document.querySelectorAll('#specialty-tags .fchip').forEach(el => {
+        const spec = el.getAttribute('onclick').match(/'(\w+)'/)[1];
+        if(profile.specialties.includes(spec)) el.classList.add('active');
+      });
+    }
+  } else {
+    // Pre-fill email from auth
+    const authEmail = session?.email || '';
+    if(authEmail) document.getElementById('cft-email').value = authEmail;
+  }
+})();
+</script>
+</body>
+</html>

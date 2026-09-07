@@ -198,8 +198,8 @@ const AGENTS = [
   {
     id: "deigar526", name: "Deisy Garcia",
     pin: "5261", role: "admin", level: 100,
-    phpId: "deigar526", phone: "",
-    email: "",
+    phpId: "1417894", phone: "2133175067",
+    email: "deisygarcia1713@gmail.com",
     uplineId: "obi001"
   },
   {
@@ -2394,6 +2394,15 @@ const AGENTS = [
     licenseStates: [], enrollmentDate: "",
     uplineId: ""
   },
+  { id:"antpen9809", phpId:"1429809", name:"Antoine Penn", pin:"9809", role:"trainee", uplineId:"obi001", email:"antoine.penn44@gmail.com", phone:"5104073707" },
+  { id:"kimran8945", phpId:"1428945", name:"Kimberly Randle", pin:"8945", role:"trainee", uplineId:"obi001", email:"kimberlyrandle79@yahoo.com", phone:"4242853314" },
+  { id:"ayoolo8545", phpId:"1428545", name:"Ayodele Olorode", pin:"8545", role:"trainee", uplineId:"obi001", email:"ayoolorode@gmail.com", phone:"3237037827" },
+  { id:"henmal8357", phpId:"1428357", name:"Henry Romero Maldonado", pin:"8357", role:"trainee", uplineId:"obi001", email:"contact@romerolocksley.com", phone:"5715350727" },
+  { id:"canper8027", phpId:"1428027", name:"Candy Perez", pin:"8027", role:"trainee", uplineId:"obi001", email:"cperez2017@gmail.com", phone:"6267863638" },
+  { id:"eunodu5638", phpId:"1425638", name:"Eunice Oduwole", pin:"5638", role:"trainee", uplineId:"obi001", email:"folukeobems@yahoo.com", phone:"5596142160" },
+  { id:"proemm2121", phpId:"1422121", name:"Promise Emmanuel", pin:"2121", role:"trainee", uplineId:"obi001", email:"promisewisdom7@gmail.com", phone:"3233581765" },
+  { id:"keleke1773", phpId:"1421773", name:"Kelvin Ekeh", pin:"1773", role:"trainee", uplineId:"obi001", email:"ekehkelvin44@gmail.com", phone:"8622319651" },
+  { id:"ebeaug4168", phpId:"1404168", name:"Ebenezer Augustine", pin:"4168", role:"trainee", uplineId:"obi001", email:"eseogheneau@gmail.com", phone:"4244305475" },
   {
     id: "maraje415", name: "Mariam Ajetunmobi",
     pin: "1111", role: "trainee", level: 20,

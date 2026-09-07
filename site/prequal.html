@@ -2,320 +2,854 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0">
 <title>Client Pre-Qualification · DBA</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Barlow:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="auth.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+*{box-sizing:border-box;margin:0;padding:0;}
 :root{
-  --bg:#0A1628;--surface:#112040;--surface2:#1A3158;
-  --border:rgba(201,168,76,0.22);--gold:#C9A84C;--gold2:#E8C97A;
-  --green:#2DCA73;--text:#FAF6EE;--muted:#6B7C93;
-  --warn:#E67E22;--danger:#C0392B;
+  --navy:#0A1628;--navy2:#0F1E38;--s1:#132240;--s2:#1A2E50;
+  --gold:#C9A84C;--gold2:#E8C97A;--text:#E8EDF5;--muted:#6B7C93;
+  --border:rgba(201,168,76,.15);--green:#2DCA73;--red:#E74C3C;
+  --blue:#3498DB;--purple:#9B59B6;--orange:#E67E22;
 }
-body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh;}
-body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(201,168,76,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(201,168,76,.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+body{background:var(--navy);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh;}
+.topbar{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;
+  padding:0 16px;height:52px;background:rgba(10,22,40,.96);border-bottom:1px solid var(--border);
+  backdrop-filter:blur(8px);}
+.tb-title{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:900;color:var(--gold2);letter-spacing:.04em;}
+.back-btn{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);text-decoration:none;}
 
-/* TOPBAR */
-.topbar{background:rgba(10,22,40,.97);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px);}
-.brand{display:flex;align-items:center;gap:10px;padding:14px 0;border-right:1px solid var(--border);padding-right:20px;margin-right:4px;}
-.brand-mark{width:30px;height:30px;background:linear-gradient(135deg,var(--gold),var(--gold2));clip-path:polygon(50% 0%,100% 20%,100% 68%,50% 100%,0% 68%,0% 20%);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#0A1628;}
-.brand-name{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;line-height:1.1;}
-.brand-name span{color:var(--gold);}
-.brand-sub{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);}
-.topbar-nav{display:flex;gap:4px;flex:1;}
-.tnav{padding:0 12px;height:52px;display:flex;align-items:center;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:var(--muted);text-decoration:none;border-bottom:2px solid transparent;transition:all .15s;letter-spacing:.04em;}
-.tnav:hover,.tnav.active{color:var(--gold);border-bottom-color:var(--gold);}
-.topbar-right{margin-left:auto;display:flex;gap:8px;align-items:center;}
-.icon-btn{padding:6px 13px;border-radius:6px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);transition:all .2s;text-decoration:none;letter-spacing:.04em;}
-.icon-btn:hover{border-color:var(--gold);color:var(--gold);}
+/* PRODUCT TABS */
+.product-tabs{display:flex;gap:0;overflow-x:auto;background:var(--navy2);border-bottom:1px solid var(--border);padding:0 16px;}
+.product-tabs::-webkit-scrollbar{display:none;}
+.ptab{flex-shrink:0;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;
+  padding:12px 16px;border-bottom:3px solid transparent;color:var(--muted);cursor:pointer;
+  letter-spacing:.04em;white-space:nowrap;background:none;border-top:none;border-left:none;border-right:none;}
+.ptab:hover{color:var(--text);}
+.ptab.active{color:var(--gold2);border-bottom-color:var(--gold);}
 
-/* HERO */
-.hero{position:relative;z-index:1;padding:40px 24px 32px;max-width:1080px;margin:0 auto;}
-.hero-eyebrow{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:10px;}
-.hero-title{font-family:'Barlow Condensed',sans-serif;font-size:38px;font-weight:800;line-height:1.05;margin-bottom:10px;}
-.hero-title span{color:var(--gold);}
-.hero-sub{font-size:14px;color:var(--muted);max-width:520px;line-height:1.7;}
+/* FORM */
+.form-wrap{max-width:600px;margin:0 auto;padding:20px 16px 80px;}
+.product-header{background:var(--navy2);border:1px solid var(--border);border-radius:14px;
+  padding:20px;margin-bottom:20px;}
+.ph-tag{font-family:'DM Mono',monospace;font-size:10px;color:var(--gold);font-weight:700;
+  letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px;}
+.ph-title{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:900;color:var(--gold2);line-height:1.1;}
+.ph-company{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-top:3px;}
+.ph-desc{font-size:13px;color:rgba(250,246,238,.8);line-height:1.7;margin-top:10px;}
+.ph-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;}
+.ph-tag-pill{font-family:'DM Mono',monospace;font-size:10px;padding:3px 10px;border-radius:12px;
+  background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.2);color:var(--gold2);}
 
-/* SEARCH */
-.search-wrap{max-width:1080px;margin:0 auto;padding:0 24px 24px;position:relative;z-index:1;}
-.search-inner{position:relative;}
-.search-ico{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:15px;color:var(--muted);pointer-events:none;}
-.search-input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px 12px 42px;color:var(--text);font-family:'DM Mono',monospace;font-size:13px;outline:none;transition:border-color .2s;}
-.search-input:focus{border-color:var(--gold);}
+.section{background:var(--navy2);border:1px solid var(--border);border-radius:12px;
+  padding:16px;margin-bottom:14px;}
+.section-title{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;
+  color:var(--gold2);letter-spacing:.04em;margin-bottom:12px;padding-bottom:8px;
+  border-bottom:1px solid var(--border);}
+.field{margin-bottom:14px;}
+.field:last-child{margin-bottom:0;}
+.field-label{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:5px;}
+.field-input{width:100%;background:var(--s1);border:1px solid rgba(255,255,255,.1);
+  border-radius:8px;padding:9px 12px;color:var(--text);font-family:'Barlow',sans-serif;
+  font-size:14px;outline:none;transition:border-color .15s;}
+.field-input:focus{border-color:rgba(201,168,76,.4);}
+select.field-input option{background:var(--s2);}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 
-/* FILTER TABS */
-.filter-row{max-width:1080px;margin:0 auto;padding:0 24px 24px;display:flex;gap:8px;flex-wrap:wrap;position:relative;z-index:1;}
-.ftab{padding:7px 16px;border-radius:20px;font-family:'DM Mono',monospace;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--muted);transition:all .15s;}
-.ftab:hover{border-color:var(--gold);color:var(--text);}
-.ftab.active{background:var(--gold);color:#0A1628;border-color:var(--gold);}
+/* KNOCKOUT */
+.knockout-q{background:rgba(231,76,60,.06);border:1px solid rgba(231,76,60,.2);border-radius:8px;
+  padding:12px 14px;margin-bottom:8px;}
+.knockout-q:last-child{margin-bottom:0;}
+.kq-text{font-size:13px;color:var(--text);line-height:1.6;margin-bottom:8px;}
+.radio-row{display:flex;gap:10px;}
+.radio-opt{flex:1;text-align:center;padding:8px;background:var(--s1);border:1px solid var(--border);
+  border-radius:8px;cursor:pointer;font-family:'DM Mono',monospace;font-size:12px;
+  color:var(--muted);transition:all .15s;}
+.radio-opt.selected-yes{background:rgba(231,76,60,.12);border-color:rgba(231,76,60,.4);color:#E74C3C;}
+.radio-opt.selected-no{background:rgba(45,202,115,.08);border-color:rgba(45,202,115,.3);color:#2DCA73;}
+input[type=radio]{display:none;}
 
-/* GRID */
-.grid{max-width:1080px;margin:0 auto;padding:0 24px 60px;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;position:relative;z-index:1;}
+/* RESULT */
+.result-box{border-radius:12px;padding:20px;margin-top:16px;display:none;}
+.result-box.eligible{background:rgba(45,202,115,.08);border:1px solid rgba(45,202,115,.3);}
+.result-box.graded{background:rgba(230,126,34,.08);border:1px solid rgba(230,126,34,.3);}
+.result-box.ineligible{background:rgba(231,76,60,.08);border:1px solid rgba(231,76,60,.3);}
+.result-icon{font-size:32px;margin-bottom:8px;}
+.result-title{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;margin-bottom:6px;}
+.result-desc{font-size:13px;line-height:1.7;color:rgba(250,246,238,.85);}
+.result-next{margin-top:14px;font-family:'DM Mono',monospace;font-size:11px;
+  color:rgba(250,246,238,.7);line-height:1.8;}
 
-/* PRODUCT CARD */
-.pcard{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;display:flex;flex-direction:column;gap:0;transition:all .2s;text-decoration:none;color:var(--text);cursor:pointer;position:relative;overflow:hidden;}
-.pcard::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(201,168,76,.04),transparent);opacity:0;transition:opacity .2s;}
-.pcard:hover{border-color:var(--gold);transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,.3);}
-.pcard:hover::before{opacity:1;}
-.pcard.coming-soon{opacity:.5;pointer-events:none;}
-.pcard-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;}
-.pcard-icon{font-size:28px;line-height:1;}
-.pcard-badges{display:flex;flex-direction:column;align-items:flex-end;gap:4px;}
-.badge{display:inline-flex;padding:2px 8px;border-radius:10px;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.06em;}
-.badge-gold{background:rgba(201,168,76,.15);color:var(--gold);border:1px solid rgba(201,168,76,.3);}
-.badge-green{background:rgba(45,202,115,.1);color:var(--green);border:1px solid rgba(45,202,115,.3);}
-.badge-blue{background:rgba(52,152,219,.1);color:#5dade2;border:1px solid rgba(52,152,219,.3);}
-.badge-purple{background:rgba(155,89,182,.1);color:#bb8fce;border:1px solid rgba(155,89,182,.3);}
-.badge-muted{background:rgba(107,124,147,.1);color:var(--muted);border:1px solid var(--border);}
-.pcard-company{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:4px;}
-.pcard-name{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;line-height:1.1;margin-bottom:6px;}
-.pcard-type{font-size:12px;color:var(--muted);margin-bottom:12px;}
-.pcard-divider{height:1px;background:var(--border);margin-bottom:12px;}
-.pcard-desc{font-size:12px;color:var(--muted);line-height:1.7;flex:1;margin-bottom:16px;}
-.pcard-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px;}
-.tag{padding:3px 9px;border-radius:6px;font-family:'DM Mono',monospace;font-size:10px;background:rgba(255,255,255,.04);color:var(--muted);border:1px solid var(--border);}
-.pcard-cta{display:flex;align-items:center;justify-content:space-between;}
-.cta-text{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:var(--gold);letter-spacing:.04em;}
-.cta-arrow{font-size:16px;color:var(--gold);transition:transform .2s;}
-.pcard:hover .cta-arrow{transform:translateX(4px);}
-.coming-pill{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.06em;}
+/* SUBMIT BTN */
+.submit-btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--gold),#b8901f);
+  border:none;border-radius:10px;font-family:'Barlow Condensed',sans-serif;font-size:18px;
+  font-weight:900;letter-spacing:.04em;color:#0A1628;cursor:pointer;margin-top:6px;}
+.submit-btn:active{opacity:.88;}
+.reset-btn{width:100%;padding:10px;background:rgba(255,255,255,.06);border:1px solid var(--border);
+  border-radius:10px;font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);
+  cursor:pointer;margin-top:8px;}
 
-/* SECTION HEADER */
-.section-hdr{max-width:1080px;margin:0 auto;padding:0 24px 14px;position:relative;z-index:1;}
-.section-hdr-inner{display:flex;align-items:center;gap:10px;margin-bottom:4px;}
-.section-hdr-line{flex:1;height:1px;background:var(--border);}
-.section-hdr-label{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);}
-
-/* EMPTY */
-.empty{text-align:center;padding:60px 24px;color:var(--muted);grid-column:1/-1;}
-.empty .e-ico{font-size:36px;margin-bottom:12px;}
-.empty p{font-size:14px;}
+/* PANEL hide/show */
+.product-panel{display:none;}
+.product-panel.active{display:block;}
 </style>
 </head>
 <body>
 <script>AUTH.require('prequal.html');</script>
 
 <div class="topbar">
-  <div class="brand">
-    <div class="brand-mark">⬡</div>
-    <div><div class="brand-name">Dynasty <span>Pre-Qual</span></div><div class="brand-sub">Client Screening Tools</div></div>
-  </div>
-  <nav class="topbar-nav">
-    <a class="tnav active" href="prequal.html">📋 All Products</a>
-    <a class="tnav" href="#" onclick="setFilter('Whole Life');return false;">❤️ Whole Life</a>
-    <a class="tnav" href="#" onclick="setFilter('IUL');return false;">📈 IUL</a>
-    <a class="tnav" href="#" onclick="setFilter('Annuity');return false;">💰 Annuity</a>
-    <a class="tnav" href="#" onclick="setFilter('Term');return false;">🛡️ Term</a>
-  </nav>
-  <div class="topbar-right">
-    <a href="marketing.html" class="icon-btn">📢 Marketing</a>
-    <a href="portal.html" class="icon-btn">📋 Portal</a>
-    <a href="hub.html" class="icon-btn">← Hub</a>
-  </div>
+  <div class="tb-title">📋 Client Pre-Qualification</div>
+  <a href="hub.html" class="back-btn">← Hub</a>
 </div>
 
-<div class="hero">
-  <div class="hero-eyebrow">Dynasty Builders Academy · Client Tools</div>
-  <div class="hero-title">Client <span>Pre-Qualification</span></div>
-  <div class="hero-sub">Screen clients for the right product before running a quote. Each tool walks through underwriting questions and recommends the best fit.</div>
+<div class="product-tabs">
+  <button class="ptab active" onclick="showProduct('living-promise')">💛 Living Promise</button>
+  <button class="ptab" onclick="showProduct('iul')">📈 IUL / FlexLife</button>
+  <button class="ptab" onclick="showProduct('planright')">🌲 PlanRight</button>
+  <button class="ptab" onclick="showProduct('guaranteed')">🛡 Guaranteed Issue</button>
+  <button class="ptab" onclick="showProduct('annuity')">💰 Annuity</button>
+  <button class="ptab" onclick="showProduct('term')">🔵 Term Life</button>
 </div>
 
-<div style="max-width:1080px;margin:0 auto;padding:0 24px 20px;position:relative;z-index:1;">
-  <a href="client-questionnaire.html" style="display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,rgba(201,168,76,.12),rgba(201,168,76,.06));border:1px solid rgba(201,168,76,.3);border-radius:12px;padding:16px 22px;text-decoration:none;transition:all .2s;gap:16px;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform=''">
-    <div>
-      <div style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:4px;">Not sure which product is right?</div>
-      <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;color:var(--text);">Take the 2-Minute Coverage Finder Quiz →</div>
-      <div style="font-size:12px;color:var(--muted);margin-top:3px;">8 questions · tells you which product fits best + how much coverage you need</div>
+<div class="form-wrap">
+
+  <!-- ── LIVING PROMISE (Mutual of Omaha) ────────────────────── -->
+  <div class="product-panel active" id="panel-living-promise">
+    <div class="product-header">
+      <div class="ph-tag">💛 Whole Life · Final Expense</div>
+      <div class="ph-title">Living Promise</div>
+      <div class="ph-company">Mutual of Omaha · Ages 45–85</div>
+      <div class="ph-desc">No medical exam whole life insurance. Determines Level vs. Graded benefit eligibility through knockout questions. Face amounts $2,000–$25,000.</div>
+      <div class="ph-tags">
+        <span class="ph-tag-pill">Ages 45–85</span>
+        <span class="ph-tag-pill">No Exam</span>
+        <span class="ph-tag-pill">$2K–$25K</span>
+        <span class="ph-tag-pill">Level & Graded</span>
+      </div>
     </div>
-    <div style="font-size:32px;flex-shrink:0;">🎯</div>
-  </a>
-</div>
-<div class="search-wrap">
-  <div class="search-inner">
-    <span class="search-ico">🔍</span>
-    <input class="search-input" type="text" id="search-input" placeholder="Search by product, company, or coverage type…" oninput="renderCards()">
+
+    <div class="section">
+      <div class="section-title">Client Information</div>
+      <div class="field-row">
+        <div class="field">
+          <label class="field-label">First Name</label>
+          <input class="field-input" type="text" id="lp-fname" placeholder="First name">
+        </div>
+        <div class="field">
+          <label class="field-label">Last Name</label>
+          <input class="field-input" type="text" id="lp-lname" placeholder="Last name">
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label class="field-label">Age</label>
+          <input class="field-input" type="number" id="lp-age" placeholder="45–85" min="45" max="85">
+        </div>
+        <div class="field">
+          <label class="field-label">Gender</label>
+          <select class="field-input" id="lp-gender">
+            <option value="">Select…</option>
+            <option>Male</option>
+            <option>Female</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">State</label>
+        <select class="field-input" id="lp-state">
+          <option value="">Select state…</option>
+          <option>Alabama</option><option>Arizona</option><option>Arkansas</option>
+          <option>California</option><option>Colorado</option><option>Connecticut</option>
+          <option>Florida</option><option>Georgia</option><option>Illinois</option>
+          <option>Indiana</option><option>Kentucky</option><option>Louisiana</option>
+          <option>Maryland</option><option>Michigan</option><option>Minnesota</option>
+          <option>Mississippi</option><option>Missouri</option><option>Nevada</option>
+          <option>New Jersey</option><option>New York</option><option>North Carolina</option>
+          <option>Ohio</option><option>Pennsylvania</option><option>South Carolina</option>
+          <option>Tennessee</option><option>Texas</option><option>Virginia</option>
+          <option>Washington</option><option>Wisconsin</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="field-label">Desired Coverage Amount</label>
+        <select class="field-input" id="lp-coverage">
+          <option value="">Select amount…</option>
+          <option>$2,000</option><option>$3,000</option><option>$5,000</option>
+          <option>$7,500</option><option>$10,000</option><option>$15,000</option>
+          <option>$20,000</option><option>$25,000</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">🔴 Level Benefit Knockout Questions</div>
+      <p style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:12px;line-height:1.6;">If the client answers YES to ANY of these — they do NOT qualify for Level benefit. Move to Graded questions.</p>
+      <div id="lp-knockouts"></div>
+    </div>
+
+    <div class="section" id="lp-graded-section">
+      <div class="section-title">🟡 Graded Benefit Questions</div>
+      <p style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:12px;line-height:1.6;">If client did NOT qualify for Level — check these. YES to any of these means Graded benefit (pays 30% year 1, 70% year 2, 100% year 3+). Graded is still a sale.</p>
+      <div id="lp-graded"></div>
+    </div>
+
+    <button class="submit-btn" onclick="runLPResult()">📋 Check Eligibility →</button>
+    <button class="reset-btn" onclick="resetLP()">Reset Form</button>
+    <div class="result-box" id="lp-result"></div>
   </div>
-</div>
 
-<div class="filter-row" id="filter-row">
-  <button class="ftab active" onclick="setFilter('',this)">All</button>
-  <button class="ftab" onclick="setFilter('Whole Life',this)">Whole Life</button>
-  <button class="ftab" onclick="setFilter('IUL',this)">IUL</button>
-  <button class="ftab" onclick="setFilter('Annuity',this)">Annuity</button>
-  <button class="ftab" onclick="setFilter('Term',this)">Term</button>
-  <button class="ftab" onclick="setFilter('Mutual of Omaha',this)">Mutual of Omaha</button>
-  <button class="ftab" onclick="setFilter('National Life',this)">National Life</button>
-  <button class="ftab" onclick="setFilter('Foresters',this)">Foresters</button>
-</div>
+  <!-- ── IUL / FLEXLIFE (National Life Group) ───────────────── -->
+  <div class="product-panel" id="panel-iul">
+    <div class="product-header">
+      <div class="ph-tag">📈 Indexed Universal Life</div>
+      <div class="ph-title">FlexLife IUL</div>
+      <div class="ph-company">National Life Group · Ages 18–80</div>
+      <div class="ph-desc">IUL pre-qualification. Screens for insurability, income requirements, savings goals, and risk tolerance. Cash value accumulation with living benefits.</div>
+      <div class="ph-tags">
+        <span class="ph-tag-pill">Ages 18–80</span>
+        <span class="ph-tag-pill">Cash Value</span>
+        <span class="ph-tag-pill">Living Benefits</span>
+        <span class="ph-tag-pill">Min $200/mo</span>
+      </div>
+    </div>
 
-<div class="grid" id="cards-grid"></div>
+    <div class="section">
+      <div class="section-title">Client Information</div>
+      <div class="field-row">
+        <div class="field"><label class="field-label">First Name</label><input class="field-input" type="text" id="iul-fname" placeholder="First name"></div>
+        <div class="field"><label class="field-label">Last Name</label><input class="field-input" type="text" id="iul-lname" placeholder="Last name"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label class="field-label">Age</label><input class="field-input" type="number" id="iul-age" placeholder="18–80" min="18" max="80"></div>
+        <div class="field"><label class="field-label">Gender</label><select class="field-input" id="iul-gender"><option value="">Select…</option><option>Male</option><option>Female</option></select></div>
+      </div>
+      <div class="field">
+        <label class="field-label">Annual Household Income</label>
+        <select class="field-input" id="iul-income">
+          <option value="">Select range…</option>
+          <option value="under30k">Under $30,000</option>
+          <option value="30-50k">$30,000 – $50,000</option>
+          <option value="50-75k">$50,000 – $75,000</option>
+          <option value="75-100k">$75,000 – $100,000</option>
+          <option value="100k+">Over $100,000</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="field-label">Monthly Budget for Premium</label>
+        <select class="field-input" id="iul-budget">
+          <option value="">Select range…</option>
+          <option value="under100">Under $100/mo</option>
+          <option value="100-200">$100 – $200/mo</option>
+          <option value="200-500">$200 – $500/mo</option>
+          <option value="500+">$500+/mo</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="field-label">Primary Goal</label>
+        <select class="field-input" id="iul-goal">
+          <option value="">Select goal…</option>
+          <option value="protection">Life insurance protection for family</option>
+          <option value="savings">Tax-free retirement savings</option>
+          <option value="both">Both protection and savings</option>
+          <option value="living">Living benefits / critical illness coverage</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Health & Insurability</div>
+      <div id="iul-health"></div>
+    </div>
+
+    <button class="submit-btn" onclick="runIULResult()">📋 Check Eligibility →</button>
+    <button class="reset-btn" onclick="resetForm('iul')">Reset Form</button>
+    <div class="result-box" id="iul-result"></div>
+  </div>
+
+  <!-- ── PLANRIGHT (Foresters) ──────────────────────────────── -->
+  <div class="product-panel" id="panel-planright">
+    <div class="product-header">
+      <div class="ph-tag">🌲 Whole Life · Final Expense</div>
+      <div class="ph-title">PlanRight Whole Life</div>
+      <div class="ph-company">Foresters Financial · Ages 50–85</div>
+      <div class="ph-desc">Three plan levels: Standard (preferred health), Graded, and Modified. No medical exam. Face amounts $2,000–$35,000. Member benefits included.</div>
+      <div class="ph-tags">
+        <span class="ph-tag-pill">Ages 50–85</span>
+        <span class="ph-tag-pill">No Exam</span>
+        <span class="ph-tag-pill">$2K–$35K</span>
+        <span class="ph-tag-pill">3 Plan Levels</span>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Client Information</div>
+      <div class="field-row">
+        <div class="field"><label class="field-label">First Name</label><input class="field-input" type="text" id="pr-fname" placeholder="First name"></div>
+        <div class="field"><label class="field-label">Last Name</label><input class="field-input" type="text" id="pr-lname" placeholder="Last name"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label class="field-label">Age</label><input class="field-input" type="number" id="pr-age" placeholder="50–85" min="50" max="85"></div>
+        <div class="field"><label class="field-label">Gender</label><select class="field-input" id="pr-gender"><option value="">Select…</option><option>Male</option><option>Female</option></select></div>
+      </div>
+      <div class="field">
+        <label class="field-label">Desired Coverage Amount</label>
+        <select class="field-input" id="pr-coverage">
+          <option value="">Select…</option>
+          <option>$2,000</option><option>$5,000</option><option>$10,000</option>
+          <option>$15,000</option><option>$20,000</option><option>$25,000</option>
+          <option>$30,000</option><option>$35,000</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">🔴 Standard Plan Knockout Questions</div>
+      <p style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:12px;line-height:1.6;">YES to any → not Standard. Check Graded questions next.</p>
+      <div id="pr-standard"></div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">🟡 Graded / Modified Questions</div>
+      <p style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:12px;line-height:1.6;">YES to 1–3 → Graded (50% benefit years 1–2). YES to 4+ → Modified (return of premium only for 2 years).</p>
+      <div id="pr-graded"></div>
+    </div>
+
+    <button class="submit-btn" onclick="runPRResult()">📋 Check Eligibility →</button>
+    <button class="reset-btn" onclick="resetForm('pr')">Reset Form</button>
+    <div class="result-box" id="pr-result"></div>
+  </div>
+
+  <!-- ── GUARANTEED ISSUE ────────────────────────────────────── -->
+  <div class="product-panel" id="panel-guaranteed">
+    <div class="product-header">
+      <div class="ph-tag">🛡 Guaranteed Issue · Whole Life</div>
+      <div class="ph-title">Guaranteed Issue WL</div>
+      <div class="ph-company">AIG / Corebridge · Ages 50–80</div>
+      <div class="ph-desc">No health questions. Guaranteed acceptance for ages 50–80. 2-year graded death benefit (return of premium + 10% interest if death in years 1–2). Face amounts $5,000–$25,000.</div>
+      <div class="ph-tags">
+        <span class="ph-tag-pill">Ages 50–80</span>
+        <span class="ph-tag-pill">No Questions</span>
+        <span class="ph-tag-pill">$5K–$25K</span>
+        <span class="ph-tag-pill">Guaranteed</span>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Client Information</div>
+      <div class="field-row">
+        <div class="field"><label class="field-label">First Name</label><input class="field-input" type="text" id="gi-fname" placeholder="First name"></div>
+        <div class="field"><label class="field-label">Last Name</label><input class="field-input" type="text" id="gi-lname" placeholder="Last name"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label class="field-label">Age</label><input class="field-input" type="number" id="gi-age" placeholder="50–80" min="50" max="80"></div>
+        <div class="field"><label class="field-label">Gender</label><select class="field-input" id="gi-gender"><option value="">Select…</option><option>Male</option><option>Female</option></select></div>
+      </div>
+      <div class="field">
+        <label class="field-label">State</label>
+        <select class="field-input" id="gi-state">
+          <option value="">Select state…</option>
+          <option>Alabama</option><option>Arizona</option><option>California</option>
+          <option>Florida</option><option>Georgia</option><option>Illinois</option>
+          <option>Michigan</option><option>New York</option><option>North Carolina</option>
+          <option>Ohio</option><option>Pennsylvania</option><option>Texas</option>
+          <option>Virginia</option><option>Washington</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="field-label">Desired Coverage Amount</label>
+        <select class="field-input" id="gi-coverage">
+          <option value="">Select…</option>
+          <option>$5,000</option><option>$7,500</option><option>$10,000</option>
+          <option>$15,000</option><option>$20,000</option><option>$25,000</option>
+        </select>
+      </div>
+      <div class="section" style="margin-top:14px;background:rgba(201,168,76,.06);border-color:rgba(201,168,76,.2);">
+        <div class="section-title" style="color:var(--gold);">ℹ Important Client Disclosures</div>
+        <p style="font-size:12px;color:rgba(250,246,238,.8);line-height:1.8;">
+          • <strong>2-year waiting period:</strong> If client passes in years 1–2, beneficiary receives return of premiums paid + 10% interest.<br>
+          • <strong>Full benefit</strong> applies after 2 years from policy date.<br>
+          • <strong>Accidental death</strong> is covered at full face amount from day 1.<br>
+          • Premiums are fixed — they will never increase.<br>
+          • Benefit will never decrease as long as premiums are paid.
+        </p>
+      </div>
+    </div>
+
+    <button class="submit-btn" onclick="runGIResult()">📋 Check Eligibility →</button>
+    <div class="result-box" id="gi-result"></div>
+  </div>
+
+  <!-- ── ANNUITY (Pacific Life / American Equity) ───────────── -->
+  <div class="product-panel" id="panel-annuity">
+    <div class="product-header">
+      <div class="ph-tag">💰 Fixed Indexed Annuity · Retirement</div>
+      <div class="ph-title">Fixed Indexed Annuity</div>
+      <div class="ph-company">Pacific Life / American Equity · Ages 40–80</div>
+      <div class="ph-desc">Suitability pre-screen for FIA products. Confirms minimum premium, investment timeline, liquidity needs, risk tolerance, and state availability before running illustrations.</div>
+      <div class="ph-tags">
+        <span class="ph-tag-pill">Min $10,000</span>
+        <span class="ph-tag-pill">Tax-Deferred</span>
+        <span class="ph-tag-pill">No Market Loss</span>
+        <span class="ph-tag-pill">Ages 40–80</span>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Client Information</div>
+      <div class="field-row">
+        <div class="field"><label class="field-label">First Name</label><input class="field-input" type="text" id="an-fname" placeholder="First name"></div>
+        <div class="field"><label class="field-label">Last Name</label><input class="field-input" type="text" id="an-lname" placeholder="Last name"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label class="field-label">Age</label><input class="field-input" type="number" id="an-age" placeholder="40–80" min="40" max="80"></div>
+        <div class="field"><label class="field-label">State</label><select class="field-input" id="an-state"><option value="">State…</option><option>California</option><option>Florida</option><option>Georgia</option><option>Illinois</option><option>Michigan</option><option>New York</option><option>Ohio</option><option>Texas</option></select></div>
+      </div>
+      <div class="field">
+        <label class="field-label">Source of Premium Funds</label>
+        <select class="field-input" id="an-source">
+          <option value="">Select source…</option>
+          <option value="savings">Personal savings / bank account</option>
+          <option value="ira">IRA or 401(k) rollover</option>
+          <option value="cd">CD or money market</option>
+          <option value="inheritance">Inheritance / settlement</option>
+          <option value="other-annuity">Existing annuity (1035 exchange)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="field-label">Amount Available to Invest</label>
+        <select class="field-input" id="an-amount">
+          <option value="">Select range…</option>
+          <option value="under10k">Under $10,000</option>
+          <option value="10-25k">$10,000 – $25,000</option>
+          <option value="25-50k">$25,000 – $50,000</option>
+          <option value="50-100k">$50,000 – $100,000</option>
+          <option value="100k+">Over $100,000</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="field-label">How long before you need this money?</label>
+        <select class="field-input" id="an-timeline">
+          <option value="">Select…</option>
+          <option value="under5">Less than 5 years</option>
+          <option value="5-10">5–10 years</option>
+          <option value="10+">10+ years</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="field-label">Annual Withdrawal Needed?</label>
+        <select class="field-input" id="an-withdraw">
+          <option value="">Select…</option>
+          <option value="none">No — accumulation only</option>
+          <option value="under5pct">Yes — less than 5% per year</option>
+          <option value="over5pct">Yes — more than 5% per year</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Suitability Questions</div>
+      <div id="an-suitability"></div>
+    </div>
+
+    <button class="submit-btn" onclick="runANResult()">📋 Check Suitability →</button>
+    <button class="reset-btn" onclick="resetForm('an')">Reset Form</button>
+    <div class="result-box" id="an-result"></div>
+  </div>
+
+  <!-- ── TERM LIFE ───────────────────────────────────────────── -->
+  <div class="product-panel" id="panel-term">
+    <div class="product-header">
+      <div class="ph-tag">🔵 Term Life Insurance</div>
+      <div class="ph-title">TermLife Express</div>
+      <div class="ph-company">Multiple Carriers · Ages 18–70</div>
+      <div class="ph-desc">Quick pre-qualification for 10, 15, 20, and 30-year term policies. Screens health class, income qualification for face amount, and carrier fit.</div>
+      <div class="ph-tags">
+        <span class="ph-tag-pill">Ages 18–70</span>
+        <span class="ph-tag-pill">10/15/20/30 Year</span>
+        <span class="ph-tag-pill">$50K–$2M+</span>
+        <span class="ph-tag-pill">Underwritten</span>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Client Information</div>
+      <div class="field-row">
+        <div class="field"><label class="field-label">First Name</label><input class="field-input" type="text" id="tm-fname" placeholder="First name"></div>
+        <div class="field"><label class="field-label">Last Name</label><input class="field-input" type="text" id="tm-lname" placeholder="Last name"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label class="field-label">Age</label><input class="field-input" type="number" id="tm-age" placeholder="18–70" min="18" max="70"></div>
+        <div class="field"><label class="field-label">Gender</label><select class="field-input" id="tm-gender"><option value="">Select…</option><option>Male</option><option>Female</option></select></div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label class="field-label">Height</label>
+          <input class="field-input" type="text" id="tm-height" placeholder='e.g. 5&apos;8"'>
+        </div>
+        <div class="field">
+          <label class="field-label">Weight (lbs)</label>
+          <input class="field-input" type="number" id="tm-weight" placeholder="e.g. 180">
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">Tobacco Use (last 12 months)</label>
+        <select class="field-input" id="tm-tobacco">
+          <option value="">Select…</option>
+          <option value="no">Non-tobacco</option>
+          <option value="yes">Tobacco / nicotine user</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="field-label">Desired Coverage Amount</label>
+        <select class="field-input" id="tm-coverage">
+          <option value="">Select…</option>
+          <option>$50,000</option><option>$100,000</option><option>$150,000</option>
+          <option>$250,000</option><option>$500,000</option><option>$750,000</option>
+          <option>$1,000,000</option><option>$1,500,000</option><option>$2,000,000+</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="field-label">Term Length</label>
+        <select class="field-input" id="tm-term">
+          <option value="">Select…</option>
+          <option>10 Year</option><option>15 Year</option>
+          <option>20 Year</option><option>30 Year</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="field-label">Annual Income (for income replacement calc)</label>
+        <select class="field-input" id="tm-income">
+          <option value="">Select range…</option>
+          <option value="under30">Under $30,000</option>
+          <option value="30-50">$30,000 – $50,000</option>
+          <option value="50-75">$50,000 – $75,000</option>
+          <option value="75-100">$75,000 – $100,000</option>
+          <option value="100+">Over $100,000</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Health Questions</div>
+      <div id="tm-health"></div>
+    </div>
+
+    <button class="submit-btn" onclick="runTMResult()">📋 Check Eligibility →</button>
+    <button class="reset-btn" onclick="resetForm('tm')">Reset Form</button>
+    <div class="result-box" id="tm-result"></div>
+  </div>
+
+</div><!-- /form-wrap -->
 
 <script>
-const PRODUCTS = [
-  {
-    id: 'living-promise',
-    icon: '💛',
-    company: 'Mutual of Omaha',
-    name: 'Living Promise',
-    type: 'Whole Life · Final Expense',
-    desc: 'Whole life insurance for ages 45–85. No medical exam. Determines Level vs. Graded benefit eligibility through knockout and graded underwriting questions.',
-    tags: ['Ages 45–85', 'No Exam', 'Level & Graded', 'Final Expense', '$2K–$25K'],
-    badges: [{ label: 'LIVE', cls: 'badge-green' }, { label: 'WHOLE LIFE', cls: 'badge-gold' }],
-    category: ['Whole Life', 'Mutual of Omaha'],
-    href: 'living-promise-prequal.html',
-    cta: 'Start Pre-Qual',
-    altHref: 'client-questionnaire.html',
-    altCta: 'Not sure? Take the quiz →'
-  },
-  {
-    id: 'flexlife',
-    icon: '📈',
-    company: 'National Life Group',
-    name: 'FlexLife IUL',
-    type: 'Indexed Universal Life',
-    desc: 'IUL pre-qualification for FlexLife product. Screens for insurability, income thresholds, and risk tolerance before running illustrations.',
-    tags: ['IUL', 'Cash Value', 'Living Benefits', 'Flexible Premiums'],
-    badges: [{ label: 'COMING SOON', cls: 'badge-muted' }, { label: 'IUL', cls: 'badge-blue' }],
-    category: ['IUL', 'National Life'],
-    href: '#',
-    cta: 'Coming Soon',
-    comingSoon: true
-  },
-  {
-    id: 'foresters-level',
-    icon: '🌲',
-    company: 'Foresters Financial',
-    name: 'PlanRight Whole Life',
-    type: 'Whole Life · Final Expense',
-    desc: 'Final expense whole life pre-qual for Foresters PlanRight. Three plan levels: Standard, Graded, and Modified. Ages 50–85.',
-    tags: ['Ages 50–85', 'No Exam', '3 Plan Levels', 'Final Expense'],
-    badges: [{ label: 'COMING SOON', cls: 'badge-muted' }, { label: 'WHOLE LIFE', cls: 'badge-gold' }],
-    category: ['Whole Life', 'Foresters'],
-    href: '#',
-    cta: 'Coming Soon',
-    comingSoon: true
-  },
-  {
-    id: 'aig-guaranteed',
-    icon: '🛡️',
-    company: 'AIG / Corebridge',
-    name: 'Guaranteed Issue WL',
-    type: 'Whole Life · Guaranteed Issue',
-    desc: 'No-question guaranteed issue whole life for ages 50–80. Pre-qual confirms eligibility and sets premium expectations based on age and face amount.',
-    tags: ['Ages 50–80', 'No Questions', 'Guaranteed', '$5K–$25K'],
-    badges: [{ label: 'COMING SOON', cls: 'badge-muted' }, { label: 'GUARANTEED', cls: 'badge-purple' }],
-    category: ['Whole Life'],
-    href: '#',
-    cta: 'Coming Soon',
-    comingSoon: true
-  },
-  {
-    id: 'pacific-annuity',
-    icon: '💰',
-    company: 'Pacific Life',
-    name: 'Fixed Indexed Annuity',
-    type: 'Annuity · Retirement',
-    desc: 'Suitability pre-screen for Pacific Life FIA. Confirms minimum premium, investment timeline, risk tolerance, and state availability.',
-    tags: ['Min $10K', 'Retirement', 'Tax-Deferred', 'No Market Loss'],
-    badges: [{ label: 'COMING SOON', cls: 'badge-muted' }, { label: 'ANNUITY', cls: 'badge-blue' }],
-    category: ['Annuity'],
-    href: '#',
-    cta: 'Coming Soon',
-    comingSoon: true
-  },
-  {
-    id: 'nlg-term',
-    icon: '🛡️',
-    company: 'National Life Group',
-    name: 'TermLife Express',
-    type: 'Term Life · 10/20/30 Year',
-    desc: 'Term life pre-qual covering health history, income verification, and coverage needs. Recommends face amount and term length.',
-    tags: ['10/20/30yr', 'Income Replace', 'No Exam Option', '$100K–$1M'],
-    badges: [{ label: 'COMING SOON', cls: 'badge-muted' }, { label: 'TERM', cls: 'badge-green' }],
-    category: ['Term', 'National Life'],
-    href: '#',
-    cta: 'Coming Soon',
-    comingSoon: true
-  },
+AUTH.require('prequal.html');
+
+function showProduct(id) {
+  document.querySelectorAll('.product-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.ptab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  event.currentTarget.classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// ── KNOCKOUT QUESTION RENDERER ────────────────────────────────
+function renderKnockouts(containerId, questions, prefix) {
+  const el = document.getElementById(containerId);
+  if(!el) return;
+  el.innerHTML = questions.map((q, i) => `
+    <div class="knockout-q" id="${prefix}-kq-${i}">
+      <div class="kq-text">${i+1}. ${q}</div>
+      <div class="radio-row">
+        <div class="radio-opt" id="${prefix}-yes-${i}" onclick="selectKQ('${prefix}',${i},'yes')">YES</div>
+        <div class="radio-opt" id="${prefix}-no-${i}"  onclick="selectKQ('${prefix}',${i},'no')">NO</div>
+      </div>
+    </div>`).join('');
+}
+
+function selectKQ(prefix, i, val) {
+  document.getElementById(`${prefix}-yes-${i}`).className = 'radio-opt' + (val==='yes'?' selected-yes':'');
+  document.getElementById(`${prefix}-no-${i}`).className  = 'radio-opt' + (val==='no' ?' selected-no':'');
+}
+
+function getKQAnswers(prefix, count) {
+  return Array.from({length:count}, (_,i) => {
+    const y = document.getElementById(`${prefix}-yes-${i}`);
+    if(!y) return null;
+    return y.classList.contains('selected-yes') ? 'yes' : y.className.includes('selected') ? 'no' : null;
+  });
+}
+
+function showResult(id, type, icon, title, desc, next) {
+  const el = document.getElementById(id);
+  el.className = 'result-box ' + type;
+  el.style.display = 'block';
+  el.innerHTML = `<div class="result-icon">${icon}</div>
+    <div class="result-title">${title}</div>
+    <div class="result-desc">${desc}</div>
+    ${next ? '<div class="result-next">'+next+'</div>' : ''}`;
+  el.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+// ── LIVING PROMISE QUESTIONS ───────────────────────────────────
+const LP_KNOCKOUT = [
+  'In the past 2 years, has the client been confined to a hospital, nursing home, or received home health care?',
+  'Does the client have or have they been told they have AIDS or HIV?',
+  'Is the client currently on dialysis or awaiting an organ transplant?',
+  'Has the client been diagnosed with or treated for any form of cancer in the past 2 years?',
+  'Does the client have a terminal illness or have they been told they have less than 2 years to live?',
+  'Is the client currently bedridden or confined to a wheelchair due to a permanent condition?',
+  'In the past 2 years, has the client been diagnosed with Alzheimer\'s disease or dementia?',
+];
+const LP_GRADED = [
+  'In the past 2 years, has the client been diagnosed with or treated for heart disease, heart attack, or stroke?',
+  'Does the client have COPD, emphysema, or currently use supplemental oxygen?',
+  'Has the client been diagnosed with diabetes requiring insulin in the last 12 months?',
+  'In the past 5 years, has the client been convicted of a felony or currently on probation/parole?',
 ];
 
-let activeFilter = '';
+renderKnockouts('lp-knockouts', LP_KNOCKOUT, 'lpk');
+renderKnockouts('lp-graded', LP_GRADED, 'lpg');
 
-function setFilter(filter, el) {
-  activeFilter = filter;
-  document.querySelectorAll('.ftab').forEach(t => t.classList.remove('active'));
-  if (el) el.classList.add('active');
-  renderCards();
+function runLPResult() {
+  const age = parseInt(document.getElementById('lp-age').value);
+  if(!age || age < 45 || age > 85) { alert('Please enter a valid age (45–85).'); return; }
+
+  const koAnswers = getKQAnswers('lpk', LP_KNOCKOUT.length);
+  const grAnswers = getKQAnswers('lpg', LP_GRADED.length);
+
+  if(koAnswers.includes(null) || grAnswers.includes(null)) {
+    alert('Please answer all health questions.'); return;
+  }
+
+  const hasKO = koAnswers.includes('yes');
+  const grCount = grAnswers.filter(a=>a==='yes').length;
+
+  if(!hasKO) {
+    showResult('lp-result','eligible','✅','Level Benefit Qualified',
+      'This client qualifies for the Living Promise <strong>Level Benefit</strong> plan — full face amount paid from day one.',
+      '→ Next steps: Run a quote on MutualOfOmaha.com or Bamboo · Confirm state availability · Present the premium · Collect application.');
+  } else if(grCount < LP_GRADED.length) {
+    showResult('lp-result','graded','🟡','Graded Benefit Qualified',
+      'Client does NOT qualify for Level benefit. However, they <strong>may qualify for the Graded Benefit</strong> plan: 30% of face amount in year 1, 70% in year 2, 100% from year 3 onward.',
+      '→ Explain the graded structure clearly. Still a valuable policy. Run a quote and present honestly. Many clients still proceed on Graded.');
+  } else {
+    showResult('lp-result','ineligible','❌','Not Eligible — Living Promise',
+      'Client does not qualify for Living Promise Level or Graded benefit based on current health history.',
+      '→ Consider: <strong>Guaranteed Issue WL (AIG/Corebridge)</strong> — no health questions, guaranteed acceptance ages 50–80. Switch to the Guaranteed Issue tab.');
+  }
 }
 
-function renderCards() {
-  const q = document.getElementById('search-input').value.toLowerCase();
-  const grid = document.getElementById('cards-grid');
-
-  let filtered = PRODUCTS.filter(p => {
-    const matchFilter = !activeFilter || p.category.includes(activeFilter);
-    const matchSearch = !q ||
-      p.name.toLowerCase().includes(q) ||
-      p.company.toLowerCase().includes(q) ||
-      p.type.toLowerCase().includes(q) ||
-      p.tags.some(t => t.toLowerCase().includes(q)) ||
-      p.desc.toLowerCase().includes(q);
-    return matchFilter && matchSearch;
+function resetLP() {
+  ['lp-fname','lp-lname','lp-age','lp-gender','lp-state','lp-coverage'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
   });
-
-  if (!filtered.length) {
-    grid.innerHTML = `<div class="empty"><div class="e-ico">🔍</div><p>No products match your search.<br>Try a different keyword or clear the filter.</p></div>`;
-    return;
-  }
-
-  // Separate live vs coming soon
-  const live = filtered.filter(p => !p.comingSoon);
-  const soon = filtered.filter(p => p.comingSoon);
-
-  let html = '';
-
-  if (live.length) {
-    html += live.map(p => cardHTML(p)).join('');
-  }
-
-  if (soon.length) {
-    html += `<div style="grid-column:1/-1;padding:8px 0 4px;">
-      <div style="display:flex;align-items:center;gap:10px;">
-        <span style="font-family:\'Barlow Condensed\',sans-serif;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);">Coming Soon</span>
-        <div style="flex:1;height:1px;background:var(--border);"></div>
-      </div>
-    </div>`;
-    html += soon.map(p => cardHTML(p)).join('');
-  }
-
-  grid.innerHTML = html;
+  document.querySelectorAll('[id^="lpk-"],[id^="lpg-"]').forEach(el=>{
+    el.className='radio-opt';
+  });
+  const r=document.getElementById('lp-result'); if(r){r.style.display='none';}
 }
 
-function cardHTML(p) {
-  const badgesHTML = p.badges.map(b => `<span class="badge ${b.cls}">${b.label}</span>`).join('');
-  const tagsHTML = p.tags.map(t => `<span class="tag">${t}</span>`).join('');
-  const ctaHTML = p.comingSoon
-    ? `<span class="coming-pill">Coming Soon</span>`
-    : `<span class="cta-text">${p.cta}</span><span class="cta-arrow">→</span>`;
+// ── IUL QUESTIONS ─────────────────────────────────────────────
+const IUL_HEALTH = [
+  'Has the client been diagnosed with cancer, heart disease, or stroke in the past 5 years?',
+  'Does the client have any uncontrolled chronic condition (uncontrolled diabetes, kidney disease, etc.)?',
+  'Has the client been declined or rated by a life insurance company in the past 3 years?',
+  'Does the client use tobacco or nicotine products?',
+];
+renderKnockouts('iul-health', IUL_HEALTH, 'iulh');
 
-  return `<a class="pcard${p.comingSoon ? ' coming-soon' : ''}" href="${p.href}">
-    <div class="pcard-top">
-      <div class="pcard-icon">${p.icon}</div>
-      <div class="pcard-badges">${badgesHTML}</div>
-    </div>
-    <div class="pcard-company">${p.company}</div>
-    <div class="pcard-name">${p.name}</div>
-    <div class="pcard-type">${p.type}</div>
-    <div class="pcard-divider"></div>
-    <div class="pcard-desc">${p.desc}</div>
-    <div class="pcard-tags">${tagsHTML}</div>
-    <div class="pcard-cta">${ctaHTML}</div>
-  </a>`;
+function runIULResult() {
+  const age = parseInt(document.getElementById('iul-age').value);
+  const budget = document.getElementById('iul-budget').value;
+  if(!age || age < 18 || age > 80) { alert('Please enter valid age (18–80).'); return; }
+
+  const answers = getKQAnswers('iulh', IUL_HEALTH.length);
+  if(answers.includes(null)) { alert('Please answer all health questions.'); return; }
+
+  const yesCount = answers.filter(a=>a==='yes').length;
+  const tobaccoYes = answers[3] === 'yes';
+  const lowBudget = ['under100',''].includes(budget);
+
+  if(yesCount >= 2) {
+    showResult('iul-result','ineligible','❌','Likely Declined for IUL',
+      'With 2 or more significant health conditions, this client is unlikely to qualify for standard IUL. They may face a rated policy or decline.',
+      '→ Consider: Final expense Whole Life if they are 45–85, or Guaranteed Issue if 50–80. These have no health underwriting.');
+  } else if(lowBudget) {
+    showResult('iul-result','graded','🟡','Budget Below Minimum',
+      'IUL policies typically require a minimum of $200–$300/month to build meaningful cash value. This client\'s budget may not support an IUL.',
+      '→ Discuss whether they could increase monthly contribution. If not, consider a Term policy for protection or a final expense WL for smaller budget.');
+  } else if(tobaccoYes) {
+    showResult('iul-result','graded','🟡','Tobacco Rating Applies',
+      'Client qualifies for IUL but will be rated as a tobacco user. Premiums will be significantly higher (typically 2–3x non-smoker rates).',
+      '→ Present with tobacco rates. If they\'ve quit for 12+ months, check carrier guidelines — some reclassify after 1 year nicotine-free.');
+  } else if(yesCount === 1) {
+    showResult('iul-result','graded','🟡','Possible — Needs Full Underwriting',
+      'One health flag found. Client may qualify with a rating. Full underwriting is required — cannot approve based on pre-qual alone.',
+      '→ Proceed with full application. Carrier will make final underwriting decision. Set expectation that a rating is possible.');
+  } else {
+    showResult('iul-result','eligible','✅','Strong IUL Candidate',
+      'Client appears to qualify for a standard-rated IUL policy. No major health flags. Budget and goals align with IUL design.',
+      '→ Run FlexLife illustration on National Life portal. Present accumulation, protection, and living benefit riders. Schedule a second appointment to review the numbers.');
+  }
 }
 
-document.addEventListener('DOMContentLoaded', renderCards);
+// ── PLANRIGHT QUESTIONS ───────────────────────────────────────
+const PR_STANDARD = [
+  'In the past 2 years, has the client been diagnosed with or treated for cancer, heart attack, or stroke?',
+  'Does the client have COPD, emphysema, or kidney disease requiring dialysis?',
+  'Does the client have a terminal illness with a life expectancy of less than 2 years?',
+  'In the past 24 months, has the client been confined to a nursing home or hospice?',
+];
+const PR_GRADED = [
+  'Has the client been diagnosed with diabetes requiring insulin in the past 12 months?',
+  'Does the client have congestive heart failure, chronic lung disease, or liver disease?',
+  'In the past 5 years, has the client been advised to have heart surgery not yet performed?',
+  'Has the client been diagnosed with HIV/AIDS?',
+  'Is the client currently on oxygen therapy?',
+];
+renderKnockouts('pr-standard', PR_STANDARD, 'prs');
+renderKnockouts('pr-graded', PR_GRADED, 'prg');
+
+function runPRResult() {
+  const age = parseInt(document.getElementById('pr-age').value);
+  if(!age || age < 50 || age > 85) { alert('Please enter valid age (50–85).'); return; }
+
+  const stdAnswers = getKQAnswers('prs', PR_STANDARD.length);
+  const grAnswers = getKQAnswers('prg', PR_GRADED.length);
+  if(stdAnswers.includes(null)||grAnswers.includes(null)) { alert('Please answer all questions.'); return; }
+
+  const hasStdKO = stdAnswers.includes('yes');
+  const grYes = grAnswers.filter(a=>a==='yes').length;
+
+  if(!hasStdKO) {
+    showResult('pr-result','eligible','✅','Standard Plan Qualified',
+      'Client qualifies for the Foresters PlanRight <strong>Standard Plan</strong> — preferred rates, full death benefit from day one.',
+      '→ Run quote on Foresters portal. Available up to $35,000. Member benefits include: scholarships, volunteer grants, and community programs included with the policy.');
+  } else if(grYes <= 2) {
+    showResult('pr-result','graded','🟡','Graded Benefit Plan',
+      'Client does not qualify for Standard. They <strong>may qualify for Graded</strong>: 50% of face amount in years 1–2, 100% from year 3 onward.',
+      '→ Present the Graded plan. Still a meaningful policy — burial insurance is about peace of mind. Clients and families still benefit greatly from Graded coverage.');
+  } else {
+    showResult('pr-result','graded','🟡','Modified Benefit Only',
+      'Based on health history, client qualifies for the <strong>Modified Benefit</strong> plan only: premiums returned + 4% interest if death in years 1–2, full benefit from year 3.',
+      '→ Weigh against Guaranteed Issue. Modified may have lower premiums but same 2-year wait. Compare both options side by side for the client.');
+  }
+}
+
+// ── GUARANTEED ISSUE ──────────────────────────────────────────
+function runGIResult() {
+  const age = parseInt(document.getElementById('gi-age').value);
+  const fname = document.getElementById('gi-fname').value;
+  if(!age || age < 50 || age > 80) { alert('Guaranteed Issue is available for ages 50–80 only.'); return; }
+
+  showResult('gi-result','eligible','✅','Guaranteed Acceptance',
+    `${fname || 'Client'} qualifies for Guaranteed Issue Whole Life coverage. No health questions. No exam. Acceptance is guaranteed for ages 50–80.`,
+    '→ Important to explain: <strong>2-year graded period</strong> — if client passes from non-accidental causes in years 1–2, beneficiary receives premiums paid + 10% interest. Full benefit applies after 2 years and for accidental death from day 1. Run quote on Corebridge portal.');
+}
+
+// ── ANNUITY SUITABILITY ────────────────────────────────────────
+const AN_SUITABILITY = [
+  'Is the client\'s net worth below $25,000 (not counting their primary home)?',
+  'Will the client need access to more than 10% of this money per year?',
+  'Does the client have significant outstanding debt or financial obligations that could require liquidation?',
+  'Is the client in poor health with a limited life expectancy?',
+];
+renderKnockouts('an-suitability', AN_SUITABILITY, 'ans');
+
+function runANResult() {
+  const age = parseInt(document.getElementById('an-age').value);
+  const amount = document.getElementById('an-amount').value;
+  const timeline = document.getElementById('an-timeline').value;
+  if(!age || age < 40 || age > 80) { alert('FIA available for ages 40–80.'); return; }
+
+  const answers = getKQAnswers('ans', AN_SUITABILITY.length);
+  if(answers.includes(null)) { alert('Please answer all suitability questions.'); return; }
+
+  const yesCount = answers.filter(a=>a==='yes').length;
+
+  if(amount === 'under10k') {
+    showResult('an-result','ineligible','❌','Below Minimum Premium',
+      'Fixed Indexed Annuities typically require a minimum of $10,000. This client does not meet the minimum investment threshold.',
+      '→ If they have funds coming (inheritance, retirement payout, CD maturity), revisit when funds are available. Otherwise, explore life insurance products.');
+  } else if(timeline === 'under5') {
+    showResult('an-result','ineligible','❌','Timeline Too Short',
+      'The client indicates they need access to these funds within 5 years. FIAs typically have surrender periods of 5–10 years. Liquidating early results in surrender charges.',
+      '→ Recommend a CD or money market for funds needed within 5 years. Annuity is appropriate for funds the client genuinely will not need during the surrender period.');
+  } else if(yesCount >= 2) {
+    showResult('an-result','ineligible','❌','Suitability Concern',
+      'Multiple suitability flags found. An annuity may not be appropriate for this client\'s financial situation at this time.',
+      '→ Document your suitability review. If proceeding, you must be able to show clear suitability rationale. When in doubt, do not place the case.');
+  } else if(yesCount === 1) {
+    showResult('an-result','graded','🟡','Possible — Review Needed',
+      'One suitability flag found. The annuity may still be appropriate but requires additional conversation and documentation.',
+      '→ Address the flag specifically with the client. Document the conversation. Proceed only if you can clearly demonstrate suitability for this client\'s situation.');
+  } else {
+    showResult('an-result','eligible','✅','Appears Suitable',
+      'Client appears to be a suitable FIA candidate based on age, timeline, and financial situation. No major suitability flags.',
+      '→ Run an illustration on Pacific Life or American Equity portal. Present accumulation value, income rider options, and surrender schedule. Schedule a follow-up to review numbers together.');
+  }
+}
+
+// ── TERM LIFE QUESTIONS ────────────────────────────────────────
+const TM_HEALTH = [
+  'Has the client been diagnosed with cancer, heart disease, or stroke in the past 10 years?',
+  'Does the client have diabetes (insulin or non-insulin dependent)?',
+  'Has the client been treated for a mental health condition requiring hospitalization in the past 5 years?',
+  'Does the client have any DUI/DWI in the past 5 years or multiple in the past 10?',
+  'Does the client participate in high-risk activities (skydiving, racing, scuba, etc.)?',
+];
+renderKnockouts('tm-health', TM_HEALTH, 'tmh');
+
+function runTMResult() {
+  const age = parseInt(document.getElementById('tm-age').value);
+  const tobacco = document.getElementById('tm-tobacco').value;
+  const coverage = document.getElementById('tm-coverage').value;
+  const income = document.getElementById('tm-income').value;
+  if(!age || age < 18 || age > 70) { alert('Term Life available ages 18–70.'); return; }
+
+  const answers = getKQAnswers('tmh', TM_HEALTH.length);
+  if(answers.includes(null)) { alert('Please answer all health questions.'); return; }
+
+  const yesCount = answers.filter(a=>a==='yes').length;
+  const cancerOrHeart = answers[0] === 'yes';
+
+  // Income-based coverage check (10x income rule)
+  const incomeMax = {
+    'under30':'$250,000', '30-50':'$500,000', '50-75':'$750,000',
+    '75-100':'$1,000,000', '100+':'$2,000,000+'
+  };
+
+  if(cancerOrHeart) {
+    showResult('tm-result','ineligible','❌','Likely Decline for Standard Term',
+      'History of cancer, heart disease, or stroke within 10 years typically results in a decline for standard term life insurance.',
+      '→ Explore: <strong>Simplified Issue or Graded Benefit Whole Life</strong> for protection needs. Some carriers offer specialized term for cancer survivors after 5+ years in remission — check with specific carriers.');
+  } else if(yesCount >= 2) {
+    showResult('tm-result','graded','🟡','Rated Policy Likely',
+      'Multiple health flags found. Client will likely qualify but expect a rating (Table 2–4), resulting in higher premiums than standard rates.',
+      '→ Proceed with full application. Set expectation that premiums may be 25–50%+ higher than quoted standard rates. Client can accept, decline, or explore alternatives when the offer comes.');
+  } else if(yesCount === 1) {
+    showResult('tm-result','graded','🟡','Possible Rating — One Flag',
+      'One health flag found. Client may qualify at standard or table rates depending on severity and how long ago it was treated.',
+      '→ Proceed with application. Request the client\'s complete medical history details. Carrier underwriting will determine final rate class.');
+  } else {
+    const rateClass = tobacco === 'yes' ? 'Tobacco/Standard' : 'Preferred Non-Tobacco';
+    const maxCoverage = income ? (incomeMax[income] || 'check carrier') : 'varies by income';
+    showResult('tm-result','eligible','✅','Likely ' + rateClass + ' Rate Class',
+      `Client appears to qualify at <strong>${rateClass}</strong> rates. Suggested maximum coverage based on income: <strong>${maxCoverage}</strong> (10x income guideline).`,
+      '→ Run quotes across multiple carriers (SBLI, Protective, Banner, Pacific Life). Present the best rate. Collect blood pressure, height/weight, and any Rx information for the application.');
+  }
+}
+
+function resetForm(prefix) {
+  document.querySelectorAll(`[id^="${prefix}-"]`).forEach(el=>{
+    if(el.tagName==='INPUT'||el.tagName==='SELECT') el.value='';
+    if(el.classList.contains('radio-opt')) el.className='radio-opt';
+    if(el.classList.contains('result-box')) el.style.display='none';
+  });
+}
 </script>
 </body>
 </html>
