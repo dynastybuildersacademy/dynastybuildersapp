@@ -257,15 +257,22 @@ body::before{content:"";position:fixed;inset:0;
         <select id="nr-agent" onchange="preselectDownline(this.value)"><option value="">Select agent…</option></select></div>
       <div class="field"><label>Current Level</label>
         <select id="nr-level" onchange="onLevelChange(this.value)">
-          <option value="Trainee">Trainee → Associate</option>
-          <option value="Associate">Associate → Field Associate</option>
-          <option value="Field Associate" selected>Field Associate → Director</option>
-          <option value="Director">Director → Marketing Director</option>
-          <option value="Marketing Director">Marketing Director → Senior MD</option>
-          <option value="Senior Marketing Director">Senior MD → Executive MD</option>
-          <option value="Executive Marketing Director">Executive MD → Senior VP</option>
-          <option value="Senior Vice President">Senior VP → Managing Partner</option>
-          <option value="Managing Partner">Managing Partner → Boards Council</option>
+          <option value="Trainee">L1 → Trainee → Associate (30%)</option>
+          <option value="Associate">L2 → Associate → Field Associate (40%)</option>
+          <option value="Field Associate" selected>L3 → Field Associate → Director (50%)</option>
+          <option value="Director">L4 → Director → Producing MD (60%)</option>
+          <option value="Producing Marketing Director">L5 → Producing MD → Marketing Director (70%)</option>
+          <option value="Marketing Director">L6 → Marketing Director → Senior MD (75%)</option>
+          <option value="Senior Marketing Director">L7 → Senior MD → Executive MD (77%)</option>
+          <option value="Executive Marketing Director">L8 → Executive MD → Senior VP (78%)</option>
+          <option value="Senior Vice President">L9 → Senior VP → Executive VP (79%)</option>
+          <option value="Executive Vice President">L10 → Executive VP → President Council (80%)</option>
+          <option value="President Council">L11 → President Council → Chairman Council (81%)</option>
+          <option value="Chairman Council">L12 → Chairman Council → Board Council (82%)</option>
+          <option value="Board Council">L13 → Board Council → Senior Board Council (82.5%)</option>
+          <option value="Senior Board Council">L14 → Senior Board Council → Executive BC (83%)</option>
+          <option value="Executive Board Council">L15 → Executive BC → Senior Executive BC (83.5%)</option>
+          <option value="Senior Executive Board Council">L16 → Senior Executive Board Council (84%)</option>
         </select>
         <div id="level-notes" style="font-family:DM Mono,monospace;font-size:10px;color:var(--muted);margin-top:5px;line-height:1.6;"></div></div>
       <div class="row2">
@@ -466,135 +473,152 @@ const GROUPS = {
 // perMonth = true means the requirement is per month, not cumulative
 // personalPct = required % of apps that must be personal production
 const PROMO_LADDER = [
+  // ── L1 TRAINEE → L2 ASSOCIATE ───────────────────────────────
   {
-    id: "trainee",
-    label: "Trainee",
-    nextLabel: "Associate",
-    icon: "🌱", comm: "25%", color: "#95a5a6",
+    id: "trainee", label: "Trainee", nextLabel: "Associate", phpLevel: 1,
+    icon: "🌱", comm: "30%", color: "#95a5a6",
     months: 1,
     targets: { r:3, a:3, p:3000 },
-    personalPct: 0,
-    pointsType: "submitted",       // sub points count
-    productionRule: "personal",    // ALL numbers must be personal
-    legCap: null,
-    notes: "3 personal recruits · 3 personal apps · 3,000 personal sub pts (1 month)"
+    personalPct: 1.0, pointsType: "submitted", productionRule: "personal", legCap: null,
+    doublePromote: true,
+    notes: "3 personal Directs · 3 Submitted Applications · 3,000 Submitted Points (30 days) — eligible to double/triple promote"
   },
+  // ── L2 ASSOCIATE → L3 FIELD ASSOCIATE ───────────────────────
   {
-    id: "associate",
-    label: "Associate",
-    nextLabel: "Field Associate",
-    icon: "🔑", comm: "35%", color: "#3498DB",
+    id: "associate", label: "Associate", nextLabel: "Field Associate", phpLevel: 2,
+    icon: "🔑", comm: "40%", color: "#3498DB",
     months: 3,
-    targets: { r:10, a:10, p:10000 },
-    personalPct: 1.0,              // 100% personal
-    pointsType: "submitted",
-    productionRule: "personal",    // ALL numbers must be personal
-    legCap: null,
-    notes: "10 personal recruits · 10 personal apps · 10,000 personal sub pts (3 months)"
+    targets: { r:15, a:15, p:30000 },
+    personalPct: 1.0, pointsType: "submitted", productionRule: "personal", legCap: null,
+    notes: "3 personal Directs · 1 Direct Associate · 15 Base Recruits · 15 Submitted Applications · 30,000 Submitted Points (90 days)"
   },
+  // ── L3 FIELD ASSOCIATE → L4 DIRECTOR ────────────────────────
   {
-    id: "field_associate",
-    label: "Field Associate",
-    nextLabel: "Director",
+    id: "field_associate", label: "Field Associate", nextLabel: "Director", phpLevel: 3,
     icon: "⚡", comm: "50%", color: "#2ECC71",
     months: 3,
-    targets: { r:25, a:25, p:25000 },
-    personalPct: 0.40,
-    pointsType: "submitted",
-    productionRule: "team",        // team counts, 50% leg cap
-    legCap: 0.50,
-    notes: "25 recruits · 25 apps · 25,000 sub pts · team (no leg >50%) · 40% personal"
+    targets: { r:30, a:30, p:60000 },
+    personalPct: 0.0, pointsType: "submitted", productionRule: "team", legCap: null,
+    notes: "2 Direct FAs or 1 FA + 2 Direct Associates · 6 Licensed & Appointed Agents · 30 Base Recruits · 30 Submitted Applications · 60,000 Submitted Points (90 days)"
   },
+  // ── L4 DIRECTOR → L5 PRODUCING MD ───────────────────────────
   {
-    id: "director",
-    label: "Director",
-    nextLabel: "Marketing Director",
-    icon: "🎯", comm: "55%", color: "#E67E22",
+    id: "director", label: "Director", nextLabel: "Producing Marketing Director", phpLevel: 4,
+    icon: "🎯", comm: "60%", color: "#E67E22",
     months: 3,
-    targets: { r:3, a:3, p:0, mds:1 },
-    personalPct: 0.40,
-    pointsType: "submitted",
-    productionRule: "team",
-    legCap: 0.50,
-    notes: "3 recruits · 3 apps · promote 1 MD · team (no leg >50%) · 40% personal"
+    targets: { basePts: 200000 },
+    personalPct: 0.0, pointsType: "paid", productionRule: "personal", legCap: null,
+    notes: "200,000 Personal Paid Points (lifetime) · Must be approved by Upline Board Council and Home Office"
   },
+  // ── L5 PRODUCING MD → L6 MARKETING DIRECTOR ─────────────────
   {
-    id: "marketing_director",
-    label: "Marketing Director",
-    nextLabel: "Senior MD",
-    icon: "🏆", comm: "60%", color: "#C9A84C",
+    id: "producing_md", label: "Producing Marketing Director", nextLabel: "Marketing Director", phpLevel: 5,
+    icon: "📈", comm: "70%", color: "#C9A84C",
     months: 3,
-    targets: { r:0, a:0, p:0, basePts:100000 },
-    personalPct: 0.40,
-    pointsType: "paid",            // MD+ requires PAID points
-    productionRule: "team",
-    legCap: 0.50,
-    notes: "100,000 paid base pts · team (no leg >50%) · 40% personal"
+    targets: { fas:3, lic:15, r:50, a:50, basePts:70000 },
+    personalPct: 0.0, pointsType: "submitted", productionRule: "super_team", legCap: null,
+    notes: "3 Direct FAs · 15 Licensed & Appointed Agents · 50 Super Team Recruits · 50 Submitted Applications · 70,000 Super Team Paid Points (90 days)"
   },
+  // ── L6 MARKETING DIRECTOR → L7 SENIOR MD ───────────────────
   {
-    id: "senior_md",
-    label: "Senior Marketing Director",
-    nextLabel: "Executive MD",
-    icon: "🌟", comm: "65%", color: "#9B59B6",
+    id: "marketing_director", label: "Marketing Director", nextLabel: "Senior Marketing Director", phpLevel: 6,
+    icon: "🏆", comm: "75%", color: "#C9A84C",
     months: 3,
-    targets: { r:0, a:0, p:0, basePts:250000 },
-    personalPct: 0.30,
-    pointsType: "paid",
-    productionRule: "team",
-    legCap: 0.50,
-    notes: "250,000 paid base pts · team (no leg >50%) · 30% personal"
+    targets: { mds:2, lic:60, r:100, a:100, basePts:140000 },
+    personalPct: 0.0, pointsType: "submitted", productionRule: "super_team", legCap: null,
+    notes: "2 Direct MDs · 60 Licensed & Appointed Agents · 100 Super Team Recruits · 100 Super Team Submitted Applications · 140,000 Super Team Paid Points (90 days)"
   },
+  // ── L7 SENIOR MD → L8 EXECUTIVE MD ─────────────────────────
   {
-    id: "executive_md",
-    label: "Executive Marketing Director",
-    nextLabel: "Senior Vice President",
-    icon: "💎", comm: "70%", color: "#E74C3C",
+    id: "senior_md", label: "Senior Marketing Director", nextLabel: "Executive Marketing Director", phpLevel: 7,
+    icon: "🌟", comm: "77%", color: "#9B59B6",
     months: 3,
-    targets: { r:0, a:0, p:0, basePts:500000 },
-    personalPct: 0.25,
-    pointsType: "paid",
-    productionRule: "team",
-    legCap: 0.50,
-    notes: "500,000 paid base pts · team (no leg >50%) · 25% personal"
+    targets: { mds:4, lic:120, r:200, a:200, basePts:200000 },
+    personalPct: 0.0, pointsType: "submitted", productionRule: "super_team", legCap: null,
+    notes: "4 Direct MDs · 120 Licensed & Appointed Agents · 200 Super Team Recruits · 200 Super Team Submitted Applications · 200,000 Super Team Paid Points (90 days)"
   },
+  // ── L8 EXECUTIVE MD → L9 SENIOR VP ─────────────────────────
   {
-    id: "svp",
-    label: "Senior Vice President",
-    nextLabel: "Managing Partner",
-    icon: "🦅", comm: "75%", color: "#1ABC9C",
+    id: "executive_md", label: "Executive Marketing Director", nextLabel: "Senior Vice President", phpLevel: 8,
+    icon: "💎", comm: "78%", color: "#E74C3C",
     months: 3,
-    targets: { r:0, a:0, p:0, basePts:1000000 },
-    personalPct: 0.20,
-    pointsType: "paid",
-    productionRule: "team",
-    legCap: 0.50,
-    notes: "1,000,000 paid base pts · team (no leg >50%) · 20% personal"
+    targets: { mds:6, lic:180, r:400, a:300, basePts:400000 },
+    personalPct: 0.0, pointsType: "submitted", productionRule: "super_team", legCap: null,
+    notes: "6 Direct MDs · 180 Licensed & Appointed Agents · 400 Super Team Recruits · 300 Super Team Submitted Applications · 400,000 Super Team Paid Points (90 days)"
   },
+  // ── L9 SENIOR VP → L10 EXECUTIVE VP ────────────────────────
   {
-    id: "managing_partner",
-    label: "Managing Partner",
-    nextLabel: "Boards Council",
-    icon: "👑", comm: "75%", color: "#E8C97A",
+    id: "svp", label: "Senior Vice President", nextLabel: "Executive Vice President", phpLevel: 9,
+    icon: "🦅", comm: "79%", color: "#1ABC9C",
     months: 3,
-    targets: { r:0, a:0, p:0, basePts:2500000 },
-    personalPct: 0.15,
-    pointsType: "paid",
-    productionRule: "team",
-    legCap: 0.50,
-    notes: "2.5M paid base pts · team (no leg >50%) · 15% personal"
+    targets: { mds:8, lic:240, r:400, a:400, basePts:600000 },
+    personalPct: 0.0, pointsType: "submitted", productionRule: "super_team", legCap: null,
+    notes: "8 Direct MDs · 240 Licensed & Appointed Agents · 400 Super Team Recruits · 400 Super Team Submitted Applications · 600,000 Super Team Paid Points (90 days)"
   },
+  // ── L10 EXECUTIVE VP → L11 PRESIDENT COUNCIL ───────────────
   {
-    id: "boards_council",
-    label: "Boards Council",
-    nextLabel: null,
-    icon: "⬡", comm: "75%+", color: "#FFD700",
-    months: 0, targets: {}, personalPct: 0,
-    pointsType: "paid",
-    productionRule: "team",
-    legCap: 0.50,
-    notes: "Top tier — national recognition and equity partnership"
+    id: "evp", label: "Executive Vice President", nextLabel: "President Council", phpLevel: 10,
+    icon: "👑", comm: "80%", color: "#E8C97A",
+    months: 3,
+    targets: { mds:10, lic:300, r:500, a:500, basePts:800000 },
+    personalPct: 0.0, pointsType: "submitted", productionRule: "super_team", legCap: null,
+    notes: "10 Direct MDs · 300 Licensed & Appointed Agents · 500 Super Team Recruits · 500 Super Team Submitted Applications · 800,000 Super Team Paid Points (90 days)"
+  },
+  // ── L11 PRESIDENT COUNCIL → L12 CHAIRMAN COUNCIL ───────────
+  {
+    id: "president_council", label: "President Council", nextLabel: "Chairman Council", phpLevel: 11,
+    icon: "🔱", comm: "81%", color: "#E8C97A",
+    months: 3,
+    targets: { mds:12, lic:400, r:600, a:600, basePts:1000000 },
+    personalPct: 0.0, pointsType: "submitted", productionRule: "super_team", legCap: null,
+    notes: "12 Direct MDs · 400 Licensed & Appointed Agents · 600 Super Team Recruits · 600 Super Team Submitted Applications · 1,000,000 Super Team Paid Points (90 days)"
+  },
+  // ── L12 CHAIRMAN COUNCIL → L13 BOARD COUNCIL ───────────────
+  {
+    id: "chairman_council", label: "Chairman Council", nextLabel: "Board Council", phpLevel: 12,
+    icon: "⬡", comm: "82%", color: "#FFD700",
+    months: 3,
+    targets: { mds:20, lic:1500, r:1500, a:1500, basePts:2000000 },
+    personalPct: 0.0, pointsType: "submitted", productionRule: "super_team", legCap: null,
+    notes: "20 Direct MDs · 1,500 Licensed & Appointed Agents · 1,500 Super Team Recruits · 1,500 Super Team Submitted Applications · 2,000,000 Super Team Paid Points (90 days)"
+  },
+  // ── L13 BOARD COUNCIL → L14 SENIOR BOARD COUNCIL ───────────
+  {
+    id: "board_council", label: "Board Council", nextLabel: "Senior Board Council", phpLevel: 13,
+    icon: "🏛", comm: "82.5%", color: "#FFD700",
+    months: 3,
+    targets: { vps:6, lic:3000, r:3000, a:3000, basePts:4000000 },
+    personalPct: 0.0, pointsType: "submitted", productionRule: "super_team", legCap: null,
+    notes: "6 Direct Vice-Presidents · 3,000 Licensed & Appointed Agents · 3,000 Super Team Recruits · 3,000 Super Team Submitted Applications · 4,000,000 Super Team Paid Points (90 days)"
+  },
+  // ── L14 SENIOR BC → L15 EXECUTIVE BC ───────────────────────
+  {
+    id: "senior_board_council", label: "Senior Board Council", nextLabel: "Executive Board Council", phpLevel: 14,
+    icon: "🏛", comm: "83%", color: "#FFD700",
+    months: 3,
+    targets: { vps:8, lic:6000, r:6000, a:6000, basePts:8000000 },
+    personalPct: 0.0, pointsType: "submitted", productionRule: "super_team", legCap: null,
+    notes: "8 Direct Vice-Presidents · 6,000 Licensed & Appointed Agents · 6,000 Super Team Recruits · 6,000 Super Team Submitted Applications · 8,000,000 Super Team Paid Points (90 days)"
+  },
+  // ── L15 EXECUTIVE BC → L16 SENIOR EXECUTIVE BC ─────────────
+  {
+    id: "executive_board_council", label: "Executive Board Council", nextLabel: "Senior Executive Board Council", phpLevel: 15,
+    icon: "🏛", comm: "83.5%", color: "#FFD700",
+    months: 3,
+    targets: { vps:10, lic:12000, r:12000, a:12000, basePts:16000000 },
+    personalPct: 0.0, pointsType: "submitted", productionRule: "super_team", legCap: null,
+    notes: "10 Direct Vice-Presidents · 12,000 Licensed & Appointed Agents · 12,000 Super Team Recruits · 12,000 Super Team Submitted Applications · 16,000,000 Super Team Paid Points (90 days)"
+  },
+  // ── L16 SENIOR EXECUTIVE BOARD COUNCIL ─────────────────────
+  {
+    id: "senior_executive_board_council", label: "Senior Executive Board Council", nextLabel: null, phpLevel: 16,
+    icon: "🌐", comm: "84%", color: "#FFD700",
+    months: 0, targets: {},
+    personalPct: 0.0, pointsType: "submitted", productionRule: "super_team", legCap: null,
+    notes: "Top tier — First to receive $100,000 Jet Card & $500,000 Rolls Royce"
   },
 ];
+
 // Quick lookup for modal dropdown and strategy engine
 const TARGETS = {};
 PROMO_LADDER.forEach(l => { TARGETS[l.label] = l.targets; });

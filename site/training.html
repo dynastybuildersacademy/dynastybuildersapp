@@ -1307,6 +1307,24 @@ function toggleMic() {
 function stopMic() {
   if(recognition) recognition.stop();
 }
+
+// ── HASH-BASED TAB NAVIGATION ─────────────────────────────────
+(function() {
+  const hash = window.location.hash.replace('#','');
+  if(hash) {
+    // Wait for DOM then click the matching tab
+    const trySwitch = (attempts) => {
+      const tab = document.querySelector(`[onclick*="switchTab('${hash}"]`);
+      if(tab) {
+        tab.click();
+        window.scrollTo(0,0);
+      } else if(attempts > 0) {
+        setTimeout(() => trySwitch(attempts-1), 100);
+      }
+    };
+    trySwitch(10);
+  }
+})();
 </script>
 </body>
 </html>
