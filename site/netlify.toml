@@ -15,6 +15,9 @@
 [functions."roster"]
   timeout = 15
 
+[functions."pipeline"]
+  timeout = 30
+
 # Dynasty Builders Academy — Netlify Configuration
 
 [build]
@@ -67,6 +70,11 @@
 [[redirects]]
   from   = "/api/roster"
   to     = "/.netlify/functions/roster"
+  status = 200
+
+[[redirects]]
+  from   = "/api/pipeline"
+  to     = "/.netlify/functions/pipeline"
   status = 200
 
 # ── REQUIRED ENVIRONMENT VARIABLES ─────────────────────────────

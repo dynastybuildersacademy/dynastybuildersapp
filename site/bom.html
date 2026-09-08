@@ -639,7 +639,7 @@ async function loadLeaderboard() {
         boards(ids:${TEAM.monday.boardBOMGuests}) {
           items_page(limit:100${ca}) {
             cursor
-            items { id name column_values { id text } }
+            items { id name column_values { id title text value } }
           }
         }
       }`);
@@ -651,11 +651,24 @@ async function loadLeaderboard() {
 
     // Parse ALL items — both session rows and guest rows
     const guestRows = allItems.map(item => {
-      const get = (...kws) => item.column_values.find(cv => kws.some(k=>(cv.title||cv.id||'').toLowerCase().includes(k)))?.text||'';
+      const get = (...kws) => {
+        const cv = item.column_values.find(c =>
+          kws.some(k => (c.title||c.id||'').toLowerCase().includes(k))
+        );
+        if (!cv) return '';
+        if (cv.text) return cv.text;
+        try {
+          const v = JSON.parse(cv.value || 'null');
+          if (v?.label?.text) return v.label.text;
+          if (v?.text)        return v.text;
+          if (typeof v === 'string') return v;
+        } catch {}
+        return '';
+      };
       return {
         guestName: item.name,
         captain:   get('captain'),
-        generator: get('generator','gen'),
+        generator: get('generator','gen','referrer','prospector'),
         status:    get('status'),
         date:      get('date','bom date'),
         day:       get('type','day','bom type','bom day'),
@@ -696,83 +709,144 @@ function loadLocalLeaderboard(fromDate, toDate, dayFilter, metric) {
   document.getElementById('lb-loading').style.display = 'none';
 }
 
-function renderLeaderboard(sessions, metric, dayFilter) {
-  // Aggregate by agent
-  const agentMap = {};
-  sessions.forEach(s => {
-    const key = s.agentId || s.agentName || 'Unknown';
-    const name = s.agentName || AGENTS.find(a=>a.id===key)?.name || key;
-    if (!agentMap[key]) agentMap[key] = { name, sessions:0, invites:0, confirmed:0, showed:0, tue:0, sat:0 };
-    agentMap[key].sessions++;
-    agentMap[key].invites   += s.invites   || 0;
-    agentMap[key].confirmed += s.confirmed || 0;
-    agentMap[key].showed    += s.showed    || 0;
-    if ((s.day||'').toLowerCase().includes('tue')) agentMap[key].tue++;
-    else agentMap[key].sat++;
-  });
+function renderLeaderboard(guestRows, metric, dayFilter) {
+  const STATUS_COLOR = { 'showed':'#2DCA73','confirmed':'#E8C97A','invited':'#5DADE2','no-show':'#E74C3C','no show':'#E74C3C' };
+  const STATUS_ICON  = { 'showed':'✅','confirmed':'📅','invited':'📨','no-show':'❌','no show':'❌' };
 
-  const metricKey = metric === 'sessions' ? 'sessions' : metric;
-  const rows = Object.values(agentMap).sort((a,b) => b[metricKey] - a[metricKey]);
-  const maxVal = Math.max(...rows.map(r=>r[metricKey]), 1);
+  function statusPill(s) {
+    if(!s) return '<span style="color:rgba(255,255,255,.25);font-size:10px;">—</span>';
+    const lo = s.toLowerCase();
+    const col = STATUS_COLOR[lo] || 'rgba(255,255,255,.35)';
+    const ico = STATUS_ICON[lo]  || '•';
+    return `<span style="font-family:DM Mono,monospace;font-size:10px;padding:2px 8px;border-radius:10px;background:${col}18;border:1px solid ${col}44;color:${col};">${ico} ${s}</span>`;
+  }
 
-  const METRIC_LABELS = { showed:'Guests Showed', invites:'Guests Invited', confirmed:'Guests Confirmed', sessions:'Sessions' };
+  const totalGuests = guestRows.length;
+  const totalShowed = guestRows.filter(g=>(g.status||'').toLowerCase()==='showed').length;
+  const tueCount    = guestRows.filter(g=>(g.day||'').toLowerCase().includes('tue')).length;
+  const satCount    = guestRows.filter(g=>(g.day||'').toLowerCase().includes('sat')).length;
+  const showRate    = totalGuests ? Math.round(totalShowed/totalGuests*100) : 0;
 
-  if (!rows.length) {
-    document.getElementById('lb-content').innerHTML = `<div style="color:var(--slate);font-size:13px;padding:16px;text-align:center;">No BOM sessions found for this period. Save a session above to start tracking.</div>`;
+  if(!guestRows.length) {
+    document.getElementById('lb-content').innerHTML =
+      '<div style="color:var(--slate);font-size:13px;padding:24px;text-align:center;">No guest data found for this period.</div>';
     return;
   }
 
-  // Summary stats
-  const totalSessions = sessions.length;
-  const totalGuests   = sessions.reduce((s,r)=>s+r.showed,0);
-  const tueCount      = sessions.filter(s=>(s.day||'').toLowerCase().includes('tue')).length;
-  const satCount      = sessions.filter(s=>(s.day||'').toLowerCase().includes('sat')).length;
+  // ── CAPTAIN LEADERBOARD ──────────────────────────────────────
+  const captainMap = {};
+  guestRows.forEach(g => {
+    const key = (g.captain||'').trim() || '(no captain)';
+    if(!captainMap[key]) captainMap[key] = { captain:key, guests:0, showed:0, confirmed:0, invited:0, tue:0, sat:0 };
+    captainMap[key].guests++;
+    const st = (g.status||'').toLowerCase();
+    if(st==='showed')    captainMap[key].showed++;
+    if(st==='confirmed') captainMap[key].confirmed++;
+    if(st==='invited')   captainMap[key].invited++;
+    if((g.day||'').toLowerCase().includes('tue')) captainMap[key].tue++;
+    else captainMap[key].sat++;
+  });
 
-  const isMeKey = session.agentId;
+  const metricKey = metric==='showed'?'showed':metric==='confirmed'?'confirmed':metric==='invited'?'invited':'guests';
+  const captainRows = Object.values(captainMap).filter(r=>r.captain!=='(no captain)')
+    .sort((a,b)=>b[metricKey]-a[metricKey]);
+  const maxVal = Math.max(...captainRows.map(r=>r[metricKey]),1);
+
+  const th = (t,center) => `<th style="font-size:10px;color:var(--slate);padding:6px 10px;
+    text-align:${center?'center':'left'};border-bottom:1px solid rgba(255,255,255,.08);
+    font-family:'Barlow Condensed',sans-serif;font-weight:700;text-transform:uppercase;
+    letter-spacing:.09em;white-space:nowrap;">${t}</th>`;
 
   document.getElementById('lb-content').innerHTML = `
-    <div style="display:flex;gap:16px;margin-bottom:14px;flex-wrap:wrap;">
-      <div style="font-size:12px;color:var(--slate);">📅 <strong style="color:var(--cream);">${totalSessions}</strong> sessions</div>
+    <!-- SUMMARY STRIP -->
+    <div style="display:flex;gap:14px;margin-bottom:18px;flex-wrap:wrap;padding:12px 16px;
+      background:rgba(201,168,76,.05);border:1px solid rgba(201,168,76,.12);border-radius:10px;">
+      <div style="font-size:12px;color:var(--slate);">👥 <strong style="color:var(--cream);">${totalGuests}</strong> guests</div>
+      <div style="font-size:12px;color:var(--slate);">✅ <strong style="color:#2DCA73;">${totalShowed}</strong> showed</div>
+      <div style="font-size:12px;color:var(--slate);">🎯 <strong style="color:var(--gold);">${showRate}%</strong> show rate</div>
       <div style="font-size:12px;color:var(--slate);">📅 Tue: <strong style="color:var(--cream);">${tueCount}</strong></div>
       <div style="font-size:12px;color:var(--slate);">📅 Sat: <strong style="color:var(--cream);">${satCount}</strong></div>
-      <div style="font-size:12px;color:var(--slate);">👥 <strong style="color:var(--cream);">${totalGuests}</strong> total guests showed</div>
     </div>
-    <table style="width:100%;border-collapse:collapse;">
+
+    <!-- CAPTAIN LEADERBOARD -->
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:900;
+      color:var(--gold-light);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px;">
+      ⚓ Captain Leaderboard
+    </div>
+    <div style="overflow-x:auto;margin-bottom:28px;">
+    <table style="width:100%;border-collapse:collapse;min-width:420px;">
       <thead><tr>
-        <th style="font-size:10px;color:var(--slate);padding:7px 12px;text-align:left;border-bottom:1px solid var(--border);font-family:\'Barlow Condensed\',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.09em;">#</th>
-        <th style="font-size:10px;color:var(--slate);padding:7px 12px;text-align:left;border-bottom:1px solid var(--border);font-family:\'Barlow Condensed\',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.09em;">Captain</th>
-        <th style="font-size:10px;color:var(--slate);padding:7px 12px;text-align:center;border-bottom:1px solid var(--border);font-family:\'Barlow Condensed\',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.09em;">Sessions</th>
-        <th style="font-size:10px;color:var(--slate);padding:7px 12px;text-align:center;border-bottom:1px solid var(--border);font-family:\'Barlow Condensed\',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.09em;">Tue</th>
-        <th style="font-size:10px;color:var(--slate);padding:7px 12px;text-align:center;border-bottom:1px solid var(--border);font-family:\'Barlow Condensed\',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.09em;">Sat</th>
-        <th style="font-size:10px;color:var(--slate);padding:7px 12px;text-align:center;border-bottom:1px solid var(--border);font-family:\'Barlow Condensed\',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.09em;">Invited</th>
-        <th style="font-size:10px;color:var(--slate);padding:7px 12px;text-align:center;border-bottom:1px solid var(--border);font-family:\'Barlow Condensed\',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.09em;">Showed</th>
-        <th style="font-size:10px;color:var(--slate);padding:7px 12px;border-bottom:1px solid var(--border);font-family:\'Barlow Condensed\',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.09em;">${METRIC_LABELS[metric]}</th>
+        ${th('#')} ${th('Captain')} ${th('Invited',1)} ${th('Showed',1)}
+        ${th('Confirmed',1)} ${th('Tue',1)} ${th('Sat',1)} ${th('Progress')}
       </tr></thead>
       <tbody>
-        ${rows.map((r,i) => {
-          const isMe = (r.agentId || Object.keys(agentMap)[i]) === isMeKey;
+        ${captainRows.map((r,i)=>{
           const rank = i+1;
           const rkColor = rank===1?'var(--gold)':rank===2?'#C0C0C0':rank===3?'#CD7F32':'var(--slate)';
           const pct = Math.round((r[metricKey]/maxVal)*100);
-          return `<tr style="${isMe?'background:rgba(201,168,76,.05);':''}">
-            <td style="padding:9px 12px;font-family:\'DM Mono\',monospace;font-size:12px;color:${rkColor};font-weight:700;">${rank}</td>
-            <td style="padding:9px 12px;font-size:13px;font-weight:600;">${r.name}${isMe?' <span style="font-size:9px;color:var(--gold);font-family:Barlow Condensed,sans-serif;font-weight:700;">(you)</span>':''}</td>
-            <td style="padding:9px 12px;text-align:center;font-family:\'DM Mono\',monospace;font-size:13px;">${r.sessions}</td>
-            <td style="padding:9px 12px;text-align:center;font-size:12px;color:var(--slate);">${r.tue}</td>
-            <td style="padding:9px 12px;text-align:center;font-size:12px;color:var(--slate);">${r.sat}</td>
-            <td style="padding:9px 12px;text-align:center;font-family:\'DM Mono\',monospace;font-size:13px;">${r.invites}</td>
-            <td style="padding:9px 12px;text-align:center;font-family:\'DM Mono\',monospace;font-size:13px;color:var(--success);font-weight:700;">${r.showed}</td>
-            <td style="padding:9px 12px;">
+          const isMe = session && r.captain.toLowerCase().includes((session.name||'').split(' ')[0].toLowerCase());
+          return `<tr style="border-bottom:1px solid rgba(255,255,255,.04);${isMe?'background:rgba(201,168,76,.05);':''}">
+            <td style="padding:8px 10px;font-family:'DM Mono',monospace;font-size:12px;color:${rkColor};font-weight:700;">${rank}</td>
+            <td style="padding:8px 10px;font-size:13px;font-weight:700;">${r.captain}${isMe?' <span style="font-size:9px;color:var(--gold);">(you)</span>':''}</td>
+            <td style="padding:8px 10px;text-align:center;font-family:'DM Mono',monospace;font-size:13px;">${r.invited}</td>
+            <td style="padding:8px 10px;text-align:center;font-family:'DM Mono',monospace;font-size:13px;color:#2DCA73;font-weight:700;">${r.showed}</td>
+            <td style="padding:8px 10px;text-align:center;font-family:'DM Mono',monospace;font-size:13px;color:var(--gold);">${r.confirmed}</td>
+            <td style="padding:8px 10px;text-align:center;font-size:12px;color:var(--slate);">${r.tue}</td>
+            <td style="padding:8px 10px;text-align:center;font-size:12px;color:var(--slate);">${r.sat}</td>
+            <td style="padding:8px 10px;min-width:100px;">
               <div style="display:flex;align-items:center;gap:6px;">
-                <div style="flex:1;height:5px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;"><div style="width:${pct}%;height:100%;background:var(--gold);border-radius:2px;"></div></div>
-                <span style="font-family:\'DM Mono\',monospace;font-size:12px;color:var(--gold-light);font-weight:700;min-width:24px;">${r[metricKey]}</span>
+                <div style="flex:1;height:5px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;">
+                  <div style="width:${pct}%;height:100%;background:${rkColor};border-radius:3px;transition:width .3s;"></div>
+                </div>
+                <span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--gold-light);font-weight:700;min-width:18px;text-align:right;">${r[metricKey]}</span>
               </div>
             </td>
           </tr>`;
         }).join('')}
       </tbody>
-    </table>`;
+    </table></div>
+
+    <!-- GUEST LIST -->
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:900;
+      color:var(--gold-light);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px;">
+      👥 Guest List
+    </div>
+    <div style="overflow-x:auto;">
+    <table style="width:100%;border-collapse:collapse;min-width:500px;">
+      <thead><tr>
+        ${th('#')} ${th('Guest Name')} ${th('Status',1)}
+        ${th('Captain (Invited)')} ${th('Generator (Prospected)')}
+        ${th('Date',1)} ${th('Day',1)}
+      </tr></thead>
+      <tbody>
+        ${guestRows.map((g,i)=>{
+          const lo = (g.status||'').toLowerCase();
+          const rowBg = lo==='showed'?'rgba(45,202,115,.04)':lo==='no-show'||lo==='no show'?'rgba(231,76,60,.04)':'';
+          return `<tr style="border-bottom:1px solid rgba(255,255,255,.04);${rowBg?'background:'+rowBg+';':''}">
+            <td style="padding:7px 10px;font-family:'DM Mono',monospace;font-size:11px;color:var(--slate);">${i+1}</td>
+            <td style="padding:7px 10px;">
+              <div style="font-size:13px;font-weight:700;color:var(--cream);">${g.guestName||'—'}</div>
+              ${g.phone?`<div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--slate);">📞 ${g.phone}</div>`:''}
+            </td>
+            <td style="padding:7px 10px;text-align:center;">${statusPill(g.status)}</td>
+            <td style="padding:7px 10px;">
+              ${g.captain
+                ? `<div style="font-size:12px;font-weight:600;color:var(--cream);">⚓ ${g.captain}</div>`
+                : '<span style="color:rgba(255,255,255,.25);font-size:11px;">—</span>'}
+            </td>
+            <td style="padding:7px 10px;">
+              ${g.generator
+                ? `<div style="font-size:12px;color:var(--gold-light);">⚡ ${g.generator}</div>`
+                : '<span style="color:rgba(255,255,255,.25);font-size:11px;">—</span>'}
+            </td>
+            <td style="padding:7px 10px;text-align:center;font-family:'DM Mono',monospace;font-size:11px;color:var(--slate);">${g.date||'—'}</td>
+            <td style="padding:7px 10px;text-align:center;font-size:11px;color:var(--slate);">${g.day||'—'}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table></div>`;
 }
+
 
 // Load leaderboard on page open
 setTimeout(loadLeaderboard, 500);
