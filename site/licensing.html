@@ -517,7 +517,10 @@ function stageBadge(stageId) {
 
 // ── PERSIST ───────────────────────────────────────────────────
 function save() {
-  try { localStorage.setItem(STORE_KEY, JSON.stringify({ records, mondayItemMap })); } catch(e){}
+  try {
+    localStorage.setItem(STORE_KEY, JSON.stringify({ records, mondayItemMap }));
+    setCacheMeta();
+  } catch(e){}
 }
 
 // Auto-sync wrapper — saves locally then pushes to Monday in background
@@ -1156,6 +1159,35 @@ function toast(msg){
 // ── INIT ──────────────────────────────────────────────────────
 load();
 populateModalDropdowns();
+
+// ── PROGRESSIVE LOAD: show cache age, refresh in background if stale ──
+(function initCacheDisplay() {
+  const meta = getCacheMeta();
+  const syncEl = document.getElementById('sync-status');
+  if (meta) {
+    const age = Date.now() - meta.cachedAt;
+    const ageLabel = cacheAgeLabel(age);
+    if (syncEl) {
+      syncEl.textContent = `✓ ${meta.count} agents · ${ageLabel}`;
+      syncEl.style.color = 'var(--muted)';
+    }
+    if (isCacheStale() && AUTH.getMondayKey()) {
+      if (syncEl) { syncEl.textContent = `⟳ Refreshing (${ageLabel} old)…`; syncEl.style.color = 'var(--gold)'; }
+      // Background refresh — don't block UI
+      setTimeout(async () => {
+        try {
+          await loadFromMonday();
+        } catch(e) {
+          if (syncEl) { syncEl.textContent = '⚠ Sync failed'; syncEl.style.color = 'var(--orange)'; }
+        }
+      }, 500);
+    }
+  } else if (AUTH.getMondayKey() && records.length === 0) {
+    // First ever load — fetch from Monday
+    if (syncEl) { syncEl.textContent = '⟳ Loading from Monday…'; syncEl.style.color = 'var(--gold)'; }
+    setTimeout(loadFromMonday, 800);
+  }
+})();
 
 // ── RETRY QUEUE FLUSH ──────────────────────────────────────────
 // Any failed syncs from previous sessions are retried here

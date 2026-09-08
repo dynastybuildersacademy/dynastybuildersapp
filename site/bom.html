@@ -386,6 +386,7 @@ function saveBOM() {
     const all = JSON.parse(localStorage.getItem('dba_bom_sessions')||'[]');
     all.push(data);
     localStorage.setItem('dba_bom_sessions', JSON.stringify(all));
+    setBOMCacheMeta(all.length);
   } catch(e){}
 
   // Write to Monday.com BOM Guests board with correct column formats
