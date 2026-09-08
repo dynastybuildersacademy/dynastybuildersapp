@@ -504,11 +504,68 @@ async function resolveAgentBoardId(){
   return SHARED_BOARD_ID;
 }
 
-function getAgentBoardId(){ return getAgentBoardIdFromCache()||SHARED_BOARD_ID; }
+function getAgentBoardId() {
+  // 1. Check local cache first (agent explicitly selected a board)
+  const cached = getAgentBoardIdFromCache();
+  if (cached) return cached;
+  // 2. Use shared MD board architecture — agent gets their own board or upline's
+  if (typeof AUTH !== 'undefined' && AUTH.getTop25Board) {
+    const boardInfo = AUTH.getTop25Board();
+    if (boardInfo?.boardId) {
+      // Store agent filter if using upline's board
+      if (boardInfo.filter) sessionStorage.setItem('top25_agent_filter', boardInfo.filter);
+      return boardInfo.boardId;
+    }
+  }
+  // 3. Fallback to shared default board
+  return SHARED_BOARD_ID;
+}
+
+// Get agent filter for shared board queries (null = show all / own board)
+function getAgentFilter() {
+  return sessionStorage.getItem('top25_agent_filter') || null;
+}
 function setAgentBoardId(id){ cacheAgentBoardId(id); }
 
 let BOARD_ID = getAgentBoardId();
 const BOARD_URL = ()=>`https://app.monday.com/boards/${BOARD_ID}`;
+
+// ── AUTO-SYNC STATUS ─────────────────────────────────────────
+function setSyncStatus(msg, type='ok') {
+  const el = document.getElementById('t25-sync-status');
+  if (!el) return;
+  el.textContent = msg;
+  el.style.color = type === 'ok' ? '#2DCA73' : type === 'pending' ? 'var(--orange)' : 'var(--muted)';
+  el.style.opacity = '1';
+  if (type === 'ok') setTimeout(() => { el.style.opacity = '0'; }, 3000);
+}
+
+// Retry queue flush on load — push any failed prospect creates back to Monday
+(async () => {
+  await new Promise(r => setTimeout(r, 3000)); // wait for initial load
+  if (!AUTH.getMondayKey()) return;
+  const q = JSON.parse(localStorage.getItem('dba_sync_queue') || '[]');
+  const t25Q = q.filter(i => i.board === 'top25');
+  if (!t25Q.length) return;
+  console.log('[Top25] Retrying', t25Q.length, 'queued prospect creates');
+  setSyncStatus('⟳ Retrying ' + t25Q.length + ' pending syncs…', 'pending');
+  let retried = 0;
+  for (const item of t25Q) {
+    try {
+      await batchCreateProspects([item.data], () => {});
+      const q2 = JSON.parse(localStorage.getItem('dba_sync_queue') || '[]');
+      localStorage.setItem('dba_sync_queue', JSON.stringify(q2.filter(i => i.key !== item.key)));
+      retried++;
+    } catch(e) {
+      item.retries = (item.retries || 0) + 1;
+      if (item.retries >= 3) {
+        const q2 = JSON.parse(localStorage.getItem('dba_sync_queue') || '[]');
+        localStorage.setItem('dba_sync_queue', JSON.stringify(q2.filter(i => i.key !== item.key)));
+      }
+    }
+  }
+  if (retried > 0) setSyncStatus('✓ ' + retried + ' pending syncs completed', 'ok');
+})();
 
 // ── SESSION INIT ──────────────────────────────────────────────
 const session = AUTH.getSession();
@@ -2003,6 +2060,15 @@ async function batchCreateProspects(prospects, onProgress) {
       else created += batch.length;
     } catch(e) {
       failed += batch.length;
+      // Queue each failed prospect for retry
+      batch.forEach(p => {
+        const q = JSON.parse(localStorage.getItem('dba_sync_queue') || '[]');
+        const key = 'top25_' + (p.phone || p.name || Date.now());
+        if (!q.find(i => i.key === key)) {
+          q.push({ key, board: 'top25', data: p, retries: 0, addedAt: Date.now() });
+          localStorage.setItem('dba_sync_queue', JSON.stringify(q.slice(-50)));
+        }
+      });
     }
 
     // Small delay between batches to avoid rate limiting

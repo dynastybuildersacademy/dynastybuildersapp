@@ -150,8 +150,9 @@ tr:hover td{background:rgba(201,168,76,.03);}
   </div>
   <div class="hr">
     <button class="btn btn-gold" onclick="openAddModal()">+ Add Agent</button>
-    <button class="btn btn-blue" onclick="syncAllToMonday()">☁ Sync Monday.com</button>
+    <button class="btn btn-blue" onclick="syncAllToMonday()">☁ Sync All</button>
     <button class="btn btn-outline" onclick="loadFromMonday()">↻ Load</button>
+    <span id="sync-status" style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);align-self:center;min-width:80px;"></span>
     <a href="agents.html" class="btn btn-ghost">Roster →</a>
     <a href="hub.html" class="btn btn-ghost">← Hub</a>
   </div>
@@ -519,6 +520,33 @@ function save() {
   try { localStorage.setItem(STORE_KEY, JSON.stringify({ records, mondayItemMap })); } catch(e){}
 }
 
+// Auto-sync wrapper — saves locally then pushes to Monday in background
+function saveAndSync(rec) {
+  save(); // local first — always fast
+  if (!AUTH.getMondayKey()) return;
+  // Non-blocking background push
+  setTimeout(async () => {
+    const syncStatusEl = document.getElementById('sync-status');
+    if (syncStatusEl) { syncStatusEl.textContent = '⟳ Syncing…'; syncStatusEl.style.color = 'var(--gold)'; }
+    try {
+      await syncRecord(rec);
+      if (syncStatusEl) { syncStatusEl.textContent = '✓ Synced'; syncStatusEl.style.color = '#2DCA73'; setTimeout(() => { syncStatusEl.textContent = ''; }, 3000); }
+      // On success: remove from retry queue if it was there
+      const q = JSON.parse(localStorage.getItem('dba_sync_queue') || '[]');
+      localStorage.setItem('dba_sync_queue', JSON.stringify(q.filter(i => i.key !== rec.agentId)));
+    } catch(e) {
+      console.warn('[Licensing AutoSync] Failed — queued for retry:', e.message);
+      if (syncStatusEl) { syncStatusEl.textContent = '⚠ Sync pending'; syncStatusEl.style.color = 'var(--orange)'; }
+      // Add to retry queue
+      const q = JSON.parse(localStorage.getItem('dba_sync_queue') || '[]');
+      const existing = q.findIndex(i => i.key === rec.agentId);
+      const entry = { key: rec.agentId, board: 'licensing', data: rec, retries: 0, addedAt: Date.now() };
+      if (existing >= 0) q[existing] = entry; else q.push(entry);
+      localStorage.setItem('dba_sync_queue', JSON.stringify(q.slice(-50)));
+    }
+  }, 0);
+}
+
 function load() {
   try {
     const d = JSON.parse(localStorage.getItem(STORE_KEY)||'null');
@@ -612,19 +640,46 @@ function renderTable() {
 
 function renderKanban() {
   const board = document.getElementById('kanban-board');
-  board.innerHTML = STAGES.map(s => {
-    const cols = records.filter(r=>r.stage===s.id);
+
+  // Sort stages descending: Appointed → Licensed → License Pending → Exam Passed
+  //  → Exam Scheduled → Studying → Not Started
+  const STAGE_ORDER = STAGES.map(s=>s.id).reverse(); // STAGES defined low→high, reverse for high→low
+
+  board.innerHTML = STAGE_ORDER.map(stageId => {
+    const s = STAGES.find(st=>st.id===stageId);
+    if(!s) return '';
+
+    // Sort cards within column: most recently updated (stageDate desc), then name alpha
+    const cards = records
+      .filter(r=>r.stage===stageId)
+      .sort((a,b) => {
+        const da = a.stageDate||a.examDate||a.licenseDate||'';
+        const db = b.stageDate||b.examDate||b.licenseDate||'';
+        if(da && db) return db.localeCompare(da); // most recent first
+        if(da) return -1;
+        if(db) return 1;
+        return (a.name||'').localeCompare(b.name||'');
+      });
+
     return `<div class="kb-col">
       <div class="kb-col-hdr">
         <div class="kb-col-title" style="color:${s.color};">${s.icon} ${s.label}</div>
-        <div class="kb-col-count">${cols.length}</div>
+        <div class="kb-col-count" style="background:${s.color}22;color:${s.color};">${cards.length}</div>
       </div>
       <div class="kb-cards">
-        ${cols.map(r=>`
-          <div class="kb-card" onclick="openEditModal('${r.id}')">
+        ${cards.map(r => {
+          const meta = [
+            r.upline ? '⚓ '+r.upline : '',
+            r.examDate ? '📅 '+r.examDate : '',
+            r.licenseDate ? '🪪 '+r.licenseDate : '',
+            r.states ? r.states : '',
+          ].filter(Boolean).join(' · ');
+          return `<div class="kb-card" onclick="openEditModal('${r.id}')">
             <div class="kb-card-name">${r.name}</div>
-            <div class="kb-card-meta">${r.agentId||''} ${r.examDate?'· Exam: '+r.examDate:''} ${r.states?'· '+r.states:''}</div>
-          </div>`).join('') || `<div style="font-size:11px;color:var(--slate);text-align:center;padding:12px;">Empty</div>`}
+            ${meta ? `<div class="kb-card-meta">${meta}</div>` : ''}
+            ${r.phone ? `<div class="kb-card-meta" style="color:var(--gold-light);">📞 ${r.phone}</div>` : ''}
+          </div>`;
+        }).join('') || `<div style="font-size:11px;color:var(--slate);text-align:center;padding:16px 8px;">No agents</div>`}
       </div>
     </div>`;
   }).join('');
@@ -655,7 +710,7 @@ function advanceStage(recordId) {
   if (idx >= STAGES.length-1) { toast('Already at final stage'); return; }
   rec.stage     = STAGES[idx+1].id;
   rec.stageDate = new Date().toISOString().slice(0,10);
-  save(); renderAll();
+  saveAndSync(rec); renderAll();
   toast(`${rec.name} → ${stageDef(rec.stage).label}`);
 }
 
@@ -970,38 +1025,123 @@ async function syncAllToMonday() {
 async function loadFromMonday() {
   if (!AUTH.getMondayKey()) { toast('Loading from local cache only'); renderAll(); return; }
   const boardId = getBoardId();
-  toast('Loading from Monday.com…');
+  toast('Loading from Dynasty Licensing Tracker…');
   try {
+    // Step 1: Get column IDs → titles for flexible mapping
     const colR = await mondayQuery(`{boards(ids:${boardId}){columns{id title}}}`);
     const colTitles = {};
-    (colR?.data?.boards?.[0]?.columns||[]).forEach(col => { colTitles[col.id] = (col.title||'').toLowerCase(); });
-    const r = await mondayQuery(`{boards(ids:${boardId}){items_page(limit:100){items{id name column_values{id text}}}}}`);
-    const items = r?.data?.boards?.[0]?.items_page?.items||[];
-    items.forEach(item => {
-      if (!item.name.includes('Licensing')) return;
-      const get=(...kws)=>item.column_values.find(cv=>kws.some(k=>(colTitles[cv.id]||'').includes(k)))?.text||'';
-      const agentId=get('agent id');
-      if(!agentId) return;
-      mondayItemMap[agentId]=item.id;
-      let rec=records.find(r=>r.agentId===agentId);
-      if(!rec){rec=newRecord();records.push(rec);}
-      const stageLabel=get('stage');
-      const s=STAGES.find(s=>s.label.toLowerCase()===stageLabel.toLowerCase());
-      rec.agentId    = agentId;
-      rec.name       = item.name.replace(' — Licensing','').trim();
-      rec.stage      = s?.id||'not_started';
-      rec.upline     = get('upline');
-      rec.examDate   = get('exam date');
-      rec.examPassed = get('exam passed');
-      rec.licenseDate= get('license date');
-      rec.licenseNum = get('license num','license number');
-      rec.states     = get('states');
-      rec.apptDate   = get('appt');
-      rec.notes      = get('notes');
+    (colR?.data?.boards?.[0]?.columns||[]).forEach(col => {
+      colTitles[col.id] = (col.title||'').toLowerCase().trim();
     });
+
+    // Step 2: Paginate through ALL items (Dynasty board may have 1000s)
+    let allItems = [], cursor = null, page = 0;
+    do {
+      page++;
+      const cursorArg = cursor ? `, cursor: "${cursor}"` : '';
+      const res = await mondayQuery(`{
+        boards(ids:${boardId}) {
+          items_page(limit:100${cursorArg}) {
+            cursor
+            items {
+              id name
+              group { id title }
+              column_values { id text value }
+            }
+          }
+        }
+      }`);
+      const pg = res?.data?.boards?.[0]?.items_page;
+      if(!pg) break;
+      allItems = allItems.concat(pg.items||[]);
+      cursor = pg.cursor||null;
+      if(page > 1) toast(`Loading… ${allItems.length} agents found`);
+    } while(cursor && page < 100);
+
+    // Step 3: Map each item to a licensing record
+    // Flexible get() — matches by column title keywords, handles any board layout
+    let imported = 0, updated = 0;
+    allItems.forEach(item => {
+      const get = (...kws) => {
+        const cv = item.column_values.find(c =>
+          kws.some(k => (colTitles[c.id]||'').includes(k))
+        );
+        if (!cv) return '';
+        // text field first; if empty try parsing JSON value (status/dropdown columns)
+        if (cv.text) return cv.text;
+        try {
+          const v = JSON.parse(cv.value||'null');
+          if (v?.label?.text) return v.label.text;  // status column
+          if (v?.text)        return v.text;          // dropdown
+          if (typeof v === 'string') return v;
+        } catch {}
+        return '';
+      };
+
+      // Agent name is the item name — strip common suffixes
+      const agentName = item.name
+        .replace(/\s*[-—]\s*licensing/i,'')
+        .replace(/\s*[-—]\s*tracker/i,'')
+        .trim();
+      if(!agentName) return;
+
+      // Try to match by agent ID column, then by name
+      const agentId = get('agent id','agent_id','php','php id','php code') || agentName;
+      const phone   = get('phone','mobile','cell','number');
+      const upline  = get('upline','upline md','manager','md');
+      const stageLabel = get('stage','status','license stage','licensing stage');
+      const examDate   = get('exam date','test date','exam');
+      const examPassed = get('exam passed','passed','pass date');
+      const licDate    = get('license date','licensed','lic date');
+      const licNum     = get('license num','license number','lic num','lic number');
+      const states     = get('states','state','licensed states');
+      const apptDate   = get('appt','appointment','appointed');
+      const notes      = get('notes','note','comment');
+      const studyStart = get('study start','study','started');
+
+      // Map stage label → internal stage ID
+      // Comprehensive stage mapping — handles Monday status labels flexibly
+      const stageLo = (stageLabel||'').toLowerCase().trim();
+      const stageId = (() => {
+        if (!stageLo || stageLo === 'not started' || stageLo === 'not_started') return 'not_started';
+        if (stageLo.includes('appoint'))         return 'appointed';
+        if (stageLo.includes('licensed') || stageLo === 'license received' || stageLo === 'lic') return 'licensed';
+        if (stageLo.includes('license pending') || stageLo === 'pending approval') return 'license_pending';
+        if (stageLo.includes('exam pass') || stageLo.includes('passed') || stageLo.includes('test pass')) return 'exam_passed';
+        if (stageLo.includes('exam sched') || stageLo.includes('scheduled') || stageLo.includes('test date')) return 'exam_scheduled';
+        if (stageLo.includes('stud'))            return 'studying';
+        if (stageLo.includes('pending'))         return 'license_pending';
+        return 'not_started';
+      })();
+
+      // Find existing record or create new
+      mondayItemMap[agentId] = item.id;
+      let rec = records.find(r => r.agentId === agentId || r.name.toLowerCase() === agentName.toLowerCase());
+      if(!rec) { rec = newRecord(); records.push(rec); imported++; }
+      else updated++;
+
+      rec.agentId     = agentId;
+      rec.mondayId    = item.id;
+      rec.name        = agentName;
+      rec.upline      = upline || rec.upline;
+      rec.phone       = phone  || rec.phone;
+      rec.stage       = stageId;
+      rec.studyStart  = studyStart  || rec.studyStart;
+      rec.examDate    = examDate    || rec.examDate;
+      rec.examPassed  = examPassed  || rec.examPassed;
+      rec.licenseDate = licDate     || rec.licenseDate;
+      rec.licenseNum  = licNum      || rec.licenseNum;
+      rec.states      = states      || rec.states;
+      rec.apptDate    = apptDate    || rec.apptDate;
+      rec.notes       = notes       || rec.notes;
+    });
+
     save(); renderAll();
-    toast(`Loaded ${items.length} records ✅`);
-  } catch(e){ toast('Load failed: '+e.message); }
+    toast(`✅ Loaded ${allItems.length} agents — ${imported} new · ${updated} updated`);
+  } catch(e) {
+    console.error('loadFromMonday:', e);
+    toast('Load failed: ' + e.message);
+  }
 }
 
 // ── TOAST ─────────────────────────────────────────────────────
@@ -1016,6 +1156,24 @@ function toast(msg){
 // ── INIT ──────────────────────────────────────────────────────
 load();
 populateModalDropdowns();
+
+// ── RETRY QUEUE FLUSH ──────────────────────────────────────────
+// Any failed syncs from previous sessions are retried here
+(async () => {
+  if (!AUTH.getMondayKey()) return;
+  await new Promise(r => setTimeout(r, 2000)); // wait for page to settle
+  const q = JSON.parse(localStorage.getItem('dba_sync_queue') || '[]');
+  const licQ = q.filter(i => i.board === 'licensing');
+  if (!licQ.length) return;
+  console.log('[Licensing] Retrying', licQ.length, 'queued syncs');
+  for (const item of licQ) {
+    const rec = records.find(r => r.agentId === item.key);
+    if (rec) {
+      try { await syncRecord(rec); const q2 = JSON.parse(localStorage.getItem('dba_sync_queue')||'[]'); localStorage.setItem('dba_sync_queue', JSON.stringify(q2.filter(i=>i.key!==item.key))); }
+      catch(e) { item.retries = (item.retries||0)+1; if(item.retries>=3) { const q2 = JSON.parse(localStorage.getItem('dba_sync_queue')||'[]'); localStorage.setItem('dba_sync_queue', JSON.stringify(q2.filter(i=>i.key!==item.key))); } }
+    }
+  }
+})();
 
 // Pre-populate with roster agents not yet in tracker
 AGENTS.forEach(a => {

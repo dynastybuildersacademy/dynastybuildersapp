@@ -267,6 +267,30 @@ function openGuestModal(guestId) {
   document.getElementById('guest-modal').classList.add('open');
 }
 
+// Auto-sync guest to Monday after save
+async function autoSyncGuest(guest) {
+  if (!AUTH.getMondayKey()) return;
+  try {
+    const boardId = TEAM?.monday?.boardBOMGuests;
+    if (!boardId) return;
+    const cols = await getBOMColIds();
+    if (!cols) return;
+    const cv = JSON.stringify(JSON.stringify({
+      [cols.agentName]:  session.name,
+      [cols.captain]:    guest.captain || '',
+      [cols.generator]:  guest.generator || '',
+      [cols.status]:     { label: guest.status || 'Invited' },
+      [cols.phone]:      guest.phone || '',
+      [cols.email]:      guest.email || '',
+      [cols.notes]:      guest.notes || '',
+      [cols.bomDate]:    { date: guest.date || new Date().toISOString().slice(0,10) },
+    }));
+    await mondayQuery(`mutation{create_item(board_id:${boardId},item_name:"Guest: ${(guest.name||'').replace(/"/g,'\"')}",column_values:${cv}){id}}`);
+  } catch(e) {
+    console.warn('[BOM] Guest sync failed:', e.message);
+  }
+}
+
 function saveGuestModal() {
   const id   = parseInt(document.getElementById('gm-id').value) || null;
   const name = document.getElementById('gm-name').value.trim();
@@ -369,7 +393,15 @@ function saveBOM() {
   const bomType = new Date().getDay() === 2 ? 'Tuesday' : 'Saturday';
 
   if (AUTH.getMondayKey()) {
-    syncBOMToMonday(bomDate, bomType);
+    // Non-blocking — don't block UI on Monday API call
+    syncBOMToMonday(bomDate, bomType).catch(e => {
+      console.warn('[BOM AutoSync] Failed — queued for retry:', e.message);
+      const q = JSON.parse(localStorage.getItem('dba_sync_queue') || '[]');
+      q.push({ key: 'bom_' + bomDate + '_' + session.agentId, board: 'bom', data: { bomDate, bomType, counts, guests }, retries: 0, addedAt: Date.now() });
+      localStorage.setItem('dba_sync_queue', JSON.stringify(q.slice(-50)));
+      const el = document.getElementById('bom-sync-status');
+      if(el) { el.textContent = '⚠ Sync pending — will retry next session'; el.style.color = 'var(--orange)'; }
+    });
   }
 
   // Write attendance record
