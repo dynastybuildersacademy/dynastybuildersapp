@@ -616,30 +616,26 @@ async function loadLeaderboard() {
       cursor = page.cursor||null;
     } while (cursor);
 
-    // Parse items — filter to session rows (not guest rows)
-    const sessions = allItems
-      .filter(item => !item.name.startsWith('Guest:'))
-      .map(item => {
-        const get = (...kws) => item.column_values.find(c => kws.some(k=>(c.title||'').toLowerCase().includes(k)))?.text||'';
-        return {
-          agentId:   get('agent id','agent_id'),
-          agentName: get('agent name','agent_name') || item.name.split(' ·')[0],
-          date:      get('bom date','date'),
-          day:       get('bom type','type','day','bom day'),
-          invites:   parseInt(get('invite'))||0,
-          confirmed: parseInt(get('confirmed','confirm'))||0,
-          showed:    parseInt(get('showed','show','attended'))||0,
-        };
-      })
-      .filter(s => {
-        if (!s.agentId && !s.agentName) return false;
-        if (fromDate && s.date < fromDate) return false;
-        if (toDate   && s.date > toDate)   return false;
-        if (dayFilter !== 'all' && s.day && !s.day.toLowerCase().includes(dayFilter.toLowerCase())) return false;
-        return true;
-      });
+    // Parse ALL items — both session rows and guest rows
+    const guestRows = allItems.map(item => {
+      const get = (...kws) => item.column_values.find(cv => kws.some(k=>(cv.title||cv.id||'').toLowerCase().includes(k)))?.text||'';
+      return {
+        guestName: item.name,
+        captain:   get('captain'),
+        generator: get('generator','gen'),
+        status:    get('status'),
+        date:      get('date','bom date'),
+        day:       get('type','day','bom type','bom day'),
+      };
+    }).filter(g => {
+      if (!g.captain && !g.guestName) return false;
+      if (fromDate && g.date && g.date < fromDate) return false;
+      if (toDate   && g.date && g.date > toDate)   return false;
+      if (dayFilter !== 'all' && g.day && !g.day.toLowerCase().includes(dayFilter.toLowerCase())) return false;
+      return true;
+    });
 
-    renderLeaderboard(sessions, metric, dayFilter);
+    renderLeaderboard(guestRows, metric, dayFilter);
 
   } catch(e) {
     document.getElementById('lb-content').innerHTML = `<div style="color:var(--slate);font-size:13px;padding:16px;">Could not load from Monday.com: ${e.message}. Showing local data.</div>`;
