@@ -262,7 +262,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
     <button class="icon-btn primary" onclick="openPhotoCapture()" style="gap:6px;">📷 Add from Photo</button>
     <button class="icon-btn" onclick="openContactsPicker()" style="gap:6px;background:rgba(52,152,219,.15);border-color:rgba(52,152,219,.3);color:#5DADE2;">📱 From Contacts</button>
     <label class="icon-btn" style="gap:6px;cursor:pointer;background:rgba(45,202,115,.1);border-color:rgba(45,202,115,.3);color:var(--green);">
-      📊 From Excel<input type="file" id="excel-upload" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleExcelUpload(event)">
+      📊 Excel / VCF<input type="file" id="excel-upload" accept=".xlsx,.xls,.csv,.vcf,.vcard" style="display:none" onchange="handleExcelUpload(event)">
     </label>
     <a href="tracker.html" class="icon-btn">📞 Tracker</a>
     <a href="portal.html" class="icon-btn">📋 Portal</a>
@@ -2007,6 +2007,14 @@ async function handleExcelUpload(event) {
   if(!file) return;
   event.target.value = ''; // reset so same file can be re-selected
 
+  const ext = file.name.split('.').pop().toLowerCase();
+
+  // ── VCF / vCard files — parse directly, skip column mapping ──
+  if(ext === 'vcf' || ext === 'vcard') {
+    await handleVCFUpload(file);
+    return;
+  }
+
   const modal = document.getElementById('excel-preview-modal');
   modal.style.display = 'flex';
   document.getElementById('excel-import-status').textContent = '⏳ Reading file…';
@@ -2162,6 +2170,112 @@ function closeExcelModal() {
   document.getElementById('excel-preview-modal').style.display = 'none';
   _excelRows = [];
   _colMap = { name: -1, phone: -1, email: -1, occupation: -1, notes: -1 };
+}
+
+// ── VCF / vCard IMPORT ──────────────────────────────────────────
+async function handleVCFUpload(file) {
+  const modal = document.getElementById('excel-preview-modal');
+  const statusEl = document.getElementById('excel-import-status');
+  const summaryEl = document.getElementById('excel-summary');
+  modal.style.display = 'flex';
+  statusEl.textContent = '⏳ Parsing vCard file…';
+  try {
+    const text = await file.text();
+    const contacts = parseVCF(text);
+    if(!contacts.length) { statusEl.textContent = '⚠ No contacts found in this VCF file.'; return; }
+
+    const existingPhones = new Set(allProspects.map(p=>(p.phone||'').replace(/\D/g,'')).filter(Boolean));
+    const existingNames  = new Set(allProspects.map(p=>(p.name||'').toLowerCase()));
+    const toImport = contacts.filter(ct => {
+      if(!ct.name) return false;
+      if(ct.phone && existingPhones.has(ct.phone)) return false;
+      if(existingNames.has(ct.name.toLowerCase())) return false;
+      return true;
+    });
+    const dupeCount = contacts.length - toImport.length;
+
+    document.getElementById('excel-col-map').innerHTML =
+      '<div style="font-family:Barlow Condensed,sans-serif;font-size:16px;font-weight:900;color:#E8C97A;margin-bottom:8px;">'
+      + '📇 vCard Import — ' + contacts.length + ' contacts found</div>'
+      + '<div style="font-family:DM Mono,monospace;font-size:10px;color:#6B7C93;line-height:1.8;">'
+      + toImport.length + ' new · ' + dupeCount + ' duplicates (skipped) · ' + file.name + '</div>';
+
+    const rows = toImport.slice(0,10).map(ct =>
+      '<tr style="border-bottom:1px solid rgba(255,255,255,.04);">'
+      + '<td style="padding:5px 8px;color:#E8EDF5;">' + (ct.name||'') + '</td>'
+      + '<td style="padding:5px 8px;color:#6B7C93;font-family:DM Mono,monospace;">' + (ct.phone||'—') + '</td>'
+      + '<td style="padding:5px 8px;color:#6B7C93;font-family:DM Mono,monospace;">' + (ct.email||'—') + '</td>'
+      + '<td style="padding:5px 8px;color:#6B7C93;font-size:10px;">' + (ct.org||'—') + '</td>'
+      + '</tr>'
+    ).join('');
+    document.getElementById('excel-preview-rows').innerHTML =
+      '<div style="font-family:DM Mono,monospace;font-size:10px;color:#6B7C93;margin-bottom:6px;">Preview (first 10):</div>'
+      + '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:11px;">'
+      + '<tr><th style="padding:4px 8px;text-align:left;border-bottom:1px solid rgba(255,255,255,.1);font-family:DM Mono,monospace;font-size:9px;color:#6B7C93;">Name</th>'
+      + '<th style="padding:4px 8px;text-align:left;border-bottom:1px solid rgba(255,255,255,.1);font-family:DM Mono,monospace;font-size:9px;color:#6B7C93;">Phone</th>'
+      + '<th style="padding:4px 8px;text-align:left;border-bottom:1px solid rgba(255,255,255,.1);font-family:DM Mono,monospace;font-size:9px;color:#6B7C93;">Email</th>'
+      + '<th style="padding:4px 8px;text-align:left;border-bottom:1px solid rgba(255,255,255,.1);font-family:DM Mono,monospace;font-size:9px;color:#6B7C93;">Org</th></tr>'
+      + rows + '</table></div>';
+
+    summaryEl.textContent = toImport.length + ' contacts ready · ' + dupeCount + ' duplicates skipped';
+    const btn = document.getElementById('excel-import-btn');
+    btn.textContent = 'Import ' + toImport.length + ' Contacts to Monday.com';
+    btn.onclick = () => importVCFToMonday(toImport);
+    statusEl.textContent = '';
+  } catch(e) {
+    statusEl.textContent = 'Could not read VCF: ' + e.message;
+  }
+}
+
+function parseVCF(text) {
+  const contacts = [];
+  const cards = text.replace(/\r\n/g,'\n').replace(/\r/g,'\n').split(/BEGIN:VCARD/i).filter(s=>s.trim());
+  cards.forEach(card => {
+    const lines = card.split('\n');
+    const getFirst = (prefix) => {
+      const line = lines.find(l => l.toUpperCase().startsWith(prefix.toUpperCase()));
+      return line ? line.replace(/^[^:]+:/,'').trim() : '';
+    };
+    const getAll = (prefix) => lines.filter(l=>l.toUpperCase().startsWith(prefix.toUpperCase())).map(l=>l.replace(/^[^:]+:/,'').trim());
+
+    const fn = getFirst('FN');
+    const n  = getFirst('N');
+    let name = fn;
+    if(!name && n) {
+      const parts = n.split(';');
+      name = [parts[1],parts[0]].filter(Boolean).join(' ').trim();
+    }
+
+    const phones = lines.filter(l=>/^TEL/i.test(l)).map(l=>l.replace(/^[^:]+:/,'').trim().replace(/\D/g,'')).filter(p=>p.length>=7);
+    const emails = lines.filter(l=>/^EMAIL/i.test(l)).map(l=>l.replace(/^[^:]+:/,'').trim()).filter(Boolean);
+    const org   = getFirst('ORG') || getFirst('TITLE');
+    const note  = getFirst('NOTE');
+
+    if(name || phones[0]) {
+      contacts.push({ name: name||'', phone: phones[0]||'', email: emails[0]||'', org, occupation: org, notes: note });
+    }
+  });
+  return contacts;
+}
+
+async function importVCFToMonday(contacts) {
+  const btn = document.getElementById('excel-import-btn');
+  const statusEl = document.getElementById('excel-import-status');
+  btn.disabled = true;
+  try {
+    const result = await batchCreateProspects(contacts, (done, total) => {
+      btn.textContent = done + '/' + total + '…';
+      statusEl.textContent = 'Creating in Monday.com… ' + done + ' of ' + total;
+    });
+    statusEl.textContent = result.created + ' contacts imported' + (result.failed ? ' · ' + result.failed + ' failed' : '');
+    btn.textContent = '✓ Done!';
+    setTimeout(() => { closeExcelModal(); loadProspects(); }, 1500);
+    showToast('✓ ' + result.created + ' contacts imported from VCF');
+  } catch(e) {
+    statusEl.textContent = 'Error: ' + e.message;
+    btn.disabled = false;
+    btn.textContent = 'Retry Import';
+  }
 }
 
 // ── BATCH CREATE PROSPECTS IN MONDAY ─────────────────────────────
