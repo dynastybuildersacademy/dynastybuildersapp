@@ -225,10 +225,17 @@ input:focus,select:focus{outline:none;border-color:var(--gold);}
 <div class="toast" id="toast"></div>
 
 <script>
+// ── CONSTANTS ────────────────────────────────────────────────
+const SK              = 'dba_bom_sessions';
+const BOM_GUESTS_KEY  = 'dba_bom_guests';
+const BOM_GUESTS_BOARD = '18393747809'; // 2026 BOM Captains DBA LC Hierarchy // Dynasty BOM Guests board
+const BOM_META_KEY    = 'dba_bom_meta';
+const BOM_CACHE_TTL   = 30 * 60 * 1000;
+
 const session = AUTH.getSession();
 let counts = { invites:0, confirmed:0, showed:0 };
 let guests = [];
-try { guests = JSON.parse(localStorage.getItem('dba_bom_guests') || '[]'); } catch(e) {}
+try { guests = JSON.parse(localStorage.getItem(BOM_GUESTS_KEY) || '[]'); } catch(e) {}
 
 function adjust(key, delta) {
   counts[key] = Math.max(0, counts[key]+delta);
@@ -273,21 +280,26 @@ function openGuestModal(guestId) {
 async function autoSyncGuest(guest) {
   if (!AUTH.getMondayKey()) return;
   try {
-    const boardId = BOM_GUESTS_BOARD;
-    if (!boardId) return;
-    const cols = await getBOMColIds();
-    if (!cols) return;
-    const cv = JSON.stringify(JSON.stringify({
-      [cols.agentName]:  session.name,
-      [cols.captain]:    guest.captain || '',
-      [cols.generator]:  guest.generator || '',
-      [cols.status]:     { label: guest.status || 'Invited' },
-      [cols.phone]:      guest.phone || '',
-      [cols.email]:      guest.email || '',
-      [cols.notes]:      guest.notes || '',
-      [cols.bomDate]:    { date: guest.date || new Date().toISOString().slice(0,10) },
-    }));
-    await mondayQuery(`mutation{create_item(board_id:${boardId},item_name:"Guest: ${(guest.name||'').replace(/"/g,'\"')}",column_values:${cv}){id}}`);
+    const guestName = (guest.name||'Unknown Guest').replace(/"/g,"'");
+    const cv = {
+      "color_mkzde7z4": { label: guest.captain   || '' },
+      "text_mkz8jwyh":  guest.generator || '',
+      "color_mm3wf94t": { label: guest.status    || 'Invited' },
+      "phone_mkz8bstv": { phone: (guest.phone||'').replace(/\D/g,''), countryShortName: 'US' },
+      "date_mkz7nvys":  { date: guest.date || new Date().toISOString().slice(0,10) },
+      "text_mm3wmee6":  guest.bomType || guest.day || '',
+      "color_mkz7t8k6": { label: session?.name || '' },
+    };
+    const cvStr = JSON.stringify(JSON.stringify(cv));
+    await mondayQuery(`mutation {
+      create_item(
+        board_id: ${BOM_GUESTS_BOARD},
+        item_name: "${guestName}",
+        column_values: ${cvStr},
+        create_labels_if_missing: true
+      ) { id }
+    }`);
+    console.log('[BOM] Guest synced to Monday:', guestName);
   } catch(e) {
     console.warn('[BOM] Guest sync failed:', e.message);
   }
@@ -618,121 +630,142 @@ async function loadLeaderboard() {
   const fromEl    = document.getElementById('lb-from');
   const toEl      = document.getElementById('lb-to');
 
-  // Calculate date range
-  const now  = new Date();
-  let fromDate = null, toDate = now.toISOString().slice(0,10);
-  if (period === '7')      fromDate = new Date(now - 7*86400000).toISOString().slice(0,10);
-  else if (period === '30') fromDate = new Date(now - 30*86400000).toISOString().slice(0,10);
-  else if (period === 'month') fromDate = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0,10);
-  else if (period === 'custom') { fromDate = fromEl.value; toDate = toEl.value || toDate; }
+  // Date range
+  const today = new Date().toISOString().slice(0,10);
+  let fromDate = '', toDate = '';
+  if (period === 'week') {
+    const d = new Date(); d.setDate(d.getDate() - 7);
+    fromDate = d.toISOString().slice(0,10);
+  } else if (period === 'month') {
+    fromDate = today.slice(0,7) + '-01';
+  } else if (period === 'quarter') {
+    const m = new Date().getMonth();
+    const qStart = new Date(new Date().getFullYear(), Math.floor(m/3)*3, 1);
+    fromDate = qStart.toISOString().slice(0,10);
+  } else if (period === 'custom') {
+    fromDate = fromEl?.value || '';
+    toDate   = toEl?.value   || '';
+  }
 
   document.getElementById('lb-loading').style.display = 'block';
   document.getElementById('lb-content').innerHTML = '';
 
-  if (!AUTH.getMondayKey()) {
-    // Fall back to localStorage sessions
-    loadLocalLeaderboard(fromDate, toDate, dayFilter, metric);
+  // ── PRIMARY: Build from local guests array ───────────────────
+  // Guests saved via the Add Guest modal always have captain + generator
+  const localRows = guests.map(g => ({
+    guestName: g.name      || '',
+    captain:   g.captain   || '',
+    generator: g.generator || '',
+    status:    g.status    || '',
+    phone:     g.phone     || '',
+    date:      g.date      || '',
+    day:       g.bomType   || g.day || '',
+  })).filter(g => {
+    if (!g.guestName) return false;
+    if (fromDate && g.date && g.date < fromDate) return false;
+    if (toDate   && g.date && g.date > toDate)   return false;
+    if (dayFilter !== 'all' && g.day && !g.day.toLowerCase().includes(dayFilter.toLowerCase())) return false;
+    return true;
+  });
+
+  // ── SECONDARY: Try Monday board for additional historical data ─
+  let mondayRows = [];
+  // ── Hardcoded column IDs from board 18393747809 ─────────────
+  // name            → Guest Name
+  // color_mkz7t8k6  → MD
+  // phone_mkz8bstv  → Guest Phone Number
+  // date_mkz7nvys   → BOM Date
+  // color_mkzde7z4  → Captain's Name
+  // text_mkz8jwyh   → Generator's Name
+  // color_mm3wf94t  → Status
+  // text_mm3wbkyc / text_mm3wmee6 → BOM Type
+  const BOM_COLS = {
+    captain:   'color_mkzde7z4',
+    generator: 'text_mkz8jwyh',
+    status:    'color_mm3wf94t',
+    results:   'color_mkz7vw2m',
+    phone:     'phone_mkz8bstv',
+    date:      'date_mkz7nvys',
+    md:        'color_mkz7t8k6',
+    bomType:   'text_mm3wmee6',
+    agentId:   'text_mm3ww2vg',
+    agentName: 'text_mm3w2mnw',
+  };
+
+  if (AUTH.getMondayKey()) {
+    try {
+      let cursor = null, pageNum = 0;
+      do {
+        pageNum++;
+        const ca = cursor ? `,cursor:"${cursor}"` : '';
+        const res = await mondayQuery(`{
+          boards(ids: ${BOM_GUESTS_BOARD}) {
+            items_page(limit: 100${ca}) {
+              cursor
+              items {
+                id name
+                column_values(ids: [
+                  "color_mkzde7z4","text_mkz8jwyh","color_mm3wf94t",
+                  "color_mkz7vw2m","phone_mkz8bstv","date_mkz7nvys",
+                  "text_mm3wmee6","color_mkz7t8k6"
+                ]) { id text value }
+              }
+            }
+          }
+        }`);
+        const page = res?.data?.boards?.[0]?.items_page;
+        if (!page) break;
+        const localNames = new Set(guests.map(g => (g.name||'').toLowerCase()));
+        (page.items||[]).forEach(item => {
+          if (localNames.has(item.name.toLowerCase())) return;
+          const get = (colId) => {
+            const cv = item.column_values?.find(c => c.id === colId);
+            if (!cv) return '';
+            if (cv.text) return cv.text;
+            try {
+              const v = JSON.parse(cv.value||'null');
+              return v?.label?.text || v?.text || '';
+            } catch { return ''; }
+          };
+          const date = get(BOM_COLS.date);
+          const day  = get(BOM_COLS.bomType);
+          if (fromDate && date && date < fromDate) return;
+          if (toDate   && date && date > toDate)   return;
+          if (dayFilter !== 'all' && day && !day.toLowerCase().includes(dayFilter.toLowerCase())) return;
+          mondayRows.push({
+            guestName: item.name,
+            captain:   get(BOM_COLS.captain),
+            generator: get(BOM_COLS.generator),
+            status:    get(BOM_COLS.status) || get(BOM_COLS.results),
+            phone:     get(BOM_COLS.phone),
+            date,
+            day,
+          });
+        });
+        cursor = page.cursor || null;
+        if (pageNum >= 20) break;
+      } while (cursor);
+    } catch(e) {
+      console.warn('[BOM Leaderboard] Monday fetch failed:', e.message);
+    }
+  }
+
+  // Merge local + Monday (local takes priority)
+  const guestRows = [...localRows, ...mondayRows];
+
+  document.getElementById('lb-loading').style.display = 'none';
+
+  if (!guestRows.length) {
+    document.getElementById('lb-content').innerHTML =
+      '<div style="text-align:center;padding:32px;font-family:DM Mono,monospace;font-size:12px;color:var(--slate);">' +
+      'No guest data yet.<br><br>Add guests using the <strong style="color:var(--gold);">+ Add Guest</strong> button above — ' +
+      'they will appear here immediately.</div>';
     return;
   }
 
-  try {
-    // Fetch all items from BOM Guests board
-    let allItems = [], cursor = null;
-    if (AUTH.getMondayKey()) {
-      try {
-        do {
-          const ca = cursor ? `,cursor:"${cursor}"` : '';
-          const res = await mondayQuery(`{
-            boards(ids:${BOM_GUESTS_BOARD}) {
-              items_page(limit:100${ca}) {
-                cursor
-                items { id name column_values { id title text value } }
-              }
-            }
-          }`);
-          const page = res?.data?.boards?.[0]?.items_page;
-          if (!page) break;
-          allItems = allItems.concat(page.items||[]);
-          cursor = page.cursor||null;
-        } while (cursor);
-      } catch(e) { console.warn('[BOM] Monday failed:', e.message); }
-    }
-    // Fall back to local guests if Monday returned nothing
-    if (!allItems.length && guests.length) {
-      const guestRowsLocal = guests.map(g => ({
-        guestName:g.name||'', captain:g.captain||'', generator:g.generator||'',
-        status:g.status||'', phone:g.phone||'', date:g.date||'', day:g.bomType||g.day||'',
-      })).filter(g => {
-        if (!g.guestName) return false;
-        if (fromDate && g.date && g.date < fromDate) return false;
-        if (toDate   && g.date && g.date > toDate)   return false;
-        if (dayFilter !== 'all' && g.day && !g.day.toLowerCase().includes(dayFilter.toLowerCase())) return false;
-        return true;
-      });
-      document.getElementById('lb-loading').style.display = 'none';
-      renderLeaderboard(guestRowsLocal, metric, dayFilter);
-      return;
-    }
-
-    // Parse ALL items — both session rows and guest rows
-    const guestRows = allItems.map(item => {
-      const get = (...kws) => {
-        const cv = item.column_values.find(c =>
-          kws.some(k => (c.title||c.id||'').toLowerCase().includes(k))
-        );
-        if (!cv) return '';
-        if (cv.text) return cv.text;
-        try {
-          const v = JSON.parse(cv.value || 'null');
-          if (v?.label?.text) return v.label.text;
-          if (v?.text)        return v.text;
-          if (typeof v === 'string') return v;
-        } catch {}
-        return '';
-      };
-      return {
-        guestName: item.name,
-        captain:   get('captain'),
-        generator: get('generator','gen','referrer','prospector'),
-        status:    get('status'),
-        date:      get('date','bom date'),
-        day:       get('type','day','bom type','bom day'),
-      };
-    }).filter(g => {
-      if (!g.captain && !g.guestName) return false;
-      if (fromDate && g.date && g.date < fromDate) return false;
-      if (toDate   && g.date && g.date > toDate)   return false;
-      if (dayFilter !== 'all' && g.day && !g.day.toLowerCase().includes(dayFilter.toLowerCase())) return false;
-      return true;
-    });
-
-    renderLeaderboard(guestRows, metric, dayFilter);
-
-  } catch(e) {
-    document.getElementById('lb-content').innerHTML = `<div style="color:var(--slate);font-size:13px;padding:16px;">Could not load from Monday.com: ${e.message}. Showing local data.</div>`;
-    loadLocalLeaderboard(fromDate, toDate, dayFilter, metric);
-  }
-  document.getElementById('lb-loading').style.display = 'none';
+  renderLeaderboard(guestRows, metric, dayFilter);
 }
 
-function loadLocalLeaderboard(fromDate, toDate, dayFilter, metric) {
-  try {
-    const sessions = JSON.parse(localStorage.getItem('dba_bom_sessions')||'[]')
-      .filter(s => {
-        const d = s.date?.slice(0,10);
-        if (fromDate && d < fromDate) return false;
-        if (toDate   && d > toDate)   return false;
-        if (dayFilter !== 'all') {
-          const day = new Date(d).getDay();
-          if (dayFilter === 'Tuesday'  && day !== 2) return false;
-          if (dayFilter === 'Saturday' && day !== 6) return false;
-        }
-        return true;
-      });
-    renderLeaderboard(sessions, metric, dayFilter);
-  } catch(e) {}
-  document.getElementById('lb-loading').style.display = 'none';
-}
 
 function renderLeaderboard(guestRows, metric, dayFilter) {
   const STATUS_COLOR = { 'showed':'#2DCA73','confirmed':'#E8C97A','invited':'#5DADE2','no-show':'#E74C3C','no show':'#E74C3C' };
