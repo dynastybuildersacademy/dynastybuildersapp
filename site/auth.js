@@ -2670,9 +2670,9 @@ function buildSidebar(activePage) {
 // ── 9. MONDAY.COM QUERY ───────────────────────────────────────
 // Monday.com proxy endpoint — Netlify Function handles the server-side request
 // to avoid CORS. Falls back to direct call for local dev (localhost).
-const MONDAY_PROXY = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-  ? 'https://api.monday.com/v2'          // direct in local dev
-  : '/api/monday';                        // Netlify Function in production
+const MONDAY_PROXY = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ? '/api/monday'   // even locally use the proxy (avoids CORS + key exposure)
+  : '/api/monday';  // Netlify Function in production
 
 async function mondayQuery(query, variables = {}) {
   // Proxy uses ORG_KEY server-side — don't send key from browser

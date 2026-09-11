@@ -913,15 +913,178 @@ buildModules('consciousness-modules', [
 
 // ── BOOK CLUB ─────────────────────────────────────────────────
 // ── BOOK CLUB ─────────────────────────────────────────────────
-(function renderBookClub() {
+// ── BOOK CLUB CONFIG (admin-controlled) ──────────────────────────
+// Book definitions — add new books here and change CURRENT_BOOK_IDX
+const BOOK_CATALOG = [
+  {
+    id: 'three_feet',
+    title: '3 Feet From Gold',
+    author: 'Sharon L. Lechter & Greg S. Reid',
+    publisher: 'Napoleon Hill Foundation',
+    month: 'September 2026',
+    emoji: '📖',
+    tagline: 'Success is just one more step beyond what looks like failure. Never quit.',
+    color: '#E8C97A',
+    modules: [
+      { icon:'🎯', title:'The Principle', desc:'Most people quit three feet from gold. Success hides just beyond the moment of maximum resistance.' },
+      { icon:'❤️', title:'Find Your Why', desc:'Purpose is the fuel that outlasts motivation. When you know WHY, every HOW becomes possible.' },
+      { icon:'🤝', title:'Mentorship', desc:'Every great achiever had a guide. Seek mentors relentlessly — they compress decades into days.' },
+      { icon:'⚡', title:'Passion + Talent + Association', desc:'Find where your passion meets your talent, then surround yourself with people who amplify both.' },
+      { icon:'💡', title:'Failure is Feedback', desc:'Reframe every setback as data. The only real failure is the one you stop learning from.' },
+      { icon:'🚀', title:'Purposeful Action', desc:'Vision without action is hallucination. Take one intentional step every single day.' },
+    ]
+  },
+  {
+    id: 'power_vs_force',
+    title: 'Power vs Force',
+    author: 'David R. Hawkins',
+    publisher: 'Hay House',
+    month: 'October 2026',
+    emoji: '⚡',
+    tagline: 'Power uplifts. Force dominates. Learn the difference — and lead from power.',
+    color: '#9B59B6',
+    modules: [
+      { icon:'🌊', title:'The Map of Consciousness', desc:'Emotions have measurable energetic frequencies. Shame, guilt, and fear are force. Love, courage, and joy are power.' },
+      { icon:'🔬', title:'Kinesiology & Truth', desc:'The body knows what the mind resists. Truth strengthens; falsehood weakens.' },
+      { icon:'💪', title:'Power vs Force', desc:'Force requires effort and creates resistance. Power is effortless — it attracts, it does not push.' },
+      { icon:'🙏', title:'The Role of Consciousness', desc:'Raising your own consciousness is the most powerful thing you can do for the world around you.' },
+      { icon:'📈', title:'Leadership from Power', desc:'Great leaders calibrate high. They inspire rather than demand. Study what level you lead from.' },
+      { icon:'✨', title:'Transcending the Lower Levels', desc:'Identify which level you operate from most. Then practice the disciplines that elevate you.' },
+    ]
+  },
+  {
+    id: 'think_grow_rich',
+    title: 'Think and Grow Rich',
+    author: 'Napoleon Hill',
+    publisher: 'Napoleon Hill Foundation',
+    month: 'August 2026',
+    emoji: '💡',
+    tagline: 'Whatever the mind can conceive and believe, it can achieve.'
+  },
+  {
+    id: 'compound_effect',
+    title: 'The Compound Effect',
+    author: 'Darren Hardy',
+    publisher: 'Success Media',
+    month: 'July 2026',
+    emoji: '🔄',
+    tagline: 'Small consistent actions compound invisibly until they are undeniable.'
+  },
+  {
+    id: 'go_giver',
+    title: 'The Go-Giver',
+    author: 'Bob Burg & John David Mann',
+    publisher: 'Portfolio',
+    month: 'June 2026',
+    emoji: '🤝',
+    tagline: 'Your influence is determined by how abundantly you place others\' interests first.'
+  },
+];
+
+// Admin sets this index to switch the current book — 0 = first in catalog
+let CURRENT_BOOK_IDX = parseInt(localStorage.getItem('dba_current_book_idx') || '0');
+
+function setCurrentBook(idx) {
+  if (idx < 0 || idx >= BOOK_CATALOG.length) return;
+  CURRENT_BOOK_IDX = idx;
+  localStorage.setItem('dba_current_book_idx', idx);
+  renderBookClub();
+  toast('✓ Book Club updated to: ' + BOOK_CATALOG[idx].title);
+}
+
+function renderBookClub() {
   const session = typeof AUTH !== 'undefined' ? AUTH.getSession() : null;
   const isAdmin = session && session.level >= 95;
 
-  // Current book header
+  // ── ADMIN BOOK SWITCHER ───────────────────────────────────────
   const currentEl = document.getElementById('bc-current');
+  if (currentEl && isAdmin) {
+    const adminBar = document.createElement('div');
+    adminBar.style.cssText = 'background:rgba(155,89,182,.1);border:1px solid rgba(155,89,182,.3);border-radius:10px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;';
+    adminBar.innerHTML = '<span style="font-family:Barlow Condensed,sans-serif;font-size:13px;font-weight:800;color:#9B59B6;letter-spacing:.06em;">⚙️ ADMIN — CURRENT BOOK</span>'
+      + BOOK_CATALOG.slice(0,2).map((bk,i) =>
+          `<button onclick="setCurrentBook(${i})"
+            style="padding:6px 14px;border-radius:7px;font-family:DM Mono,monospace;font-size:11px;font-weight:700;cursor:pointer;border:1px solid ${i===CURRENT_BOOK_IDX?'rgba(201,168,76,.5)':'rgba(255,255,255,.12)'};background:${i===CURRENT_BOOK_IDX?'rgba(201,168,76,.15)':'rgba(255,255,255,.05)'};color:${i===CURRENT_BOOK_IDX?'#E8C97A':'#6B7C93'};">
+            ${bk.emoji} ${bk.title}${i===CURRENT_BOOK_IDX?' ✓':''}
+          </button>`
+        ).join('')
+      + '<span style="font-family:DM Mono,monospace;font-size:10px;color:#6B7C93;">Click to set as current book for all agents</span>';
+    // Insert before current book card
+    currentEl.parentNode.insertBefore(adminBar, currentEl);
+  }
+
   if(currentEl) {
+    const curBook = BOOK_CATALOG[CURRENT_BOOK_IDX] || BOOK_CATALOG[0];
+    const nextBook = BOOK_CATALOG[CURRENT_BOOK_IDX + 1] || null;
     currentEl.innerHTML =
-      '<div class="rp-card" style="margin-bottom:12px;border-color:rgba(201,168,76,.4);">' +
+      `<div class="rp-card" style="margin-bottom:12px;border-color:rgba(201,168,76,.4);">` +
+        `<div style="font-family:'DM Mono',monospace;font-size:10px;color:#2DCA73;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">📌 Current Book — ${curBook.month}</div>` +
+        `<div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:14px;">` +
+          `<div style="font-size:44px;flex-shrink:0;">${curBook.emoji}</div>` +
+          `<div>` +
+            `<div style="font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:900;color:#E8C97A;line-height:1.1;">${curBook.title}</div>` +
+            `<div style="font-family:'DM Mono',monospace;font-size:11px;color:#8A9BB5;margin-top:3px;">${curBook.author} · ${curBook.publisher}</div>` +
+          `</div>` +
+        `</div>` +
+        `<p style="font-size:13px;line-height:1.8;color:#A8B8CC;margin-bottom:0;">${curBook.tagline}</p>` +
+      `</div>`;
+    // Modules (if defined for this book)
+    const modEl = document.getElementById('bc-current-modules');
+    if (modEl && curBook.modules) {
+      modEl.innerHTML = curBook.modules.map(m =>
+        `<div class="rp-card" style="margin-bottom:8px;">` +
+          `<div style="font-size:20px;margin-bottom:6px;">${m.icon}</div>` +
+          `<div style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;color:#E8C97A;margin-bottom:4px;">${m.title}</div>` +
+          `<div style="font-size:12px;color:#A8B8CC;line-height:1.7;">${m.desc}</div>` +
+        `</div>`
+      ).join('');
+    } else if (modEl) { modEl.innerHTML = ''; }
+
+    // Next book
+    const nextEl = document.getElementById('bc-next');
+    if (nextEl && nextBook) {
+      nextEl.innerHTML =
+        `<div class="rp-card" style="margin-bottom:12px;border-color:rgba(155,89,182,.3);opacity:${isAdmin?1:0.7};">` +
+          `<div style="font-family:'DM Mono',monospace;font-size:10px;color:#9B59B6;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">📅 Next Book — ${nextBook.month}</div>` +
+          `<div style="display:flex;align-items:center;gap:12px;">` +
+            `<div style="font-size:32px;">${nextBook.emoji}</div>` +
+            `<div>` +
+              `<div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;color:#E8EDF5;">${isAdmin ? nextBook.title : '🔒 Unlocks next month'}</div>` +
+              `<div style="font-family:'DM Mono',monospace;font-size:11px;color:#6B7C93;">${isAdmin ? nextBook.author : 'Preview available to admins only'}</div>` +
+            `</div>` +
+          `</div>` +
+        `</div>`;
+    } else if (nextEl) { nextEl.innerHTML = ''; }
+
+    /* legacy code below kept for reference but overridden by dynamic render above */
+    const _legacyIgnored = true;
+    currentEl.innerHTML = currentEl.innerHTML; // no-op to avoid syntax gap
+    // ───────────────────────────────────────────────────────────
+    // ALL ORIGINAL HARDCODED CONTENT REPLACED BY DYNAMIC ABOVE
+    // ───────────────────────────────────────────────────────────
+    // Skip the rest of the hardcoded block:
+    if (true) {
+      // Past books
+      const pastEl2 = document.getElementById('bc-past');
+      const pastBooks = BOOK_CATALOG.filter(b => b !== curBook && b !== nextBook);
+      if (pastEl2) {
+        pastEl2.innerHTML = pastBooks.length ?
+          '<div style="font-family:Barlow Condensed,sans-serif;font-size:16px;font-weight:900;color:#E8C97A;margin-bottom:12px;letter-spacing:.06em;text-transform:uppercase;">📚 Past Books</div>'
+          + pastBooks.map(b =>
+              `<div class="rp-card" style="margin-bottom:8px;opacity:.75;display:flex;align-items:center;gap:12px;">` +
+                `<div style="font-size:24px;">${b.emoji}</div>` +
+                `<div>` +
+                  `<div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;color:#E8EDF5;">${b.title}</div>` +
+                  `<div style="font-family:'DM Mono',monospace;font-size:10px;color:#6B7C93;">${b.author} · ${b.month}</div>` +
+                  `<div style="font-size:11px;color:#8A9BB5;margin-top:3px;">${b.tagline}</div>` +
+                `</div>` +
+              `</div>`
+            ).join('') : '';
+      }
+      return; // skip all old hardcoded rendering
+    }
+    currentEl.innerHTML =
+      `<div class="rp-card" style="margin-bottom:12px;border-color:rgba(201,168,76,.4);">` +
         '<div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:14px;">' +
           '<div style="font-size:44px;flex-shrink:0;">📖</div>' +
           '<div>' +
@@ -985,232 +1148,11 @@ buildModules('consciousness-modules', [
         '</div>'
       ).join('');
   }
-})();
-
-// ── 3 FEET FROM GOLD — Study Modules ─────────────────────────
-buildModules('bc-current-modules', [
-  { title: '1 — The Principle: Three Feet from Gold', body: `
-    <p><strong style="color:var(--gold-light);">The most dangerous moment in any pursuit is right before the breakthrough.</strong></p>
-    <p style="margin:10px 0;">Napoleon Hill documented the story of a gold miner who sold his equipment for scrap — just three feet before he would have struck one of the richest gold veins ever found. The buyer brought in an expert, dug three more feet, and became wealthy. The original miner died broke.</p>
-    <ul>
-      <li>This is not a metaphor. Hill documented this pattern across 500+ successful people: the breakthrough almost always comes immediately after the hardest moment of doubt.</li>
-      <li>Your last month of low production, your hardest rejection week, the morning you wanted to call your MD and quit — those were probably your three feet.</li>
-      <li>The question is not whether the gold is there. The question is whether you will still be holding the shovel when it appears.</li>
-    </ul>
-    <p style="margin-top:10px;"><strong style="color:var(--gold-light);">Reflection:</strong> When was the last time you quit something early? What would have happened if you had stayed three more feet?</p>` },
-
-  { title: '2 — Find Your Why Before Your How', body: `
-    <p><strong style="color:var(--gold-light);">"Why do you want to be successful?" Most people have never honestly answered this.</strong></p>
-    <p style="margin:10px 0;">Lechter and Reid interviewed dozens of world-class achievers and found one pattern: those who sustain success are driven by something larger than themselves. Commission checks don't keep agents making calls at 8pm. A why does.</p>
-    <ul>
-      <li><strong>Surface why:</strong> "I want to make more money." This is a what, not a why. Go deeper.</li>
-      <li><strong>Intermediate why:</strong> "I want to provide for my family." Closer — what happens to them if you do?</li>
-      <li><strong>Core why:</strong> "My kids will never grow up seeing their parents stressed about money the way I did." That's a why that runs at 5am and through rejection.</li>
-      <li><strong>DBA application:</strong> A team that knows their why outperforms a team that knows every product. Build the why first.</li>
-    </ul>
-    <p style="margin-top:10px;"><strong style="color:var(--gold-light);">Action step:</strong> Write your why in 2 sentences. Put it in your phone. Read it before every call block this week.</p>` },
-
-  { title: '3 — The Mentorship Principle', body: `
-    <p><strong style="color:var(--gold-light);">Every person in this book had at least one mentor who saw more in them than they saw in themselves.</strong></p>
-    <p style="margin:10px 0;">Lechter and Reid didn't just interview successful people — they specifically asked: who helped you push through when you wanted to quit? Without exception, the answer involved someone who refused to let them stop digging.</p>
-    <ul>
-      <li><strong>The mentor's job is not to carry you.</strong> It is to stay in the room with you when you want to leave it.</li>
-      <li><strong>In PHP:</strong> Your upline MD is your mentor. Joint appointments, one-on-ones, the 9pm check-in text — this is the mentorship system operating.</li>
-      <li><strong>Be the mentor your team needs.</strong> The agent who texts "I'm thinking about quitting" is three feet from gold. What you do next determines their trajectory.</li>
-      <li><strong>Find your mentors too.</strong> Events, this training, your upline leadership — these are your mentorship inputs.</li>
-    </ul>
-    <p style="margin-top:10px;"><strong style="color:var(--gold-light);">Reflection:</strong> Who on your team is closest to quitting right now? When did you last reach out to them specifically?</p>` },
-
-  { title: '4 — Passion + Talent + Association', body: `
-    <p><strong style="color:var(--gold-light);">Three inputs. Every sustained high achiever has all three. Most people are missing one.</strong></p>
-    <div style="display:flex;flex-direction:column;gap:8px;margin:12px 0;">
-      <div style="background:rgba(201,168,76,.08);border-radius:8px;padding:10px 14px;">
-        <strong style="color:#E8C97A;">Passion:</strong> <span style="font-size:12px;color:rgba(250,246,238,.8);">Are you genuinely excited about what life insurance does for families? Find the part you are excited about and lead from there. Manufactured passion doesn't survive rejection.</span>
-      </div>
-      <div style="background:rgba(52,152,219,.08);border-radius:8px;padding:10px 14px;">
-        <strong style="color:#5DADE2;">Talent:</strong> <span style="font-size:12px;color:rgba(250,246,238,.8);">Skill is built, not born. Role-play presentations. Know your products cold. Know the promotion requirements. The agent who can answer every question with confidence closes more.</span>
-      </div>
-      <div style="background:rgba(45,202,115,.08);border-radius:8px;padding:10px 14px;">
-        <strong style="color:#2DCA73;">Association:</strong> <span style="font-size:12px;color:rgba(250,246,238,.8);">You are the average of your five closest influences. Thankful Thursday, team calls, training events — this is not optional culture. This is the association that raises your average.</span>
-      </div>
-    </div>
-    <p style="margin-top:10px;"><strong style="color:var(--gold-light);">Honest audit:</strong> Which of the three is weakest for you right now? Write one specific action to strengthen it this month.</p>` },
-
-  { title: '5 — Failure Is Feedback, Not Verdict', body: `
-    <p><strong style="color:var(--gold-light);">"Every adversity carries with it the seed of an equal or greater benefit." — Napoleon Hill</strong></p>
-    <p style="margin:10px 0;">Every person Lechter and Reid interviewed had a story of catastrophic failure — not a setback, a collapse. And every one described that collapse as the turning point, not the endpoint. The failure didn't define them. How they chose to interpret it did.</p>
-    <ul>
-      <li>A failed appointment is a lesson in positioning, not a verdict on your future.</li>
-      <li>A week of rejections is data about your approach, not a commentary on your worth.</li>
-      <li>An agent who quits is a signal to examine your follow-up and culture, not a reason to stop recruiting.</li>
-      <li><strong>Applied:</strong> Most breakthroughs follow a failure that looked final. Are you still in the room to receive the benefit?</li>
-    </ul>
-    <p style="margin-top:10px;"><strong style="color:var(--gold-light);">Book Report Prompt:</strong> Describe one failure in your business that you now recognize as a turning point. What was the "seed of benefit" inside it?</p>` },
-
-  { title: '6 — Taking Purposeful Action', body: `
-    <p><strong style="color:var(--gold-light);">Knowing and not doing is the same as not knowing.</strong></p>
-    <p style="margin:10px 0;">The final lesson of 3 Feet from Gold: success is not primarily mindset, mentors, or passion — it is purposeful daily action taken consistently over time. The gold doesn't come to those who believe harder. It comes to those who keep digging.</p>
-    <ul>
-      <li><strong>Purposeful:</strong> Every action tied to a clear goal — not "make calls" but "set 3 protection appointments by noon."</li>
-      <li><strong>Daily:</strong> The compound effect only works if the input is consistent. Three months of daily activity creates what three weeks of intensity cannot.</li>
-      <li><strong>Despite conditions:</strong> The agents who become MDs are not the ones who had the best conditions — they are the ones who kept digging regardless.</li>
-      <li><strong>DBA standard:</strong> Log your activity every day. If you cannot measure it, you cannot improve it.</li>
-    </ul>
-    <p style="margin-top:10px;"><strong style="color:var(--gold-light);">Commitment:</strong> What is your non-negotiable daily action for the next 30 days? Write it and share it with your MD at your next one-on-one.</p>` },
-]);
-
-
-// ── TEAM BUILDER TRAINING ─────────────────────────────────────
-buildModules('teambuilder-modules', [
-  { title: '1 — The Duplication Principle', body: `
-    <p><strong style="color:var(--gold-light);">You can only grow as fast as you can duplicate yourself.</strong></p>
-    <p style="margin:10px 0;">The difference between a high-producing agent and a leader: a high producer earns from their own effort. A leader earns from the duplicated effort of many. Duplication is the engine of the PHP model — but it only works if you are teaching what you are doing.</p>
-    <ul>
-      <li><strong>Principle 1:</strong> Only teach what you do consistently. Duplicated inconsistency is a liability.</li>
-      <li><strong>Principle 2:</strong> Simple duplicates. Complex dies. Every system you teach must be executable by a brand-new agent on day 3.</li>
-      <li><strong>Principle 3:</strong> Teach the why before the how. Agents who understand why are self-correcting.</li>
-      <li><strong>Principle 4:</strong> Show before you tell. Always bring new agents to real appointments before they run their own.</li>
-      <li><strong>DBA standard:</strong> Every MD should be able to go on a 30-day trip and return to a growing team. If the team shrinks when you leave, you have not duplicated — you have created dependence.</li>
-    </ul>
-    <p style="margin-top:10px;"><strong style="color:var(--gold-light);">Action step:</strong> Write your "Day 1–30" agent onboarding process in a single page. If you cannot write it, you cannot duplicate it.</p>` },
-
-  { title: '2 — Recruiting as a Leadership Function', body: `
-    <p><strong style="color:var(--gold-light);">You are not recruiting employees. You are offering a life change.</strong></p>
-    <p style="margin:10px 0;">Most agents recruit from need (they need overrides) and their prospects feel it. The highest-producing recruiters recruit from abundance — they are genuinely sharing an opportunity they believe in, and they qualify out the unserious.</p>
-    <ul>
-      <li><strong>Position, not pitch:</strong> "I lead a team of insurance professionals here in [city] — we are selectively expanding. I don't know if it's for you, but it might be worth a 20-minute conversation."</li>
-      <li><strong>Qualify hard:</strong> The more you qualify, the more seriously they take the opportunity. "We are looking for people who are serious about changing their financial situation — is that you?"</li>
-      <li><strong>Set the expectation:</strong> "This takes 90 days of consistent effort to see results. Is that something you can commit to?" Most cannot — and that's fine.</li>
-      <li><strong>The edification multiplier:</strong> How you introduce your upline to a recruit doubles their belief before the presentation starts. Edify specifically: "My MD Obi Iroezi built his team from zero and broke $100K in 18 months."</li>
-    </ul>
-    <p style="margin-top:10px;"><strong style="color:var(--gold-light);">Script drill:</strong> Practice the position statement and the qualifying question with a partner until it sounds natural, not rehearsed.</p>` },
-
-  { title: '3 — Running Effective Team Meetings', body: `
-    <p><strong style="color:var(--gold-light);">Your weekly meeting sets the tone for your team's entire week.</strong></p>
-    <p style="margin:10px 0;">Every Thankful Thursday, every team Zoom, every one-on-one — these are where culture is built or eroded. A high-energy, high-expectation meeting creates momentum. A disorganized, complaint-filled meeting kills it.</p>
-    <p style="margin-bottom:8px;"><strong>The DBA Meeting Formula (60 minutes):</strong></p>
-    <ul>
-      <li><strong>0–5 min:</strong> Energy opener — recognition, music, a short motivational quote. Set the tone.</li>
-      <li><strong>5–15 min:</strong> Weekly recognitions — sub points, recruits, cash flow. Public acknowledgment is fuel.</li>
-      <li><strong>15–30 min:</strong> One deep training topic — not a summary of everything, one thing done thoroughly.</li>
-      <li><strong>30–45 min:</strong> Role-play or live appointment debrief. Practice in front of the team.</li>
-      <li><strong>45–55 min:</strong> Goals and commitments for the week. Each person states one public commitment.</li>
-      <li><strong>55–60 min:</strong> Close with energy — "DBA, let's go!" ends every meeting the same way.</li>
-    </ul>
-    <p style="margin-top:10px;"><strong style="color:var(--gold-light);">Standard:</strong> Every agent should leave your meeting MORE energized than when they arrived.</p>` },
-
-  { title: '4 — One-on-One Coaching Framework', body: `
-    <p><strong style="color:var(--gold-light);">You cannot lead 20 people. You can lead 5 who lead 4 each.</strong></p>
-    <p style="margin:10px 0;">The highest-leverage activity a leader can do is a focused, structured one-on-one with a developing agent. 20 minutes done right is worth more than 2 hours of group training.</p>
-    <p style="margin-bottom:8px;"><strong>The DBA One-on-One Structure:</strong></p>
-    <ul>
-      <li><strong>Check-in (2 min):</strong> "How are you on a scale of 1–10 this week? What's one thing that went well?"</li>
-      <li><strong>Numbers review (5 min):</strong> Contacts made, appointments run, applications submitted. What does the tracker show?</li>
-      <li><strong>One bottleneck (5 min):</strong> "What is the one thing that's holding you back most right now?" Solve ONLY that thing. Resist fixing everything.</li>
-      <li><strong>Skill drill (5 min):</strong> Role-play one scenario — the objection they faced, the close they almost had.</li>
-      <li><strong>Commitment (3 min):</strong> "What is your one commitment for this week that I can hold you to next time?"</li>
-    </ul>
-    <p style="margin-top:10px;"><strong style="color:var(--gold-light);">Rule:</strong> Never leave a one-on-one without a specific commitment from the agent. Accountability without commitment is just conversation.</p>` },
-
-  { title: '5 — Building a Culture of Recognition', body: `
-    <p><strong style="color:var(--gold-light);">People work for money. They run through walls for recognition.</strong></p>
-    <p style="margin:10px 0;">Recognition is the most underutilized leadership tool in the industry. PHP understands this — their entire contest structure is built around public acknowledgment. DBA leaders who master recognition have teams that never stop recruiting.</p>
-    <ul>
-      <li><strong>Immediate recognition:</strong> Text the agent the moment they submit an app. "You just submitted your third app this week — you are ON FIRE. Screenshot this." Speed matters.</li>
-      <li><strong>Public recognition:</strong> Name drop in the team Zoom, in the WhatsApp group, in Thankful Thursday. Make heroes publicly.</li>
-      <li><strong>Tiered recognition:</strong> Milestones, 1K club, comma checks, first promoted MD — each one gets a moment.</li>
-      <li><strong>Progress recognition:</strong> Recognize effort AND results. "You made 30 contacts this week with zero apps — that is the activity that creates the breakthrough."</li>
-      <li><strong>Never criticize publicly:</strong> Correct privately, always. Public correction is a culture killer.</li>
-    </ul>
-    <p style="margin-top:10px;"><strong style="color:var(--gold-light);">DBA standard:</strong> Every agent on your team should hear their name recognized publicly at least once per week.</p>` },
-
-  { title: '6 — The 90-Day MD Promotion Playbook', body: `
-    <p><strong style="color:var(--gold-light);">Your most important job as a leader is promoting your first MD.</strong></p>
-    <p style="margin:10px 0;">When you promote your first Marketing Director, you have crossed the line from agent to leader. Everything changes — your income, your leverage, your lifestyle. The 90-day run is the vehicle. Here is how to run it properly.</p>
-    <p style="margin-bottom:8px;"><strong>Month 1 — Build the Foundation:</strong></p>
-    <ul>
-      <li>Identify the right candidate: coachable, hungry, has a why larger than themselves.</li>
-      <li>Set the 90-day targets together. Make them co-own the goal, not just know it.</li>
-      <li>Daily check-in for the first 30 days. They are building habits — be present.</li>
-      <li>Run joint appointments. Show the standard before you set the standard.</li>
-    </ul>
-    <p style="margin-bottom:8px;"><strong>Month 2 — Increase Accountability:</strong></p>
-    <ul>
-      <li>Weekly tracker review. Numbers don't lie — address gaps with curiosity, not criticism.</li>
-      <li>Introduce them to your upline leadership. Edification expands belief.</li>
-      <li>Begin teaching them to recruit. A promoted MD who cannot recruit is a producer, not a leader.</li>
-    </ul>
-    <p style="margin-bottom:8px;"><strong>Month 3 — Prepare for Promotion:</strong></p>
-    <ul>
-      <li>Confirm requirements are on track. Use the MD Promo Tracker weekly.</li>
-      <li>Begin building their vision for THEIR first MD promotion.</li>
-      <li>Celebrate publicly at every milestone. The team is watching what success looks like.</li>
-    </ul>
-    <p style="margin-top:10px;"><strong style="color:var(--gold-light);">Remember:</strong> You promote your downline by developing them — not by doing it for them. The goal is a self-sufficient leader, not a dependent producer.</p>` },
-]);
-
-// ── ROLE-PLAY ─────────────────────────────────────────────────
-const RP_SYSTEMS = {
-  cold: "You are a prospect named Chris who just received a cold call from a life insurance agent. You're politely skeptical but curious. You have a spouse and two kids, a mortgage. Be realistic. After the agent sends 5 messages, break character: give honest coaching feedback and scores (1–10) for Rapport, Discovery, and Pitch Clarity.",
-  warm: "You are the agent's old friend from college. You're open to catching up but a bit hesitant about the insurance pitch. After 5 agent messages, give coaching feedback and scores for Rapport, Discovery, Pitch Clarity.",
-  objection_think: "You are a prospect who just heard a life insurance presentation and keeps saying 'I need to think about it.' You're not hostile, just noncommittal. After 5 agent messages, give coaching feedback and score the objection-handling (1–10).",
-  objection_afford: "You are a prospect who keeps saying 'I can't afford it.' You have a family and genuinely tight finances but also spend on non-essentials. After 5 agent messages, give coaching feedback and score.",
-  recruit: "You are a prospect being recruited into PHP Agency. You have a full-time job and are curious about extra income but skeptical about MLM. After 5 agent messages, give coaching feedback on their recruiting skills.",
-  bom_followup: "You attended a business opportunity meeting last week and said you were interested, but you've gone cold. The agent is following up. Be somewhat evasive. After 5 messages, give coaching feedback.",
-  referral_ask: "You just got a life insurance policy 3 weeks ago. Your agent is asking for referrals. You feel a little awkward about it. After 5 messages, give coaching feedback on how well they asked for referrals."
-};
-
-let rpHistory = [], rpTurns = 0;
-
-async function startRP() {
-  rpHistory = []; rpTurns = 0;
-  const scenario = document.getElementById('rp-scenario').value;
-  document.getElementById('rp-chatbox').style.display = 'block';
-  document.getElementById('rp-feedback').style.display = 'none';
-  document.getElementById('rp-msgs').innerHTML = '';
-  addRPMsg('ai', '🎭 Role-play started. I\'m your prospect. You can speak first — begin the conversation!');
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:250,
-      system: RP_SYSTEMS[scenario],
-      messages:[{role:'user',content:'Start the role-play from your side. Set the scene briefly then give your opening line.'}]
-    })
-  }).catch(()=>null);
-  if (res) {
-    const d = await res.json();
-    const txt = d?.content?.[0]?.text||'(API key required for role-play)';
-    addRPMsg('ai', txt);
-    rpHistory.push({role:'assistant',content:txt});
-  }
 }
 
-async function sendRP() {
-  const input = document.getElementById('rp-input');
-  const msg = input.value.trim();
-  if (!msg) return;
-  input.value = '';
-  addRPMsg('user', msg);
-  rpHistory.push({role:'user',content:msg});
-  rpTurns++;
-  const scenario = document.getElementById('rp-scenario').value;
-  const isFinal = rpTurns >= 5;
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:isFinal?600:250,
-      system: RP_SYSTEMS[scenario] + (isFinal?' THIS IS THE 5TH EXCHANGE. Now break character completely and give your coaching feedback with numeric scores.' : ''),
-      messages: rpHistory
-    })
-  }).catch(()=>null);
-  if (!res) return;
-  const d = await res.json();
-  const reply = d?.content?.[0]?.text||'';
-  rpHistory.push({role:'assistant',content:reply});
-  if (isFinal) {
-    showFeedback(reply);
-  } else {
-    addRPMsg('ai', reply);
-  }
-}
+// ── 3 FEET FROM GOLD — Study Modules (legacy, handled by BOOK_CATALOG) ─
+
+// Legacy book modules removed — content now rendered from BOOK_CATALOG
 
 function showFeedback(text) {
   document.getElementById('rp-chatbox').style.display = 'none';

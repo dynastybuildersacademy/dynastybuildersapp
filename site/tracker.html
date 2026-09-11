@@ -258,7 +258,128 @@ input:focus,select:focus{outline:none;border-color:var(--gold);}
     <div class="ws"><div class="ws-val" id="w-pts">$0</div><div class="ws-label">Session ATP</div></div>
   </div>
 
-  <!-- PROSPECT PIPELINE -->
+  <!-- ══ SCHEDULED APPOINTMENTS ══ -->
+<div class="card" style="margin-bottom:14px;">
+  <div class="card-title">
+    📅 Appointments
+    <button class="btn-sm" style="background:linear-gradient(135deg,#C9A84C,#E8C97A);color:#0A1628;border:none;"
+      onclick="openApptModal()">+ Add</button>
+  </div>
+
+  <!-- Tabs -->
+  <div style="display:flex;gap:0;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:12px;">
+    <button id="appt-tab-upcoming" onclick="showApptTab('upcoming')"
+      style="flex:1;padding:7px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;
+      background:none;border:none;border-bottom:3px solid #C9A84C;color:#E8C97A;cursor:pointer;">
+      📅 Upcoming
+    </button>
+    <button id="appt-tab-past" onclick="showApptTab('past')"
+      style="flex:1;padding:7px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;
+      background:none;border:none;border-bottom:3px solid transparent;color:#6B7C93;cursor:pointer;">
+      ✅ Past
+    </button>
+    <button id="appt-tab-guests" onclick="showApptTab('guests')"
+      style="flex:1;padding:7px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;
+      background:none;border:none;border-bottom:3px solid transparent;color:#6B7C93;cursor:pointer;">
+      👥 Guests
+    </button>
+  </div>
+
+  <div id="appt-view-upcoming"></div>
+  <div id="appt-view-past" style="display:none;"></div>
+  <div id="appt-view-guests" style="display:none;"></div>
+
+  <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+    <button class="btn-sm" style="background:rgba(45,202,115,.1);border:1px solid rgba(45,202,115,.3);color:#2DCA73;"
+      onclick="syncApptsToMonday()">☁ Sync Monday</button>
+    <button class="btn-sm" style="background:rgba(93,173,226,.1);border:1px solid rgba(93,173,226,.3);color:#5DADE2;"
+      onclick="loadApptsFromMonday()">↻ Load from Monday</button>
+    <span id="appt-sync-status" style="font-family:'DM Mono',monospace;font-size:10px;color:#6B7C93;align-self:center;"></span>
+  </div>
+</div>
+
+<!-- APPOINTMENT MODAL -->
+<div id="appt-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:500;
+  align-items:flex-end;justify-content:center;">
+  <div style="background:#0F1E38;border:1px solid rgba(201,168,76,.2);border-radius:16px 16px 0 0;
+    width:100%;max-width:500px;padding:20px;max-height:90vh;overflow-y:auto;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;color:#E8C97A;"
+        id="appt-modal-title">📅 Add Appointment</div>
+      <button onclick="closeApptModal()" style="background:none;border:none;color:#6B7C93;font-size:22px;cursor:pointer;">✕</button>
+    </div>
+
+    <input type="hidden" id="appt-edit-id">
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+      <div style="grid-column:1/-1;">
+        <label style="font-family:'DM Mono',monospace;font-size:10px;color:#6B7C93;display:block;margin-bottom:4px;">Prospect / Client Name *</label>
+        <input type="text" id="appt-name" placeholder="Full name"
+          style="width:100%;background:#132240;border:1px solid rgba(255,255,255,.12);color:#E8EDF5;border-radius:8px;padding:9px 12px;font-family:'Barlow',sans-serif;font-size:14px;outline:none;">
+      </div>
+      <div>
+        <label style="font-family:'DM Mono',monospace;font-size:10px;color:#6B7C93;display:block;margin-bottom:4px;">Date</label>
+        <input type="date" id="appt-date"
+          style="width:100%;background:#132240;border:1px solid rgba(255,255,255,.12);color:#E8EDF5;border-radius:8px;padding:9px 12px;font-family:'DM Mono',monospace;font-size:13px;outline:none;">
+      </div>
+      <div>
+        <label style="font-family:'DM Mono',monospace;font-size:10px;color:#6B7C93;display:block;margin-bottom:4px;">Time</label>
+        <input type="time" id="appt-time"
+          style="width:100%;background:#132240;border:1px solid rgba(255,255,255,.12);color:#E8EDF5;border-radius:8px;padding:9px 12px;font-family:'DM Mono',monospace;font-size:13px;outline:none;">
+      </div>
+      <div>
+        <label style="font-family:'DM Mono',monospace;font-size:10px;color:#6B7C93;display:block;margin-bottom:4px;">Type</label>
+        <select id="appt-type"
+          style="width:100%;background:#132240;border:1px solid rgba(255,255,255,.12);color:#E8EDF5;border-radius:8px;padding:9px 12px;font-family:'Barlow',sans-serif;font-size:13px;outline:none;">
+          <option value="RI">🎯 Recruiting Interview (RI)</option>
+          <option value="FT">💼 Field Training Appt (FT)</option>
+          <option value="FS">🚀 Fast Start Appt (FS)</option>
+          <option value="Client">👤 Client Appointment</option>
+          <option value="BOM Guest">🏢 BOM Guest</option>
+          <option value="Other">📌 Other</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-family:'DM Mono',monospace;font-size:10px;color:#6B7C93;display:block;margin-bottom:4px;">Status</label>
+        <select id="appt-status"
+          style="width:100%;background:#132240;border:1px solid rgba(255,255,255,.12);color:#E8EDF5;border-radius:8px;padding:9px 12px;font-family:'Barlow',sans-serif;font-size:13px;outline:none;">
+          <option value="Scheduled">📅 Scheduled</option>
+          <option value="Showed">✅ Showed</option>
+          <option value="No-Show">❌ No-Show</option>
+          <option value="Rescheduled">🔄 Rescheduled</option>
+          <option value="Cancelled">🚫 Cancelled</option>
+          <option value="Recruited">🎉 Recruited!</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-family:'DM Mono',monospace;font-size:10px;color:#6B7C93;display:block;margin-bottom:4px;">Phone</label>
+        <input type="tel" id="appt-phone" placeholder="(555) 555-5555"
+          style="width:100%;background:#132240;border:1px solid rgba(255,255,255,.12);color:#E8EDF5;border-radius:8px;padding:9px 12px;font-family:'DM Mono',monospace;font-size:13px;outline:none;">
+      </div>
+      <div style="grid-column:1/-1;">
+        <label style="font-family:'DM Mono',monospace;font-size:10px;color:#6B7C93;display:block;margin-bottom:4px;">Notes</label>
+        <input type="text" id="appt-notes" placeholder="Location, follow-up, outcome…"
+          style="width:100%;background:#132240;border:1px solid rgba(255,255,255,.12);color:#E8EDF5;border-radius:8px;padding:9px 12px;font-family:'Barlow',sans-serif;font-size:14px;outline:none;">
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;">
+      <button onclick="saveAppt()"
+        style="flex:2;background:linear-gradient(135deg,#C9A84C,#E8C97A);border:none;border-radius:10px;
+          color:#0A1628;font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:900;padding:12px;cursor:pointer;">
+        ✓ Save Appointment
+      </button>
+      <button onclick="closeApptModal()"
+        style="flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;
+          color:#E8EDF5;font-family:'DM Mono',monospace;font-size:11px;padding:12px;cursor:pointer;">
+        Cancel
+      </button>
+    </div>
+    <div id="appt-modal-status" style="font-family:'DM Mono',monospace;font-size:10px;color:#6B7C93;margin-top:8px;text-align:center;"></div>
+  </div>
+</div>
+
+<!-- PROSPECT PIPELINE -->
   <div class="card">
     <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">
       <span>🎯 Prospect Pipeline</span>
@@ -1056,6 +1177,348 @@ function toast(msg) {
   t.textContent = msg;
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ════════════════════════════════════════════════════════════════
+// APPOINTMENT & GUEST TRACKER
+// ════════════════════════════════════════════════════════════════
+const APPT_KEY         = `dba_appts_${agentId}`;
+const APPT_BOARD_KEY   = 'dba_appt_board_id';
+// Use the Call Production Log board for appointments (18411252612)
+// or auto-discover if agent has a dedicated appt board
+const APPT_BOARD_ID    = localStorage.getItem(APPT_BOARD_KEY) || '18411252612';
+
+let appointments = [];
+try { appointments = JSON.parse(localStorage.getItem(APPT_KEY) || '[]'); } catch(e) {}
+
+let _apptActiveTab = 'upcoming';
+
+// ── INIT ─────────────────────────────────────────────────────
+(function initAppts() {
+  // Set default date to today
+  const today = new Date().toISOString().slice(0, 10);
+  const dateEl = document.getElementById('appt-date');
+  if (dateEl) dateEl.value = today;
+  renderAppts();
+})();
+
+// ── MODAL ─────────────────────────────────────────────────────
+function openApptModal(editId) {
+  const modal = document.getElementById('appt-modal');
+  modal.style.display = 'flex';
+  document.getElementById('appt-modal-status').textContent = '';
+
+  if (editId) {
+    const appt = appointments.find(a => a.id === editId);
+    if (!appt) return;
+    document.getElementById('appt-modal-title').textContent = '✏️ Edit Appointment';
+    document.getElementById('appt-edit-id').value = editId;
+    document.getElementById('appt-name').value   = appt.name || '';
+    document.getElementById('appt-date').value   = appt.date || '';
+    document.getElementById('appt-time').value   = appt.time || '';
+    document.getElementById('appt-type').value   = appt.type || 'RI';
+    document.getElementById('appt-status').value = appt.status || 'Scheduled';
+    document.getElementById('appt-phone').value  = appt.phone || '';
+    document.getElementById('appt-notes').value  = appt.notes || '';
+  } else {
+    document.getElementById('appt-modal-title').textContent = '📅 Add Appointment';
+    document.getElementById('appt-edit-id').value = '';
+    document.getElementById('appt-name').value   = '';
+    document.getElementById('appt-date').value   = new Date().toISOString().slice(0,10);
+    document.getElementById('appt-time').value   = '';
+    document.getElementById('appt-type').value   = 'RI';
+    document.getElementById('appt-status').value = 'Scheduled';
+    document.getElementById('appt-phone').value  = '';
+    document.getElementById('appt-notes').value  = '';
+  }
+}
+function closeApptModal() {
+  document.getElementById('appt-modal').style.display = 'none';
+}
+
+// ── SAVE ──────────────────────────────────────────────────────
+function saveAppt() {
+  const name   = document.getElementById('appt-name').value.trim();
+  if (!name) { toast('⚠ Name is required'); return; }
+
+  const editId = document.getElementById('appt-edit-id').value;
+  const appt = {
+    id:     editId || `appt_${Date.now()}`,
+    name,
+    date:   document.getElementById('appt-date').value,
+    time:   document.getElementById('appt-time').value,
+    type:   document.getElementById('appt-type').value,
+    status: document.getElementById('appt-status').value,
+    phone:  document.getElementById('appt-phone').value.trim(),
+    notes:  document.getElementById('appt-notes').value.trim(),
+    agentId, agentName: session?.name || '',
+    savedAt: new Date().toISOString(),
+  };
+
+  if (editId) {
+    const idx = appointments.findIndex(a => a.id === editId);
+    if (idx >= 0) appointments[idx] = appt; else appointments.push(appt);
+  } else {
+    appointments.push(appt);
+    // Auto-increment counter if Scheduled
+    if (appt.status === 'Scheduled') adj('appts', 1);
+    if (appt.status === 'Showed')    adj('shows', 1);
+    if (appt.type === 'RI')  adj('ri', 1);
+    if (appt.type === 'FT')  adj('ft', 1);
+    if (appt.type === 'FS')  adj('fs', 1);
+    if (appt.type === 'BOM Guest') adj('gi', 1);
+  }
+
+  try { localStorage.setItem(APPT_KEY, JSON.stringify(appointments)); } catch(e) {}
+  closeApptModal();
+  renderAppts();
+  toast(`✓ ${name} appointment saved`);
+
+  // Auto-sync to Monday in background
+  if (AUTH.getMondayKey()) syncSingleApptToMonday(appt);
+}
+
+function deleteAppt(id) {
+  if (!confirm('Delete this appointment?')) return;
+  appointments = appointments.filter(a => a.id !== id);
+  try { localStorage.setItem(APPT_KEY, JSON.stringify(appointments)); } catch(e) {}
+  renderAppts();
+  toast('✓ Appointment deleted');
+}
+
+// Small helper — safely adjust a counter without crashing if function not available
+function adj(id, delta) {
+  try { adjust(id, delta); } catch(e) {}
+}
+
+// ── TABS ──────────────────────────────────────────────────────
+function showApptTab(tab) {
+  _apptActiveTab = tab;
+  ['upcoming','past','guests'].forEach(t => {
+    const view = document.getElementById('appt-view-' + t);
+    const btn  = document.getElementById('appt-tab-' + t);
+    if (view) view.style.display = t === tab ? 'block' : 'none';
+    if (btn) {
+      btn.style.borderBottomColor = t === tab ? '#C9A84C' : 'transparent';
+      btn.style.color = t === tab ? '#E8C97A' : '#6B7C93';
+    }
+  });
+}
+
+// ── RENDER ────────────────────────────────────────────────────
+function renderAppts() {
+  const today = new Date().toISOString().slice(0,10);
+  const now   = new Date().toISOString();
+
+  const STATUS_ICON = { Scheduled:'📅', Showed:'✅', 'No-Show':'❌', Rescheduled:'🔄', Cancelled:'🚫', Recruited:'🎉' };
+  const TYPE_COLOR  = { RI:'#C9A84C', FT:'#2ECC71', FS:'#3498DB', Client:'#9B59B6', 'BOM Guest':'#E67E22', Other:'#95a5a6' };
+
+  function apptCard(a) {
+    const ic = STATUS_ICON[a.status] || '📅';
+    const tc = TYPE_COLOR[a.type] || '#6B7C93';
+    return `<div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:9px;
+        padding:11px 14px;margin-bottom:8px;display:flex;align-items:flex-start;gap:10px;">
+      <div style="font-size:20px;flex-shrink:0;">${ic}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;color:#E8EDF5;">${a.name}</div>
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:#6B7C93;margin-top:2px;display:flex;gap:8px;flex-wrap:wrap;">
+          ${a.date ? `<span>${a.date}${a.time?' '+a.time:''}</span>` : ''}
+          <span style="color:${tc};font-weight:700;">${a.type}</span>
+          ${a.phone ? `<a href="tel:${a.phone}" style="color:#5DADE2;">${a.phone}</a>` : ''}
+        </div>
+        ${a.notes ? `<div style="font-size:11px;color:#8A9BB5;margin-top:4px;">${a.notes}</div>` : ''}
+      </div>
+      <div style="display:flex;gap:4px;flex-shrink:0;">
+        <button onclick="openApptModal('${a.id}')" title="Edit"
+          style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:6px;
+            padding:4px 8px;color:#6B7C93;cursor:pointer;font-size:12px;">✏</button>
+        <button onclick="deleteAppt('${a.id}')" title="Delete"
+          style="background:rgba(231,76,60,.06);border:1px solid rgba(231,76,60,.2);border-radius:6px;
+            padding:4px 8px;color:#E74C3C;cursor:pointer;font-size:12px;">✕</button>
+      </div>
+    </div>`;
+  }
+
+  function emptyState(msg) {
+    return `<div style="text-align:center;padding:20px;font-family:'DM Mono',monospace;font-size:11px;color:#6B7C93;">${msg}</div>`;
+  }
+
+  // Upcoming — scheduled for today or future
+  const upcoming = appointments
+    .filter(a => a.status === 'Scheduled' || a.status === 'Rescheduled')
+    .filter(a => !a.date || a.date >= today)
+    .sort((a,b) => (a.date||'9999') > (b.date||'9999') ? 1 : -1);
+
+  // Past — any with a date in the past, or with a final status
+  const past = appointments
+    .filter(a => a.status !== 'Scheduled' || (a.date && a.date < today))
+    .sort((a,b) => (a.date||'0000') < (b.date||'0000') ? 1 : -1);
+
+  // Guests — BOM Guest type only
+  const guests = appointments
+    .filter(a => a.type === 'BOM Guest')
+    .sort((a,b) => (a.date||'0000') < (b.date||'0000') ? 1 : -1);
+
+  const upEl = document.getElementById('appt-view-upcoming');
+  const paEl = document.getElementById('appt-view-past');
+  const guEl = document.getElementById('appt-view-guests');
+
+  if (upEl) upEl.innerHTML = upcoming.length
+    ? upcoming.map(apptCard).join('')
+    : emptyState('No upcoming appointments.<br>Tap <strong style="color:var(--gold);">+ Add</strong> to schedule one.');
+
+  if (paEl) paEl.innerHTML = past.length
+    ? past.map(apptCard).join('')
+    : emptyState('No past appointments yet.');
+
+  if (guEl) {
+    const inv  = guests.length;
+    const conf = guests.filter(g => g.status === 'Showed' || g.status === 'Rescheduled').length;
+    const show = guests.filter(g => g.status === 'Showed').length;
+    guEl.innerHTML = (inv
+      ? `<div style="display:flex;gap:14px;margin-bottom:12px;flex-wrap:wrap;">
+          <div style="font-size:12px;color:#6B7C93;">📨 <strong style="color:#E8EDF5;">${inv}</strong> invited</div>
+          <div style="font-size:12px;color:#6B7C93;">📲 <strong style="color:#E8C97A;">${conf}</strong> confirmed</div>
+          <div style="font-size:12px;color:#6B7C93;">✅ <strong style="color:#2DCA73;">${show}</strong> showed</div>
+        </div>` : '')
+      + (guests.length ? guests.map(apptCard).join('') : emptyState('No BOM guests yet.<br>Add a guest with type <strong style="color:var(--gold);">BOM Guest</strong>.'));
+  }
+}
+
+// ── MONDAY SYNC ───────────────────────────────────────────────
+// Uses the Call Production Log board — or a dedicated appointments board if set
+async function syncApptsToMonday() {
+  if (!AUTH.getMondayKey()) { toast('⚠ No Monday.com key'); return; }
+  const statusEl = document.getElementById('appt-sync-status');
+  if (statusEl) statusEl.textContent = '⟳ Syncing…';
+
+  let created = 0, updated = 0, failed = 0;
+  for (const appt of appointments) {
+    try {
+      const result = await syncSingleApptToMonday(appt);
+      if (result === 'created') created++;
+      else if (result === 'updated') updated++;
+    } catch(e) { failed++; }
+  }
+
+  const msg = `✓ ${created} created · ${updated} updated${failed?' · '+failed+' failed':''}`;
+  if (statusEl) { statusEl.textContent = msg; statusEl.style.color = '#2DCA73'; }
+  toast(msg);
+}
+
+async function syncSingleApptToMonday(appt) {
+  // Get or discover columns on the target board
+  const boardId = APPT_BOARD_ID;
+  const colRes = await mondayQuery(`{boards(ids:${boardId}){columns{id title type}}}`);
+  const cols = colRes?.data?.boards?.[0]?.columns || [];
+  const col = (...kws) => cols.find(c => kws.some(k=>(c.title||'').toLowerCase().includes(k)))?.id || null;
+
+  const cv = {};
+  const nameCol  = col('name','contact','prospect','client');
+  const dateCol  = col('date','appt date','appointment date','scheduled');
+  const statusCol= col('status');
+  const typeCol  = col('type','appt type','category');
+  const phoneCol = col('phone','mobile');
+  const notesCol = col('notes','note','comment');
+  const agentCol = col('agent','agent name','advisor');
+
+  if (nameCol)   cv[nameCol]   = appt.name || '';
+  if (dateCol)   cv[dateCol]   = { date: appt.date || '' };
+  if (statusCol) cv[statusCol] = { label: appt.status };
+  if (typeCol)   cv[typeCol]   = { label: appt.type };
+  if (phoneCol)  cv[phoneCol]  = { phone: (appt.phone||'').replace(/\D/g,''), countryShortName:'US' };
+  if (notesCol)  cv[notesCol]  = appt.notes || '';
+  if (agentCol)  cv[agentCol]  = appt.agentName || '';
+
+  const cvStr = JSON.stringify(JSON.stringify(cv));
+  const itemName = `${appt.name} — ${appt.type} — ${appt.date||'TBD'}`.replace(/"/g,"'");
+
+  if (appt.mondayId) {
+    // Update existing
+    await mondayQuery(`mutation {
+      change_multiple_column_values(board_id:${boardId}, item_id:${appt.mondayId},
+        column_values:${cvStr}, create_labels_if_missing:true) { id }
+    }`);
+    return 'updated';
+  } else {
+    // Create new
+    const res = await mondayQuery(`mutation {
+      create_item(board_id:${boardId}, item_name:"${itemName}",
+        column_values:${cvStr}, create_labels_if_missing:true) { id }
+    }`);
+    const newId = res?.data?.create_item?.id;
+    if (newId) {
+      appt.mondayId = newId;
+      try { localStorage.setItem(APPT_KEY, JSON.stringify(appointments)); } catch(e) {}
+    }
+    return 'created';
+  }
+}
+
+async function loadApptsFromMonday() {
+  if (!AUTH.getMondayKey()) { toast('⚠ No Monday.com key'); return; }
+  const statusEl = document.getElementById('appt-sync-status');
+  if (statusEl) statusEl.textContent = '⟳ Loading from Monday…';
+
+  try {
+    const boardId = APPT_BOARD_ID;
+    // Search for items matching this agent
+    const res = await mondayQuery(`{
+      boards(ids:${boardId}) {
+        items_page(limit:100) {
+          items {
+            id name
+            column_values { id title text value }
+          }
+        }
+      }
+    }`);
+    const items = res?.data?.boards?.[0]?.items_page?.items || [];
+
+    const get = (item, ...kws) => {
+      const cv = item.column_values?.find(c => kws.some(k=>(c.title||'').toLowerCase().includes(k)));
+      if (!cv) return '';
+      if (cv.text) return cv.text;
+      try { const v=JSON.parse(cv.value||'null'); return v?.label?.text||v?.text||''; } catch { return ''; }
+    };
+
+    let imported = 0;
+    const existingIds = new Set(appointments.map(a => a.mondayId).filter(Boolean));
+
+    items
+      .filter(item => !existingIds.has(item.id))
+      .filter(item => {
+        // Only load items that belong to this agent
+        const agentField = get(item,'agent','advisor');
+        return !agentField || agentField.toLowerCase().includes((session?.name||'').split(' ')[0].toLowerCase());
+      })
+      .forEach(item => {
+        const status = get(item,'status') || 'Scheduled';
+        const type   = get(item,'type','category') || 'Other';
+        appointments.push({
+          id:        `appt_monday_${item.id}`,
+          mondayId:  item.id,
+          name:      item.name.replace(/\s*—.*/, '').trim(),
+          date:      get(item,'date','scheduled'),
+          time:      '',
+          type, status,
+          phone:     get(item,'phone','mobile'),
+          notes:     get(item,'notes','note','comment'),
+          agentId, agentName: session?.name || '',
+          savedAt:   new Date().toISOString(),
+        });
+        imported++;
+      });
+
+    try { localStorage.setItem(APPT_KEY, JSON.stringify(appointments)); } catch(e) {}
+    renderAppts();
+    const msg = `✓ ${imported} appointments loaded from Monday`;
+    if (statusEl) { statusEl.textContent = msg; statusEl.style.color='#2DCA73'; }
+    toast(msg);
+  } catch(e) {
+    if (statusEl) { statusEl.textContent = '✗ ' + e.message; statusEl.style.color='#E74C3C'; }
+    toast('⚠ Load failed: ' + e.message);
+  }
 }
 </script>
 

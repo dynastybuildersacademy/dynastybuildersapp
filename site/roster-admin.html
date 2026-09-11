@@ -122,6 +122,20 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
   <div class="tab-pane active" id="pane-roster">
     <div class="card">
       <div class="card-title">Agent Roster <span id="roster-count" style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;margin-left:8px;"></span></div>
+      <!-- PIN LOOKUP TOOL -->
+      <div style="background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.2);border-radius:10px;
+        padding:14px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        <span style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;
+          color:var(--gold);letter-spacing:.05em;white-space:nowrap;">🔑 PIN LOOKUP</span>
+        <input type="text" id="pin-lookup-input" placeholder="Type agent name or ID…"
+          oninput="pinLookup()"
+          style="flex:1;min-width:160px;background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.12);
+            border-radius:7px;padding:8px 12px;color:var(--text);font-family:'DM Mono',monospace;
+            font-size:12px;outline:none;">
+        <div id="pin-lookup-result" style="font-family:'DM Mono',monospace;font-size:12px;
+          color:var(--text);min-width:200px;"></div>
+      </div>
+
       <div class="search-bar">
         <span class="si">🔍</span>
         <input type="text" id="roster-search" placeholder="Search by name, ID, phone, email…" oninput="renderRoster()">
@@ -271,6 +285,37 @@ function rolePill(role) {
 }
 
 // ── ROSTER ────────────────────────────────────────────────────
+// ── PIN LOOKUP ────────────────────────────────────────────────
+function pinLookup() {
+  const q = (document.getElementById('pin-lookup-input').value || '').toLowerCase().trim();
+  const result = document.getElementById('pin-lookup-result');
+  if (!q || q.length < 2) { result.innerHTML = ''; return; }
+
+  const matches = agentList.filter(a =>
+    a.name.toLowerCase().includes(q) || a.id.toLowerCase().includes(q) ||
+    (a.phpId||'').includes(q) || (a.phone||'').includes(q)
+  ).slice(0, 5);
+
+  if (!matches.length) {
+    result.innerHTML = '<span style="color:var(--muted);">No agent found</span>';
+    return;
+  }
+
+  result.innerHTML = matches.map(a =>
+    `<div style="display:flex;align-items:center;gap:10px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.06);">
+      <span style="color:var(--text);font-weight:700;min-width:140px;">${a.name}</span>
+      <span style="color:var(--muted);font-size:10px;">${a.id}</span>
+      <span style="background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.3);
+        border-radius:5px;padding:2px 10px;color:var(--gold);font-weight:700;letter-spacing:.1em;">
+        PIN: ${a.pin||'—'}
+      </span>
+      <button onclick="navigator.clipboard.writeText('${a.pin||''}').then(()=>toast('PIN copied'))"
+        style="background:none;border:none;cursor:pointer;font-size:12px;color:var(--muted);"
+        title="Copy PIN">📋</button>
+    </div>`
+  ).join('');
+}
+
 function renderRoster() {
   const q = (document.getElementById('roster-search')?.value||'').toLowerCase();
   const roleF = document.getElementById('filter-role')?.value||'';
@@ -604,6 +649,98 @@ document.addEventListener('DOMContentLoaded', () => {
   } catch(e) {}
   renderRoster();
 });
+
+// ── SYNC AGENT TO MONDAY ROSTER ──────────────────────────────────
+// Board: 18411252280 (DBA Agent Roster)
+const ROSTER_BOARD = 18411252280;
+
+async function syncAgentToMonday(agent, action) {
+  if (!AUTH.getMondayKey()) return;
+  try {
+    if (action === 'create') {
+      // Find column IDs on roster board first
+      const colRes = await mondayQuery(`{boards(ids:${ROSTER_BOARD}){columns{id title}}}`);
+      const cols = colRes?.data?.boards?.[0]?.columns || [];
+      const col = (kw) => cols.find(c => (c.title||'').toLowerCase().includes(kw))?.id || '';
+      
+      const cv = {};
+      if (col('php'))    cv[col('php')]    = agent.phpId  || '';
+      if (col('phone'))  cv[col('phone')]  = { phone: agent.phone||'', countryShortName:'US' };
+      if (col('email'))  cv[col('email')]  = agent.email  || '';
+      if (col('pin'))    cv[col('pin')]    = agent.pin    || '';
+      if (col('role'))   cv[col('role')]   = agent.role   || '';
+      if (col('agent id') || col('agent_id')) {
+        const idCol = col('agent id') || col('agent_id');
+        cv[idCol] = agent.id;
+      }
+      if (col('top25') || col('board')) {
+        const boardCol = col('top25') || col('board');
+        cv[boardCol] = agent.top25BoardId || '';
+      }
+
+      const cvStr = JSON.stringify(JSON.stringify(cv));
+      await mondayQuery(`mutation {
+        create_item(
+          board_id: ${ROSTER_BOARD},
+          item_name: "${agent.name.replace(/"/g,"'")}",
+          column_values: ${cvStr},
+          create_labels_if_missing: true
+        ) { id }
+      }`);
+      toast(`✓ ${agent.name} synced to Monday roster`);
+    } else if (action === 'update') {
+      // Find existing item on roster board
+      const searchRes = await mondayQuery(`{
+        items_by_column_values(board_id:${ROSTER_BOARD}, column_id:"name", column_value:"${agent.name.replace(/"/g,"'")}") {
+          id
+        }
+      }`);
+      const itemId = searchRes?.data?.items_by_column_values?.[0]?.id;
+      if (!itemId) {
+        // Not found — create instead
+        await syncAgentToMonday(agent, 'create');
+        return;
+      }
+      // Update columns
+      const colRes = await mondayQuery(`{boards(ids:${ROSTER_BOARD}){columns{id title}}}`);
+      const cols = colRes?.data?.boards?.[0]?.columns || [];
+      const col = (kw) => cols.find(c => (c.title||'').toLowerCase().includes(kw))?.id || '';
+      
+      const cv = {};
+      if (col('php'))    cv[col('php')]    = agent.phpId  || '';
+      if (col('role'))   cv[col('role')]   = agent.role   || '';
+      if (col('pin'))    cv[col('pin')]    = agent.pin    || '';
+      if (col('top25') || col('board')) {
+        const boardCol = col('top25') || col('board');
+        cv[boardCol] = agent.top25BoardId || '';
+      }
+      const cvStr = JSON.stringify(JSON.stringify(cv));
+      await mondayQuery(`mutation {
+        change_multiple_column_values(
+          board_id: ${ROSTER_BOARD},
+          item_id: ${itemId},
+          column_values: ${cvStr},
+          create_labels_if_missing: true
+        ) { id }
+      }`);
+      toast(`✓ ${agent.name} updated in Monday roster`);
+    }
+  } catch(e) {
+    console.warn('[Roster] Monday sync failed:', e.message);
+    toast(`⚠ Saved locally — Monday sync failed: ${e.message}`);
+  }
+}
+
+// ── GENERATE AUTH.JS SNIPPET ─────────────────────────────────────
+// Shows the auth.js line for any agent — admin can copy and add to deploy
+function showAuthSnippet(agentId) {
+  const a = agentList.find(ag => ag.id === agentId);
+  if (!a) return;
+  const snippet = `  { id:"${a.id}", phpId:"${a.phpId||''}", name:"${a.name}", pin:"${a.pin}", role:"${a.role}", uplineId:"${a.uplineId||''}", email:"${a.email||''}", phone:"${a.phone||''}", top25BoardId:"${a.top25BoardId||''}" },`;
+  navigator.clipboard.writeText(snippet);
+  toast('✓ auth.js line copied to clipboard');
+}
+
 </script>
 </body>
 </html>

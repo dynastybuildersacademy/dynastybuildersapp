@@ -1049,7 +1049,7 @@ async function loadFromMonday() {
             items {
               id name
               group { id title }
-              column_values { id text value }
+              column_values { id title text value }
             }
           }
         }
@@ -1066,16 +1066,17 @@ async function loadFromMonday() {
     let imported = 0, updated = 0;
     allItems.forEach(item => {
       const get = (...kws) => {
-        const cv = item.column_values.find(c =>
-          kws.some(k => (colTitles[c.id]||'').includes(k))
-        );
+        // Match by column title (now fetched with each item) OR colTitles map
+        const cv = item.column_values.find(c => {
+          const title = (c.title || colTitles[c.id] || '').toLowerCase();
+          return kws.some(k => title.includes(k));
+        });
         if (!cv) return '';
-        // text field first; if empty try parsing JSON value (status/dropdown columns)
         if (cv.text) return cv.text;
         try {
           const v = JSON.parse(cv.value||'null');
-          if (v?.label?.text) return v.label.text;  // status column
-          if (v?.text)        return v.text;          // dropdown
+          if (v?.label?.text) return v.label.text;
+          if (v?.text)        return v.text;
           if (typeof v === 'string') return v;
         } catch {}
         return '';
