@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0">
+<title>AI Personal Assistant · Dynasty Builders</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;700;800;900&family=Barlow:wght@400;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="auth.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --navy:#0A1628;--navy-mid:#0F1E38;--navy-light:#132240;
+  --gold:#C9A84C;--gold-light:#E8C97A;--green:#2DCA73;
+  --blue:#5DADE2;--purple:#9B59B6;--orange:#E67E22;--red:#E74C3C;
+  --text:#E8EDF5;--muted:#6B7C93;--border:rgba(255,255,255,.08);
+  --surface:rgba(255,255,255,.03);--surface2:rgba(255,255,255,.05);
+}
+body{background:var(--navy);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh;padding-bottom:80px;}
+
+/* HEADER */
+.header{background:linear-gradient(135deg,#0A1628,#0F1E38);border-bottom:1px solid rgba(201,168,76,.15);
+  padding:14px 18px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;}
+.back-btn{background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:8px;
+  padding:7px 12px;color:var(--muted);font-family:'DM Mono',monospace;font-size:11px;cursor:pointer;text-decoration:none;}
+.header-title{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;color:var(--gold-light);letter-spacing:.04em;flex:1;}
+.header-sub{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);}
+
+/* TABS */
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--border);background:var(--navy-mid);position:sticky;top:57px;z-index:99;}
+.tab{flex:1;padding:11px 4px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;
+  background:none;border:none;border-bottom:3px solid transparent;color:var(--muted);cursor:pointer;
+  letter-spacing:.04em;transition:all .2s;text-align:center;}
+.tab.active{color:var(--gold-light);border-bottom-color:var(--gold);}
+
+/* PANELS */
+.panel{display:none;padding:16px 14px;}
+.panel.active{display:block;}
+
+/* CARDS */
+.card{background:var(--navy-mid);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px;}
+.card-title{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:900;color:var(--gold);
+  text-transform:uppercase;letter-spacing:.09em;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+
+/* FORM ELEMENTS */
+input,select,textarea{width:100%;background:var(--navy-light);border:1px solid rgba(255,255,255,.12);
+  color:var(--text);border-radius:8px;padding:10px 12px;font-family:'Barlow',sans-serif;font-size:14px;
+  outline:none;transition:border-color .2s;}
+input:focus,select:focus,textarea:focus{border-color:rgba(201,168,76,.4);}
+textarea{resize:vertical;font-family:'DM Mono',monospace;font-size:12px;line-height:1.6;}
+label{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.06em;}
+.form-group{margin-bottom:12px;}
+
+/* BUTTONS */
+.btn{padding:10px 18px;border-radius:9px;font-family:'Barlow Condensed',sans-serif;font-size:15px;
+  font-weight:800;cursor:pointer;border:none;letter-spacing:.04em;transition:all .2s;}
+.btn-gold{background:linear-gradient(135deg,#C9A84C,#E8C97A);color:#0A1628;}
+.btn-ghost{background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--text);}
+.btn-blue{background:rgba(93,173,226,.12);border:1px solid rgba(93,173,226,.3);color:var(--blue);}
+.btn-green{background:rgba(45,202,115,.12);border:1px solid rgba(45,202,115,.3);color:var(--green);}
+.btn-red{background:rgba(231,76,60,.08);border:1px solid rgba(231,76,60,.2);color:var(--red);}
+
+/* PROMPT CARDS */
+.prompt-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;
+  padding:14px;margin-bottom:10px;cursor:pointer;transition:all .2s;}
+.prompt-card:hover{border-color:rgba(201,168,76,.3);background:rgba(201,168,76,.05);}
+.prompt-card.featured{border-color:rgba(201,168,76,.4);background:rgba(201,168,76,.06);}
+.prompt-title{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;color:var(--gold-light);margin-bottom:4px;}
+.prompt-desc{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);line-height:1.6;}
+.prompt-body{font-family:'DM Mono',monospace;font-size:11px;color:var(--text);line-height:1.7;
+  background:rgba(0,0,0,.2);border-radius:6px;padding:10px;margin-top:8px;white-space:pre-wrap;display:none;}
+.prompt-card.open .prompt-body{display:block;}
+
+/* AI CHAT */
+.chat-box{height:320px;overflow-y:auto;background:rgba(0,0,0,.2);border-radius:10px;
+  padding:12px;margin-bottom:10px;display:flex;flex-direction:column;gap:8px;}
+.msg{max-width:85%;padding:10px 13px;border-radius:10px;font-size:13px;line-height:1.6;}
+.msg.user{background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.25);
+  color:var(--text);align-self:flex-end;font-family:'Barlow',sans-serif;}
+.msg.ai{background:var(--surface2);border:1px solid var(--border);
+  color:var(--text);align-self:flex-start;font-family:'Barlow',sans-serif;}
+.msg.ai.loading{color:var(--muted);font-family:'DM Mono',monospace;font-size:11px;}
+.chat-input-row{display:flex;gap:8px;}
+.chat-input-row input{flex:1;}
+
+/* CONNECTION PILL */
+.conn-pill{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;
+  font-family:'DM Mono',monospace;font-size:10px;font-weight:700;}
+.conn-pill.connected{background:rgba(45,202,115,.12);border:1px solid rgba(45,202,115,.3);color:var(--green);}
+.conn-pill.disconnected{background:rgba(107,124,147,.1);border:1px solid rgba(107,124,147,.2);color:var(--muted);}
+
+/* CALENDAR */
+.cal-event{background:var(--surface);border:1px solid var(--border);border-radius:8px;
+  padding:10px 12px;margin-bottom:7px;display:flex;align-items:flex-start;gap:10px;}
+.cal-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+.cal-time{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);white-space:nowrap;}
+
+/* EMAIL */
+.email-row{background:var(--surface);border:1px solid var(--border);border-radius:8px;
+  padding:10px 12px;margin-bottom:6px;cursor:pointer;transition:all .2s;}
+.email-row:hover{border-color:rgba(201,168,76,.3);}
+.email-from{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;color:var(--text);}
+.email-subject{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);}
+.email-preview{font-size:12px;color:rgba(255,255,255,.4);margin-top:3px;}
+
+/* CONNECTED ACCOUNT BADGE */
+.acct-badge{display:flex;align-items:center;gap:10px;padding:10px 12px;
+  background:var(--surface);border:1px solid var(--border);border-radius:9px;margin-bottom:8px;}
+.acct-icon{font-size:22px;flex-shrink:0;}
+.acct-name{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;color:var(--text);}
+.acct-status{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);}
+
+/* SECTION LABEL */
+.section-label{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;margin-top:16px;}
+.section-label:first-child{margin-top:0;}
+
+/* PILL */
+.pill{display:inline-flex;align-items:center;padding:2px 8px;border-radius:10px;
+  font-family:'DM Mono',monospace;font-size:10px;font-weight:700;}
+.pill-gold{background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.3);color:var(--gold);}
+.pill-green{background:rgba(45,202,115,.12);border:1px solid rgba(45,202,115,.3);color:var(--green);}
+.pill-blue{background:rgba(93,173,226,.12);border:1px solid rgba(93,173,226,.3);color:var(--blue);}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);
+  background:var(--navy-mid);border:1px solid var(--gold);border-radius:8px;padding:10px 18px;
+  font-size:12px;font-family:'DM Mono',monospace;color:var(--gold-light);transition:all .3s;
+  opacity:0;z-index:999;white-space:nowrap;}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+</style>
+</head>
+<body>
+<script>AUTH.require('ai-assistant.html');</script>
+
+<div class="header">
+  <a href="hub.html" class="back-btn">← Hub</a>
+  <div>
+    <div class="header-title">🤖 AI Assistant</div>
+    <div class="header-sub">Email · Calendar · Prompts · AI Chat</div>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('connections',this)">🔗 Connect</button>
+  <button class="tab" onclick="switchTab('email',this)">✉️ Email</button>
+  <button class="tab" onclick="switchTab('calendar',this)">📅 Calendar</button>
+  <button class="tab" onclick="switchTab('prompts',this)">💡 Prompts</button>
+  <button class="tab" onclick="switchTab('chat',this)">🤖 AI Chat</button>
+</div>
+
+<!-- ══ CONNECTIONS ══ -->
+<div class="panel active" id="panel-connections">
+
+  <div class="card">
+    <div class="card-title">🔑 AI Account</div>
+    <div class="section-label">Connect your AI provider API key</div>
+    <div class="acct-badge" id="ai-acct-badge">
+      <div class="acct-icon">🤖</div>
+      <div style="flex:1">
+        <div class="acct-name" id="ai-acct-name">Not connected</div>
+        <div class="acct-status" id="ai-acct-status">Connect an AI provider below</div>
+      </div>
+      <span class="conn-pill disconnected" id="ai-conn-pill">● Disconnected</span>
+    </div>
+
+    <div class="form-group">
+      <label>AI Provider</label>
+      <select id="ai-provider" onchange="updateProviderHint()">
+        <option value="claude">Claude (Anthropic) — claude-sonnet-4-6</option>
+        <option value="chatgpt">ChatGPT (OpenAI) — gpt-4o</option>
+        <option value="gemini">Gemini (Google) — gemini-1.5-pro</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>API Key</label>
+      <input type="password" id="ai-api-key" placeholder="sk-ant-… or sk-… or AIza…">
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-top:4px;" id="ai-key-hint">
+        Get your Claude API key at console.anthropic.com → API Keys
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-gold" style="flex:2" onclick="saveAIKey()">✓ Connect AI</button>
+      <button class="btn btn-red" style="flex:1" onclick="clearAIKey()">Disconnect</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">✉️ Email Account</div>
+    <div class="section-label">Connect your email to analyze support threads</div>
+    <div class="acct-badge" id="email-acct-badge">
+      <div class="acct-icon">✉️</div>
+      <div style="flex:1">
+        <div class="acct-name" id="email-acct-name">Not connected</div>
+        <div class="acct-status" id="email-acct-status">Enter your email credentials or OAuth below</div>
+      </div>
+      <span class="conn-pill disconnected" id="email-conn-pill">● Disconnected</span>
+    </div>
+
+    <div class="form-group">
+      <label>Email Provider</label>
+      <select id="email-provider">
+        <option value="gmail">Gmail</option>
+        <option value="outlook">Outlook / Office 365</option>
+        <option value="yahoo">Yahoo Mail</option>
+        <option value="imap">Custom (IMAP)</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Email Address</label>
+      <input type="email" id="email-address" placeholder="you@example.com">
+    </div>
+    <div class="form-group">
+      <label>App Password <span style="color:var(--muted);font-size:9px;">— use App Password, not your main password</span></label>
+      <input type="password" id="email-password" placeholder="16-character app password">
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-blue" style="flex:2" onclick="saveEmailAccount()">✓ Connect Email</button>
+      <button class="btn btn-ghost" style="flex:1" onclick="clearEmailAccount()">Clear</button>
+    </div>
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-top:10px;line-height:1.7;">
+      ℹ For Gmail: enable 2FA → Google Account → Security → App Passwords → select Mail.<br>
+      Your credentials are stored only in your browser's localStorage — never sent to any server.
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📅 Calendar</div>
+    <div class="acct-badge">
+      <div class="acct-icon">📅</div>
+      <div style="flex:1">
+        <div class="acct-name" id="gcal-acct-name">Google Calendar</div>
+        <div class="acct-status" id="gcal-acct-status">Connect via the CFT Matcher or below</div>
+      </div>
+      <span class="conn-pill disconnected" id="gcal-conn-pill">● Disconnected</span>
+    </div>
+    <button class="btn btn-blue" style="width:100%;" onclick="connectGoogleCal()">
+      <svg width="16" height="16" viewBox="0 0 48 48" style="vertical-align:middle;margin-right:6px;">
+        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+        <path fill="#FBBC05" d="M10.53 28.59c-.5-1.45-.79-3-.79-4.59s.29-3.14.79-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+      </svg>
+      Connect Google Calendar
+    </button>
+  </div>
+
+</div>
+
+<!-- ══ EMAIL ══ -->
+<div class="panel" id="panel-email">
+  <div class="card">
+    <div class="card-title">✉️ AI Client Support Analysis</div>
+    <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);line-height:1.8;margin-bottom:14px;">
+      Reads your last 90 days of support emails, finds repeating questions, and generates an FAQ — 
+      plus the process that would have prevented each question.
+    </div>
+    <div class="form-group">
+      <label>Analysis Period</label>
+      <select id="email-period">
+        <option value="90">Last 90 days</option>
+        <option value="30">Last 30 days</option>
+        <option value="180">Last 6 months</option>
+        <option value="365">Last year</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Focus Folder / Label</label>
+      <input type="text" id="email-folder" value="Inbox" placeholder="Inbox, Support, Team…">
+    </div>
+    <button class="btn btn-gold" style="width:100%;margin-bottom:8px;" onclick="runEmailAnalysis()">
+      🔍 Analyze Support Inbox with AI
+    </button>
+    <button class="btn btn-ghost" style="width:100%;" onclick="composeEmail()">
+      ✉️ Compose Email with AI
+    </button>
+  </div>
+
+  <div id="email-analysis-result" style="display:none;">
+    <div class="card">
+      <div class="card-title">📊 Analysis Result</div>
+      <div id="email-analysis-content" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text);line-height:1.8;white-space:pre-wrap;"></div>
+      <div style="display:flex;gap:8px;margin-top:12px;">
+        <button class="btn btn-ghost" style="flex:1;font-size:12px;" onclick="copyAnalysis()">📋 Copy</button>
+        <button class="btn btn-ghost" style="flex:1;font-size:12px;" onclick="continueInChat()">💬 Continue in Chat</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EMAIL COMPOSE -->
+  <div id="email-compose-section" style="display:none;">
+    <div class="card">
+      <div class="card-title">✉️ Compose with AI</div>
+      <div class="form-group">
+        <label>To</label>
+        <input type="email" id="compose-to" placeholder="recipient@example.com">
+      </div>
+      <div class="form-group">
+        <label>Subject</label>
+        <input type="text" id="compose-subject" placeholder="Email subject">
+      </div>
+      <div class="form-group">
+        <label>What should this email say? (AI will write it)</label>
+        <textarea id="compose-intent" rows="3" placeholder="e.g. Follow up with John about his application status, remind him about next steps, keep it warm and encouraging…"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Tone</label>
+        <select id="compose-tone">
+          <option value="professional">Professional</option>
+          <option value="warm">Warm & Personal</option>
+          <option value="urgent">Urgent / Action Required</option>
+          <option value="celebratory">Celebratory</option>
+          <option value="coaching">Coaching / Mentorship</option>
+        </select>
+      </div>
+      <button class="btn btn-gold" style="width:100%;" onclick="generateEmail()">✨ Generate Email</button>
+      <div id="compose-result" style="margin-top:12px;display:none;">
+        <textarea id="compose-output" rows="10" style="margin-bottom:8px;"></textarea>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-green" style="flex:1;font-size:12px;" onclick="copyEmail()">📋 Copy Email</button>
+          <button class="btn btn-ghost" style="flex:1;font-size:12px;" onclick="refineEmail()">↻ Refine</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CALENDAR ══ -->
+<div class="panel" id="panel-calendar">
+  <div class="card">
+    <div class="card-title">📅 Schedule Intelligence</div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+      <button class="btn btn-gold btn-sm" onclick="loadCalendar('today')" style="font-size:12px;padding:7px 14px;">Today</button>
+      <button class="btn btn-ghost" onclick="loadCalendar('week')" style="font-size:12px;padding:7px 14px;">This Week</button>
+      <button class="btn btn-ghost" onclick="loadCalendar('month')" style="font-size:12px;padding:7px 14px;">This Month</button>
+      <button class="btn btn-blue" onclick="analyzeSchedule()" style="font-size:12px;padding:7px 14px;">🤖 AI Analyze</button>
+    </div>
+    <div id="calendar-events" style="min-height:60px;">
+      <div style="text-align:center;padding:20px;font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);">
+        Connect Google Calendar in the Connect tab to see your events here.
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🧠 AI Schedule Analysis</div>
+    <div class="form-group">
+      <label>What do you want AI to help with?</label>
+      <select id="cal-ai-mode">
+        <option value="optimize">Optimize my schedule for productivity</option>
+        <option value="prep">Prep me for my next appointment</option>
+        <option value="followup">Write follow-up messages after today's meetings</option>
+        <option value="gaps">Find my best time blocks for deep work</option>
+        <option value="custom">Custom request</option>
+      </select>
+    </div>
+    <div class="form-group" id="cal-custom-group" style="display:none;">
+      <label>Your request</label>
+      <textarea id="cal-custom-prompt" rows="2" placeholder="What would you like AI to do with your calendar?"></textarea>
+    </div>
+    <button class="btn btn-gold" style="width:100%;" onclick="runCalendarAI()">✨ Run AI Analysis</button>
+    <div id="cal-ai-result" style="margin-top:12px;display:none;">
+      <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text);line-height:1.8;white-space:pre-wrap;
+        background:rgba(0,0,0,.2);border-radius:8px;padding:12px;" id="cal-ai-content"></div>
+    </div>
+  </div>
+
+  <!-- QUICK APPOINTMENT ADD -->
+  <div class="card">
+    <div class="card-title">+ Quick Add from AI</div>
+    <div class="form-group">
+      <label>Describe the appointment</label>
+      <textarea id="quick-appt-desc" rows="2" placeholder="e.g. RI with Maria Thompson tomorrow at 2pm, Zoom call — she's interested in the business opportunity"></textarea>
+    </div>
+    <button class="btn btn-gold" style="width:100%;" onclick="parseApptWithAI()">🤖 Parse & Add to Tracker</button>
+    <div id="quick-appt-result" style="margin-top:8px;display:none;font-family:'DM Mono',monospace;font-size:11px;color:var(--green);"></div>
+  </div>
+</div>
+
+<!-- ══ PROMPTS ══ -->
+<div class="panel" id="panel-prompts">
+
+  <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);line-height:1.7;margin-bottom:14px;padding:0 2px;">
+    Tap any prompt to expand it. Copy it into your AI tool or use the built-in chat.
+  </div>
+
+  <div class="section-label">⭐ Featured — Client Support</div>
+
+  <div class="prompt-card featured" onclick="togglePrompt(this)">
+    <div style="display:flex;align-items:flex-start;gap:10px;">
+      <div style="font-size:24px;flex-shrink:0;">📬</div>
+      <div>
+        <div class="prompt-title">AI Client Support FAQ Generator</div>
+        <div class="prompt-desc">Reads 90 days of support emails → finds repeat questions → writes FAQ + prevention process</div>
+      </div>
+    </div>
+    <div class="prompt-body">AI CLIENT SUPPORT
+Connect Email + this Prompt:
+
+Read the last 90 days of my support inbox. Find the questions I'm answering over and over, group them, and write an FAQ answering the top 10 (use real information from those threads). Then, for each one, tell me the process or onboarding that would have stopped the question from ever being asked.</div>
+    <div style="display:flex;gap:6px;margin-top:10px;">
+      <button class="btn btn-gold" style="font-size:11px;padding:5px 14px;" onclick="copyPrompt(event,this)">📋 Copy</button>
+      <button class="btn btn-blue" style="font-size:11px;padding:5px 14px;" onclick="useInChat(event,this)">💬 Use in Chat</button>
+    </div>
+  </div>
+
+  <div class="section-label">📞 Recruiting & Follow-Up</div>
+
+  <div class="prompt-card" onclick="togglePrompt(this)">
+    <div class="prompt-title">🎯 Recruiting Script Generator</div>
+    <div class="prompt-desc">Writes a personalized recruiting pitch based on a prospect's background</div>
+    <div class="prompt-body">I'm recruiting for Dynasty Builders Academy, a PHP/HGI life insurance agency. Write me a natural, non-pushy recruiting script for this prospect:
+
+Name: [NAME]
+Occupation: [JOB]
+Key motivation: [WHAT THEY CARE ABOUT — money, time freedom, helping others, etc.]
+
+The script should:
+1. Open with a genuine connection to their current situation
+2. Position the opportunity around what they care about most
+3. Use the 3-question soft close: "Are you open to looking at something on the side? Do you keep your options open? Great — I'm not even sure if you'd qualify, but can I share what we're doing?"
+4. End with a specific ask for a 20-minute call</div>
+    <div style="display:flex;gap:6px;margin-top:10px;">
+      <button class="btn btn-gold" style="font-size:11px;padding:5px 14px;" onclick="copyPrompt(event,this)">📋 Copy</button>
+      <button class="btn btn-blue" style="font-size:11px;padding:5px 14px;" onclick="useInChat(event,this)">💬 Use in Chat</button>
+    </div>
+  </div>
+
+  <div class="prompt-card" onclick="togglePrompt(this)">
+    <div class="prompt-title">💬 Follow-Up Message Writer</div>
+    <div class="prompt-desc">Writes follow-up texts and emails after appointments and calls</div>
+    <div class="prompt-body">Write a follow-up message for this situation:
+
+Person: [NAME]
+What happened: [DESCRIBE THE CALL/MEETING — e.g. "we had a great RI, they're interested but want to think about it"]
+Their main concern: [OBJECTION OR HESITATION]
+Next step I want: [e.g. "schedule a second call", "get them to the BOM", "have them complete the application"]
+
+Write:
+1. A text message (under 160 characters, warm and personal)
+2. An email version (3-4 sentences, professional but friendly)
+3. A voicemail script (under 30 seconds)
+
+Keep the tone warm, never pushy. Reference something specific from our conversation.</div>
+    <div style="display:flex;gap:6px;margin-top:10px;">
+      <button class="btn btn-gold" style="font-size:11px;padding:5px 14px;" onclick="copyPrompt(event,this)">📋 Copy</button>
+      <button class="btn btn-blue" style="font-size:11px;padding:5px 14px;" onclick="useInChat(event,this)">💬 Use in Chat</button>
+    </div>
+  </div>
+
+  <div class="section-label">🏆 Leadership & Team</div>
+
+  <div class="prompt-card" onclick="togglePrompt(this)">
+    <div class="prompt-title">📊 Team Performance Review</div>
+    <div class="prompt-desc">Analyzes team numbers and gives actionable coaching recommendations</div>
+    <div class="prompt-body">I'm an MD at Dynasty Builders Academy (PHP/HGI life insurance). Here are my team's numbers for this week:
+
+[PASTE YOUR TEAM STATS — calls, contacts, appts, shows, recruits, points]
+
+Analyze this and give me:
+1. Who is on track vs off track for their promotion run
+2. The #1 coaching focus for each agent this week
+3. What to say in my team message tonight to motivate without pressuring
+4. Who I should call 1-on-1 this week and what to say
+5. What pattern do you see in the numbers that I might be missing?</div>
+    <div style="display:flex;gap:6px;margin-top:10px;">
+      <button class="btn btn-gold" style="font-size:11px;padding:5px 14px;" onclick="copyPrompt(event,this)">📋 Copy</button>
+      <button class="btn btn-blue" style="font-size:11px;padding:5px 14px;" onclick="useInChat(event,this)">💬 Use in Chat</button>
+    </div>
+  </div>
+
+  <div class="prompt-card" onclick="togglePrompt(this)">
+    <div class="prompt-title">📣 Weekly Team Message</div>
+    <div class="prompt-desc">Writes your weekly accountability and motivational team message</div>
+    <div class="prompt-body">Write a weekly team message for my Dynasty Builders agents. This week's theme: [THEME — e.g. "activity leads to results", "consistency over intensity", "November is the month to push"].
+
+Context:
+- Top performer this week: [NAME] with [HIGHLIGHT]
+- Team challenge we're facing: [ISSUE]
+- Goal for next week: [GOAL]
+- One story or principle from [BOOK WE'RE READING] that applies
+
+The message should:
+- Be 200-300 words
+- Start with energy and acknowledgment
+- Include one specific actionable challenge for the week
+- End with a call to action for the Monday morning huddle</div>
+    <div style="display:flex;gap:6px;margin-top:10px;">
+      <button class="btn btn-gold" style="font-size:11px;padding:5px 14px;" onclick="copyPrompt(event,this)">📋 Copy</button>
+      <button class="btn btn-blue" style="font-size:11px;padding:5px 14px;" onclick="useInChat(event,this)">💬 Use in Chat</button>
+    </div>
+  </div>
+
+  <div class="section-label">📋 Operations & Admin</div>
+
+  <div class="prompt-card" onclick="togglePrompt(this)">
+    <div class="prompt-title">📑 SOP / Process Builder</div>
+    <div class="prompt-desc">Turns a process you describe into a structured SOP document</div>
+    <div class="prompt-body">Turn this into a clear SOP (Standard Operating Procedure) for my Dynasty Builders team:
+
+Process: [DESCRIBE THE PROCESS IN YOUR OWN WORDS — e.g. "when a new agent joins, here's what happens..."]
+
+Format it as:
+- Process name and purpose (1 sentence)
+- Who is responsible
+- Step-by-step numbered instructions (specific enough that someone new can follow without asking questions)
+- What success looks like
+- Common mistakes to avoid
+- Resources and links needed</div>
+    <div style="display:flex;gap:6px;margin-top:10px;">
+      <button class="btn btn-gold" style="font-size:11px;padding:5px 14px;" onclick="copyPrompt(event,this)">📋 Copy</button>
+      <button class="btn btn-blue" style="font-size:11px;padding:5px 14px;" onclick="useInChat(event,this)">💬 Use in Chat</button>
+    </div>
+  </div>
+
+  <div class="prompt-card" onclick="togglePrompt(this)">
+    <div class="prompt-title">🎯 Onboarding Gap Finder</div>
+    <div class="prompt-desc">Identifies what's missing from your onboarding that causes agent churn</div>
+    <div class="prompt-body">I run a life insurance agency (PHP/HGI). Here are the most common reasons agents quit or become inactive in their first 90 days:
+
+[LIST THE REASONS YOU SEE — e.g. "don't know how to prospect", "scared of rejection", "didn't understand the comp plan", etc.]
+
+For each reason:
+1. What should have been covered in onboarding to prevent it?
+2. At what point in the first 90 days should it have been addressed?
+3. Write me a specific check-in question I can ask agents at day 30 to catch this early
+
+Then give me a revised 90-day onboarding checklist that addresses all of these gaps.</div>
+    <div style="display:flex;gap:6px;margin-top:10px;">
+      <button class="btn btn-gold" style="font-size:11px;padding:5px 14px;" onclick="copyPrompt(event,this)">📋 Copy</button>
+      <button class="btn btn-blue" style="font-size:11px;padding:5px 14px;" onclick="useInChat(event,this)">💬 Use in Chat</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══ AI CHAT ══ -->
+<div class="panel" id="panel-chat">
+  <div class="card" style="padding:12px;">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:900;color:var(--gold);">🤖 AI CHAT</div>
+      <span class="conn-pill disconnected" id="chat-conn-pill" style="font-size:9px;">No key connected</span>
+      <button class="btn btn-ghost" style="font-size:10px;padding:4px 10px;margin-left:auto;" onclick="clearChat()">Clear</button>
+    </div>
+
+    <div class="chat-box" id="chat-box">
+      <div class="msg ai">👋 Hi! I'm your DBA AI Assistant. Connect your API key in the Connect tab to start chatting, or I can help you explore the prompt library. What would you like to work on?</div>
+    </div>
+
+    <div class="chat-input-row">
+      <input type="text" id="chat-input" placeholder="Ask anything about recruiting, clients, team…" onkeydown="if(event.key==='Enter')sendChat()">
+      <button class="btn btn-gold" style="white-space:nowrap;padding:10px 16px;" onclick="sendChat()">Send ▶</button>
+    </div>
+
+    <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;">
+      <button class="btn btn-ghost" style="font-size:10px;padding:5px 10px;" onclick="quickChat('Write a recruiting message for someone who works in healthcare')">Healthcare recruit</button>
+      <button class="btn btn-ghost" style="font-size:10px;padding:5px 10px;" onclick="quickChat('Write a follow-up text for someone who said they need to think about it')">Follow-up text</button>
+      <button class="btn btn-ghost" style="font-size:10px;padding:5px 10px;" onclick="quickChat('Help me write a team motivation message for Monday morning')">Team message</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── SESSION ───────────────────────────────────────────────────
+const session = AUTH.getSession();
+
+// ── STORAGE KEYS ─────────────────────────────────────────────
+const AI_KEY_STORE    = 'dba_ai_api_key';
+const AI_PROV_STORE   = 'dba_ai_provider';
+const EMAIL_STORE     = 'dba_email_account';
+const CHAT_HIST_STORE = 'dba_ai_chat_history';
+
+// ── TABS ──────────────────────────────────────────────────────
+function switchTab(tab, el) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + tab).classList.add('active');
+  el.classList.add('active');
+}
+
+// ── TOAST ─────────────────────────────────────────────────────
+function toast(msg, duration = 2800) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), duration);
+}
+
+// ── AI KEY ────────────────────────────────────────────────────
+function updateProviderHint() {
+  const prov = document.getElementById('ai-provider').value;
+  const hints = {
+    claude:  'Get your Claude API key at console.anthropic.com → API Keys',
+    chatgpt: 'Get your OpenAI API key at platform.openai.com → API Keys',
+    gemini:  'Get your Gemini API key at aistudio.google.com → Get API Key',
+  };
+  document.getElementById('ai-key-hint').textContent = hints[prov] || '';
+}
+
+function saveAIKey() {
+  const key  = document.getElementById('ai-api-key').value.trim();
+  const prov = document.getElementById('ai-provider').value;
+  if (!key) { toast('⚠ Enter your API key first'); return; }
+  localStorage.setItem(AI_KEY_STORE, key);
+  localStorage.setItem(AI_PROV_STORE, prov);
+  updateAIConnectionUI(true, prov);
+  toast('✓ AI key saved — never leaves your device');
+}
+
+function clearAIKey() {
+  localStorage.removeItem(AI_KEY_STORE);
+  localStorage.removeItem(AI_PROV_STORE);
+  document.getElementById('ai-api-key').value = '';
+  updateAIConnectionUI(false, '');
+  toast('✓ AI key removed');
+}
+
+function getAIKey() { return localStorage.getItem(AI_KEY_STORE) || ''; }
+function getAIProvider() { return localStorage.getItem(AI_PROV_STORE) || 'claude'; }
+
+function updateAIConnectionUI(connected, prov) {
+  const names = { claude:'Claude (Anthropic)', chatgpt:'ChatGPT (OpenAI)', gemini:'Gemini (Google)' };
+  const nameEl   = document.getElementById('ai-acct-name');
+  const statusEl = document.getElementById('ai-acct-status');
+  const pillEl   = document.getElementById('ai-conn-pill');
+  const chatPill = document.getElementById('chat-conn-pill');
+  if (connected) {
+    if (nameEl)   nameEl.textContent   = names[prov] || prov;
+    if (statusEl) statusEl.textContent = 'API key stored locally · Ready to use';
+    [pillEl, chatPill].forEach(p => { if(p){p.textContent='● Connected';p.className='conn-pill connected';} });
+  } else {
+    if (nameEl)   nameEl.textContent   = 'Not connected';
+    if (statusEl) statusEl.textContent = 'Connect an AI provider below';
+    [pillEl, chatPill].forEach(p => { if(p){p.textContent='● Disconnected';p.className='conn-pill disconnected';} });
+  }
+}
+
+// ── EMAIL ACCOUNT ─────────────────────────────────────────────
+function saveEmailAccount() {
+  const email    = document.getElementById('email-address').value.trim();
+  const password = document.getElementById('email-password').value.trim();
+  const provider = document.getElementById('email-provider').value;
+  if (!email) { toast('⚠ Enter your email address'); return; }
+  localStorage.setItem(EMAIL_STORE, JSON.stringify({ email, password, provider }));
+  updateEmailUI(true, email);
+  toast('✓ Email account saved locally');
+}
+
+function clearEmailAccount() {
+  localStorage.removeItem(EMAIL_STORE);
+  document.getElementById('email-address').value = '';
+  document.getElementById('email-password').value = '';
+  updateEmailUI(false, '');
+  toast('✓ Email account removed');
+}
+
+function getEmailAccount() {
+  try { return JSON.parse(localStorage.getItem(EMAIL_STORE) || 'null'); } catch { return null; }
+}
+
+function updateEmailUI(connected, email) {
+  const nameEl   = document.getElementById('email-acct-name');
+  const statusEl = document.getElementById('email-acct-status');
+  const pillEl   = document.getElementById('email-conn-pill');
+  if (connected) {
+    if (nameEl)   nameEl.textContent   = email;
+    if (statusEl) statusEl.textContent = 'Ready for AI analysis';
+    if (pillEl)   { pillEl.textContent = '● Connected'; pillEl.className = 'conn-pill connected'; }
+  } else {
+    if (nameEl)   nameEl.textContent   = 'Not connected';
+    if (statusEl) statusEl.textContent = 'Enter your email credentials or OAuth below';
+    if (pillEl)   { pillEl.textContent = '● Disconnected'; pillEl.className = 'conn-pill disconnected'; }
+  }
+}
+
+// ── GOOGLE CALENDAR ───────────────────────────────────────────
+async function connectGoogleCal() {
+  try {
+    const res = await fetch('/api/config');
+    const data = await res.json();
+    const clientId = data.googleClientId;
+    if (!clientId) { toast('⚠ Google Calendar not configured — see CFT Matcher'); return; }
+    const redirectUri = window.location.origin + '/ai-assistant.html';
+    const scope = 'https://www.googleapis.com/auth/calendar.readonly';
+    window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent(scope)}&access_type=offline&prompt=consent`;
+  } catch(e) { toast('⚠ ' + e.message); }
+}
+
+function updateGCalUI(connected, email) {
+  const nameEl   = document.getElementById('gcal-acct-name');
+  const statusEl = document.getElementById('gcal-acct-status');
+  const pillEl   = document.getElementById('gcal-conn-pill');
+  if (connected) {
+    if (nameEl)   nameEl.textContent   = email || 'Google Calendar';
+    if (statusEl) statusEl.textContent = 'Calendar connected · Events loading…';
+    if (pillEl)   { pillEl.textContent = '● Connected'; pillEl.className = 'conn-pill connected'; }
+  }
+}
+
+// ── EMAIL ANALYSIS ────────────────────────────────────────────
+async function runEmailAnalysis() {
+  const aiKey  = getAIKey();
+  if (!aiKey) { toast('⚠ Connect your AI key first in the Connect tab'); return; }
+
+  const days    = document.getElementById('email-period').value;
+  const folder  = document.getElementById('email-folder').value || 'Inbox';
+  const emailAcct = getEmailAccount();
+
+  const prompt = `AI CLIENT SUPPORT
+
+${emailAcct ? `Email account: ${emailAcct.email} (${emailAcct.provider})\nAnalysis period: last ${days} days\nFolder: ${folder}\n\n` : ''}Read the last ${days} days of my support inbox. Find the questions I'm answering over and over, group them, and write an FAQ answering the top 10 (use real information from those threads). Then, for each one, tell me the process or onboarding that would have stopped the question from ever being asked.
+
+${!emailAcct ? '\n[Note: No email account connected. I will generate a sample FAQ structure for a PHP/HGI life insurance MD that you can customize with your real email data. Connect your email in the Connect tab to run this analysis on your actual inbox.]' : ''}`;
+
+  const resultEl = document.getElementById('email-analysis-result');
+  const contentEl = document.getElementById('email-analysis-content');
+  resultEl.style.display = 'block';
+  contentEl.textContent = '⏳ Analyzing your inbox with AI…';
+
+  try {
+    const reply = await callAI(prompt, 2000);
+    contentEl.textContent = reply;
+    toast('✓ Analysis complete');
+    window._lastAnalysis = reply;
+  } catch(e) {
+    contentEl.textContent = '✗ Error: ' + e.message + '\n\nMake sure your AI API key is valid.';
+  }
+}
+
+function copyAnalysis() {
+  const text = document.getElementById('email-analysis-content').textContent;
+  navigator.clipboard.writeText(text).then(() => toast('✓ Copied to clipboard'));
+}
+
+function continueInChat() {
+  const text = document.getElementById('email-analysis-content').textContent;
+  window._chatContext = text;
+  switchTab('chat', document.querySelectorAll('.tab')[4]);
+  document.getElementById('chat-input').placeholder = 'Ask a follow-up question about your email analysis…';
+  toast('✓ Context loaded in chat');
+}
+
+// ── EMAIL COMPOSE ─────────────────────────────────────────────
+function composeEmail() {
+  const sec = document.getElementById('email-compose-section');
+  sec.style.display = sec.style.display === 'none' ? 'block' : 'none';
+}
+
+async function generateEmail() {
+  const aiKey = getAIKey();
+  if (!aiKey) { toast('⚠ Connect your AI key first'); return; }
+  const intent = document.getElementById('compose-intent').value.trim();
+  if (!intent) { toast('⚠ Describe what the email should say'); return; }
+  const tone    = document.getElementById('compose-tone').value;
+  const subject = document.getElementById('compose-subject').value;
+  const to      = document.getElementById('compose-to').value;
+  const prompt  = `Write a ${tone} email for a Dynasty Builders Academy MD (PHP/HGI life insurance).
+${to ? `To: ${to}` : ''}
+${subject ? `Subject: ${subject}` : ''}
+Intent: ${intent}
+
+Write the complete email — subject line (if not provided), greeting, body, and sign-off.
+Sign it from ${session?.name || 'your name'}, Dynasty Builders Academy.
+Keep it ${tone === 'warm' ? 'personal and warm' : tone}.`;
+
+  const resultEl = document.getElementById('compose-result');
+  const outputEl = document.getElementById('compose-output');
+  resultEl.style.display = 'block';
+  outputEl.value = '⏳ Writing…';
+
+  try {
+    const reply = await callAI(prompt, 600);
+    outputEl.value = reply;
+    toast('✓ Email drafted');
+  } catch(e) {
+    outputEl.value = '✗ Error: ' + e.message;
+  }
+}
+
+function copyEmail() {
+  const text = document.getElementById('compose-output').value;
+  navigator.clipboard.writeText(text).then(() => toast('✓ Email copied'));
+}
+
+async function refineEmail() {
+  const current = document.getElementById('compose-output').value;
+  const refinement = prompt('How should I refine this email?');
+  if (!refinement) return;
+  const outputEl = document.getElementById('compose-output');
+  outputEl.value = '⏳ Refining…';
+  try {
+    const reply = await callAI(`Here's a draft email:\n\n${current}\n\nRefine it based on this feedback: ${refinement}\n\nReturn only the revised email.`, 600);
+    outputEl.value = reply;
+  } catch(e) { outputEl.value = '✗ Error: ' + e.message; }
+}
+
+// ── CALENDAR ─────────────────────────────────────────────────
+async function loadCalendar(period) {
+  const calEl = document.getElementById('calendar-events');
+  calEl.innerHTML = '<div style="text-align:center;padding:16px;font-family:\'DM Mono\',monospace;font-size:11px;color:var(--muted);">Loading events…</div>';
+
+  const token = localStorage.getItem('dba_cal_token');
+  if (!token) {
+    calEl.innerHTML = '<div style="text-align:center;padding:20px;font-family:\'DM Mono\',monospace;font-size:11px;color:var(--muted);">Connect Google Calendar in the <strong style="color:var(--gold)">Connect tab</strong> to see events.</div>';
+    return;
+  }
+
+  try {
+    const { access_token } = JSON.parse(token);
+    const now = new Date();
+    const end = new Date();
+    if (period === 'week') end.setDate(end.getDate() + 7);
+    else if (period === 'month') end.setMonth(end.getMonth() + 1);
+    else end.setDate(end.getDate() + 1);
+
+    const res = await fetch('/api/gcal', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'listEvents', token: access_token, calendarId: 'primary', timeMin: now.toISOString(), timeMax: end.toISOString() })
+    });
+    const data = await res.json();
+    const events = data.items || [];
+    window._calEvents = events;
+
+    if (!events.length) {
+      calEl.innerHTML = '<div style="text-align:center;padding:16px;font-family:\'DM Mono\',monospace;font-size:11px;color:var(--muted);">No events found for this period.</div>';
+      return;
+    }
+
+    const colors = ['#C9A84C','#2DCA73','#5DADE2','#9B59B6','#E67E22'];
+    calEl.innerHTML = events.map((ev, i) => {
+      const start = ev.start?.dateTime ? new Date(ev.start.dateTime) : null;
+      const timeStr = start ? start.toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}) : (ev.start?.date || '');
+      return `<div class="cal-event">
+        <div class="cal-dot" style="background:${colors[i%colors.length]};"></div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;color:var(--text);">${ev.summary||'(no title)'}</div>
+          <div class="cal-time">${timeStr}${ev.location?' · '+ev.location:''}</div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    calEl.innerHTML = `<div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--red);">Error loading calendar: ${e.message}</div>`;
+  }
+}
+
+document.getElementById('cal-ai-mode').addEventListener('change', function() {
+  document.getElementById('cal-custom-group').style.display = this.value === 'custom' ? 'block' : 'none';
+});
+
+async function runCalendarAI() {
+  const aiKey = getAIKey();
+  if (!aiKey) { toast('⚠ Connect your AI key first'); return; }
+  const mode = document.getElementById('cal-ai-mode').value;
+  const events = window._calEvents || [];
+  const evStr = events.length
+    ? events.map(ev => `- ${ev.summary} (${ev.start?.dateTime || ev.start?.date})`).join('\n')
+    : 'No calendar events loaded. Load your calendar first.';
+  const modes = {
+    optimize: `Analyze my schedule and suggest how to reorganize it for maximum productivity. Here are my events:\n\n${evStr}\n\nGive me specific recommendations: what to move, what to batch, what time blocks to protect.`,
+    prep: `I have these upcoming appointments:\n\n${evStr}\n\nFor each one, give me: 1) a 2-sentence prep reminder, 2) the most important question to ask, 3) the ideal outcome I should aim for.`,
+    followup: `I just finished these meetings:\n\n${evStr}\n\nFor each one, write a warm follow-up message (text or email, whichever fits). Keep them short, specific, and action-oriented.`,
+    gaps: `Here's my schedule:\n\n${evStr}\n\nIdentify my best unblocked time slots for deep focus work. Suggest a daily schedule that protects those blocks.`,
+    custom: document.getElementById('cal-custom-prompt').value,
+  };
+
+  const resultEl = document.getElementById('cal-ai-result');
+  const contentEl = document.getElementById('cal-ai-content');
+  resultEl.style.display = 'block';
+  contentEl.textContent = '⏳ Analyzing…';
+
+  try {
+    const reply = await callAI(`I'm ${session?.name || 'a Dynasty Builders MD'}, managing a PHP/HGI life insurance team.\n\n${modes[mode]}`, 1200);
+    contentEl.textContent = reply;
+  } catch(e) { contentEl.textContent = '✗ Error: ' + e.message; }
+}
+
+async function parseApptWithAI() {
+  const aiKey = getAIKey();
+  if (!aiKey) { toast('⚠ Connect your AI key first'); return; }
+  const desc = document.getElementById('quick-appt-desc').value.trim();
+  if (!desc) { toast('⚠ Describe the appointment first'); return; }
+
+  const resultEl = document.getElementById('quick-appt-result');
+  resultEl.style.display = 'block';
+  resultEl.textContent = '⏳ Parsing…';
+
+  try {
+    const reply = await callAI(`Parse this appointment description and return ONLY a JSON object with these fields: name, date (YYYY-MM-DD), time (HH:MM), type (one of: RI, FT, FS, Client, BOM Guest, Other), phone, notes.\n\nDescription: "${desc}"\n\nToday is ${new Date().toISOString().slice(0,10)}. Return only valid JSON, no explanation.`, 200);
+    const apptData = JSON.parse(reply.replace(/```json|```/g,'').trim());
+    // Add to tracker if on tracker page, otherwise just show
+    resultEl.textContent = `✓ Parsed: ${apptData.name} — ${apptData.type} on ${apptData.date} at ${apptData.time||'TBD'}`;
+    resultEl.style.color = 'var(--green)';
+    // Store for use in tracker
+    localStorage.setItem('dba_pending_appt', JSON.stringify(apptData));
+    toast('✓ Appointment parsed — open Activity Tracker to add it');
+  } catch(e) {
+    resultEl.textContent = '✗ Could not parse: ' + e.message;
+    resultEl.style.color = 'var(--red)';
+  }
+}
+
+// ── PROMPTS ───────────────────────────────────────────────────
+function togglePrompt(card) {
+  card.classList.toggle('open');
+}
+
+function copyPrompt(e, btn) {
+  e.stopPropagation();
+  const body = btn.closest('.prompt-card').querySelector('.prompt-body').textContent;
+  navigator.clipboard.writeText(body.trim()).then(() => toast('✓ Prompt copied to clipboard'));
+}
+
+function useInChat(e, btn) {
+  e.stopPropagation();
+  const body = btn.closest('.prompt-card').querySelector('.prompt-body').textContent;
+  document.getElementById('chat-input').value = body.trim();
+  switchTab('chat', document.querySelectorAll('.tab')[4]);
+  document.getElementById('chat-input').focus();
+}
+
+// ── CHAT ──────────────────────────────────────────────────────
+let chatHistory = [];
+try { chatHistory = JSON.parse(localStorage.getItem(CHAT_HIST_STORE) || '[]'); } catch(e) {}
+
+function saveChatHistory() {
+  try { localStorage.setItem(CHAT_HIST_STORE, JSON.stringify(chatHistory.slice(-40))); } catch(e) {}
+}
+
+function addMsg(role, text) {
+  const box = document.getElementById('chat-box');
+  const div = document.createElement('div');
+  div.className = `msg ${role}`;
+  div.textContent = text;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+  return div;
+}
+
+async function sendChat() {
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+
+  const aiKey = getAIKey();
+  if (!aiKey) {
+    addMsg('ai', '⚠ No AI key connected. Go to the Connect tab and add your Claude or ChatGPT API key.');
+    return;
+  }
+
+  addMsg('user', text);
+  chatHistory.push({ role: 'user', content: text });
+
+  const loadingEl = addMsg('ai', '⏳ Thinking…');
+  loadingEl.classList.add('loading');
+
+  try {
+    const systemPrompt = `You are a personal AI assistant for ${session?.name || 'an MD'} at Dynasty Builders Academy, a PHP/HGI life insurance field force. You help with recruiting, client follow-up, team leadership, email drafting, and agency operations. Keep responses concise and actionable. Use emojis sparingly. Always relate advice to the PHP/HGI life insurance context.${window._chatContext ? '\n\nContext from email analysis:\n'+window._chatContext.slice(0,2000) : ''}`;
+
+    const reply = await callAI(text, 800, systemPrompt);
+    loadingEl.classList.remove('loading');
+    loadingEl.textContent = reply;
+    chatHistory.push({ role: 'assistant', content: reply });
+    saveChatHistory();
+  } catch(e) {
+    loadingEl.classList.remove('loading');
+    loadingEl.textContent = '✗ Error: ' + e.message;
+  }
+}
+
+function quickChat(text) {
+  document.getElementById('chat-input').value = text;
+  sendChat();
+}
+
+function clearChat() {
+  chatHistory = [];
+  localStorage.removeItem(CHAT_HIST_STORE);
+  window._chatContext = null;
+  const box = document.getElementById('chat-box');
+  box.innerHTML = '<div class="msg ai">Chat cleared. What would you like to work on?</div>';
+}
+
+// ── CORE AI CALL ──────────────────────────────────────────────
+// Routes through /api/claude (Netlify proxy) for Claude, or direct for others
+async function callAI(prompt, maxTokens = 800, system = '') {
+  const provider = getAIProvider();
+  const key = getAIKey();
+  if (!key) throw new Error('No API key — connect one in the Connect tab');
+
+  if (provider === 'claude') {
+    // Use the existing /api/claude Netlify proxy
+    const body = {
+      model: 'claude-sonnet-4-6',
+      max_tokens: maxTokens,
+      messages: [{ role: 'user', content: prompt }],
+    };
+    if (system) body.system = system;
+    // Override the proxy to use the user's own key
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err?.error?.message || `HTTP ${res.status}`);
+    }
+    const data = await res.json();
+    return data.content?.[0]?.text || '';
+
+  } else if (provider === 'chatgpt') {
+    const msgs = system
+      ? [{ role: 'system', content: system }, { role: 'user', content: prompt }]
+      : [{ role: 'user', content: prompt }];
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
+      body: JSON.stringify({ model: 'gpt-4o', max_tokens: maxTokens, messages: msgs }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err?.error?.message || `HTTP ${res.status}`);
+    }
+    const data = await res.json();
+    return data.choices?.[0]?.message?.content || '';
+
+  } else if (provider === 'gemini') {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${key}`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: (system ? system + '\n\n' : '') + prompt }] }],
+        generationConfig: { maxOutputTokens: maxTokens },
+      }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err?.error?.message || `HTTP ${res.status}`);
+    }
+    const data = await res.json();
+    return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  }
+
+  throw new Error('Unknown AI provider');
+}
+
+function analyzeSchedule() { runCalendarAI(); }
+
+// ── INIT ──────────────────────────────────────────────────────
+(function init() {
+  // Restore AI connection state
+  const key  = getAIKey();
+  const prov = getAIProvider();
+  if (key) {
+    document.getElementById('ai-provider').value = prov;
+    document.getElementById('ai-api-key').value = '••••••••' + key.slice(-4);
+    updateAIConnectionUI(true, prov);
+  }
+  updateProviderHint();
+
+  // Restore email state
+  const emailAcct = getEmailAccount();
+  if (emailAcct) {
+    document.getElementById('email-address').value = emailAcct.email;
+    document.getElementById('email-provider').value = emailAcct.provider || 'gmail';
+    updateEmailUI(true, emailAcct.email);
+  }
+
+  // Restore cal state
+  const calToken = localStorage.getItem('dba_cal_token');
+  if (calToken) {
+    updateGCalUI(true, '');
+    loadCalendar('today');
+  }
+
+  // Restore chat history visually
+  if (chatHistory.length > 1) {
+    const box = document.getElementById('chat-box');
+    box.innerHTML = '';
+    chatHistory.slice(-20).forEach(m => {
+      const div = document.createElement('div');
+      div.className = 'msg ' + (m.role === 'user' ? 'user' : 'ai');
+      div.textContent = m.content;
+      box.appendChild(div);
+    });
+    box.scrollTop = box.scrollHeight;
+  }
+})();
+</script>
+</body>
+</html>
