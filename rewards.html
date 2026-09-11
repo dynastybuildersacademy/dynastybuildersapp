@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Rewards · Dynasty Builders Academy</title>
+<script src="auth.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Barlow:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#07111F;--s1:#0F1E35;--s2:#172840;--s3:#1E3352;
+  --gold:#C9A84C;--gold2:#E8C97A;--gold3:#F5E09A;
+  --green:#2DCA73;--red:#E74C3C;--blue:#3498DB;--purple:#9B59B6;
+  --text:#FAF6EE;--muted:#6B7C93;--border:rgba(201,168,76,.18);
+}
+body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh;}
+
+/* GRID BACKGROUND */
+body::before{content:'';position:fixed;inset:0;
+  background-image:radial-gradient(circle at 20% 20%, rgba(201,168,76,.06) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(45,202,115,.04) 0%, transparent 50%),
+    linear-gradient(rgba(201,168,76,.025) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(201,168,76,.025) 1px,transparent 1px);
+  background-size:100% 100%,100% 100%,36px 36px,36px 36px;
+  pointer-events:none;z-index:0;}
+
+/* TOPBAR */
+.topbar{background:rgba(7,17,31,.97);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;backdrop-filter:blur(16px);}
+.brand{display:flex;align-items:center;gap:10px;padding:13px 0;border-right:1px solid var(--border);padding-right:18px;}
+.brand-hex{width:30px;height:30px;background:linear-gradient(135deg,var(--gold),var(--gold2));clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:var(--bg);}
+.brand-name{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;letter-spacing:.04em;}
+.brand-name em{color:var(--gold);font-style:normal;}
+.brand-tag{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);display:block;letter-spacing:.08em;}
+.tb-right{margin-left:auto;display:flex;gap:8px;align-items:center;}
+.t-btn{padding:6px 13px;border-radius:6px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);transition:all .15s;text-decoration:none;}
+.t-btn:hover{border-color:var(--gold);color:var(--gold);}
+
+/* PAGE */
+.page{max-width:1060px;margin:0 auto;padding:36px 24px 80px;position:relative;z-index:1;}
+
+/* HERO */
+.hero{margin-bottom:40px;}
+.hero-eyebrow{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.hero-eyebrow::before{content:'';width:28px;height:1.5px;background:var(--gold);border-radius:2px;}
+.hero-h{font-family:'Barlow Condensed',sans-serif;font-size:clamp(36px,6vw,64px);font-weight:900;letter-spacing:.01em;line-height:.96;margin-bottom:14px;}
+.hero-h em{color:var(--gold);font-style:normal;}
+.hero-sub{font-size:14px;color:var(--muted);max-width:540px;line-height:1.7;}
+
+/* MY STATUS CARD */
+.my-status{background:linear-gradient(135deg,var(--s1),var(--s2));border:1px solid var(--border);border-radius:16px;padding:24px 28px;margin-bottom:40px;display:flex;gap:28px;flex-wrap:wrap;align-items:center;position:relative;overflow:hidden;}
+.my-status::after{content:'⬡';position:absolute;right:-20px;top:-20px;font-size:160px;color:rgba(201,168,76,.03);line-height:1;pointer-events:none;}
+.ms-avatar{width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold2));display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;color:var(--bg);flex-shrink:0;}
+.ms-info{flex:1;min-width:160px;}
+.ms-name{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;margin-bottom:2px;}
+.ms-role{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;}
+.ms-bars{display:flex;flex-direction:column;gap:5px;}
+.bar-row{display:flex;align-items:center;gap:8px;font-size:11px;}
+.bar-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);width:70px;flex-shrink:0;}
+.bar-track{flex:1;height:6px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden;}
+.bar-fill-v{height:100%;border-radius:99px;transition:width .6s ease;}
+.bar-val{font-family:'DM Mono',monospace;font-size:10px;font-weight:500;width:40px;text-align:right;color:var(--gold2);}
+.ms-stats{display:flex;gap:20px;flex-wrap:wrap;}
+.ms-stat{text-align:center;}
+.ms-stat-v{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:900;color:var(--gold2);line-height:1;}
+.ms-stat-l{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:2px;}
+
+/* SECTION */
+.section-head{display:flex;align-items:center;gap:14px;margin-bottom:20px;}
+.sh-line{flex:1;height:1px;background:var(--border);}
+.sh-title{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);white-space:nowrap;}
+.sh-badge{padding:2px 9px;border-radius:8px;background:rgba(201,168,76,.1);color:var(--gold);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.08em;border:1px solid rgba(201,168,76,.25);}
+
+/* REWARD TRACKS */
+.tracks{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin-bottom:40px;}
+.track-card{background:var(--s1);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:transform .2s,border-color .2s;}
+.track-card:hover{transform:translateY(-2px);border-color:rgba(201,168,76,.4);}
+.track-header{padding:16px 20px 14px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);}
+.track-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.track-icon.attendance{background:rgba(52,152,219,.12);border:1px solid rgba(52,152,219,.2);}
+.track-icon.cashflow{background:rgba(45,202,115,.1);border:1px solid rgba(45,202,115,.2);}
+.track-icon.promotion{background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.2);}
+.track-name{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;letter-spacing:.04em;}
+.track-desc{font-size:11px;color:var(--muted);margin-top:1px;}
+.track-body{padding:16px 20px;}
+.milestone-list{display:flex;flex-direction:column;gap:10px;}
+
+/* MILESTONE ITEM */
+.milestone{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:9px;border:1px solid transparent;background:rgba(255,255,255,.02);transition:all .2s;}
+.milestone.earned{background:rgba(45,202,115,.06);border-color:rgba(45,202,115,.2);}
+.milestone.next{background:rgba(201,168,76,.06);border-color:rgba(201,168,76,.2);}
+.m-check{width:22px;height:22px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;transition:all .2s;}
+.milestone.earned .m-check{background:var(--green);border-color:var(--green);color:#fff;}
+.milestone.next .m-check{border-color:var(--gold);color:var(--gold);}
+.m-body{flex:1;min-width:0;}
+.m-title{font-size:13px;font-weight:600;line-height:1.3;}
+.m-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+.m-reward{flex-shrink:0;text-align:right;}
+.m-reward-val{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;line-height:1;}
+.m-reward-val.gold{color:var(--gold2);}
+.m-reward-val.green{color:var(--green);}
+.m-reward-val.blue{color:var(--blue);}
+.m-reward-val.purple{color:var(--purple);}
+.m-reward-lbl{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);margin-top:1px;}
+
+/* PROGRESS BAR INLINE */
+.m-progress{margin-top:6px;display:flex;align-items:center;gap:6px;}
+.m-ptrack{flex:1;height:4px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden;}
+.m-pfill{height:100%;border-radius:99px;}
+.m-pfill.attend{background:linear-gradient(90deg,var(--blue),#5dade2);}
+.m-pfill.cash{background:linear-gradient(90deg,var(--green),#58d68d);}
+.m-pfill.promo{background:linear-gradient(90deg,var(--gold),var(--gold2));}
+.m-pval{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);white-space:nowrap;}
+
+/* DBA CONTESTS */
+.contests{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-bottom:40px;}
+.contest-card{background:var(--s1);border:1px solid var(--border);border-radius:14px;padding:20px;position:relative;overflow:hidden;}
+.contest-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.contest-card.active::before{background:linear-gradient(90deg,var(--gold),var(--gold2));}
+.contest-card.upcoming::before{background:linear-gradient(90deg,var(--blue),#5dade2);}
+.contest-card.ended::before{background:var(--border);}
+.c-eyebrow{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px;}
+.contest-card.active .c-eyebrow{color:var(--gold);}
+.contest-card.upcoming .c-eyebrow{color:var(--blue);}
+.contest-card.ended .c-eyebrow{color:var(--muted);}
+.c-title{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;margin-bottom:6px;line-height:1.2;}
+.c-desc{font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:14px;}
+.prize-tiers{display:flex;flex-direction:column;gap:6px;}
+.prize-tier{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;background:rgba(255,255,255,.02);border:1px solid var(--border);}
+.pt-rank{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;width:22px;flex-shrink:0;}
+.pt-desc{flex:1;font-size:12px;color:var(--muted);}
+.pt-prize{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;color:var(--gold2);}
+.pt-prize.big{font-size:18px;}
+
+/* CASHFLOW LADDER */
+.cashflow-ladder{background:var(--s1);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:40px;}
+.cl-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.cl-title{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;}
+.cl-sub{font-size:12px;color:var(--muted);}
+.cl-body{padding:4px 0;}
+.cl-tier{display:flex;align-items:center;gap:0;padding:13px 20px;border-bottom:1px solid rgba(26,49,88,.4);transition:background .12s;position:relative;}
+.cl-tier:last-child{border-bottom:none;}
+.cl-tier:hover{background:rgba(201,168,76,.03);}
+.cl-tier.current{background:rgba(201,168,76,.06);}
+.cl-tier.current::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--gold);}
+.cl-tier.achieved{background:rgba(45,202,115,.04);}
+.cl-tier.achieved::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--green);}
+.cl-level{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;width:160px;flex-shrink:0;}
+.cl-range{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);flex:1;}
+.cl-comm{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;color:var(--gold2);width:80px;text-align:right;}
+.cl-tag{padding:2px 8px;border-radius:6px;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.06em;margin-left:12px;flex-shrink:0;}
+.cl-tag.you{background:rgba(201,168,76,.12);color:var(--gold);border:1px solid rgba(201,168,76,.25);}
+.cl-tag.done{background:rgba(45,202,115,.1);color:var(--green);border:1px solid rgba(45,202,115,.2);}
+
+/* PROMO PATH */
+.promo-path{display:flex;flex-direction:column;gap:0;margin-bottom:40px;}
+.promo-step{display:flex;gap:0;position:relative;}
+.promo-step:not(:last-child) .ps-line{position:absolute;left:19px;top:38px;width:2px;bottom:0;background:var(--border);z-index:0;}
+.promo-step.done .ps-line{background:var(--green);}
+.promo-step.current .ps-line{background:linear-gradient(var(--gold),var(--border));}
+.ps-dot-wrap{width:40px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;position:relative;z-index:1;}
+.ps-dot{width:28px;height:28px;border-radius:50%;border:2px solid var(--border);background:var(--s1);display:flex;align-items:center;justify-content:center;font-size:12px;margin-top:10px;transition:all .2s;}
+.promo-step.done .ps-dot{background:var(--green);border-color:var(--green);color:#fff;}
+.promo-step.current .ps-dot{background:rgba(201,168,76,.12);border-color:var(--gold);color:var(--gold);}
+.promo-step.locked .ps-dot{color:var(--muted);}
+.ps-content{flex:1;padding:10px 0 24px 4px;}
+.ps-title{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:800;line-height:1;}
+.ps-role{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;}
+.promo-step.done .ps-role{color:var(--green);}
+.promo-step.current .ps-role{color:var(--gold);}
+.promo-step.locked .ps-role{color:var(--muted);}
+.ps-reqs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;}
+.req-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:7px;font-family:'DM Mono',monospace;font-size:10px;border:1px solid var(--border);background:rgba(255,255,255,.02);}
+.req-chip .rc-icon{font-size:11px;}
+.req-chip.met{border-color:rgba(45,202,115,.3);background:rgba(45,202,115,.07);color:var(--green);}
+.req-chip.unmet{border-color:rgba(201,168,76,.3);background:rgba(201,168,76,.07);color:var(--gold);}
+.req-chip.locked{color:var(--muted);}
+.ps-comm{font-size:12px;color:var(--muted);}
+.ps-comm strong{color:var(--gold2);}
+
+/* UPDATE PANEL */
+.update-panel{background:var(--s1);border:1px solid var(--border);border-radius:14px;padding:20px;}
+.up-title{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;margin-bottom:14px;color:var(--gold);}
+.update-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px;}
+.field label{display:block;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;}
+.field input{width:100%;background:var(--s2);border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;outline:none;transition:border-color .2s;}
+.field input:focus{border-color:var(--gold);}
+.btn-update{padding:10px 20px;border-radius:8px;border:none;background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--bg);font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;cursor:pointer;transition:all .2s;}
+.btn-update:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(201,168,76,.3);}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--s1);border:1px solid var(--gold);border-radius:10px;padding:11px 18px;font-size:13px;transform:translateY(60px);opacity:0;transition:all .3s;z-index:999;color:var(--gold2);font-family:'DM Mono',monospace;}
+.toast.show{transform:translateY(0);opacity:1;}
+
+/* CONFETTI OVERLAY */
+.confetti-overlay{position:fixed;inset:0;pointer-events:none;z-index:500;}
+.confetti-piece{position:absolute;width:8px;height:8px;border-radius:2px;animation:confetti-fall 3s ease-in forwards;}
+@keyframes confetti-fall{0%{transform:translateY(-20px) rotate(0deg);opacity:1;}100%{transform:translateY(100vh) rotate(720deg);opacity:0;}}
+
+@media(max-width:640px){
+  .my-status{flex-direction:column;}
+  .ms-stats{justify-content:space-between;}
+  .cl-level{width:120px;font-size:12px;}
+  .cl-comm{width:60px;font-size:14px;}
+}
+</style>
+</head>
+<body>
+<script>AUTH.require('rewards.html');</script>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-hex">⬡</div>
+    <div>
+      <div class="brand-name">Dynasty <em>Rewards</em></div>
+      <span class="brand-tag">Milestones · Cashflow · Promotions</span>
+    </div>
+  </div>
+  <div class="tb-right">
+    <a href="hub.html" class="t-btn">← Hub</a>
+  </div>
+</div>
+
+<div class="page">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-eyebrow">Dynasty Builders Academy</div>
+    <div class="hero-h">Your <em>Rewards</em><br>& Milestones</div>
+    <div class="hero-sub">Track your progress across attendance, cashflow, and promotion — every milestone unlocks a new reward. Your next level is closer than you think.</div>
+  </div>
+
+  <!-- MY STATUS -->
+  <div class="my-status" id="my-status">
+    <div class="ms-avatar" id="ms-avatar">OB</div>
+    <div class="ms-info">
+      <div class="ms-name" id="ms-name">Loading…</div>
+      <div class="ms-role" id="ms-role">—</div>
+      <div class="ms-bars" id="ms-bars"></div>
+    </div>
+    <div class="ms-stats" id="ms-stats"></div>
+  </div>
+
+  <!-- REWARD TRACKS -->
+  <div class="section-head"><div class="sh-line"></div><div class="sh-title">Milestone Tracks</div><div class="sh-line"></div></div>
+  <div class="tracks" id="tracks-container"></div>
+
+  <!-- DBA INTERNAL CONTESTS -->
+  <div class="section-head"><div class="sh-line"></div><div class="sh-title">Active Contests</div><div class="sh-badge">DBA</div><div class="sh-line"></div></div>
+  <div class="contests" id="contests-container"></div>
+
+  <!-- CASHFLOW COMMISSION LADDER -->
+  <div class="section-head"><div class="sh-line"></div><div class="sh-title">Cashflow — Commission Ladder</div><div class="sh-line"></div></div>
+  <div class="cashflow-ladder">
+    <div class="cl-header">
+      <div>
+        <div class="cl-title">PHP Commission Structure</div>
+        <div class="cl-sub">As your production grows, your commission percentage climbs. Every level unlocks higher override income from your downline.</div>
+      </div>
+    </div>
+    <div class="cl-body" id="cl-body"></div>
+  </div>
+
+  <!-- PROMOTION PATH -->
+  <div class="section-head"><div class="sh-line"></div><div class="sh-title">Your Promotion Path</div><div class="sh-line"></div></div>
+  <div class="promo-path" id="promo-path"></div>
+
+  <!-- UPDATE MY NUMBERS -->
+  <div class="section-head"><div class="sh-line"></div><div class="sh-title">Update My Numbers</div><div class="sh-line"></div></div>
+  <div class="update-panel">
+    <div class="up-title">📊 Enter your current production stats</div>
+    <div class="update-form">
+      <div class="field"><label>Recruits (MTD)</label><input type="number" id="inp-recruits" placeholder="0" min="0"></div>
+      <div class="field"><label>Apps Submitted</label><input type="number" id="inp-apps" placeholder="0" min="0" step="0.5"></div>
+      <div class="field"><label>Points (MTD)</label><input type="number" id="inp-points" placeholder="0" min="0"></div>
+      <div class="field"><label>Cashflow ($)</label><input type="number" id="inp-cash" placeholder="0" min="0" step="100"></div>
+      <div class="field"><label>Attendance (meetings)</label><input type="number" id="inp-attend" placeholder="0" min="0"></div>
+    </div>
+    <button class="btn-update" onclick="saveMyStats()">↺ Update My Milestones</button>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="confetti-overlay" id="confetti-overlay"></div>
+
+<script>
+// ── CONSTANTS ────────────────────────────────────────────────────────────────
+const STATS_KEY = 'dba_my_rewards_stats';
+
+// PHP Commission levels (from auth.js ROLES / real PHP docs)
+const CASHFLOW_LEVELS = [
+  { level:'Trainee',                 min:0,     max:2999,   comm:'25%', override:'0%'  },
+  { level:'Associate',               min:3000,  max:9999,   comm:'35%', override:'5%'  },
+  { level:'Field Associate',         min:10000, max:24999,  comm:'50%', override:'15%' },
+  { level:'Director',                min:25000, max:49999,  comm:'55%', override:'20%' },
+  { level:'Marketing Director',      min:50000, max:99999,  comm:'60%', override:'25%' },
+  { level:'Sr. Marketing Director',  min:100000,max:199999, comm:'65%', override:'30%' },
+  { level:'Exec. Marketing Director',min:200000,max:499999, comm:'70%', override:'35%' },
+  { level:'SVP',                     min:500000,max:Infinity,comm:'75%',override:'40%' },
+];
+
+// PHP promotion requirements (from auth.js PROMOTION_REQUIREMENTS)
+const PROMO_STEPS = [
+  {
+    role:'trainee', label:'Trainee', icon:'🌱',
+    comm:'25%',
+    reqs:{ recruits:0, apps:0, points:0 },
+    reward:'Starting point — welcome to the field!'
+  },
+  {
+    role:'associate', label:'Associate', icon:'🔑',
+    comm:'35%',
+    reqs:{ recruits:3, apps:3, points:3000 },
+    reward:'Access to Associate overrides · $50 DBA recognition'
+  },
+  {
+    role:'field_associate', label:'Field Associate', icon:'⚡',
+    comm:'50%',
+    reqs:{ recruits:10, apps:10, points:10000 },
+    reward:'50% commission · Qualify for MD bonus pool · $150 DBA reward'
+  },
+  {
+    role:'director', label:'Director', icon:'🎯',
+    comm:'55%',
+    reqs:{ recruits:25, apps:0, points:0 },
+    reward:'Director override income · Recognition at BOM · $250 DBA reward'
+  },
+  {
+    role:'marketing_director', label:'Marketing Director', icon:'🏆',
+    comm:'60%',
+    reqs:{ recruits:3, apps:0, points:0, directMDs:1 },
+    reward:'MD status · Build your own baseshop · $500 DBA reward + certificate'
+  },
+];
+
+// DBA internal contests
+const CONTESTS = [
+  {
+    status:'active',
+    title:'Breaking Records Contest',
+    period:'July 2026',
+    desc:'Top performers earn cash prizes based on production points for the month. Every point counts.',
+    tiers:[
+      { rank:'🥇', desc:'#1 MTD Points',    prize:'$1,800', big:true },
+      { rank:'🥈', desc:'#2 MTD Points',    prize:'$750'  },
+      { rank:'🥉', desc:'#3 MTD Points',    prize:'$250'  },
+      { rank:'4',  desc:'#4 MTD Points',    prize:'$100'  },
+    ]
+  },
+  {
+    status:'active',
+    title:'Mansion Party Qualifier',
+    period:'Q3 2026',
+    desc:'Hit your quarterly production targets to earn your ticket to the Dynasty Builders Mansion Party. Top 10 finishers get a seat at the table.',
+    tiers:[
+      { rank:'🎉', desc:'Top 10 producers Q3', prize:'Mansion Party Invite' },
+      { rank:'🏅', desc:'Top 3 producers Q3',  prize:'VIP Table + Gift' },
+    ]
+  },
+  {
+    status:'upcoming',
+    title:'MD Promotion Sprint',
+    period:'Aug–Sep 2026',
+    desc:'Agent-of-the-year push for MD promotions. Get a qualifying MD promoted under you before September 30.',
+    tiers:[
+      { rank:'⭐', desc:'First MD promoted', prize:'$300 Bonus' },
+      { rank:'⭐⭐', desc:'2+ MDs promoted', prize:'$750 Bonus' },
+    ]
+  },
+];
+
+// ── STATE ────────────────────────────────────────────────────────────────────
+let myStats = { recruits:0, apps:0, points:0, cash:0, attend:0 };
+let mySession = null;
+let myAgent = null;
+
+function loadStats() {
+  try {
+    const s = JSON.parse(localStorage.getItem(STATS_KEY) || '{}');
+    myStats = { recruits:s.recruits||0, apps:s.apps||0, points:s.points||0, cash:s.cash||0, attend:s.attend||0 };
+  } catch(e) {}
+}
+
+function saveMyStats() {
+  myStats.recruits = parseInt(document.getElementById('inp-recruits').value)||0;
+  myStats.apps     = parseFloat(document.getElementById('inp-apps').value)||0;
+  myStats.points   = parseInt(document.getElementById('inp-points').value)||0;
+  myStats.cash     = parseInt(document.getElementById('inp-cash').value)||0;
+  myStats.attend   = parseInt(document.getElementById('inp-attend').value)||0;
+  localStorage.setItem(STATS_KEY, JSON.stringify(myStats));
+
+  const prev = JSON.parse(sessionStorage.getItem('dba_prev_milestones') || '{}');
+  renderAll();
+  checkForNewMilestones(prev);
+  sessionStorage.setItem('dba_prev_milestones', JSON.stringify(getMilestoneState()));
+  toast('✓ Stats updated — milestones recalculated');
+}
+
+// ── RENDER: MY STATUS ────────────────────────────────────────────────────────
+function renderMyStatus() {
+  if (!mySession) return;
+  const name = mySession.name || 'Agent';
+  const initials = name.split(' ').map(p=>p[0]).join('').slice(0,2).toUpperCase();
+  const role = mySession.role || 'trainee';
+  const roleLabel = { trainee:'Trainee', associate:'Associate', field_associate:'Field Associate',
+    director:'Director', marketing_director:'Marketing Director', agency_builder:'Agency Builder', admin:'Admin' }[role] || role;
+
+  document.getElementById('ms-avatar').textContent = initials;
+  document.getElementById('ms-name').textContent = name;
+  document.getElementById('ms-role').textContent = roleLabel;
+
+  // Progress bars toward next promo step
+  const stepIdx = PROMO_STEPS.findIndex(s => s.role === role);
+  const next = PROMO_STEPS[Math.min(stepIdx+1, PROMO_STEPS.length-1)];
+  const reqs = next.reqs;
+
+  const bars = [
+    { label:'Recruits', val:myStats.recruits, max:reqs.recruits||1, cls:'promo' },
+    { label:'Apps',     val:myStats.apps,     max:reqs.apps||1,     cls:'promo' },
+    { label:'Points',   val:myStats.points,   max:reqs.points||1,   cls:'cash'  },
+    { label:'Attend',   val:myStats.attend,   max:12,               cls:'attend' },
+  ].filter(b => b.max > 0);
+
+  document.getElementById('ms-bars').innerHTML = bars.map(b => `
+    <div class="bar-row">
+      <span class="bar-label">${b.label}</span>
+      <div class="bar-track"><div class="bar-fill-v ${b.cls==='promo'?'':b.cls==='cash'?'':'bar-attend'}"
+        style="width:${Math.min(100,Math.round(b.val/b.max*100))}%;background:${
+          b.cls==='attend'?'linear-gradient(90deg,var(--blue),#5dade2)':
+          b.cls==='cash'?'linear-gradient(90deg,var(--green),#58d68d)':
+          'linear-gradient(90deg,var(--gold),var(--gold2))'};"></div></div>
+      <span class="bar-val">${b.val}/${b.max}</span>
+    </div>`).join('');
+
+  document.getElementById('ms-stats').innerHTML = [
+    { v:myStats.attend,   l:'Meetings' },
+    { v:myStats.recruits, l:'Recruits'  },
+    { v:myStats.apps,     l:'Apps'      },
+    { v:`$${(myStats.cash||0).toLocaleString()}`, l:'Cashflow' },
+  ].map(s => `<div class="ms-stat"><div class="ms-stat-v">${s.v}</div><div class="ms-stat-l">${s.l}</div></div>`).join('');
+}
+
+// ── RENDER: MILESTONE TRACKS ─────────────────────────────────────────────────
+function renderTracks() {
+  const TRACKS = [
+    {
+      id:'attendance', icon:'📋', cls:'attendance', name:'Attendance Track', desc:'Show up, lead by example',
+      milestones:[
+        { title:'First Meeting',      req:1,  val:myStats.attend, reward:'⭐ Welcome Badge',          color:'gold'   },
+        { title:'Consistent Presence',req:4,  val:myStats.attend, reward:'$25 DBA Gift',             color:'gold'   },
+        { title:'Monthly Perfect',    req:8,  val:myStats.attend, reward:'$50 Bonus + Shoutout',     color:'green'  },
+        { title:'Quarter Champion',   req:16, val:myStats.attend, reward:'$100 + Featured in BOM',  color:'green'  },
+        { title:'Full Year Streak',   req:48, val:myStats.attend, reward:'$500 + Leadership Award', color:'purple' },
+      ]
+    },
+    {
+      id:'cashflow', icon:'💰', cls:'cashflow', name:'Cashflow Track', desc:'Production drives income',
+      milestones:[
+        { title:'First App Paid',     req:1,    val:myStats.apps,  reward:'🎉 First Commission',       color:'green' },
+        { title:'$1k Month',          req:1000, val:myStats.cash,  reward:'$50 DBA Bonus',            color:'green', isCash:true },
+        { title:'$5k Month',          req:5000, val:myStats.cash,  reward:'$150 + MD Mention',        color:'gold',  isCash:true },
+        { title:'$10k Month',         req:10000,val:myStats.cash,  reward:'$300 + Custom Jacket',     color:'gold',  isCash:true },
+        { title:'$25k Month',         req:25000,val:myStats.cash,  reward:'$750 + Trophy',            color:'purple',isCash:true },
+        { title:'$50k Month',         req:50000,val:myStats.cash,  reward:'$1,500 + Watch Prize',     color:'purple',isCash:true },
+      ]
+    },
+    {
+      id:'promotion', icon:'🏆', cls:'promotion', name:'Promotion Track', desc:'Climb the PHP career ladder',
+      milestones:[
+        { title:'First Recruit',      req:1,  val:myStats.recruits, reward:'🌟 Builder Badge',         color:'gold'   },
+        { title:'3 Recruits',         req:3,  val:myStats.recruits, reward:'Associate Qualifier',      color:'gold'   },
+        { title:'10 Recruits',        req:10, val:myStats.recruits, reward:'Field Associate Qualifier',color:'green'  },
+        { title:'25 Recruits',        req:25, val:myStats.recruits, reward:'Director Qualifier',       color:'green'  },
+        { title:'MD Promotion',       req:1,  val:0, reward:'$500 + MD Ceremony',           color:'purple', isManual:true },
+      ]
+    },
+  ];
+
+  document.getElementById('tracks-container').innerHTML = TRACKS.map(track => {
+    const items = track.milestones.map(m => {
+      const val = m.val || 0;
+      const req = m.req;
+      const pct = m.isManual ? 0 : Math.min(100, Math.round(val/req*100));
+      const earned = m.isManual ? false : val >= req;
+      const isNext = !earned && track.milestones.filter(mm => !mm.isManual && (mm.val||0) >= mm.req).length ===
+        track.milestones.indexOf(m);
+
+      return `<div class="milestone ${earned?'earned':isNext?'next':''}">
+        <div class="m-check">${earned?'✓':isNext?'→':''}</div>
+        <div class="m-body">
+          <div class="m-title">${m.title}</div>
+          <div class="m-sub">${m.isCash?`$${req.toLocaleString()} cashflow`:m.isManual?'Manually awarded':
+            `${req} ${track.id==='attendance'?'meetings':track.id==='cashflow'?'apps':'recruits'}`}</div>
+          ${!earned && !m.isManual ? `<div class="m-progress">
+            <div class="m-ptrack"><div class="m-pfill ${track.id}" style="width:${pct}%"></div></div>
+            <span class="m-pval">${pct}%</span>
+          </div>` : ''}
+        </div>
+        <div class="m-reward">
+          <div class="m-reward-val ${m.color}">${m.reward.split(' ')[0]}</div>
+          <div class="m-reward-lbl">${m.reward.split(' ').slice(1).join(' ')}</div>
+        </div>
+      </div>`;
+    }).join('');
+
+    return `<div class="track-card">
+      <div class="track-header">
+        <div class="track-icon ${track.id}">${track.icon}</div>
+        <div>
+          <div class="track-name">${track.name}</div>
+          <div class="track-desc">${track.desc}</div>
+        </div>
+      </div>
+      <div class="track-body">
+        <div class="milestone-list">${items}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── RENDER: CONTESTS ─────────────────────────────────────────────────────────
+function renderContests() {
+  document.getElementById('contests-container').innerHTML = CONTESTS.map(c => `
+    <div class="contest-card ${c.status}">
+      <div class="c-eyebrow">${c.status==='active'?'● Active Contest':c.status==='upcoming'?'◎ Upcoming':'○ Ended'} · ${c.period}</div>
+      <div class="c-title">${c.title}</div>
+      <div class="c-desc">${c.desc}</div>
+      <div class="prize-tiers">
+        ${c.tiers.map(t => `<div class="prize-tier">
+          <span class="pt-rank">${t.rank}</span>
+          <span class="pt-desc">${t.desc}</span>
+          <span class="pt-prize ${t.big?'big':''}">${t.prize}</span>
+        </div>`).join('')}
+      </div>
+    </div>`).join('');
+}
+
+// ── RENDER: CASHFLOW LADDER ──────────────────────────────────────────────────
+function renderCashflow() {
+  const cash = myStats.cash || 0;
+  const currentTier = CASHFLOW_LEVELS.findIndex(t => cash >= t.min && cash < t.max);
+
+  document.getElementById('cl-body').innerHTML = CASHFLOW_LEVELS.map((t, i) => {
+    const achieved = cash >= t.min;
+    const current  = i === currentTier || (i === CASHFLOW_LEVELS.length-1 && cash >= t.min);
+    const maxStr   = t.max === Infinity ? '+' : `${(t.max).toLocaleString()}`;
+    return `<div class="cl-tier ${current?'current':achieved?'achieved':''}">
+      <div class="cl-level">${t.level}</div>
+      <div class="cl-range">$${t.min.toLocaleString()} – $${maxStr}</div>
+      <div class="cl-comm">${t.comm}</div>
+      ${current ? '<span class="cl-tag you">You</span>' : achieved ? '<span class="cl-tag done">✓</span>' : ''}
+    </div>`;
+  }).join('');
+}
+
+// ── RENDER: PROMO PATH ───────────────────────────────────────────────────────
+function renderPromoPath() {
+  const myRole = mySession?.role || 'trainee';
+  const stepIdx = PROMO_STEPS.findIndex(s => s.role === myRole);
+
+  document.getElementById('promo-path').innerHTML = PROMO_STEPS.map((step, i) => {
+    const done    = i < stepIdx;
+    const current = i === stepIdx;
+    const locked  = i > stepIdx;
+    const next    = i === stepIdx + 1;
+    const reqs = step.reqs;
+
+    const chips = Object.entries(reqs).map(([k, v]) => {
+      if (!v) return '';
+      const labels = { recruits:'recruits', apps:'apps', points:'pts', directMDs:'direct MDs' };
+      const myVal = k==='recruits'?myStats.recruits:k==='apps'?myStats.apps:k==='points'?myStats.points:0;
+      const met = myVal >= v;
+      return `<span class="req-chip ${done?'met':next&&met?'met':next&&!met?'unmet':'locked'}">
+        <span class="rc-icon">${met||done?'✓':'○'}</span> ${v} ${labels[k]||k}
+      </span>`;
+    }).join('');
+
+    return `<div class="promo-step ${done?'done':current?'current':'locked'}">
+      <div class="ps-dot-wrap">
+        ${i < PROMO_STEPS.length-1 ? '<div class="ps-line"></div>' : ''}
+        <div class="ps-dot">${done?'✓':step.icon}</div>
+      </div>
+      <div class="ps-content">
+        <div class="ps-title">${step.label}</div>
+        <div class="ps-role">${done?'✓ Achieved':current?'● Current Level':locked?`${i - stepIdx} step${i-stepIdx>1?'s':''} ahead`:''}</div>
+        ${chips ? `<div class="ps-reqs">${chips}</div>` : ''}
+        <div class="ps-comm">Commission: <strong>${step.comm}</strong> — ${step.reward}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── MILESTONE DETECTION ──────────────────────────────────────────────────────
+function getMilestoneState() {
+  return {
+    attend_1: myStats.attend >= 1, attend_4: myStats.attend >= 4,
+    attend_8: myStats.attend >= 8, attend_16: myStats.attend >= 16,
+    cash_1k: myStats.cash >= 1000, cash_5k: myStats.cash >= 5000,
+    cash_10k: myStats.cash >= 10000,
+    recruits_1: myStats.recruits >= 1, recruits_3: myStats.recruits >= 3,
+    recruits_10: myStats.recruits >= 10,
+  };
+}
+
+function checkForNewMilestones(prev) {
+  const curr = getMilestoneState();
+  const LABELS = {
+    attend_1:'First Meeting attended!', attend_4:'4 Meetings — Consistent Presence!',
+    attend_8:'8 Meetings — Monthly Perfect!', attend_16:'16 Meetings — Quarter Champion!',
+    cash_1k:'$1,000 cashflow — First $1k Month!', cash_5k:'$5,000 cashflow — Top Producer!',
+    cash_10k:'$10,000 month — Elite Level!',
+    recruits_1:'First Recruit — Builder Badge!', recruits_3:'3 Recruits — Associate Qualifier!',
+    recruits_10:'10 Recruits — Field Associate Qualifier!',
+  };
+
+  const newOnes = Object.entries(curr).filter(([k,v]) => v && !prev[k]);
+  if (newOnes.length) {
+    newOnes.forEach(([k]) => toast('🏆 New milestone: ' + LABELS[k]));
+    launchConfetti();
+  }
+}
+
+function launchConfetti() {
+  const overlay = document.getElementById('confetti-overlay');
+  const colors = ['#C9A84C','#E8C97A','#2DCA73','#3498DB','#9B59B6','#E74C3C'];
+  overlay.innerHTML = '';
+  for (let i = 0; i < 80; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti-piece';
+    el.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*-10-5}%;
+      background:${colors[Math.floor(Math.random()*colors.length)]};
+      animation-delay:${Math.random()*1.5}s;animation-duration:${2+Math.random()*2}s;
+      width:${6+Math.random()*6}px;height:${6+Math.random()*6}px;
+      border-radius:${Math.random()>0.5?'50%':'2px'};`;
+    overlay.appendChild(el);
+  }
+  setTimeout(() => overlay.innerHTML = '', 5000);
+}
+
+// ── POPULATE FORM ─────────────────────────────────────────────────────────────
+function populateForm() {
+  document.getElementById('inp-recruits').value = myStats.recruits || '';
+  document.getElementById('inp-apps').value     = myStats.apps     || '';
+  document.getElementById('inp-points').value   = myStats.points   || '';
+  document.getElementById('inp-cash').value     = myStats.cash     || '';
+  document.getElementById('inp-attend').value   = myStats.attend   || '';
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────────────────
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+function renderAll() {
+  renderMyStatus();
+  renderTracks();
+  renderContests();
+  renderCashflow();
+  renderPromoPath();
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  mySession = AUTH.getSession ? AUTH.getSession() : null;
+  myAgent   = typeof AGENTS !== 'undefined' && mySession
+    ? AGENTS.find(a => a.id === mySession.agentId) : null;
+  loadStats();
+
+  // Try to pull attendance count from leaderboard storage
+  try {
+    const records = JSON.parse(localStorage.getItem('dba_attendance_records') || '[]');
+    const myAttend = records.filter(r => r.agentId === mySession?.agentId).length;
+    if (myAttend > myStats.attend) { myStats.attend = myAttend; }
+  } catch(e) {}
+
+  renderAll();
+  populateForm();
+  sessionStorage.setItem('dba_prev_milestones', JSON.stringify(getMilestoneState()));
+});
+</script>
+</body>
+</html>

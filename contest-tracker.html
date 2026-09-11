@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>SMD/EMD Quarterly Contest Tracker · DBA</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Barlow:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="auth.js"></script>
+<style>
+:root{
+  --navy:#0A1628;--navy2:#0F1E38;--s1:#132240;--s2:#1A2E50;
+  --gold:#C9A84C;--gold2:#E8C97A;
+  --text:#E8EDF5;--muted:#6B7C93;--border:rgba(201,168,76,.15);
+  --green:#2DCA73;--red:#E74C3C;--blue:#3498DB;--purple:#9B59B6;
+  --miami:#FF6B35;--card:rgba(15,30,56,.8);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--navy);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh;}
+
+.topbar{position:sticky;top:0;z-index:100;display:flex;align-items:center;
+  justify-content:space-between;padding:0 16px;height:52px;
+  background:rgba(10,22,40,.96);border-bottom:1px solid var(--border);backdrop-filter:blur(8px);}
+.tb-title{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:900;
+  color:var(--gold2);letter-spacing:.04em;}
+.tb-right{display:flex;align-items:center;gap:10px;}
+a.back{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);text-decoration:none;}
+
+.hero{background:linear-gradient(135deg,#0A1628,#1a004d 50%,#0d1a00);
+  padding:20px 16px 16px;border-bottom:1px solid var(--border);text-align:center;}
+.hero-title{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:900;color:var(--gold2);}
+.hero-sub{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px;}
+.hero-pills{display:flex;gap:8px;justify-content:center;margin-top:12px;flex-wrap:wrap;}
+.pill{font-family:'DM Mono',monospace;font-size:10px;padding:4px 12px;border-radius:20px;
+  border:1px solid var(--border);color:var(--sub);}
+.pill.active{background:rgba(201,168,76,.1);border-color:rgba(201,168,76,.3);color:var(--gold2);}
+
+.controls{padding:12px 16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;
+  border-bottom:1px solid var(--border);background:rgba(10,22,40,.5);}
+.search-box{flex:1;min-width:160px;background:var(--s1);border:1px solid var(--border);
+  border-radius:8px;padding:8px 12px;color:var(--text);font-family:'DM Mono',monospace;
+  font-size:12px;outline:none;}
+.search-box:focus{border-color:rgba(201,168,76,.4);}
+.filter-btn{font-family:'DM Mono',monospace;font-size:10px;padding:6px 12px;
+  background:var(--s1);border:1px solid var(--border);border-radius:8px;
+  color:var(--muted);cursor:pointer;white-space:nowrap;}
+.filter-btn.active{background:rgba(201,168,76,.1);border-color:rgba(201,168,76,.3);color:var(--gold2);}
+.sort-sel{background:var(--s1);border:1px solid var(--border);border-radius:8px;
+  color:var(--text);padding:7px 10px;font-family:'DM Mono',monospace;font-size:11px;cursor:pointer;}
+
+.page{max-width:1100px;margin:0 auto;padding:16px 12px 80px;}
+
+/* Leaderboard table */
+.lb-wrap{overflow-x:auto;margin-bottom:24px;border-radius:12px;border:1px solid var(--border);}
+table{width:100%;border-collapse:collapse;min-width:820px;}
+thead{background:var(--s2);}
+th{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted);padding:10px 12px;text-align:right;white-space:nowrap;cursor:pointer;}
+th:first-child{text-align:left;}
+th.sorted{color:var(--gold2);}
+th:hover{color:var(--text);}
+td{padding:9px 12px;border-bottom:1px solid rgba(26,46,80,.4);font-size:13px;text-align:right;vertical-align:middle;}
+td:first-child{text-align:left;}
+tr:hover td{background:rgba(255,255,255,.02);}
+tr.dba-row td{background:rgba(201,168,76,.05);}
+tr.dba-row:hover td{background:rgba(201,168,76,.09);}
+.rank-col{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;
+  color:var(--gold2);width:36px;}
+.rank-col.r1{color:#FFD700;}.rank-col.r2{color:#C0C0C0;}.rank-col.r3{color:#CD7F32;}
+.name-col{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;color:var(--text);}
+.level-badge{font-family:'DM Mono',monospace;font-size:9px;padding:2px 7px;border-radius:10px;
+  display:inline-block;margin-left:4px;}
+.badge-smd{background:rgba(52,152,219,.15);color:var(--blue);}
+.badge-emd{background:rgba(155,89,182,.15);color:var(--purple);}
+.geb-badge{font-family:'DM Mono',monospace;font-size:9px;padding:2px 6px;border-radius:8px;
+  background:rgba(45,202,115,.1);color:var(--green);margin-left:4px;}
+.rank-num{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;color:var(--muted);}
+.golf-score{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;
+  color:var(--gold);}
+.cash-val{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;color:var(--green);}
+.edit-cell{display:flex;align-items:center;justify-content:flex-end;gap:4px;}
+.edit-input{width:50px;background:var(--s2);border:1px solid var(--border);
+  color:var(--text);border-radius:5px;padding:3px 6px;font-family:'DM Mono',monospace;
+  font-size:11px;text-align:center;outline:none;}
+.edit-input:focus{border-color:rgba(201,168,76,.4);}
+
+/* Category summary cards */
+.cat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:24px;}
+@media(max-width:600px){.cat-grid{grid-template-columns:1fr 1fr;}}
+.cat-card{background:var(--card);border:1px solid var(--border);border-radius:12px;
+  padding:14px;position:relative;overflow:hidden;}
+.cat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.cc-label{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;}
+.cc-leader{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;color:var(--gold2);}
+.cc-val{font-family:'DM Mono',monospace;font-size:11px;color:var(--text);margin-top:2px;}
+.cc-2nd{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-top:3px;}
+
+/* GEB section */
+.geb-box{background:rgba(45,202,115,.06);border:1px solid rgba(45,202,115,.2);
+  border-radius:12px;padding:16px;margin-bottom:24px;}
+.geb-title{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;
+  color:var(--green);margin-bottom:10px;letter-spacing:.04em;}
+.geb-tiers{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;}
+.geb-tier{background:rgba(255,255,255,.03);border:1px solid rgba(45,202,115,.15);
+  border-radius:8px;padding:10px 12px;}
+.geb-tier-pct{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;
+  color:var(--green);}
+.geb-tier-req{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);
+  line-height:1.6;margin-top:3px;}
+.geb-tier-active{border-color:rgba(45,202,115,.5);background:rgba(45,202,115,.08);}
+
+/* Formula box */
+.formula-box{background:var(--card);border:1px solid var(--border);border-radius:12px;
+  padding:16px;margin-bottom:24px;}
+.formula-title{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;
+  color:var(--gold2);margin-bottom:10px;letter-spacing:.04em;}
+.formula-line{font-family:'DM Mono',monospace;font-size:11px;color:var(--text);
+  line-height:2;display:flex;align-items:center;gap:8px;}
+.formula-label{color:var(--muted);width:180px;flex-shrink:0;}
+.formula-val{color:var(--gold);}
+
+/* Section header */
+.section-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.section-title{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;
+  letter-spacing:.06em;text-transform:uppercase;color:var(--gold2);}
+.btn-sm{font-family:'DM Mono',monospace;font-size:10px;padding:5px 12px;
+  background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:6px;
+  color:var(--text);cursor:pointer;}
+.btn-sm:hover{background:rgba(255,255,255,.1);}
+.btn-gold{background:rgba(201,168,76,.1);border-color:rgba(201,168,76,.3);color:var(--gold2);}
+
+/* Toast */
+.toast-wrap{position:fixed;bottom:20px;right:16px;z-index:999;display:flex;flex-direction:column;gap:6px;}
+.toast{background:var(--s2);border:1px solid var(--border);border-radius:8px;
+  padding:9px 14px;font-family:'DM Mono',monospace;font-size:11px;color:var(--text);
+  animation:ti .2s ease;box-shadow:0 4px 20px rgba(0,0,0,.4);}
+@keyframes ti{from{transform:translateX(40px);opacity:0}to{transform:none;opacity:1}}
+
+/* Upload section */
+.upload-box{border:1px dashed rgba(201,168,76,.3);border-radius:12px;padding:16px;
+  text-align:center;margin-bottom:16px;cursor:pointer;background:rgba(201,168,76,.03);}
+.upload-box:hover{border-color:rgba(201,168,76,.6);background:rgba(201,168,76,.06);}
+.upload-label{font-family:'DM Mono',monospace;font-size:11px;color:var(--gold);margin-bottom:4px;}
+.upload-sub{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);}
+</style>
+</head>
+<body>
+<div id="toast-wrap" class="toast-wrap"></div>
+
+<div class="topbar">
+  <div class="tb-title">⛳ SMD/EMD Quarterly Contest Tracker</div>
+  <div class="tb-right">
+    <span id="tb-period" style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);">Q3 2026 · Jul 1 – Sep 4</span>
+    <a class="back" href="hub.html">← Hub</a>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="hero-title">SMD / EMD DIVISION — GOLF SCORING</div>
+  <div class="hero-sub">7 categories · Lowest combined rank wins · Jul 1 – Sep 4, 2026</div>
+  <div class="hero-pills">
+    <div class="pill active" id="pill-all" onclick="setFilter('all')">All (70)</div>
+    <div class="pill" id="pill-smd" onclick="setFilter('SMD')">SMD</div>
+    <div class="pill" id="pill-emd" onclick="setFilter('EMD')">EMD</div>
+    <div class="pill" id="pill-dba" onclick="setFilter('DBA')">⭐ DBA Team</div>
+  </div>
+</div>
+
+<div class="controls">
+  <input class="search-box" type="text" id="search-box" placeholder="Search contestant…" oninput="renderTable()">
+  <select class="sort-sel" id="sort-sel" onchange="renderTable()">
+    <option value="golfScore">Sort: Golf Score ↑</option>
+    <option value="cashFlow">Sort: Cash Flow ↓</option>
+    <option value="personalPaid">Sort: Personal Paid Pts ↓</option>
+    <option value="assocRec">Sort: Assoc w/ Rec ↓</option>
+    <option value="assocApp">Sort: Assoc w/ App ↓</option>
+    <option value="assoc1k">Sort: Assoc $1K+ ↓</option>
+    <option value="newLic">Sort: New License ↓</option>
+  </select>
+  <button class="btn-sm btn-gold" onclick="saveManualEdits()">💾 Save Edits</button>
+  <button class="btn-sm" onclick="exportCSV()">⬇ Export CSV</button>
+  <button class="btn-sm" onclick="toggleUploadPanel()">📂 Upload New Files</button>
+</div>
+
+<div class="page">
+
+  <!-- UPLOAD PANEL (hidden by default) -->
+  <div id="upload-panel" style="display:none;margin-bottom:20px;">
+    <div class="formula-box">
+      <div class="formula-title">📂 Update Data Files</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+        <label class="upload-box">
+          <div class="upload-label">📊 Personal Paid Points</div>
+          <div class="upload-sub">Leaderboards-Paid-Points-*.xlsx</div>
+          <input type="file" accept=".xlsx,.csv" style="display:none" onchange="handleUpload(event,'personalPaid')">
+        </label>
+        <label class="upload-box">
+          <div class="upload-label">📊 MD Base Paid Points</div>
+          <div class="upload-sub">Leaderboards-Paid-Points-*__1_.xlsx</div>
+          <input type="file" accept=".xlsx,.csv" style="display:none" onchange="handleUpload(event,'mdBasePaid')">
+        </label>
+        <label class="upload-box">
+          <div class="upload-label">📊 Super Base Paid Points</div>
+          <div class="upload-sub">Leaderboards-Paid-Points-*__2_.xlsx</div>
+          <input type="file" accept=".xlsx,.csv" style="display:none" onchange="handleUpload(event,'superBasePaid')">
+        </label>
+        <label class="upload-box">
+          <div class="upload-label">📊 Super Team Paid Points</div>
+          <div class="upload-sub">Leaderboards-Paid-Points-*__3_.xlsx</div>
+          <input type="file" accept=".xlsx,.csv" style="display:none" onchange="handleUpload(event,'superTeamPaid')">
+        </label>
+      </div>
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);line-height:1.7;">
+        ⓘ Upload updated files to recalculate Cash Flow. Assoc With Rec/App/1K/License require manual entry in the table above (PHP internal data not accessible from export files). Uploaded XLSX files require SheetJS CDN to parse client-side.
+      </div>
+    </div>
+  </div>
+
+  <!-- FORMULA EXPLANATION -->
+  <div class="formula-box" style="margin-bottom:20px;">
+    <div class="formula-title">💰 Cash Flow Formula</div>
+    <div class="formula-line"><span class="formula-label">Personal Paid Pts ×</span><span class="formula-val">77% (SMD) / 78% (EMD) + GEB%</span></div>
+    <div class="formula-line"><span class="formula-label">(MD Base − Personal) ×</span><span class="formula-val">15% + GEB%</span></div>
+    <div class="formula-line"><span class="formula-label">(Super Base − MD Base) ×</span><span class="formula-val">10%</span></div>
+    <div class="formula-line"><span class="formula-label">(Super Team − Super Base) ×</span><span class="formula-val">3%</span></div>
+    <div style="margin-top:8px;padding:8px 12px;background:rgba(201,168,76,.06);border-radius:8px;font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);line-height:1.8;">Personal = agent's own policies (File 2) · MD Base = full baseshop incl. personal (File 1) · Super Base = cumulative incl. MD Base (File 3) · Super Team = full org (File 4)</div>
+    <div style="margin-top:10px;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);line-height:1.7;">GEB applies to Personal and MD Base percentages only.<br>Overlap removed: each PHP tier file is cumulative — lower tier subtracted before applying rate.</div>
+  </div>
+
+  <!-- GEB TIERS -->
+  <div class="geb-box" style="margin-bottom:20px;">
+    <div class="geb-title">⚡ Great Equalizer Bonus (GEB) — MD Base Averages Required</div>
+    <div class="geb-tiers">
+      <div class="geb-tier"><div class="geb-tier-pct">+10%</div><div class="geb-tier-req">10 recruits<br>25,000 sub pts<br>2 licensed agents</div></div>
+      <div class="geb-tier"><div class="geb-tier-pct">+15%</div><div class="geb-tier-req">25 recruits<br>50,000 sub pts<br>4 licensed agents</div></div>
+      <div class="geb-tier"><div class="geb-tier-pct">+25%</div><div class="geb-tier-req">50 recruits<br>100,000 sub pts<br>6 licensed agents</div></div>
+      <div class="geb-tier"><div class="geb-tier-pct">+35%</div><div class="geb-tier-req">100 recruits<br>150,000 sub pts<br>8 licensed agents</div></div>
+      <div class="geb-tier"><div class="geb-tier-pct">+45%</div><div class="geb-tier-req">200 recruits<br>300,000 sub pts<br>12 licensed agents</div></div>
+    </div>
+  </div>
+
+  <!-- CATEGORY LEADERS -->
+  <div class="section-hdr" style="margin-bottom:10px;">
+    <div class="section-title">Category Leaders</div>
+  </div>
+  <div class="cat-grid" id="cat-grid" style="margin-bottom:20px;"></div>
+
+  <!-- MAIN LEADERBOARD -->
+  <div class="section-hdr">
+    <div class="section-title">⛳ Full Standings</div>
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);">
+      ✏ Edit Assoc Rec/App/1K/Lic inline → Save Edits
+    </div>
+  </div>
+  <div class="lb-wrap">
+    <table id="lb-table">
+      <thead>
+        <tr>
+          <th onclick="sortBy('golfScore','asc')" id="th-rank">Rank</th>
+          <th onclick="sortBy('name','asc')" style="text-align:left;">Contestant</th>
+          <th onclick="sortBy('assocRec','desc')" id="th-assocRec">Asso W/Rec</th>
+          <th onclick="sortBy('assocApp','desc')" id="th-assocApp">Asso W/App</th>
+          <th onclick="sortBy('cashFlow','desc')" id="th-cashFlow">Cash Flow $</th>
+          <th onclick="sortBy('personalPaid','desc')" id="th-personalPaid">Paid Pts $</th>
+          <th onclick="sortBy('assoc1k','desc')" id="th-assoc1k">Asso $1K+</th>
+          <th onclick="sortBy('newLic','desc')" id="th-newLic">New Lic</th>
+          <th onclick="sortBy('golfScore','asc')" id="th-golfScore" class="sorted">Golf ⛳</th>
+        </tr>
+      </thead>
+      <tbody id="lb-tbody"></tbody>
+    </table>
+  </div>
+
+  <!-- FOOTNOTES -->
+  <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);line-height:1.8;padding-top:8px;">
+    <strong style="color:var(--text);">Data source:</strong> PHP leaderboard exports · Jul 1 – Sep 4, 2026<br>
+    <strong style="color:var(--text);">Cash Flow</strong> computed from 4 paid points files. File mapping: Personal=File2 (own production), MD Base=File1 (baseshop total incl. personal), Super Base=File3 (cumulative), Super Team=File4 (cumulative). Exclusive layers: (MB−P)×15%, (SB−MB)×10%, (ST−SB)×3%.<br>
+    <strong style="color:var(--text);">GEB</strong> applied based on personal recruits, personal submitted points, and personal licensed agents.<br>
+    <strong style="color:var(--text);">Assoc With Rec / App / $1K+ / New License:</strong> Enter manually from PHP official contest portal — these require internal PHP database access not available in export files.<br>
+    <strong style="color:var(--text);">Golf scoring:</strong> Each category is ranked separately. Lowest combined rank = winner.<br>
+    ⭐ = Dynasty Builders Academy team members.
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script>
+AUTH.require();
+
+// ── EMBEDDED CONTEST DATA ──────────────────────────────────────
+const CONTEST_PERIOD = 'Q3 2026 · Jul 1 – Sep 4, 2026';
+const QUARTER_KEY = 'dba_contest_q3_2026';
+
+// DBA team members (by name fragment)
+const DBA_NAMES = ['Obi & Jennifer Iroezi','Blessing Ikejemba'];
+
+let RAW_DATA = [{"name": "Enedina Esquivel", "level": "EMD", "personalPaid": 34628.78, "mdBasePaid": 177869.87, "mbExcl": 143241.09, "superBasePaid": 282303.19, "sbExcl": 104433.32, "superTeamPaid": 311652.09, "stExcl": 29348.9, "personalRec": 41.0, "personalSubPts": 149829.75, "personalLic": 2.0, "gebPct": 10, "adjPersonalPct": 0.88, "adjMdbPct": 0.25, "cashFlow": 77607.4, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Teresa Esquivez", "level": "SMD", "personalPaid": 49878.0, "mdBasePaid": 164037.08, "mbExcl": 114159.08, "superBasePaid": 203160.93, "sbExcl": 39123.85, "superTeamPaid": 203160.93, "stExcl": 0.0, "personalRec": 63.0, "personalSubPts": 191549.38, "personalLic": 7.0, "gebPct": 25, "adjPersonalPct": 1.02, "adjMdbPct": 0.4, "cashFlow": 100451.58, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Quiana Hughes", "level": "SMD", "personalPaid": 33364.62, "mdBasePaid": 147846.78, "mbExcl": 114482.16, "superBasePaid": 141788.73, "sbExcl": 0.0, "superTeamPaid": 141788.73, "stExcl": 0.0, "personalRec": 73.0, "personalSubPts": 133460.06, "personalLic": 3.0, "gebPct": 10, "adjPersonalPct": 0.87, "adjMdbPct": 0.25, "cashFlow": 57647.76, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Flavio & Ivana Orozco", "level": "EMD", "personalPaid": 109634.11, "mdBasePaid": 136845.55, "mbExcl": 27211.44, "superBasePaid": 187642.03, "sbExcl": 50796.48, "superTeamPaid": 187643.72, "stExcl": 1.69, "personalRec": 51.0, "personalSubPts": 151758.98, "personalLic": 2.0, "gebPct": 10, "adjPersonalPct": 0.88, "adjMdbPct": 0.25, "cashFlow": 108360.58, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Kendrick & Brittany Williams", "level": "SMD", "personalPaid": 34462.5, "mdBasePaid": 117340.66, "mbExcl": 82878.16, "superBasePaid": 184303.55, "sbExcl": 66962.89, "superTeamPaid": 184303.55, "stExcl": 0.0, "personalRec": 81.0, "personalSubPts": 210703.57, "personalLic": 16.0, "gebPct": 25, "adjPersonalPct": 1.02, "adjMdbPct": 0.4, "cashFlow": 74999.3, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Mychal & Constance Taylor", "level": "SMD", "personalPaid": 11912.06, "mdBasePaid": 103778.76, "mbExcl": 91866.7, "superBasePaid": 131024.63, "sbExcl": 27245.87, "superTeamPaid": 131024.63, "stExcl": 0.0, "personalRec": 122.0, "personalSubPts": 144835.8, "personalLic": 12.0, "gebPct": 25, "adjPersonalPct": 1.02, "adjMdbPct": 0.4, "cashFlow": 51621.57, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Hector Ortega", "level": "SMD", "personalPaid": 15042.99, "mdBasePaid": 99379.42, "mbExcl": 84336.43, "superBasePaid": 118995.04, "sbExcl": 19615.62, "superTeamPaid": 125009.94, "stExcl": 6014.9, "personalRec": 34.0, "personalSubPts": 81917.26, "personalLic": 4.0, "gebPct": 15, "adjPersonalPct": 0.92, "adjMdbPct": 0.3, "cashFlow": 41282.49, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Leticia & Jose Valenzuela", "level": "SMD", "personalPaid": 26310.41, "mdBasePaid": 93661.69, "mbExcl": 67351.28, "superBasePaid": 153378.14, "sbExcl": 59716.45, "superTeamPaid": 153378.14, "stExcl": 0.0, "personalRec": 57.0, "personalSubPts": 119923.22, "personalLic": 7.0, "gebPct": 25, "adjPersonalPct": 1.02, "adjMdbPct": 0.4, "cashFlow": 59748.78, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "William & Charie Nazario", "level": "SMD", "personalPaid": 16980.69, "mdBasePaid": 88609.82, "mbExcl": 71629.13, "superBasePaid": 95231.7, "sbExcl": 6621.88, "superTeamPaid": 95271.7, "stExcl": 40.0, "personalRec": 74.0, "personalSubPts": 117228.05, "personalLic": 4.0, "gebPct": 15, "adjPersonalPct": 0.92, "adjMdbPct": 0.3, "cashFlow": 37774.36, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Omar & Diana Del Angel", "level": "EMD", "personalPaid": 42115.27, "mdBasePaid": 87625.04, "mbExcl": 45509.77, "superBasePaid": 111075.47, "sbExcl": 23450.43, "superTeamPaid": 111075.47, "stExcl": 0.0, "personalRec": 52.0, "personalSubPts": 49546.76, "personalLic": 4.0, "gebPct": 10, "adjPersonalPct": 0.88, "adjMdbPct": 0.25, "cashFlow": 50783.92, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Jorge Almaraz", "level": "SMD", "personalPaid": 46679.23, "mdBasePaid": 86953.76, "mbExcl": 40274.53, "superBasePaid": 88591.89, "sbExcl": 1638.13, "superTeamPaid": 88591.89, "stExcl": 0.0, "personalRec": 4.0, "personalSubPts": 84575.14, "personalLic": 1.0, "gebPct": 0, "adjPersonalPct": 0.77, "adjMdbPct": 0.15, "cashFlow": 42148.0, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Giovanna & Nickolas Castillo", "level": "SMD", "personalPaid": 57248.35, "mdBasePaid": 81207.03, "mbExcl": 23958.68, "superBasePaid": 130639.67, "sbExcl": 49432.64, "superTeamPaid": 155489.31, "stExcl": 24849.64, "personalRec": 25.0, "personalSubPts": 90016.91, "personalLic": 3.0, "gebPct": 10, "adjPersonalPct": 0.87, "adjMdbPct": 0.25, "cashFlow": 61484.49, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Blessing Ikejemba", "level": "EMD", "personalPaid": 38428.23, "mdBasePaid": 68804.93, "mbExcl": 30376.7, "superBasePaid": 97415.63, "sbExcl": 28610.7, "superTeamPaid": 97447.91, "stExcl": 32.28, "personalRec": 19.0, "personalSubPts": 67298.18, "personalLic": 4.0, "gebPct": 10, "adjPersonalPct": 0.88, "adjMdbPct": 0.25, "cashFlow": 44273.06, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Micah & Joseph Leonard", "level": "SMD", "personalPaid": 58491.84, "mdBasePaid": 68720.36, "mbExcl": 10228.52, "superBasePaid": 77406.25, "sbExcl": 8685.89, "superTeamPaid": 82124.83, "stExcl": 4718.58, "personalRec": 34.0, "personalSubPts": 97102.96, "personalLic": 3.0, "gebPct": 10, "adjPersonalPct": 0.87, "adjMdbPct": 0.25, "cashFlow": 54455.18, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Gena Ford", "level": "SMD", "personalPaid": 41692.7, "mdBasePaid": 68625.47, "mbExcl": 26932.77, "superBasePaid": 83856.87, "sbExcl": 15231.4, "superTeamPaid": 83856.87, "stExcl": 0.0, "personalRec": 27.0, "personalSubPts": 59208.98, "personalLic": 6.0, "gebPct": 15, "adjPersonalPct": 0.92, "adjMdbPct": 0.3, "cashFlow": 47960.25, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Michael Bryan", "level": "SMD", "personalPaid": 35379.6, "mdBasePaid": 67273.37, "mbExcl": 31893.77, "superBasePaid": 114049.74, "sbExcl": 46776.37, "superTeamPaid": 114049.74, "stExcl": 0.0, "personalRec": 57.0, "personalSubPts": 90377.75, "personalLic": 5.0, "gebPct": 15, "adjPersonalPct": 0.92, "adjMdbPct": 0.3, "cashFlow": 46795.0, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Iris & Enoch Santiago", "level": "SMD", "personalPaid": 24393.8, "mdBasePaid": 61712.54, "mbExcl": 37318.74, "superBasePaid": 77969.56, "sbExcl": 16257.02, "superTeamPaid": 77969.56, "stExcl": 0.0, "personalRec": 27.0, "personalSubPts": 68635.34, "personalLic": 2.0, "gebPct": 10, "adjPersonalPct": 0.87, "adjMdbPct": 0.25, "cashFlow": 32177.99, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Erika Gutierrez", "level": "SMD", "personalPaid": 4618.83, "mdBasePaid": 61132.1, "mbExcl": 56513.27, "superBasePaid": 101089.69, "sbExcl": 39957.59, "superTeamPaid": 101089.69, "stExcl": 0.0, "personalRec": 55.0, "personalSubPts": 57664.8, "personalLic": 6.0, "gebPct": 15, "adjPersonalPct": 0.92, "adjMdbPct": 0.3, "cashFlow": 25199.06, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Gabriel & Janitza Ramirez", "level": "SMD", "personalPaid": 52745.31, "mdBasePaid": 56994.09, "mbExcl": 4248.78, "superBasePaid": 71863.6, "sbExcl": 14869.51, "superTeamPaid": 72020.47, "stExcl": 156.87, "personalRec": 4.0, "personalSubPts": 64276.78, "personalLic": 1.0, "gebPct": 0, "adjPersonalPct": 0.77, "adjMdbPct": 0.15, "cashFlow": 42742.86, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Crystal & Joe Walker", "level": "SMD", "personalPaid": 35727.87, "mdBasePaid": 55493.6, "mbExcl": 19765.73, "superBasePaid": 110214.25, "sbExcl": 54720.65, "superTeamPaid": 110214.25, "stExcl": 0.0, "personalRec": 25.0, "personalSubPts": 69099.92, "personalLic": 3.0, "gebPct": 10, "adjPersonalPct": 0.87, "adjMdbPct": 0.25, "cashFlow": 41496.74, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Lorna Tracey", "level": "SMD", "personalPaid": 15849.09, "mdBasePaid": 49965.89, "mbExcl": 34116.8, "superBasePaid": 98739.48, "sbExcl": 48773.59, "superTeamPaid": 130325.53, "stExcl": 31586.05, "personalRec": 20.0, "personalSubPts": 34386.67, "personalLic": 2.0, "gebPct": 10, "adjPersonalPct": 0.87, "adjMdbPct": 0.25, "cashFlow": 28142.85, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Ken Serna", "level": "EMD", "personalPaid": 27225.27, "mdBasePaid": 49134.48, "mbExcl": 21909.21, "superBasePaid": 97309.34, "sbExcl": 48174.86, "superTeamPaid": 136238.66, "stExcl": 38929.32, "personalRec": 35.0, "personalSubPts": 59250.88, "personalLic": 5.0, "gebPct": 15, "adjPersonalPct": 0.93, "adjMdbPct": 0.3, "cashFlow": 37877.63, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Obi & Jennifer Iroezi", "level": "SMD", "personalPaid": 9820.61, "mdBasePaid": 48048.22, "mbExcl": 38227.61, "superBasePaid": 190131.09, "sbExcl": 142082.87, "superTeamPaid": 273030.46, "stExcl": 82899.37, "personalRec": 36.0, "personalSubPts": 96659.44, "personalLic": 5.0, "gebPct": 15, "adjPersonalPct": 0.92, "adjMdbPct": 0.3, "cashFlow": 37198.51, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Alan & Alicia Diaz", "level": "EMD", "personalPaid": 11438.62, "mdBasePaid": 47833.19, "mbExcl": 36394.57, "superBasePaid": 62812.48, "sbExcl": 14979.29, "superTeamPaid": 62812.48, "stExcl": 0.0, "personalRec": 26.0, "personalSubPts": 62224.64, "personalLic": 6.0, "gebPct": 15, "adjPersonalPct": 0.93, "adjMdbPct": 0.3, "cashFlow": 23054.22, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Elvana Gaucin", "level": "EMD", "personalPaid": 10717.1, "mdBasePaid": 44429.26, "mbExcl": 33712.16, "superBasePaid": 93923.59, "sbExcl": 49494.33, "superTeamPaid": 124063.21, "stExcl": 30139.62, "personalRec": 30.0, "personalSubPts": 48442.88, "personalLic": 2.0, "gebPct": 10, "adjPersonalPct": 0.88, "adjMdbPct": 0.25, "cashFlow": 23712.71, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Joshua Vigil", "level": "SMD", "personalPaid": 5710.51, "mdBasePaid": 44286.53, "mbExcl": 38576.02, "superBasePaid": 127228.11, "sbExcl": 82941.58, "superTeamPaid": 127228.11, "stExcl": 0.0, "personalRec": 46.0, "personalSubPts": 109040.96, "personalLic": 8.0, "gebPct": 15, "adjPersonalPct": 0.92, "adjMdbPct": 0.3, "cashFlow": 25120.63, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Christopher Blocker", "level": "SMD", "personalPaid": 13152.42, "mdBasePaid": 40498.97, "mbExcl": 27346.55, "superBasePaid": 113117.02, "sbExcl": 72618.05, "superTeamPaid": 113117.02, "stExcl": 0.0, "personalRec": 36.0, "personalSubPts": 56279.13, "personalLic": 4.0, "gebPct": 15, "adjPersonalPct": 0.92, "adjMdbPct": 0.3, "cashFlow": 27566.0, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Jose Melgar", "level": "SMD", "personalPaid": 9660.63, "mdBasePaid": 39123.3, "mbExcl": 29462.67, "superBasePaid": 46937.41, "sbExcl": 7814.11, "superTeamPaid": 46963.45, "stExcl": 26.04, "personalRec": 12.0, "personalSubPts": 30741.8, "personalLic": 0.0, "gebPct": 0, "adjPersonalPct": 0.77, "adjMdbPct": 0.15, "cashFlow": 12640.28, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Earnest Jr and Sharon Sears", "level": "SMD", "personalPaid": 12955.14, "mdBasePaid": 38570.59, "mbExcl": 25615.45, "superBasePaid": 96476.01, "sbExcl": 57905.42, "superTeamPaid": 96476.01, "stExcl": 0.0, "personalRec": 30.0, "personalSubPts": 42708.17, "personalLic": 2.0, "gebPct": 10, "adjPersonalPct": 0.87, "adjMdbPct": 0.25, "cashFlow": 23465.38, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Hilario & Mari Guerrero", "level": "SMD", "personalPaid": 18659.97, "mdBasePaid": 28650.98, "mbExcl": 9991.01, "superBasePaid": 31217.47, "sbExcl": 2566.49, "superTeamPaid": 31217.47, "stExcl": 0.0, "personalRec": 28.0, "personalSubPts": 51870.13, "personalLic": 5.0, "gebPct": 15, "adjPersonalPct": 0.92, "adjMdbPct": 0.3, "cashFlow": 20421.12, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Alberto & Jennifer Lozano", "level": "SMD", "personalPaid": 4229.63, "mdBasePaid": 26141.8, "mbExcl": 21912.17, "superBasePaid": 29196.42, "sbExcl": 3054.62, "superTeamPaid": 29196.42, "stExcl": 0.0, "personalRec": 27.0, "personalSubPts": 32873.49, "personalLic": 1.0, "gebPct": 0, "adjPersonalPct": 0.77, "adjMdbPct": 0.15, "cashFlow": 6849.1, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Frankie Littlejohn", "level": "SMD", "personalPaid": 7566.48, "mdBasePaid": 25497.07, "mbExcl": 17930.59, "superBasePaid": 59616.74, "sbExcl": 34119.67, "superTeamPaid": 59616.74, "stExcl": 0.0, "personalRec": 19.0, "personalSubPts": 17673.56, "personalLic": 3.0, "gebPct": 0, "adjPersonalPct": 0.77, "adjMdbPct": 0.15, "cashFlow": 11927.75, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Bri & Stephen Keshi", "level": "EMD", "personalPaid": 10965.27, "mdBasePaid": 23698.53, "mbExcl": 12733.26, "superBasePaid": 168960.79, "sbExcl": 145262.26, "superTeamPaid": 167882.83, "stExcl": 0.0, "personalRec": 54.0, "personalSubPts": 88543.71, "personalLic": 4.0, "gebPct": 15, "adjPersonalPct": 0.93, "adjMdbPct": 0.3, "cashFlow": 28543.91, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Davit & Karine Davtyan", "level": "EMD", "personalPaid": 13017.1, "mdBasePaid": 22468.37, "mbExcl": 9451.27, "superBasePaid": 62512.64, "sbExcl": 40044.27, "superTeamPaid": 85634.1, "stExcl": 23121.46, "personalRec": 7.0, "personalSubPts": 26614.25, "personalLic": 4.0, "gebPct": 0, "adjPersonalPct": 0.78, "adjMdbPct": 0.15, "cashFlow": 16269.1, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Stephanie Lujan", "level": "SMD", "personalPaid": 23732.6, "mdBasePaid": 20308.04, "mbExcl": 0.0, "superBasePaid": 26380.26, "sbExcl": 6072.22, "superTeamPaid": 26380.26, "stExcl": 0.0, "personalRec": 2.0, "personalSubPts": 30181.67, "personalLic": 0.0, "gebPct": 0, "adjPersonalPct": 0.77, "adjMdbPct": 0.15, "cashFlow": 18881.32, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Matt & Jessica Coulthard", "level": "SMD", "personalPaid": 10707.0, "mdBasePaid": 18883.66, "mbExcl": 8176.66, "superBasePaid": 42860.14, "sbExcl": 23976.48, "superTeamPaid": 42860.14, "stExcl": 0.0, "personalRec": 5.0, "personalSubPts": 31390.3, "personalLic": 2.0, "gebPct": 0, "adjPersonalPct": 0.77, "adjMdbPct": 0.15, "cashFlow": 11868.54, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Omar Huezo", "level": "SMD", "personalPaid": 5102.26, "mdBasePaid": 16563.62, "mbExcl": 11461.36, "superBasePaid": 28015.47, "sbExcl": 11451.85, "superTeamPaid": 28022.34, "stExcl": 6.87, "personalRec": 7.0, "personalSubPts": 9769.97, "personalLic": 3.0, "gebPct": 0, "adjPersonalPct": 0.77, "adjMdbPct": 0.15, "cashFlow": 6793.34, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Lorenzo & Crystal Godinez", "level": "SMD", "personalPaid": 10812.15, "mdBasePaid": 13127.03, "mbExcl": 2314.88, "superBasePaid": 62508.0, "sbExcl": 49380.97, "superTeamPaid": 93738.41, "stExcl": 31230.41, "personalRec": 41.0, "personalSubPts": 61888.34, "personalLic": 5.0, "gebPct": 15, "adjPersonalPct": 0.92, "adjMdbPct": 0.3, "cashFlow": 16516.65, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Perry Lee", "level": "SMD", "personalPaid": 8889.22, "mdBasePaid": 12928.12, "mbExcl": 4038.9, "superBasePaid": 41336.81, "sbExcl": 28408.69, "superTeamPaid": 41336.81, "stExcl": 0.0, "personalRec": 8.0, "personalSubPts": 16466.94, "personalLic": 3.0, "gebPct": 0, "adjPersonalPct": 0.77, "adjMdbPct": 0.15, "cashFlow": 10291.4, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Daniel Elias", "level": "SMD", "personalPaid": 6593.53, "mdBasePaid": 11504.39, "mbExcl": 4910.86, "superBasePaid": 28984.14, "sbExcl": 17479.75, "superTeamPaid": 28984.14, "stExcl": 0.0, "personalRec": 9.0, "personalSubPts": 18274.32, "personalLic": 2.0, "gebPct": 0, "adjPersonalPct": 0.77, "adjMdbPct": 0.15, "cashFlow": 7561.62, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Paul Medrano", "level": "EMD", "personalPaid": 8784.02, "mdBasePaid": 10561.1, "mbExcl": 1777.08, "superBasePaid": 54303.62, "sbExcl": 43742.52, "superTeamPaid": 59528.76, "stExcl": 5225.14, "personalRec": 4.5, "personalSubPts": 17898.32, "personalLic": 2.0, "gebPct": 0, "adjPersonalPct": 0.78, "adjMdbPct": 0.15, "cashFlow": 11649.1, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Uriel & Diana Guadarrama", "level": "SMD", "personalPaid": 7509.95, "mdBasePaid": 10438.92, "mbExcl": 2928.97, "superBasePaid": 38240.82, "sbExcl": 27801.9, "superTeamPaid": 38240.82, "stExcl": 0.0, "personalRec": 2.0, "personalSubPts": 8693.58, "personalLic": 0.0, "gebPct": 0, "adjPersonalPct": 0.77, "adjMdbPct": 0.15, "cashFlow": 9002.2, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Octavio & Maciel Arellano", "level": "SMD", "personalPaid": 741.79, "mdBasePaid": 10253.9, "mbExcl": 9512.11, "superBasePaid": 11171.71, "sbExcl": 917.81, "superTeamPaid": 11182.26, "stExcl": 10.55, "personalRec": 1.0, "personalSubPts": 9849.68, "personalLic": 0.0, "gebPct": 0, "adjPersonalPct": 0.77, "adjMdbPct": 0.15, "cashFlow": 2090.09, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Alma & Juan Chavarr\u00eda", "level": "SMD", "personalPaid": 5558.14, "mdBasePaid": 7980.29, "mbExcl": 2422.15, "superBasePaid": 35229.57, "sbExcl": 27249.28, "superTeamPaid": 67823.56, "stExcl": 32593.99, "personalRec": 3.0, "personalSubPts": 3919.7, "personalLic": 0.0, "gebPct": 0, "adjPersonalPct": 0.77, "adjMdbPct": 0.15, "cashFlow": 8345.84, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Eshmael & Francis Colon", "level": "SMD", "personalPaid": 3077.91, "mdBasePaid": 7863.22, "mbExcl": 4785.31, "superBasePaid": 23183.41, "sbExcl": 15320.19, "superTeamPaid": 23183.41, "stExcl": 0.0, "personalRec": 0.0, "personalSubPts": 11284.73, "personalLic": 0.0, "gebPct": 0, "adjPersonalPct": 0.77, "adjMdbPct": 0.15, "cashFlow": 4619.81, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Dean & Fernanda Mason", "level": "SMD", "personalPaid": 3916.18, "mdBasePaid": 6935.02, "mbExcl": 3018.84, "superBasePaid": 9651.81, "sbExcl": 2716.79, "superTeamPaid": 9651.81, "stExcl": 0.0, "personalRec": 0.0, "personalSubPts": 8692.8, "personalLic": 0.0, "gebPct": 0, "adjPersonalPct": 0.77, "adjMdbPct": 0.15, "cashFlow": 3739.96, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Donald & Jessy Quinine", "level": "SMD", "personalPaid": 1667.3, "mdBasePaid": 6595.73, "mbExcl": 4928.43, "superBasePaid": 7701.56, "sbExcl": 1105.83, "superTeamPaid": 7701.56, "stExcl": 0.0, "personalRec": 0.0, "personalSubPts": 1513.51, "personalLic": 0.0, "gebPct": 0, "adjPersonalPct": 0.77, "adjMdbPct": 0.15, "cashFlow": 2133.67, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Marlene Colmenares", "level": "SMD", "personalPaid": 997.13, "mdBasePaid": 6129.66, "mbExcl": 5132.53, "superBasePaid": 8411.62, "sbExcl": 2281.96, "superTeamPaid": 8411.62, "stExcl": 0.0, "personalRec": 0.0, "personalSubPts": 1044.14, "personalLic": 0.0, "gebPct": 0, "adjPersonalPct": 0.77, "adjMdbPct": 0.15, "cashFlow": 1765.87, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Alexis & Kailey Robinson", "level": "SMD", "personalPaid": 1949.05, "mdBasePaid": 5515.4, "mbExcl": 3566.35, "superBasePaid": 110127.67, "sbExcl": 104612.27, "superTeamPaid": 133056.9, "stExcl": 22929.23, "personalRec": 0.0, "personalSubPts": 780.23, "personalLic": 0.0, "gebPct": 0, "adjPersonalPct": 0.77, "adjMdbPct": 0.15, "cashFlow": 13184.82, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Morteza Alborzi", "level": "EMD", "personalPaid": 3591.81, "mdBasePaid": 4767.46, "mbExcl": 1175.65, "superBasePaid": 26105.13, "sbExcl": 21337.67, "superTeamPaid": 28294.2, "stExcl": 2189.07, "personalRec": 0.0, "personalSubPts": 4218.24, "personalLic": 0.0, "gebPct": 0, "adjPersonalPct": 0.78, "adjMdbPct": 0.15, "cashFlow": 5177.4, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Gabriela Arora", "level": "SMD", "personalPaid": 1793.89, "mdBasePaid": 4752.14, "mbExcl": 2958.25, "superBasePaid": 6630.46, "sbExcl": 1878.32, "superTeamPaid": 6630.46, "stExcl": 0.0, "personalRec": 0.0, "personalSubPts": 11519.1, "personalLic": 0.0, "gebPct": 0, "adjPersonalPct": 0.77, "adjMdbPct": 0.15, "cashFlow": 2012.86, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Edith Cuartas", "level": "SMD", "personalPaid": 3173.48, "mdBasePaid": 4685.21, "mbExcl": 1511.73, "superBasePaid": 5239.74, "sbExcl": 554.53, "superTeamPaid": 5239.74, "stExcl": 0.0, "personalRec": 2.0, "personalSubPts": 17958.18, "personalLic": 0.0, "gebPct": 0, "adjPersonalPct": 0.77, "adjMdbPct": 0.15, "cashFlow": 2725.79, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Alison & Angel Saldana", "level": "EMD", "personalPaid": 1408.44, "mdBasePaid": 4569.59, "mbExcl": 3161.15, "superBasePaid": 18603.71, "sbExcl": 14034.12, "superTeamPaid": 61848.05, "stExcl": 43244.34, "personalRec": 2.0, "personalSubPts": 15125.05, "personalLic": 1.0, "gebPct": 0, "adjPersonalPct": 0.78, "adjMdbPct": 0.15, "cashFlow": 4273.5, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Thomas Clarke", "level": "SMD", "personalPaid": 3867.82, "mdBasePaid": 4371.11, "mbExcl": 503.29, "superBasePaid": 5630.23, "sbExcl": 1259.12, "superTeamPaid": 6013.24, "stExcl": 383.01, "personalRec": 0.0, "personalSubPts": 2400.0, "personalLic": 0.0, "gebPct": 0, "adjPersonalPct": 0.77, "adjMdbPct": 0.15, "cashFlow": 3191.12, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Joel Molina", "level": "SMD", "personalPaid": 150.2, "mdBasePaid": 3680.98, "mbExcl": 3530.78, "superBasePaid": 18667.35, "sbExcl": 14986.37, "superTeamPaid": 25351.22, "stExcl": 6683.87, "personalRec": 0.0, "personalSubPts": 0.0, "personalLic": 0.0, "gebPct": 0, "adjPersonalPct": 0.77, "adjMdbPct": 0.15, "cashFlow": 2344.42, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Dezz & Savv Anderson", "level": "SMD", "personalPaid": 676.0, "mdBasePaid": 3602.48, "mbExcl": 2926.48, "superBasePaid": 10004.66, "sbExcl": 6402.18, "superTeamPaid": 10004.66, "stExcl": 0.0, "personalRec": 16.0, "personalSubPts": 25201.33, "personalLic": 3.0, "gebPct": 10, "adjPersonalPct": 0.87, "adjMdbPct": 0.25, "cashFlow": 1959.96, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "NaTasha Blair", "level": "SMD", "personalPaid": 1660.27, "mdBasePaid": 2287.83, "mbExcl": 627.56, "superBasePaid": 2454.23, "sbExcl": 166.4, "superTeamPaid": 2500.92, "stExcl": 46.69, "personalRec": 0.0, "personalSubPts": 1770.68, "personalLic": 0.0, "gebPct": 0, "adjPersonalPct": 0.77, "adjMdbPct": 0.15, "cashFlow": 1390.58, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Mario Reyes", "level": "SMD", "personalPaid": 1813.94, "mdBasePaid": 2253.12, "mbExcl": 439.18, "superBasePaid": 25040.39, "sbExcl": 22787.27, "superTeamPaid": 24089.6, "stExcl": 0.0, "personalRec": 0.0, "personalSubPts": 3948.94, "personalLic": 0.0, "gebPct": 0, "adjPersonalPct": 0.77, "adjMdbPct": 0.15, "cashFlow": 3741.34, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Avedis Ekmekjian & Rita Keshishian", "level": "SMD", "personalPaid": 561.46, "mdBasePaid": 1734.17, "mbExcl": 1172.71, "superBasePaid": 29888.86, "sbExcl": 28154.69, "superTeamPaid": 116297.31, "stExcl": 86408.45, "personalRec": 1.0, "personalSubPts": 1032.5, "personalLic": 0.0, "gebPct": 0, "adjPersonalPct": 0.77, "adjMdbPct": 0.15, "cashFlow": 6015.95, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Karina & Jesus Sustaita", "level": "SMD", "personalPaid": 846.99, "mdBasePaid": 1295.38, "mbExcl": 448.39, "superBasePaid": 1804.4, "sbExcl": 509.02, "superTeamPaid": 1804.4, "stExcl": 0.0, "personalRec": 0.0, "personalSubPts": 0.0, "personalLic": 0.0, "gebPct": 0, "adjPersonalPct": 0.77, "adjMdbPct": 0.15, "cashFlow": 770.34, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Emanuel & Susana Medina", "level": "EMD", "personalPaid": 335.46, "mdBasePaid": 1215.09, "mbExcl": 879.63, "superBasePaid": 1290.14, "sbExcl": 75.05, "superTeamPaid": 1316.41, "stExcl": 26.27, "personalRec": 0.0, "personalSubPts": 1042.94, "personalLic": 0.0, "gebPct": 0, "adjPersonalPct": 0.78, "adjMdbPct": 0.15, "cashFlow": 401.9, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Brandon Ford", "level": "SMD", "personalPaid": 2199.89, "mdBasePaid": 1105.23, "mbExcl": 0.0, "superBasePaid": 110572.9, "sbExcl": 109467.67, "superTeamPaid": 125319.9, "stExcl": 14747.0, "personalRec": 12.0, "personalSubPts": 23743.46, "personalLic": 2.0, "gebPct": 0, "adjPersonalPct": 0.77, "adjMdbPct": 0.15, "cashFlow": 13083.09, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Ahmed Hazime", "level": "EMD", "personalPaid": 80.01, "mdBasePaid": 927.58, "mbExcl": 847.57, "superBasePaid": 1529.07, "sbExcl": 601.49, "superTeamPaid": 1529.07, "stExcl": 0.0, "personalRec": 0.0, "personalSubPts": 0.0, "personalLic": 0.0, "gebPct": 0, "adjPersonalPct": 0.78, "adjMdbPct": 0.15, "cashFlow": 249.69, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Natalia & Karina Suazo", "level": "SMD", "personalPaid": 353.41, "mdBasePaid": 870.01, "mbExcl": 516.6, "superBasePaid": 1005.01, "sbExcl": 135.0, "superTeamPaid": 1005.01, "stExcl": 0.0, "personalRec": 0.0, "personalSubPts": 0.0, "personalLic": 0.0, "gebPct": 0, "adjPersonalPct": 0.77, "adjMdbPct": 0.15, "cashFlow": 363.12, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Ruddy & Rosy Ortiz", "level": "SMD", "personalPaid": 517.18, "mdBasePaid": 766.91, "mbExcl": 249.73, "superBasePaid": 72771.21, "sbExcl": 72004.3, "superTeamPaid": 85837.83, "stExcl": 13066.62, "personalRec": 0.0, "personalSubPts": 0.0, "personalLic": 0.0, "gebPct": 0, "adjPersonalPct": 0.77, "adjMdbPct": 0.15, "cashFlow": 8028.12, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Brandon & Jowelle Bowman", "level": "SMD", "personalPaid": 244.19, "mdBasePaid": 706.15, "mbExcl": 461.96, "superBasePaid": 19579.53, "sbExcl": 18873.38, "superTeamPaid": 24628.95, "stExcl": 5049.42, "personalRec": 0.0, "personalSubPts": 0.0, "personalLic": 0.0, "gebPct": 0, "adjPersonalPct": 0.77, "adjMdbPct": 0.15, "cashFlow": 2296.14, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Diana Powers", "level": "SMD", "personalPaid": 162.46, "mdBasePaid": 597.93, "mbExcl": 435.47, "superBasePaid": 28710.18, "sbExcl": 28112.25, "superTeamPaid": 93436.38, "stExcl": 64726.2, "personalRec": 0.0, "personalSubPts": 0.0, "personalLic": 0.0, "gebPct": 0, "adjPersonalPct": 0.77, "adjMdbPct": 0.15, "cashFlow": 4943.43, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Marco Munoz", "level": "SMD", "personalPaid": 190.95, "mdBasePaid": 571.45, "mbExcl": 380.5, "superBasePaid": 1288.76, "sbExcl": 717.31, "superTeamPaid": 3841.83, "stExcl": 2553.07, "personalRec": 0.0, "personalSubPts": 0.0, "personalLic": 0.0, "gebPct": 0, "adjPersonalPct": 0.77, "adjMdbPct": 0.15, "cashFlow": 352.43, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Vanessa Machado", "level": "EMD", "personalPaid": 144.28, "mdBasePaid": 321.61, "mbExcl": 177.33, "superBasePaid": 693.82, "sbExcl": 372.21, "superTeamPaid": 693.82, "stExcl": 0.0, "personalRec": 0.0, "personalSubPts": 0.0, "personalLic": 0.0, "gebPct": 0, "adjPersonalPct": 0.78, "adjMdbPct": 0.15, "cashFlow": 176.36, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}, {"name": "Michael Robertaccio", "level": "EMD", "personalPaid": 0.0, "mdBasePaid": -5375.31, "mbExcl": 0.0, "superBasePaid": 231603.39, "sbExcl": 236978.7, "superTeamPaid": 301279.69, "stExcl": 69676.3, "personalRec": 11.5, "personalSubPts": 22787.99, "personalLic": 0.0, "gebPct": 0, "adjPersonalPct": 0.78, "adjMdbPct": 0.15, "cashFlow": 25788.16, "assocRec": 0, "assocApp": 0, "assoc1k": 0, "newLic": 0}];
+
+// ── GEB TIERS ────────────────────────────────────────────────
+const GEB_TIERS = [
+  {rec:10,  pts:25000,   lic:2,  bonus:0.10},
+  {rec:25,  pts:50000,   lic:4,  bonus:0.15},
+  {rec:50,  pts:100000,  lic:6,  bonus:0.25},
+  {rec:100, pts:150000,  lic:8,  bonus:0.35},
+  {rec:200, pts:300000,  lic:12, bonus:0.45},
+];
+
+function getGEB(rec, subPts, lic) {
+  let bonus = 0;
+  GEB_TIERS.forEach(t => {
+    if(rec >= t.rec && subPts >= t.pts && lic >= t.lic) bonus = t.bonus;
+  });
+  return bonus;
+}
+
+// ── STATE ─────────────────────────────────────────────────────
+let sortCol = 'golfScore', sortDir = 'asc', filterLevel = 'all';
+let editStore = {}; // manual overrides: name -> {assocRec, assocApp, assoc1k, newLic}
+
+function loadEdits() {
+  try { editStore = JSON.parse(localStorage.getItem(QUARTER_KEY+'_edits') || '{}'); } catch { editStore = {}; }
+}
+function saveEdits() {
+  localStorage.setItem(QUARTER_KEY+'_edits', JSON.stringify(editStore));
+}
+
+// ── COMPUTE ───────────────────────────────────────────────────
+function computeAll(data) {
+  return data.map(d => {
+    const overrides = editStore[d.name] || {};
+    const assocRec = overrides.assocRec ?? d.assocRec ?? 0;
+    const assocApp = overrides.assocApp ?? d.assocApp ?? 0;
+    const assoc1k  = overrides.assoc1k  ?? d.assoc1k  ?? 0;
+    const newLic   = overrides.newLic   ?? d.newLic   ?? 0;
+
+    const geb      = getGEB(d.personalRec, d.personalSubPts, d.personalLic);
+    const persLevel = d.level === 'EMD' ? 0.78 : 0.77;
+    const adjPers  = persLevel + geb;
+    const adjMdb   = 0.15 + geb;
+
+    // ── EXCLUSIVE LAYERS — no double counting ─────────────────
+    // PHP export files are cumulative at each level.
+    // Strip lower tiers before applying commission rates:
+    //   Personal       = own policies only (exclusive)
+    //   MD Base excl   = MD Base − Personal  (personal policies also sit in baseshop)
+    //   Super Base excl = Super Base − MD Base (MB is included in SB file)
+    //   Super Team excl = Super Team − Super Base (SB is included in ST file)
+    const mbExcl = Math.max(0, (d.mdBasePaid || 0) - (d.personalPaid || 0));
+    const sbExcl = Math.max(0, (d.superBasePaid || 0) - (d.mdBasePaid || 0));
+    const stExcl = Math.max(0, (d.superTeamPaid || 0) - (d.superBasePaid || 0));
+
+    const cashFlow = d.personalPaid * adjPers
+                   + mbExcl         * adjMdb
+                   + sbExcl         * 0.10
+                   + stExcl         * 0.03;
+
+    return {
+      ...d, assocRec, assocApp, assoc1k, newLic,
+      sbExcl, stExcl,
+      cashFlow: Math.round(cashFlow * 100) / 100,
+      gebPct: Math.round(geb * 100),
+      isDBA: DBA_NAMES.some(n => d.name.includes(n.split(' ')[0])),
+    };
+  });
+}
+
+function rankAll(data) {
+  const cats = [
+    {key:'rankAssocRec', val:'assocRec', asc:false},
+    {key:'rankAssocApp', val:'assocApp', asc:false},
+    {key:'rankCashFlow', val:'cashFlow', asc:false},
+    {key:'rankPaidPts',  val:'personalPaid', asc:false},
+    {key:'rankAssoc1k',  val:'assoc1k', asc:false},
+    {key:'rankNewLic',   val:'newLic', asc:false},
+  ];
+  cats.forEach(cat => {
+    const vals = data.map(d => d[cat.val]);
+    const sorted = [...vals].sort((a,b) => cat.asc ? a-b : b-a);
+    data.forEach(d => {
+      d[cat.key] = sorted.indexOf(d[cat.val]) + 1;
+    });
+  });
+  data.forEach(d => {
+    d.golfScore = d.rankAssocRec + d.rankAssocApp + d.rankCashFlow +
+                  d.rankPaidPts + d.rankAssoc1k + d.rankNewLic;
+  });
+  const gs = data.map(d=>d.golfScore).sort((a,b)=>a-b);
+  data.forEach(d => { d.overallRank = gs.indexOf(d.golfScore) + 1; });
+  return data;
+}
+
+// ── FILTER & SORT ──────────────────────────────────────────────
+function getDisplayData() {
+  let data = computeAll(RAW_DATA);
+  data = rankAll(data);
+
+  const q = document.getElementById('search-box').value.toLowerCase();
+  if(q) data = data.filter(d => d.name.toLowerCase().includes(q));
+  if(filterLevel === 'SMD') data = data.filter(d => d.level === 'SMD');
+  if(filterLevel === 'EMD') data = data.filter(d => d.level === 'EMD');
+  if(filterLevel === 'DBA') data = data.filter(d => d.isDBA);
+
+  const sortDir2 = sortDir === 'asc' ? 1 : -1;
+  data.sort((a,b) => sortDir2 * ((a[sortCol] > b[sortCol]) ? 1 : -1));
+  return data;
+}
+
+function setFilter(f) {
+  filterLevel = f;
+  ['all','smd','emd','dba'].forEach(id => {
+    document.getElementById('pill-'+id)?.classList.remove('active');
+  });
+  document.getElementById('pill-'+f.toLowerCase())?.classList.add('active');
+  renderTable();
+}
+
+function sortBy(col, dir) {
+  sortCol = col; sortDir = dir;
+  document.querySelectorAll('th').forEach(t => t.classList.remove('sorted'));
+  document.getElementById('th-'+col)?.classList.add('sorted');
+  renderTable();
+}
+
+// ── RENDER TABLE ──────────────────────────────────────────────
+function fmtDollar(n) {
+  if(!n) return '$0';
+  return '$' + Math.round(n).toLocaleString();
+}
+function fmtPts(n) {
+  if(!n) return '0';
+  return n >= 1000 ? (n/1000).toFixed(1)+'K' : Math.round(n).toString();
+}
+
+function renderTable() {
+  const data = getDisplayData();
+  const tbody = document.getElementById('lb-tbody');
+
+  tbody.innerHTML = data.map(d => {
+    const rc = d.overallRank;
+    const rankCls = rc===1?'r1':rc===2?'r2':rc===3?'r3':'';
+    const isDBA = d.isDBA ? 'dba-row' : '';
+
+    return `<tr class="${isDBA}" data-name="${d.name.replace(/"/g,'&quot;')}">
+      <td><div class="rank-col ${rankCls}">${rc}</div></td>
+      <td>
+        <div class="name-col">${d.isDBA?'⭐ ':''}${d.name}</div>
+        <div style="margin-top:2px;">
+          <span class="level-badge badge-${d.level.toLowerCase()}">${d.level}</span>
+          ${d.gebPct > 0 ? `<span class="geb-badge">GEB +${d.gebPct}%</span>` : ''}
+        </div>
+      </td>
+      <td>
+        <div class="edit-cell">
+          <input class="edit-input" type="number" min="0" value="${d.assocRec}"
+            onchange="updateEdit('${d.name.replace(/'/g,'\'').replace(/&amp;/g,'&')}','assocRec',this.value)"
+            title="Assoc With Rec — enter from PHP portal">
+          <span class="rank-num">#${d.rankAssocRec}</span>
+        </div>
+      </td>
+      <td>
+        <div class="edit-cell">
+          <input class="edit-input" type="number" min="0" value="${d.assocApp}"
+            onchange="updateEdit('${d.name.replace(/'/g,'\'').replace(/&amp;/g,'&')}','assocApp',this.value)"
+            title="Assoc With App — enter from PHP portal">
+          <span class="rank-num">#${d.rankAssocApp}</span>
+        </div>
+      </td>
+      <td><div class="cash-val">${fmtDollar(d.cashFlow)}</div><div class="rank-num">#${d.rankCashFlow}</div>${d.gebPct>0?`<div style="font-family:'DM Mono',monospace;font-size:8px;color:var(--green);margin-top:1px;">GEB+${d.gebPct}%</div>`:''}</td>
+      <td><div>${fmtDollar(d.personalPaid)}</div><div class="rank-num">#${d.rankPaidPts}</div></td>
+      <td>
+        <div class="edit-cell">
+          <input class="edit-input" type="number" min="0" value="${d.assoc1k}"
+            onchange="updateEdit('${d.name.replace(/'/g,'\'').replace(/&amp;/g,'&')}','assoc1k',this.value)"
+            title="Assoc $1K+ — enter from PHP portal">
+          <span class="rank-num">#${d.rankAssoc1k}</span>
+        </div>
+      </td>
+      <td>
+        <div class="edit-cell">
+          <input class="edit-input" type="number" min="0" value="${d.newLic}"
+            onchange="updateEdit('${d.name.replace(/'/g,'\'').replace(/&amp;/g,'&')}','newLic',this.value)"
+            title="New License — enter from PHP portal">
+          <span class="rank-num">#${d.rankNewLic}</span>
+        </div>
+      </td>
+      <td><div class="golf-score">${d.golfScore}</div></td>
+    </tr>`;
+  }).join('');
+
+  renderCategoryLeaders(rankAll(computeAll(RAW_DATA)));
+}
+
+// ── CATEGORY LEADER CARDS ─────────────────────────────────────
+const CAT_DEFS = [
+  {key:'assocRec',    label:'Asso. With Rec',    color:'#5DADE2', valKey:'assocRec',    suffix:''},
+  {key:'assocApp',    label:'Asso. With App',    color:'#9B59B6', valKey:'assocApp',    suffix:''},
+  {key:'cashFlow',    label:'Cash Flow',          color:'#2DCA73', valKey:'cashFlow',    suffix:'$'},
+  {key:'personalPaid',label:'Personal Paid Pts', color:'#E67E22', valKey:'personalPaid',suffix:'$'},
+  {key:'assoc1k',     label:'Asso. $1,000+',     color:'#C9A84C', valKey:'assoc1k',     suffix:''},
+  {key:'newLic',      label:'New License',        color:'#FF6B35', valKey:'newLic',      suffix:''},
+];
+
+function renderCategoryLeaders(allData) {
+  const grid = document.getElementById('cat-grid');
+  if(!grid) return;
+  grid.innerHTML = CAT_DEFS.map(cat => {
+    const sorted = [...allData].sort((a,b) => b[cat.valKey] - a[cat.valKey]);
+    const leader = sorted[0];
+    const second = sorted[1];
+    const fmtVal = v => cat.suffix === '$' ? fmtDollar(v) : v;
+    return `<div class="cat-card" style="--cat-color:${cat.color}">
+      <div class="cat-card::before" style="background:${cat.color};height:3px;position:absolute;top:0;left:0;right:0;"></div>
+      <div class="cc-label">${cat.label}</div>
+      <div class="cc-leader">${leader?.isDBA?'⭐ ':''}${leader?.name?.split(' ')[0] || '—'} ${leader?.name?.split(' ').slice(1,3).join(' ')||''}</div>
+      <div class="cc-val">${fmtVal(leader?.[cat.valKey] || 0)}</div>
+      <div class="cc-2nd">2nd: ${second?.name?.split(' ')[0]||'—'} ${second?.name?.split(' ')[1]||''} (${fmtVal(second?.[cat.valKey]||0)})</div>
+    </div>`;
+  }).join('');
+}
+
+// ── EDIT HANDLING ─────────────────────────────────────────────
+function updateEdit(name, field, value) {
+  if(!editStore[name]) editStore[name] = {};
+  editStore[name][field] = parseInt(value) || 0;
+  // Re-rank inline without full re-render
+}
+
+function saveManualEdits() {
+  // Collect all inline inputs
+  document.querySelectorAll('#lb-tbody tr').forEach(row => {
+    const name = row.dataset.name;
+    if(!name) return;
+    const inputs = row.querySelectorAll('.edit-input');
+    if(inputs.length >= 4) {
+      if(!editStore[name]) editStore[name] = {};
+      editStore[name].assocRec = parseInt(inputs[0].value) || 0;
+      editStore[name].assocApp = parseInt(inputs[1].value) || 0;
+      editStore[name].assoc1k  = parseInt(inputs[2].value) || 0;
+      editStore[name].newLic   = parseInt(inputs[3].value) || 0;
+    }
+  });
+  saveEdits();
+  renderTable();
+  toast('✓ Edits saved — standings recalculated');
+}
+
+// ── EXPORT CSV ────────────────────────────────────────────────
+function exportCSV() {
+  const data = rankAll(computeAll(RAW_DATA));
+  const headers = ['Rank','Name','Level','GEB%','AssocRec','RkAssocRec','AssocApp','RkAssocApp',
+    'CashFlow','RkCashFlow','PersonalPaid','RkPaidPts','Assoc1K','RkAssoc1k','NewLic','RkNewLic','GolfScore'];
+  const rows = data.sort((a,b)=>a.golfScore-b.golfScore).map(d => [
+    d.overallRank, d.name, d.level, d.gebPct+'%',
+    d.assocRec, d.rankAssocRec, d.assocApp, d.rankAssocApp,
+    d.cashFlow.toFixed(2), d.rankCashFlow,
+    d.personalPaid.toFixed(2), d.rankPaidPts,
+    d.assoc1k, d.rankAssoc1k, d.newLic, d.rankNewLic, d.golfScore
+  ]);
+  const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = 'SMD_EMD_Contest_Q3_2026.csv';
+  a.click();
+}
+
+// ── UPLOAD PANEL ──────────────────────────────────────────────
+function toggleUploadPanel() {
+  const panel = document.getElementById('upload-panel');
+  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+}
+
+function handleUpload(event, fileType) {
+  const file = event.target.files[0];
+  if(!file) return;
+  if(typeof XLSX === 'undefined') { toast('⚠ XLSX library not loaded'); return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const wb = XLSX.read(e.target.result, {type:'array'});
+      const sheet = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(sheet);
+      // Update RAW_DATA with new values
+      rows.forEach(row => {
+        const name = (row['Agent Name']||'').trim();
+        const total = parseFloat(row['Total']) || 0;
+        const existing = RAW_DATA.find(d => d.name === name);
+        if(existing) existing[fileType] = total;
+        else {
+          // New contestant
+          const level = (row['Level']||'').toLowerCase();
+          if(level.includes('senior marketing')||level.includes('executive marketing')) {
+            RAW_DATA.push({name, level: level.includes('executive')?'EMD':'SMD',
+              [fileType]: total, personalPaid:0,mdBasePaid:0,superBasePaid:0,superTeamPaid:0,
+              personalRec:0,personalSubPts:0,personalLic:0,gebPct:0,
+              assocRec:0,assocApp:0,assoc1k:0,newLic:0});
+          }
+        }
+      });
+      toast('✓ ' + file.name + ' loaded — ' + rows.length + ' rows');
+      renderTable();
+    } catch(err) {
+      toast('✗ Error: ' + err.message);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// ── TOAST ─────────────────────────────────────────────────────
+function toast(msg, dur=3000) {
+  const wrap = document.getElementById('toast-wrap');
+  const el = document.createElement('div');
+  el.className = 'toast'; el.textContent = msg;
+  wrap.appendChild(el);
+  setTimeout(() => el.remove(), dur);
+}
+
+// ── INIT ──────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  loadEdits();
+  renderTable();
+});
+</script>
+</body>
+</html>

@@ -248,48 +248,124 @@ label{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);display:
 
 <!-- ══ EMAIL ══ -->
 <div class="panel" id="panel-email">
-  <div class="card">
-    <div class="card-title">✉️ AI Client Support Analysis</div>
-    <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);line-height:1.8;margin-bottom:14px;">
-      Reads your last 90 days of support emails, finds repeating questions, and generates an FAQ — 
-      plus the process that would have prevented each question.
-    </div>
-    <div class="form-group">
-      <label>Analysis Period</label>
-      <select id="email-period">
-        <option value="90">Last 90 days</option>
-        <option value="30">Last 30 days</option>
-        <option value="180">Last 6 months</option>
-        <option value="365">Last year</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label>Focus Folder / Label</label>
-      <input type="text" id="email-folder" value="Inbox" placeholder="Inbox, Support, Team…">
-    </div>
-    <button class="btn btn-gold" style="width:100%;margin-bottom:8px;" onclick="runEmailAnalysis()">
-      🔍 Analyze Support Inbox with AI
+
+  <!-- MODE TABS -->
+  <div style="display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:14px;">
+    <button id="email-mode-inbox" onclick="setEmailMode('inbox')"
+      style="flex:1;padding:9px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;
+      background:none;border:none;border-bottom:3px solid #C9A84C;color:#E8C97A;cursor:pointer;">
+      📬 Inbox Manager
     </button>
-    <button class="btn btn-ghost" style="width:100%;" onclick="composeEmail()">
-      ✉️ Compose Email with AI
+    <button id="email-mode-support" onclick="setEmailMode('support')"
+      style="flex:1;padding:9px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;
+      background:none;border:none;border-bottom:3px solid transparent;color:#6B7C93;cursor:pointer;">
+      📊 Support FAQ
+    </button>
+    <button id="email-mode-compose" onclick="setEmailMode('compose')"
+      style="flex:1;padding:9px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;
+      background:none;border:none;border-bottom:3px solid transparent;color:#6B7C93;cursor:pointer;">
+      ✍️ Compose
     </button>
   </div>
 
-  <div id="email-analysis-result" style="display:none;">
+  <!-- ── MODE: INBOX MANAGER ── -->
+  <div id="email-view-inbox">
     <div class="card">
-      <div class="card-title">📊 Analysis Result</div>
-      <div id="email-analysis-content" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text);line-height:1.8;white-space:pre-wrap;"></div>
-      <div style="display:flex;gap:8px;margin-top:12px;">
-        <button class="btn btn-ghost" style="flex:1;font-size:12px;" onclick="copyAnalysis()">📋 Copy</button>
-        <button class="btn btn-ghost" style="flex:1;font-size:12px;" onclick="continueInChat()">💬 Continue in Chat</button>
+      <div class="card-title">📬 AI Inbox Manager</div>
+      <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);line-height:1.8;margin-bottom:14px;">
+        AI reads your inbox, learns your voice from emails you've already written, then drafts replies
+        for each thread — leaving <span style="color:var(--gold);">[PLACEHOLDERS]</span> for details it doesn't have. Nothing is sent automatically.
+      </div>
+
+      <div style="background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.15);border-radius:8px;
+        padding:12px;margin-bottom:14px;">
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--gold);font-weight:700;
+          text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">📋 The Prompt</div>
+        <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text);line-height:1.7;">
+          Look at my email and process my inbox. Draft responses as me, in my voice (pulling from emails I've already written). Don't send it, and leave placeholders for me to fill in any details you don't have.
+        </div>
+        <button onclick="copyInboxPrompt()" style="margin-top:8px;background:none;border:1px solid rgba(201,168,76,.3);
+          border-radius:6px;padding:4px 12px;color:var(--gold);font-family:'DM Mono',monospace;font-size:10px;cursor:pointer;">
+          📋 Copy Prompt
+        </button>
+      </div>
+
+      <div class="form-group">
+        <label>Number of emails to process</label>
+        <select id="inbox-count">
+          <option value="10">Last 10 emails</option>
+          <option value="25" selected>Last 25 emails</option>
+          <option value="50">Last 50 emails</option>
+          <option value="all">All unread</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Paste your emails here <span style="color:var(--muted);font-size:9px;">(copy from your email client, or AI will use connected account)</span></label>
+        <textarea id="inbox-paste" rows="6" placeholder="Paste email threads here (From: / Subject: / Body format works best)&#10;&#10;— OR —&#10;&#10;Leave blank to analyze your connected email account automatically."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Your writing samples <span style="color:var(--muted);font-size:9px;">(helps AI match your voice)</span></label>
+        <textarea id="inbox-voice-samples" rows="4" placeholder="Paste 2-3 emails YOU have written so AI can match your tone and style…"></textarea>
+      </div>
+
+      <button class="btn btn-gold" style="width:100%;margin-bottom:8px;" onclick="runInboxManager()">
+        📬 Process Inbox — Draft Replies in My Voice
+      </button>
+    </div>
+
+    <!-- DRAFTED REPLIES -->
+    <div id="inbox-drafts-section" style="display:none;">
+      <div class="card">
+        <div class="card-title">✉️ Drafted Replies</div>
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:10px;line-height:1.6;">
+          Review each draft below. Fill in the <span style="color:var(--gold);">[PLACEHOLDERS]</span>, then copy or send.
+        </div>
+        <div id="inbox-drafts-list"></div>
       </div>
     </div>
   </div>
 
-  <!-- EMAIL COMPOSE -->
-  <div id="email-compose-section" style="display:none;">
+  <!-- ── MODE: SUPPORT FAQ ── -->
+  <div id="email-view-support" style="display:none;">
     <div class="card">
-      <div class="card-title">✉️ Compose with AI</div>
+      <div class="card-title">📊 Support FAQ Generator</div>
+      <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);line-height:1.8;margin-bottom:14px;">
+        Reads your last 90 days of support emails → finds repeat questions → writes FAQ + the onboarding process that would have prevented each one.
+      </div>
+      <div class="form-group">
+        <label>Analysis Period</label>
+        <select id="email-period">
+          <option value="90">Last 90 days</option>
+          <option value="30">Last 30 days</option>
+          <option value="180">Last 6 months</option>
+          <option value="365">Last year</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Focus Folder / Label</label>
+        <input type="text" id="email-folder" value="Inbox" placeholder="Inbox, Support, Team…">
+      </div>
+      <button class="btn btn-gold" style="width:100%;margin-bottom:8px;" onclick="runEmailAnalysis()">
+        🔍 Generate FAQ from Support Inbox
+      </button>
+    </div>
+
+    <div id="email-analysis-result" style="display:none;">
+      <div class="card">
+        <div class="card-title">📊 Analysis Result</div>
+        <div id="email-analysis-content" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text);line-height:1.8;white-space:pre-wrap;"></div>
+        <div style="display:flex;gap:8px;margin-top:12px;">
+          <button class="btn btn-ghost" style="flex:1;font-size:12px;" onclick="copyAnalysis()">📋 Copy</button>
+          <button class="btn btn-ghost" style="flex:1;font-size:12px;" onclick="continueInChat()">💬 Continue in Chat</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MODE: COMPOSE ── -->
+  <div id="email-view-compose" style="display:none;">
+    <div class="card">
+      <div class="card-title">✍️ Compose with AI</div>
       <div class="form-group">
         <label>To</label>
         <input type="email" id="compose-to" placeholder="recipient@example.com">
@@ -322,7 +398,8 @@ label{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);display:
       </div>
     </div>
   </div>
-</div>
+
+</div><!-- end panel-email -->
 
 <!-- ══ CALENDAR ══ -->
 <div class="panel" id="panel-calendar">
@@ -1094,6 +1171,132 @@ function analyzeSchedule() { runCalendarAI(); }
     box.scrollTop = box.scrollHeight;
   }
 })();
+
+// ── EMAIL MODE SWITCHER ───────────────────────────────────────
+function setEmailMode(mode) {
+  ['inbox','support','compose'].forEach(m => {
+    const view = document.getElementById('email-view-' + m);
+    const btn  = document.getElementById('email-mode-' + m);
+    if (view) view.style.display = m === mode ? 'block' : 'none';
+    if (btn) {
+      btn.style.borderBottomColor = m === mode ? '#C9A84C' : 'transparent';
+      btn.style.color = m === mode ? '#E8C97A' : '#6B7C93';
+    }
+  });
+}
+
+// ── INBOX MANAGER ─────────────────────────────────────────────
+function copyInboxPrompt() {
+  const prompt = `Look at my email and process my inbox. Draft responses as me, in my voice (pulling from emails I've already written). Don't send it, and leave placeholders for me to fill in any details you don't have.`;
+  navigator.clipboard.writeText(prompt).then(() => toast('✓ Prompt copied'));
+}
+
+async function runInboxManager() {
+  const aiKey = getAIKey();
+  if (!aiKey) { toast('⚠ Connect your AI key first in the Connect tab'); return; }
+
+  const pastedEmails   = (document.getElementById('inbox-paste').value || '').trim();
+  const voiceSamples   = (document.getElementById('inbox-voice-samples').value || '').trim();
+  const count          = document.getElementById('inbox-count').value;
+  const emailAcct      = getEmailAccount();
+
+  const draftsSection  = document.getElementById('inbox-drafts-section');
+  const draftsList     = document.getElementById('inbox-drafts-list');
+  draftsSection.style.display = 'block';
+  draftsList.innerHTML = '<div style="text-align:center;padding:20px;font-family:\'DM Mono\',monospace;font-size:11px;color:var(--muted);">⏳ Reading inbox and drafting replies in your voice…</div>';
+
+  // Build the full prompt
+  const systemPrompt = `You are an expert email ghostwriter for ${session?.name || 'a Dynasty Builders MD'} at Dynasty Builders Academy (PHP/HGI life insurance). Your job is to draft email replies that sound exactly like them — matching their tone, vocabulary, and communication style. Always leave [PLACEHOLDERS IN BRACKETS] for any specific details, dates, names, or information you don't know.`;
+
+  let userPrompt = `Look at my email inbox and process it. Draft responses as me, in my voice (pulling from emails I've already written). Don't send anything, and leave [PLACEHOLDERS] for me to fill in any details you don't have.\n\n`;
+
+  if (voiceSamples) {
+    userPrompt += `MY WRITING STYLE (emails I've already written — match this voice exactly):\n${voiceSamples}\n\n`;
+  } else {
+    userPrompt += `MY CONTEXT: I'm ${session?.name || '[Name]'}, an MD at Dynasty Builders Academy. I lead a team of PHP/HGI life insurance agents. My tone is warm, direct, and motivating. I use first names, keep things brief, and always include a clear next step.\n\n`;
+  }
+
+  if (pastedEmails) {
+    userPrompt += `MY INBOX (emails to reply to):\n\n${pastedEmails}\n\n`;
+  } else if (emailAcct) {
+    userPrompt += `Email account: ${emailAcct.email}\nProcess the last ${count === 'all' ? 'unread' : count} emails from my inbox.\n\n`;
+  } else {
+    userPrompt += `[No inbox connected — I'll create 3 example draft replies typical for a DBA MD inbox to show you the format. Connect your email in the Connect tab for real inbox processing.]\n\nCreate 3 realistic example draft replies for a life insurance MD. Include: 1) a reply to a new agent asking about their first week, 2) a reply to a client asking about their policy, 3) a reply to a recruit following up after an RI.\n\n`;
+  }
+
+  userPrompt += `For each email/thread that needs a reply:
+1. Show the email subject and who it's from
+2. Write my complete draft reply in my voice
+3. Use [PLACEHOLDER] for any specific details I need to fill in
+4. Add a brief note at the bottom: "📝 You need to: [what to fill in / verify before sending]"
+
+Format each reply clearly separated with a horizontal rule.`;
+
+  try {
+    const reply = await callAI(userPrompt, 2000, systemPrompt);
+    
+    // Parse into individual draft cards
+    const drafts = reply.split(/\n[-─=]{3,}\n/).filter(d => d.trim());
+    
+    if (drafts.length === 0 || (drafts.length === 1 && reply.length < 100)) {
+      draftsList.innerHTML = `<div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text);line-height:1.8;white-space:pre-wrap;">${reply}</div>`;
+      return;
+    }
+
+    draftsList.innerHTML = drafts.map((draft, i) => {
+      const lines = draft.trim().split('\n');
+      // Try to extract subject/from from first lines
+      const header = lines.slice(0, 2).join(' · ').replace(/\*\*/g, '').trim();
+      const body   = lines.join('\n').trim();
+      // Highlight placeholders
+      const highlighted = body.replace(/\[([^\]]+)\]/g,
+        '<span style="background:rgba(201,168,76,.2);border:1px solid rgba(201,168,76,.4);border-radius:4px;padding:0 4px;color:#E8C97A;font-weight:700;">[$1]</span>'
+      );
+      return `<div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px;margin-bottom:12px;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:var(--gold-light);margin-bottom:8px;">
+          Draft ${i+1}${header ? ' — ' + header.slice(0,50) : ''}
+        </div>
+        <div style="font-family:'Barlow',sans-serif;font-size:13px;line-height:1.8;color:var(--text);white-space:pre-wrap;margin-bottom:10px;">${highlighted}</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button onclick="copyDraft(${i})" style="background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.3);
+            border-radius:7px;padding:5px 14px;color:var(--gold);font-family:'DM Mono',monospace;font-size:10px;cursor:pointer;font-weight:700;">
+            📋 Copy Draft
+          </button>
+          <button onclick="editDraftInChat(${i})" style="background:rgba(93,173,226,.1);border:1px solid rgba(93,173,226,.3);
+            border-radius:7px;padding:5px 14px;color:var(--blue);font-family:'DM Mono',monospace;font-size:10px;cursor:pointer;font-weight:700;">
+            💬 Refine in Chat
+          </button>
+        </div>
+      </div>`;
+    }).join('');
+
+    // Store drafts for copy/edit functions
+    window._inboxDrafts = drafts;
+    toast(`✓ ${drafts.length} draft${drafts.length !== 1 ? 's' : ''} ready — review and fill placeholders`);
+
+  } catch(e) {
+    draftsList.innerHTML = `<div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--red);">✗ Error: ${e.message}</div>`;
+  }
+}
+
+function copyDraft(idx) {
+  const drafts = window._inboxDrafts || [];
+  if (!drafts[idx]) return;
+  navigator.clipboard.writeText(drafts[idx].trim()).then(() => toast('✓ Draft copied'));
+}
+
+function editDraftInChat(idx) {
+  const drafts = window._inboxDrafts || [];
+  if (!drafts[idx]) return;
+  window._chatContext = 'EMAIL DRAFT:\n\n' + drafts[idx];
+  document.getElementById('chat-input').value = 'Refine this draft — make it more [warm/concise/specific] and adjust [what you want changed]';
+  setEmailMode('compose'); // go to compose
+  switchTab('chat', document.querySelectorAll('.tab')[4]);
+  toast('✓ Draft loaded in chat — describe your refinement');
+}
+
+// ── COMPOSE SECTION TOGGLE (legacy — now handled by tab) ──────
+function composeEmail() { setEmailMode('compose'); }
 </script>
 </body>
 </html>
