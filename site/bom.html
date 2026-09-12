@@ -409,16 +409,30 @@ function updateStatus() {
 function openGuestModal(guestId) {
   const g = guestId ? guests.find(x => x.id === guestId) : null;
   const agentName = (AUTH.getSession()?.name) || '';
-  document.getElementById('gm-id').value        = guestId || '';
-  document.getElementById('gm-name').value      = g?.name      || '';
-  document.getElementById('gm-phone').value     = g?.phone     || '';
-  document.getElementById('gm-email').value     = g?.email     || '';
-  document.getElementById('gm-date').value      = g?.date      || new Date().toISOString().slice(0,10);
-  document.getElementById('gm-captain').value   = g?.captain   || agentName;
-  document.getElementById('gm-generator').value = g?.generator || '';
-  document.getElementById('gm-notes').value     = g?.notes     || '';
-  document.getElementById('gm-status').value    = g?.status    || 'Invited';
-  document.getElementById('gm-title').textContent = g ? 'Edit Guest — '+g.name : 'Add Guest';
+
+  // Helper to safely set a field value
+  const setField = (fieldId, val) => {
+    const el = document.getElementById(fieldId);
+    if (el) el.value = val || '';
+  };
+
+  setField('gm-id',            guestId || '');
+  setField('gm-name',          g?.name      || '');
+  setField('gm-phone',         g?.phone     || '');
+  setField('gm-email',         g?.email     || '');
+  setField('gm-date',          g?.date      || new Date().toISOString().slice(0,10));
+  setField('gm-captain',       g?.captain   || agentName);
+  setField('gm-generator',     g?.generator || '');
+  setField('gm-cft',           g?.cft       || '');
+  setField('gm-notes',         g?.notes     || '');
+  setField('gm-status',        g?.status    || 'Invited');
+  setField('gm-policy-amount', g?.policyAmount  || '');
+  setField('gm-annual-premium',g?.annualPremium || '');
+  setField('gm-conversion-type', g?.conversionType || '');
+  setField('gm-client-date',   g?.clientDate || '');
+
+  const titleEl = document.getElementById('gm-title');
+  if (titleEl) titleEl.textContent = g ? 'Edit Guest — ' + g.name : 'Add Guest';
   document.getElementById('guest-modal').classList.add('open');
 }
 
@@ -487,11 +501,17 @@ async function autoSyncGuest(guest) {
       console.log('[BOM] Guest created:', guestName, newMondayId);
     }
 
-    // Cache mondayId
+    // Cache mondayId — search by id first, then by name as fallback
     if (newMondayId) {
-      const g = guests.find(x => x.id === guest.id);
-      if (g) g.mondayId = newMondayId;
-      try { localStorage.setItem(BOM_GUESTS_KEY, JSON.stringify(guests)); } catch(e) {}
+      const g = guests.find(x => x.id === guest.id)
+             || guests.find(x => x.name === guest.name);
+      if (g) {
+        g.mondayId = newMondayId;
+        try { localStorage.setItem(BOM_GUESTS_KEY, JSON.stringify(guests)); } catch(e) {}
+        console.log('[BOM] mondayId cached for', guest.name, newMondayId);
+      } else {
+        console.warn('[BOM] Could not find guest to cache mondayId:', guest.name, guest.id);
+      }
     }
   } catch(e) {
     console.warn('[BOM] Guest sync failed:', e.message);
@@ -499,10 +519,14 @@ async function autoSyncGuest(guest) {
 }
 
 function saveGuestModal() {
-  const id   = parseInt(document.getElementById('gm-id').value) || null;
-  const name = document.getElementById('gm-name').value.trim();
+  // Use guestId (not id) to avoid shadowing by _gv helper below
+  const guestId = parseInt(document.getElementById('gm-id').value) || null;
+  const name    = document.getElementById('gm-name').value.trim();
   if (!name) { toast('Guest name required'); return; }
-  const _gv = id => { const el = document.getElementById(id); return el ? el.value : ''; };
+
+  // Safe field reader — uses fieldId to avoid conflict with guestId
+  const _gv = fieldId => { const el = document.getElementById(fieldId); return el ? el.value : ''; };
+
   const status = _gv('gm-status') || 'Invited';
   const data = {
     name,
@@ -511,8 +535,8 @@ function saveGuestModal() {
     date:           _gv('gm-date'),
     captain:        _gv('gm-captain').trim(),
     generator:      _gv('gm-generator').trim(),
-    notes:          _gv('gm-notes').trim(),
     cft:            _gv('gm-cft').trim(),
+    notes:          _gv('gm-notes').trim(),
     status,
     becameClient:   ['Became Client','Follow-Up Converted'].includes(status),
     policyAmount:   parseFloat(_gv('gm-policy-amount')) || 0,
@@ -520,23 +544,30 @@ function saveGuestModal() {
     conversionType: _gv('gm-conversion-type'),
     clientDate:     _gv('gm-client-date'),
   };
-  if (id) {
-    const g = guests.find(x => x.id === id);
-    if (g) Object.assign(g, data);
-    toast(name+' updated');
+
+  let savedGuest = null;
+  if (guestId) {
+    const g = guests.find(x => x.id === guestId);
+    if (g) { Object.assign(g, data); savedGuest = g; }
+    toast(name + ' updated');
   } else {
-    guests.push({ id: Date.now(), ...data });
+    const newGuest = { id: Date.now(), ...data };
+    guests.push(newGuest);
+    savedGuest = newGuest;
     adjust('invites', 1);
-    toast(name+' added');
+    toast(name + ' added');
   }
+
   document.getElementById('guest-modal').classList.remove('open');
   renderGuests();
   updateStatus();
+
   // Sync to Monday + fire automation trigger
-  const savedGuest = id ? guests.find(x => x.id === id) : guests[guests.length - 1];
   if (savedGuest) {
-    if (AUTH.getMondayKey()) autoSyncGuest(savedGuest).catch(e => console.warn('[BOM] Guest sync:', e.message));
-    if (!id) { // only fire trigger for new guests, not edits
+    if (AUTH.getMondayKey()) {
+      autoSyncGuest(savedGuest).catch(e => console.warn('[BOM] Guest sync:', e.message));
+    }
+    if (!guestId) { // only fire trigger for new guests
       fireTrigger('bom_guest', {
         guestName:  savedGuest.name,
         guestPhone: savedGuest.phone,
