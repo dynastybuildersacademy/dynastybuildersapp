@@ -111,7 +111,7 @@ input:focus,select:focus{outline:none;border-color:var(--gold);}
       <div class="sched-icon">☀️</div>
       <div>
         <div class="sched-day">Saturday Mornings</div>
-        <div class="sched-time">10:30 AM – 12:30 PM</div>
+        <div class="sched-time">10:00 AM – 12:00 PM</div>
       </div>
     </div>
   </div>
@@ -217,7 +217,7 @@ input:focus,select:focus{outline:none;border-color:var(--gold);}
       </summary>
       <div class="card" style="margin-top:8px;">
         <div style="font-size:12px;font-weight:600;color:var(--gold-light);margin-bottom:6px;">Text Message Invite:</div>
-        <div class="script-box">"Hey [Name], I've been meaning to reach out. I'm doing something in the financial services space and I wanted to invite you to an info session I'm hosting with some colleagues. Zero pressure — just sharing what we do. This [Tuesday 7PM / Saturday 10:30AM]. Can you make it?"</div>
+        <div class="script-box">"Hey [Name], I've been meaning to reach out. I'm doing something in the financial services space and I wanted to invite you to an info session I'm hosting with some colleagues. Zero pressure — just sharing what we do. This [Tuesday 7PM / Saturday 10AM]. Can you make it?"</div>
         <div style="font-size:12px;font-weight:600;color:var(--gold-light);margin-top:14px;margin-bottom:6px;">Confirmation Call (Day Before):</div>
         <div class="script-box">"Hey [Name], just confirming for tomorrow! We start at [time] — the session usually wraps in about 90 minutes. You'll be hearing from some top producers in our field. Excited for you to see this. You're still coming?"</div>
         <div style="font-size:12px;font-weight:600;color:var(--gold-light);margin-top:14px;margin-bottom:6px;">Same-Night Follow-Up:</div>
@@ -536,33 +536,12 @@ function removeGuest(id) {
 }
 
 function renderGuests() {
+  // Persist always
   try { localStorage.setItem('dba_bom_guests', JSON.stringify(guests)); } catch(e) {}
-  // Always persist current state
   try { localStorage.setItem(BOM_GUESTS_KEY, JSON.stringify(guests)); } catch(e) {}
-  document.getElementById('guest-count').textContent = guests.length + ' guest' + (guests.length!==1?'s':'');
-  const el = document.getElementById('guest-list');
-  if (!guests.length) {
-    el.innerHTML = '<div style="color:var(--slate);font-size:13px;padding:8px 0;">No guests added yet.</div>';
-    return;
-  }
-  el.innerHTML = guests.map(g => `
-    <div class="guest-row" style="flex-wrap:wrap;gap:8px;padding:12px 0;">
-      <div style="flex:1;min-width:180px;">
-        <div class="g-name">${g.name}</div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:3px;">
-          ${g.phone ? `<a href="tel:${g.phone}" style="font-size:11px;color:var(--gold-light);text-decoration:none;">📞 ${g.phone}</a>` : ''}
-          ${g.email ? `<span style="font-size:11px;color:var(--slate);">✉ ${g.email}</span>` : ''}
-          ${g.captain ? `<span style="font-size:11px;color:var(--slate);" title="Captain — agent who invited guest to office">⚓ Captain: ${g.captain}</span>` : ''}
-          ${g.generator ? `<span style="font-size:11px;color:var(--gold-light);" title="Generator — original referrer">⚡ Gen: ${g.generator}</span>` : ''}
-          ${g.date ? `<span style="font-size:11px;color:var(--slate);">📅 ${g.date}</span>` : ''}
-        </div>
-      </div>
-      <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
-        <button class="status-pill ${STATUS_CLS[g.status]||'sp-invited'}" onclick="cycleStatus(${g.id})">${g.status}</button>
-        <button onclick="openGuestModal(${g.id})" style="background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.25);color:var(--gold);padding:4px 10px;border-radius:3px;font-size:11px;cursor:pointer;">✏️</button>
-        <button class="del-btn" onclick="removeGuest(${g.id})">✕</button>
-      </div>
-    </div>`).join('');
+  // Apply filter (handles rendering + count)
+  applyGuestFilter();
+  recalcIncome();
 }
 
 function saveBOM() {
@@ -1243,7 +1222,16 @@ function applyGuestFilter() {
   const filtered = guests.filter(g => {
     if (cutoff && g.date && g.date < cutoff) return false;
     if (g.date && g.date > today) return false;
-    if (dayFlt !== 'all' && g.bomType && !g.bomType.toLowerCase().includes(dayFlt.toLowerCase())) return false;
+    if (dayFlt !== 'all') {
+      // Match against stored bomType/day field, OR derive from date's day of week
+      const storedDay = (g.bomType || g.day || '').toLowerCase();
+      let matchDay = storedDay;
+      if (!matchDay && g.date) {
+        const dow = new Date(g.date + 'T12:00:00').getDay(); // 0=Sun,2=Tue,6=Sat
+        matchDay = dow === 2 ? 'tuesday' : dow === 6 ? 'saturday' : '';
+      }
+      if (!matchDay.includes(dayFlt.toLowerCase())) return false;
+    }
     return true;
   });
 
