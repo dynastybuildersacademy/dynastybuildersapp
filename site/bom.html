@@ -222,6 +222,12 @@ input:focus,select:focus{outline:none;border-color:var(--gold);}
               font-size:12px;font-weight:700;cursor:pointer;" title="Reload from Monday.com">
             ↻ Refresh
           </button>
+          <button onclick="cleanupMondayGuestNames()"
+            style="background:rgba(255,165,0,.08);border:1px solid rgba(255,165,0,.2);color:#E8C97A;
+              padding:6px 10px;border-radius:3px;font-family:'Barlow Condensed',sans-serif;
+              font-size:11px;font-weight:700;cursor:pointer;" title="Rename old prefixed entries in Monday.com">
+            🧹 Fix Names
+          </button>
           <button onclick="openGuestModal(null)"
             style="background:var(--gold);color:var(--navy);border:none;padding:6px 14px;border-radius:3px;
               font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;cursor:pointer;">
@@ -422,69 +428,69 @@ async function autoSyncGuest(guest) {
   try {
     const guestName = (guest.name || 'Unknown Guest').replace(/"/g, "'");
 
-    // Check if item already exists (by guest name match)
+    // ── Resolve existing Monday item ID ──────────────────────
     let existingId = guest.mondayId || null;
     if (!existingId) {
+      // Search by exact guest name on the board
       try {
         const check = await mondayQuery(`{
           boards(ids:${BOM_GUESTS_BOARD}) {
-            items_page(limit:200) { items { id name } }
+            items_page(limit:500) { items { id name } }
           }
         }`);
         const items = check?.data?.boards?.[0]?.items_page?.items || [];
         const match = items.find(i => i.name.toLowerCase() === guestName.toLowerCase());
-        if (match) existingId = match.id;
-      } catch(e) { /* ignore — will create new */ }
+        if (match) {
+          existingId = match.id;
+          // Cache it so we never search again for this guest
+          const g = guests.find(x => x.id === guest.id);
+          if (g) g.mondayId = existingId;
+          try { localStorage.setItem(BOM_GUESTS_KEY, JSON.stringify(guests)); } catch(e) {}
+        }
+      } catch(e) { console.warn('[BOM] autoSyncGuest board search failed:', e.message); }
     }
 
-    // Build column values with hardcoded IDs from board 18393747809
-    const bomDay = new Date().getDay() === 2 ? 'Tuesday' : 'Saturday';
-    const cv = {
-      "color_mkzde7z4": guest.captain   ? { label: guest.captain }   : null,  // Captain's Name
-      "text_mkz8jwyh":  guest.generator || '',                                  // Generator's Name
-      "text_cft":       guest.cft       || '',                                  // CFT (Field Trainer)
-      "color_mm3wf94t": guest.status    ? { label: guest.status }    : null,  // Status
-      "phone_mkz8bstv": guest.phone ? { phone: guest.phone.replace(/\D/g,''), countryShortName:'US' } : null, // Phone
-      "email_mkz8m224": guest.email || '',                                      // Email
-      "date_mkz7nvys":  guest.date ? { date: guest.date } : { date: new Date().toISOString().slice(0,10) },   // BOM Date
-      "text_mm3wmee6":  guest.bomType || guest.day || bomDay,                   // BOM Type
-      "color_mkz7t8k6": session?.name ? { label: session.name } : null,        // MD
-    };
-    // Remove nulls
-    Object.keys(cv).forEach(k => cv[k] === null && delete cv[k]);
+    // ── Build column values ───────────────────────────────────
+    const bomDay = guest.bomType || guest.day ||
+      (new Date().getDay() === 2 ? 'Tuesday' : 'Saturday');
+    const cv = {};
+    if (guest.captain)   cv["color_mkzde7z4"] = { label: guest.captain };
+    if (guest.generator) cv["text_mkz8jwyh"]  = guest.generator;
+    if (guest.cft)       cv["text_cft"]        = guest.cft;
+    if (guest.status)    cv["color_mm3wf94t"]  = { label: guest.status };
+    if (guest.phone)     cv["phone_mkz8bstv"]  = { phone: guest.phone.replace(/\D/g,''), countryShortName:'US' };
+    if (guest.email)     cv["email_mkz8m224"]  = guest.email;
+    cv["date_mkz7nvys"]  = { date: guest.date || new Date().toISOString().slice(0,10) };
+    cv["text_mm3wmee6"]  = bomDay;
+    if (session?.name)   cv["color_mkz7t8k6"]  = { label: session.name };
     const cvStr = JSON.stringify(JSON.stringify(cv));
 
+    // ── Upsert ────────────────────────────────────────────────
     let newMondayId = null;
     if (existingId) {
-      // Update existing row
       await mondayQuery(`mutation {
         change_multiple_column_values(
-          board_id: ${BOM_GUESTS_BOARD},
-          item_id: ${existingId},
-          column_values: ${cvStr},
-          create_labels_if_missing: true
+          board_id: ${BOM_GUESTS_BOARD}, item_id: ${existingId},
+          column_values: ${cvStr}, create_labels_if_missing: true
         ) { id }
       }`);
       newMondayId = existingId;
-      console.log('[BOM] Guest updated in Monday:', guestName, existingId);
+      console.log('[BOM] Guest updated:', guestName, existingId);
     } else {
-      // Create new row
       const res = await mondayQuery(`mutation {
         create_item(
-          board_id: ${BOM_GUESTS_BOARD},
-          item_name: "${guestName}",
-          column_values: ${cvStr},
-          create_labels_if_missing: true
+          board_id: ${BOM_GUESTS_BOARD}, item_name: "${guestName}",
+          column_values: ${cvStr}, create_labels_if_missing: true
         ) { id }
       }`);
       newMondayId = res?.data?.create_item?.id;
-      console.log('[BOM] Guest created in Monday:', guestName, newMondayId);
+      console.log('[BOM] Guest created:', guestName, newMondayId);
     }
 
-    // Store mondayId on the guest for future updates
+    // Cache mondayId
     if (newMondayId) {
-      const g = guests.find(x => x.name === guest.name);
-      if (g) { g.mondayId = newMondayId; }
+      const g = guests.find(x => x.id === guest.id);
+      if (g) g.mondayId = newMondayId;
       try { localStorage.setItem(BOM_GUESTS_KEY, JSON.stringify(guests)); } catch(e) {}
     }
   } catch(e) {
@@ -706,27 +712,61 @@ async function syncBOMToMonday(bomDate, bomType) {
 
     await upsert(`${session.name} · ${bomType} BOM · ${bomDate}`, summaryMap);
 
-    // 2. One row per guest — keyed by "GuestName · AgentName · Date"
-    //    If same guest name + same agent + same date exists, update it
+    // 2. One row per guest — item name = guest name (same as autoSyncGuest)
+    //    Use cached mondayId if available, otherwise search by name
     for (const g of guests) {
-      const gMap = {};
-      if (cols.agentId)    gMap[cols.agentId]   = session.agentId;
-      if (cols.agentName)  gMap[cols.agentName] = session.name;
-      if (cols.bomDate)    gMap[cols.bomDate]   = { date: bomDate };
-      if (cols.bomType)    gMap[cols.bomType]   = bomType;
-      if (cols.guestName)  gMap[cols.guestName] = g.name;
-      if (cols.captain && g.captain)    gMap[cols.captain]    = g.captain;
-      if (cols.generator && g.generator) gMap[cols.generator]  = g.generator;
-      if (cols.guestEmail && g.email)   gMap[cols.guestEmail] = { email: g.email, text: g.email };
-      if (cols.notes && g.notes)        gMap[cols.notes]      = g.notes;
-      if (cols.guestPhone && g.phone) {
-        const d = (g.phone||'').replace(/\D/g,'');
-        gMap[cols.guestPhone] = d.length >= 7 ? { phone: d, countryShortName:'US' } : g.phone;
+      const guestName = (g.name || 'Unknown Guest').replace(/"/g, "'");
+
+      // Check if mondayId already cached from previous autoSyncGuest call
+      let guestMondayId = g.mondayId || null;
+      if (!guestMondayId) {
+        // Try to find by name in the already-fetched existingItems list
+        const match = existingItems.find(item =>
+          item.name.toLowerCase() === guestName.toLowerCase()
+        );
+        if (match) {
+          guestMondayId = match.id;
+          g.mondayId = guestMondayId; // cache it
+        }
       }
 
-      // Dedup key: guest name + agent + date
-      await upsert(`Guest: ${g.name} · ${session.name} · ${bomDate}`, gMap);
+      const cv2 = {};
+      if (g.captain)   cv2["color_mkzde7z4"] = { label: g.captain };
+      if (g.generator) cv2["text_mkz8jwyh"]  = g.generator;
+      if (g.cft)       cv2["text_cft"]        = g.cft;
+      if (g.status)    cv2["color_mm3wf94t"]  = { label: g.status };
+      if (g.phone) {
+        const d = (g.phone||'').replace(/\D/g,'');
+        cv2["phone_mkz8bstv"] = d.length >= 7 ? { phone: d, countryShortName:'US' } : g.phone;
+      }
+      if (g.email)   cv2["email_mkz8m224"] = g.email;
+      cv2["date_mkz7nvys"] = { date: bomDate };
+      cv2["text_mm3wmee6"] = bomType;
+      if (session?.name) cv2["color_mkz7t8k6"] = { label: session.name };
+      const cv2Str = JSON.stringify(JSON.stringify(cv2));
+
+      if (guestMondayId) {
+        await mondayQuery(`mutation {
+          change_multiple_column_values(
+            board_id: ${BOM_GUESTS_BOARD}, item_id: ${guestMondayId},
+            column_values: ${cv2Str}, create_labels_if_missing: true
+          ) { id }
+        }`);
+        console.log('[BOM] Save: updated guest', guestName, guestMondayId);
+      } else {
+        const res = await mondayQuery(`mutation {
+          create_item(
+            board_id: ${BOM_GUESTS_BOARD}, item_name: "${guestName}",
+            column_values: ${cv2Str}, create_labels_if_missing: true
+          ) { id }
+        }`);
+        const newId = res?.data?.create_item?.id;
+        if (newId) g.mondayId = newId;
+        console.log('[BOM] Save: created guest', guestName, newId);
+      }
     }
+    // Persist updated mondayIds
+    try { localStorage.setItem(BOM_GUESTS_KEY, JSON.stringify(guests)); } catch(e) {}
     console.log('[BOM] Sync complete — session + ' + guests.length + ' guests');
   } catch(e) {
     console.warn('[BOM] Sync error:', e.message);
@@ -1458,6 +1498,55 @@ async function refreshGuests() {
 
   applyGuestFilter();
   if (btn) { btn.textContent = '↻ Refresh'; btn.disabled = false; }
+}
+
+// ── CLEAN UP OLD COMPOUND MONDAY ITEM NAMES ──────────────────
+// Renames legacy "Guest: Name · Agent · Date" rows to just "Name"
+async function cleanupMondayGuestNames() {
+  if (!AUTH.getMondayKey()) return;
+  try {
+    const res = await mondayQuery(`{
+      boards(ids:${BOM_GUESTS_BOARD}) {
+        items_page(limit:500) { items { id name } }
+      }
+    }`);
+    const items = res?.data?.boards?.[0]?.items_page?.items || [];
+
+    // Find items with old "Guest: X · Y · Z" pattern or "X · Y · Z" session rows
+    const staleGuests = items.filter(item =>
+      /^Guest:\s+/i.test(item.name) ||
+      (item.name.includes(' · ') && item.name.includes('BOM') === false &&
+        !guests.some(g => g.name.toLowerCase() === item.name.toLowerCase()))
+    );
+
+    if (!staleGuests.length) {
+      toast('✓ No stale guest names found in Monday');
+      return;
+    }
+
+    toast(`Renaming ${staleGuests.length} stale item(s)…`);
+    let fixed = 0;
+    for (const item of staleGuests) {
+      // Extract just the guest name: "Guest: Jane Doe · Agent · Date" → "Jane Doe"
+      let cleanName = item.name
+        .replace(/^Guest:\s+/i, '')           // remove "Guest: " prefix
+        .split(' · ')[0]                       // take only first segment before " · "
+        .trim();
+      if (!cleanName || cleanName === item.name) continue;
+
+      await mondayQuery(`mutation {
+        change_item_value(board_id:${BOM_GUESTS_BOARD}, item_id:${item.id}, column_id:"name", value:${JSON.stringify(JSON.stringify(cleanName))}) { id }
+      }`).catch(() =>
+        mondayQuery(`mutation { rename_item: change_multiple_column_values(board_id:${BOM_GUESTS_BOARD},item_id:${item.id},column_values:"{}") { id } }`)
+      );
+      fixed++;
+      console.log(`[BOM] Renamed: "${item.name}" → "${cleanName}"`);
+    }
+    toast(`✓ Cleaned ${fixed} Monday guest name${fixed !== 1 ? 's' : ''}`);
+  } catch(e) {
+    toast('Cleanup error: ' + e.message);
+    console.error(e);
+  }
 }
 </script>
 
