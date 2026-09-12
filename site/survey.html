@@ -690,6 +690,17 @@ async function submitSurvey() {
     saved.push(data);
     localStorage.setItem('dba_surveys', JSON.stringify(saved));
   } catch(e) {}
+
+  // Fire automation trigger
+  fireTrigger('survey_lead', {
+    name:        data.name || '',
+    phone:       data.phone || '',
+    email:       data.email || '',
+    profile:     data.profile || data.selectedProfile || '',
+    referredBy:  _agentDisplay || _agentId || '',
+    source:      'Financial Survey',
+    answers:     data,
+  });
 }
 </script>
 </body>

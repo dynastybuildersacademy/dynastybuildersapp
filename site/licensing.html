@@ -714,6 +714,34 @@ function advanceStage(recordId) {
   rec.stage     = STAGES[idx+1].id;
   rec.stageDate = new Date().toISOString().slice(0,10);
   saveAndSync(rec); renderAll();
+
+  // Fire automation triggers based on new stage
+  const stageTriggerMap = {
+    'exam_scheduled':  'licensing',
+    'exam_passed':     'licensing',
+    'license_pending': 'licensing',
+    'licensed':        'licensing',
+    'appointed':       'licensing',
+  };
+  if (stageTriggerMap[rec.stage]) {
+    fireTrigger(stageTriggerMap[rec.stage], {
+      agentName:   rec.name,
+      agentId:     rec.agentId || '',
+      newStage:    rec.stage,
+      stageLabel:  stageDef(rec.stage)?.label || rec.stage,
+      stageDate:   rec.stageDate,
+      state:       rec.state || '',
+    });
+  }
+  if (rec.stage === 'appointed') {
+    fireTrigger('fast_start', {
+      agentName: rec.name,
+      agentId:   rec.agentId || '',
+      milestone: 'licensed_and_appointed',
+      date:      rec.stageDate,
+    });
+  }
+
   toast(`${rec.name} → ${stageDef(rec.stage).label}`);
 }
 

@@ -18,6 +18,9 @@
 [functions."pipeline"]
   timeout = 30
 
+[functions."automations"]
+  timeout = 15
+
 # Dynasty Builders Academy — Netlify Configuration
 
 [build]
@@ -75,6 +78,11 @@
 [[redirects]]
   from   = "/api/pipeline"
   to     = "/.netlify/functions/pipeline"
+  status = 200
+
+[[redirects]]
+  from   = "/api/automations"
+  to     = "/.netlify/functions/automations"
   status = 200
 
 # ── REQUIRED ENVIRONMENT VARIABLES ─────────────────────────────

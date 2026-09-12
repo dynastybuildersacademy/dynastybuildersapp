@@ -2685,6 +2685,36 @@ async function mondayQuery(query, variables = {}) {
   return res.json();
 }
 
+// ── AUTOMATION TRIGGER ──────────────────────────────────────────
+// Fires configured Zapier webhook for a given trigger type.
+// Non-blocking — never delays the user action that caused it.
+async function fireTrigger(trigger, data = {}) {
+  try {
+    const session = getSession();
+    const res = await fetch('/api/automations', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        trigger,
+        data,
+        agentId:   session?.agentId || '',
+        agentName: session?.name    || '',
+        timestamp: new Date().toISOString(),
+      }),
+    });
+    const result = await res.json();
+    if (result.fired) {
+      console.log(`[Automation] ✓ ${trigger} fired`, result.results);
+    } else {
+      console.log(`[Automation] ⚠ ${trigger} not configured:`, result.reason);
+    }
+    return result;
+  } catch(e) {
+    console.warn(`[Automation] ${trigger} failed:`, e.message);
+    return { fired: false, error: e.message };
+  }
+}
+
 // ── 10. ANTHROPIC CHAT ────────────────────────────────────────
 async function askAI(messages, systemPrompt) {
   try {

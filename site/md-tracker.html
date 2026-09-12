@@ -712,6 +712,16 @@ function createRun(){
   };
   runs.unshift(run);save();closeModal();renderBar();selectRun(run.id);
   toast("Promotion run started for "+run.agentName);
+  // Fire promotion automation
+  fireTrigger('promotion', {
+    agentName:    run.agentName,
+    agentId:      run.agentId,
+    targetLevel:  run.level,
+    startDate:    run.startDate,
+    endDate:      run.endDate,
+    milestone:    'promotion_run_started',
+    source:       'MD Tracker',
+  });
 }
 
 function renderBar(){

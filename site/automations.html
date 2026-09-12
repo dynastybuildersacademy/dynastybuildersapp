@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0">
+<title>Automation Manager · Dynasty Builders</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=Barlow:wght@400;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="auth.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --navy:#0A1628;--navy-mid:#0F1E38;--navy-light:#132240;
+  --gold:#C9A84C;--gold-light:#E8C97A;--green:#2DCA73;
+  --blue:#5DADE2;--purple:#9B59B6;--orange:#E67E22;--red:#E74C3C;
+  --text:#E8EDF5;--muted:#6B7C93;--border:rgba(255,255,255,.08);
+}
+body{background:var(--navy);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh;padding-bottom:80px;}
+.header{background:linear-gradient(135deg,#0A1628,#0F1E38);border-bottom:1px solid rgba(201,168,76,.15);
+  padding:14px 18px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;}
+.header-title{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;color:var(--gold-light);flex:1;}
+.back-btn{background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:8px;
+  padding:7px 12px;color:var(--muted);font-family:'DM Mono',monospace;font-size:11px;cursor:pointer;text-decoration:none;}
+.page{padding:16px 14px;}
+.section-title{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;color:var(--gold);
+  text-transform:uppercase;letter-spacing:.09em;margin:20px 0 10px;}
+.card{background:var(--navy-mid);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;}
+.seq-header{display:flex;align-items:flex-start;gap:12px;margin-bottom:10px;}
+.seq-icon{font-size:28px;flex-shrink:0;}
+.seq-name{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:900;color:var(--text);}
+.seq-desc{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);line-height:1.6;margin-top:3px;}
+.seq-trigger{font-family:'DM Mono',monospace;font-size:10px;color:var(--gold);margin-top:3px;}
+input[type=url],input[type=text]{width:100%;background:var(--navy-light);border:1px solid rgba(255,255,255,.12);
+  color:var(--text);border-radius:7px;padding:9px 12px;font-family:'DM Mono',monospace;font-size:12px;outline:none;
+  transition:border-color .2s;}
+input:focus{border-color:rgba(201,168,76,.4);}
+.btn{padding:8px 16px;border-radius:8px;font-family:'Barlow Condensed',sans-serif;font-size:14px;
+  font-weight:800;cursor:pointer;border:none;letter-spacing:.04em;}
+.btn-gold{background:linear-gradient(135deg,#C9A84C,#E8C97A);color:#0A1628;}
+.btn-ghost{background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--text);}
+.btn-green{background:rgba(45,202,115,.12);border:1px solid rgba(45,202,115,.3);color:var(--green);}
+.btn-red{background:rgba(231,76,60,.08);border:1px solid rgba(231,76,60,.2);color:var(--red);}
+.status-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;}
+.dot-active{background:var(--green);}
+.dot-inactive{background:var(--muted);}
+.steps-list{margin-top:10px;border-top:1px solid var(--border);padding-top:10px;}
+.step-row{display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04);}
+.step-num{font-family:'DM Mono',monospace;font-size:11px;color:var(--gold);font-weight:700;min-width:24px;padding-top:1px;}
+.step-body{flex:1;}
+.step-name{font-size:13px;font-weight:600;color:var(--text);}
+.step-detail{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-top:2px;line-height:1.5;}
+.step-delay{font-family:'DM Mono',monospace;font-size:9px;color:var(--purple);margin-top:2px;}
+.pill{display:inline-flex;align-items:center;padding:2px 8px;border-radius:10px;
+  font-family:'DM Mono',monospace;font-size:9px;font-weight:700;}
+.pill-green{background:rgba(45,202,115,.12);border:1px solid rgba(45,202,115,.3);color:var(--green);}
+.pill-blue{background:rgba(93,173,226,.12);border:1px solid rgba(93,173,226,.3);color:var(--blue);}
+.pill-gold{background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.3);color:var(--gold);}
+.pill-purple{background:rgba(155,89,182,.12);border:1px solid rgba(155,89,182,.3);color:var(--purple);}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);
+  background:var(--navy-mid);border:1px solid var(--gold);border-radius:8px;padding:10px 18px;
+  font-size:12px;font-family:'DM Mono',monospace;color:var(--gold-light);
+  transition:all .3s;opacity:0;z-index:999;white-space:nowrap;}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+.zapier-how{background:rgba(255,111,0,.05);border:1px solid rgba(255,111,0,.2);border-radius:10px;
+  padding:14px;margin-bottom:16px;}
+</style>
+</head>
+<body>
+<script>AUTH.require('automations.html', 60);</script>
+
+<div class="header">
+  <a href="hub.html" class="back-btn">← Hub</a>
+  <div class="header-title">⚡ Automation Manager</div>
+</div>
+
+<div class="page">
+
+  <!-- HOW IT WORKS -->
+  <div class="zapier-how">
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:900;color:#FF6B00;margin-bottom:8px;">
+      ⚡ How to connect Zapier
+    </div>
+    <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);line-height:1.8;">
+      1. Go to <strong style="color:var(--text);">zapier.com</strong> → Create Zap → Trigger: <strong style="color:var(--text);">Webhooks by Zapier → Catch Hook</strong><br>
+      2. Copy the webhook URL Zapier gives you<br>
+      3. Paste it into the field for the sequence below<br>
+      4. Click <strong style="color:var(--gold);">Save & Test</strong> — we'll fire a test payload so Zapier can map the fields<br>
+      5. Build your Zapier actions (email, SMS, CRM, Slack, etc.)<br>
+      6. Turn on the Zap
+    </div>
+    <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+      <a href="https://zapier.com/apps/webhook/integrations" target="_blank"
+        style="background:rgba(255,111,0,.12);border:1px solid rgba(255,111,0,.3);border-radius:7px;
+          padding:5px 14px;color:#FF6B00;font-family:'DM Mono',monospace;font-size:10px;text-decoration:none;font-weight:700;">
+        Zapier Webhooks ↗
+      </a>
+      <a href="https://zapier.com/app/zaps" target="_blank"
+        style="background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:7px;
+          padding:5px 14px;color:var(--muted);font-family:'DM Mono',monospace;font-size:10px;text-decoration:none;">
+        My Zaps ↗
+      </a>
+    </div>
+  </div>
+
+  <!-- GLOBAL HOOK -->
+  <div class="card" style="border-color:rgba(201,168,76,.2);">
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:900;color:var(--gold);margin-bottom:8px;">
+      🌐 Global Webhook (all triggers)
+    </div>
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:10px;line-height:1.6;">
+      Fires for EVERY trigger. Use for logging, CRM sync, or a master Zapier workflow that routes by trigger type.
+    </div>
+    <input type="url" id="hook-global" placeholder="https://hooks.zapier.com/hooks/catch/…">
+    <div style="display:flex;gap:8px;margin-top:8px;">
+      <button class="btn btn-gold" style="flex:2" onclick="saveHook('global')">Save</button>
+      <button class="btn btn-ghost" style="flex:1" onclick="testHook('global')">Test</button>
+    </div>
+  </div>
+
+  <!-- PROSPECT SEQUENCES -->
+  <div class="section-title">📋 Prospect Sequences</div>
+
+  <div class="card" id="seq-bom_guest">
+    <div class="seq-header">
+      <div class="seq-icon">🏢</div>
+      <div>
+        <div class="seq-name">BOM Guest Added</div>
+        <div class="seq-desc">Fires when a guest is added to the BOM Tracker. Start a welcome sequence, confirm attendance, and follow up after the meeting.</div>
+        <div class="seq-trigger">Trigger: <code>bom_guest</code> · Fields: guestName, phone, email, captain, generator, date, status</div>
+      </div>
+    </div>
+    <div class="steps-list">
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--gold);font-weight:700;margin-bottom:6px;">SUGGESTED SEQUENCE</div>
+      <div class="step-row"><div class="step-num">1</div><div class="step-body"><div class="step-name">Immediate Confirmation Text</div><div class="step-detail">SMS: "Hey [Name]! You're confirmed for our BOM this [date]. Location: [address]. See you there! — [Captain]"</div><div class="step-delay">⏱ Immediately on add</div></div></div>
+      <div class="step-row"><div class="step-num">2</div><div class="step-body"><div class="step-name">Reminder Text (Day Before)</div><div class="step-detail">SMS: "Hey [Name], reminder — BOM is tomorrow at [time]. Looking forward to seeing you! Any questions, text me."</div><div class="step-delay">⏱ 1 day before BOM date (use Zapier filter + delay)</div></div></div>
+      <div class="step-row"><div class="step-num">3</div><div class="step-body"><div class="step-name">Same-Night Follow-Up</div><div class="step-detail">SMS: "Hey [Name], so glad you came tonight! What stood out most? Let's connect this week — when are you free?"</div><div class="step-delay">⏱ 2 hours after BOM start time</div></div></div>
+      <div class="step-row"><div class="step-num">4</div><div class="step-body"><div class="step-name">48-Hour Follow-Up Email</div><div class="step-detail">Email with more info about the opportunity, income potential, and a Calendly link to book a 1-on-1.</div><div class="step-delay">⏱ 48 hours after BOM date</div></div></div>
+    </div>
+    <div style="margin-top:12px;">
+      <label style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);display:block;margin-bottom:5px;">Zapier Webhook URL</label>
+      <input type="url" id="hook-bom_guest" placeholder="https://hooks.zapier.com/hooks/catch/…">
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button class="btn btn-gold" style="flex:2" onclick="saveHook('bom_guest')">Save & Test</button>
+        <button class="btn btn-ghost" style="flex:1" onclick="clearHook('bom_guest')">Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" id="seq-top25_prospect">
+    <div class="seq-header">
+      <div class="seq-icon">📝</div>
+      <div>
+        <div class="seq-name">Top 25 Prospect Added</div>
+        <div class="seq-desc">Fires when a prospect is imported or added to an agent's Top 25 Worksheet.</div>
+        <div class="seq-trigger">Trigger: <code>top25_prospect</code> · Fields: prospectName, phone, email, status, occupation, source</div>
+      </div>
+    </div>
+    <div class="steps-list">
+      <div class="step-row"><div class="step-num">1</div><div class="step-body"><div class="step-name">Add to CRM / Tracking Sheet</div><div class="step-detail">Auto-add to Google Sheets, HubSpot, or Monday.com contact board for pipeline tracking.</div><div class="step-delay">⏱ Immediately</div></div></div>
+      <div class="step-row"><div class="step-num">2</div><div class="step-body"><div class="step-name">Agent Reminder (Internal)</div><div class="step-detail">Slack/email to the agent: "You added [Name] to your Top 25. Have you sent your first message yet?"</div><div class="step-delay">⏱ 24 hours after add</div></div></div>
+      <div class="step-row"><div class="step-num">3</div><div class="step-body"><div class="step-name">7-Day No-Activity Nudge</div><div class="step-detail">If no status update in 7 days, send agent reminder to follow up.</div><div class="step-delay">⏱ 7 days (use Zapier filter on status)</div></div></div>
+    </div>
+    <div style="margin-top:12px;">
+      <label style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);display:block;margin-bottom:5px;">Zapier Webhook URL</label>
+      <input type="url" id="hook-top25_prospect" placeholder="https://hooks.zapier.com/hooks/catch/…">
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button class="btn btn-gold" style="flex:2" onclick="saveHook('top25_prospect')">Save & Test</button>
+        <button class="btn btn-ghost" style="flex:1" onclick="clearHook('top25_prospect')">Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" id="seq-survey_lead">
+    <div class="seq-header">
+      <div class="seq-icon">📋</div>
+      <div>
+        <div class="seq-name">Survey / Brochure Lead</div>
+        <div class="seq-desc">Fires when someone completes the financial survey or scans an agent's brochure QR code.</div>
+        <div class="seq-trigger">Trigger: <code>survey_lead</code> · Fields: name, phone, email, profile, referredBy, answers</div>
+      </div>
+    </div>
+    <div class="steps-list">
+      <div class="step-row"><div class="step-num">1</div><div class="step-body"><div class="step-name">Instant Thank-You SMS</div><div class="step-detail">SMS to prospect: "Thanks [Name]! We received your financial survey. [AgentName] will follow up within 24 hours."</div><div class="step-delay">⏱ Immediately</div></div></div>
+      <div class="step-row"><div class="step-num">2</div><div class="step-body"><div class="step-name">Agent Alert</div><div class="step-detail">SMS/email to referring agent: "New lead from your survey! [Name] · [Phone] · Profile: [type]. Follow up now!"</div><div class="step-delay">⏱ Immediately</div></div></div>
+      <div class="step-row"><div class="step-num">3</div><div class="step-body"><div class="step-name">Educational Email Sequence</div><div class="step-detail">Day 1: What we do. Day 3: Income opportunity. Day 7: Success stories. Day 14: Are you open to a conversation?</div><div class="step-delay">⏱ Drip over 14 days</div></div></div>
+    </div>
+    <div style="margin-top:12px;">
+      <label style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);display:block;margin-bottom:5px;">Zapier Webhook URL</label>
+      <input type="url" id="hook-survey_lead" placeholder="https://hooks.zapier.com/hooks/catch/…">
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button class="btn btn-gold" style="flex:2" onclick="saveHook('survey_lead')">Save & Test</button>
+        <button class="btn btn-ghost" style="flex:1" onclick="clearHook('survey_lead')">Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AGENT SEQUENCES -->
+  <div class="section-title">👤 Agent Onboarding Sequences</div>
+
+  <div class="card" id="seq-new_agent">
+    <div class="seq-header">
+      <div class="seq-icon">🎉</div>
+      <div>
+        <div class="seq-name">New Agent Added</div>
+        <div class="seq-desc">Fires when a new agent is added to the roster. Kick off your full onboarding sequence.</div>
+        <div class="seq-trigger">Trigger: <code>new_agent</code> · Fields: agentName, agentId, email, phone, role, phpId, enrollmentDate, uplineId</div>
+      </div>
+    </div>
+    <div class="steps-list">
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--gold);font-weight:700;margin-bottom:6px;">FAST START ONBOARDING (Days 1–30)</div>
+      <div class="step-row"><div class="step-num">1</div><div class="step-body"><div class="step-name">Welcome Text + Portal Link</div><div class="step-detail">SMS: "Welcome to Dynasty Builders, [Name]! 🎉 Here's your agent portal: [link]. Your upline [upline] will be in touch shortly."</div><div class="step-delay">⏱ Day 0 — immediately</div></div></div>
+      <div class="step-row"><div class="step-num">2</div><div class="step-body"><div class="step-name">Welcome Email — What to Expect</div><div class="step-detail">Email: Full overview of the PHP system, Fast Start goals, what the first 30 days look like, and the licensing roadmap.</div><div class="step-delay">⏱ Day 0 — 1 hour after add</div></div></div>
+      <div class="step-row"><div class="step-num">3</div><div class="step-body"><div class="step-name">Day 3 — PHP Bamboo Checklist</div><div class="step-detail">Email: "Have you completed your PHP Bamboo onboarding? Here's your checklist: [link]. Questions? Reply here."</div><div class="step-delay">⏱ Day 3</div></div></div>
+      <div class="step-row"><div class="step-num">4</div><div class="step-body"><div class="step-name">Day 7 — First BOM Reminder</div><div class="step-detail">SMS: "[Name], your first BOM is this [day]! Bring at least 1 guest. Need help with invite scripts? Reply SCRIPTS."</div><div class="step-delay">⏱ Day 7</div></div></div>
+      <div class="step-row"><div class="step-num">5</div><div class="step-body"><div class="step-name">Day 14 — License Progress Check</div><div class="step-detail">Email: "How's your pre-licensing going? Your target exam date is [date]. Need a study schedule? We've got one."</div><div class="step-delay">⏱ Day 14</div></div></div>
+      <div class="step-row"><div class="step-num">6</div><div class="step-body"><div class="step-name">Day 30 — Fast Start Review</div><div class="step-detail">Email: Recap of month 1 activity, celebrate wins, set goals for month 2, introduce the promotion tracker.</div><div class="step-delay">⏱ Day 30</div></div></div>
+    </div>
+    <div style="margin-top:12px;">
+      <label style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);display:block;margin-bottom:5px;">Zapier Webhook URL</label>
+      <input type="url" id="hook-new_agent" placeholder="https://hooks.zapier.com/hooks/catch/…">
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button class="btn btn-gold" style="flex:2" onclick="saveHook('new_agent')">Save & Test</button>
+        <button class="btn btn-ghost" style="flex:1" onclick="clearHook('new_agent')">Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" id="seq-fast_start">
+    <div class="seq-header">
+      <div class="seq-icon">🚀</div>
+      <div>
+        <div class="seq-name">Fast Start Milestone</div>
+        <div class="seq-desc">Fires when an agent hits Fast Start milestones — first app, first client, licensed & appointed.</div>
+        <div class="seq-trigger">Trigger: <code>fast_start</code> · Fields: agentName, agentId, milestone, date</div>
+      </div>
+    </div>
+    <div class="steps-list">
+      <div class="step-row"><div class="step-num">✓</div><div class="step-body"><div class="step-name">Milestone: licensed_and_appointed</div><div class="step-detail">Fires when licensing stage reaches "Appointed". Trigger: congrats message + first client checklist + intro to FT appointments.</div><div class="step-delay">Celebrates the milestone immediately + sends what's next</div></div></div>
+    </div>
+    <div style="margin-top:12px;">
+      <label style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);display:block;margin-bottom:5px;">Zapier Webhook URL</label>
+      <input type="url" id="hook-fast_start" placeholder="https://hooks.zapier.com/hooks/catch/…">
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button class="btn btn-gold" style="flex:2" onclick="saveHook('fast_start')">Save & Test</button>
+        <button class="btn btn-ghost" style="flex:1" onclick="clearHook('fast_start')">Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" id="seq-licensing">
+    <div class="seq-header">
+      <div class="seq-icon">📜</div>
+      <div>
+        <div class="seq-name">Licensing Stage Change</div>
+        <div class="seq-desc">Fires on every licensing milestone — exam scheduled, exam passed, license pending, licensed, appointed.</div>
+        <div class="seq-trigger">Trigger: <code>licensing</code> · Fields: agentName, agentId, newStage, stageLabel, stageDate, state</div>
+      </div>
+    </div>
+    <div class="steps-list">
+      <div class="step-row"><div class="step-num">1</div><div class="step-body"><div class="step-name">Exam Scheduled → Prep Resources</div><div class="step-detail">Email with study guide, practice test links, and a countdown to exam day.</div><div class="step-delay">Filter on newStage = exam_scheduled</div></div></div>
+      <div class="step-row"><div class="step-num">2</div><div class="step-body"><div class="step-name">Exam Passed → Congrats + Next Steps</div><div class="step-detail">SMS + email: "YOU PASSED! 🎉 Next step: submit your license application. Here's the exact link for [state]."</div><div class="step-delay">Filter on newStage = exam_passed</div></div></div>
+      <div class="step-row"><div class="step-num">3</div><div class="step-body"><div class="step-name">Licensed → Appointment Checklist</div><div class="step-detail">Email: carrier appointment steps, contracting links, E&O requirements.</div><div class="step-delay">Filter on newStage = licensed</div></div></div>
+      <div class="step-row"><div class="step-num">4</div><div class="step-body"><div class="step-name">Appointed → You're Live! 🎉</div><div class="step-detail">SMS: "You're officially appointed! Time to write your first app. Your upline will schedule your first FT this week."</div><div class="step-delay">Filter on newStage = appointed</div></div></div>
+    </div>
+    <div style="margin-top:12px;">
+      <label style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);display:block;margin-bottom:5px;">Zapier Webhook URL</label>
+      <input type="url" id="hook-licensing" placeholder="https://hooks.zapier.com/hooks/catch/…">
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button class="btn btn-gold" style="flex:2" onclick="saveHook('licensing')">Save & Test</button>
+        <button class="btn btn-ghost" style="flex:1" onclick="clearHook('licensing')">Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" id="seq-first_check">
+    <div class="seq-header">
+      <div class="seq-icon">💵</div>
+      <div>
+        <div class="seq-name">First Commission Check</div>
+        <div class="seq-desc">Fires when an agent's first commission is recorded. Celebrate and accelerate.</div>
+        <div class="seq-trigger">Trigger: <code>first_check</code> · Fields: agentName, agentId, amount, date</div>
+      </div>
+    </div>
+    <div class="steps-list">
+      <div class="step-row"><div class="step-num">1</div><div class="step-body"><div class="step-name">Big Congrats + Recognition</div><div class="step-detail">SMS + email: "YOUR FIRST CHECK IS IN! 💰 [Name] just earned $[amount]. This is just the beginning — let's build on this."</div><div class="step-delay">⏱ Immediately</div></div></div>
+      <div class="step-row"><div class="step-num">2</div><div class="step-body"><div class="step-name">Announce to Team</div><div class="step-detail">Post to team Slack/group: "[Name] got their first commission check! Welcome to the club! 🥂"</div><div class="step-delay">⏱ Same day</div></div></div>
+      <div class="step-row"><div class="step-num">3</div><div class="step-body"><div class="step-name">Path to Director Email</div><div class="step-detail">Email: Now that you're earning — here's what it takes to get to Director level and multiply this income.</div><div class="step-delay">⏱ 3 days later</div></div></div>
+    </div>
+    <div style="margin-top:12px;">
+      <label style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);display:block;margin-bottom:5px;">Zapier Webhook URL</label>
+      <input type="url" id="hook-first_check" placeholder="https://hooks.zapier.com/hooks/catch/…">
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button class="btn btn-gold" style="flex:2" onclick="saveHook('first_check')">Save & Test</button>
+        <button class="btn btn-ghost" style="flex:1" onclick="clearHook('first_check')">Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" id="seq-promotion">
+    <div class="seq-header">
+      <div class="seq-icon">🏆</div>
+      <div>
+        <div class="seq-name">Promotion Run Started</div>
+        <div class="seq-desc">Fires when a promotion run is opened in the MD Tracker. Keep agent focused and accountable.</div>
+        <div class="seq-trigger">Trigger: <code>promotion</code> · Fields: agentName, agentId, targetLevel, startDate, endDate, milestone</div>
+      </div>
+    </div>
+    <div class="steps-list">
+      <div class="step-row"><div class="step-num">1</div><div class="step-body"><div class="step-name">Launch Day Message</div><div class="step-detail">SMS: "[Name], your promotion run to [level] starts TODAY. 90 days. Let's lock in. Your upline is watching. 🔥"</div><div class="step-delay">⏱ Day 0</div></div></div>
+      <div class="step-row"><div class="step-num">2</div><div class="step-body"><div class="step-name">Week 2 Check-In</div><div class="step-detail">Email: Activity check — are you on pace? Here are the numbers needed by end of month 1.</div><div class="step-delay">⏱ Day 14</div></div></div>
+      <div class="step-row"><div class="step-num">3</div><div class="step-body"><div class="step-name">30-Day Review</div><div class="step-detail">Email: Month 1 recap — ahead/behind pace, adjustments needed, what to focus on in month 2.</div><div class="step-delay">⏱ Day 30</div></div></div>
+      <div class="step-row"><div class="step-num">4</div><div class="step-body"><div class="step-name">Final Push (Last 2 Weeks)</div><div class="step-detail">SMS: "2 weeks left on your run. You need [X] more [recruits/apps/points]. Push every day this week. I'm here."</div><div class="step-delay">⏱ Day 76 (2 weeks before end)</div></div></div>
+    </div>
+    <div style="margin-top:12px;">
+      <label style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);display:block;margin-bottom:5px;">Zapier Webhook URL</label>
+      <input type="url" id="hook-promotion" placeholder="https://hooks.zapier.com/hooks/catch/…">
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button class="btn btn-gold" style="flex:2" onclick="saveHook('promotion')">Save & Test</button>
+        <button class="btn btn-ghost" style="flex:1" onclick="clearHook('promotion')">Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" id="seq-attendance">
+    <div class="seq-header">
+      <div class="seq-icon">📅</div>
+      <div>
+        <div class="seq-name">BOM Attendance</div>
+        <div class="seq-desc">Fires every time a BOM session is saved. Track attendance patterns and coach accordingly.</div>
+        <div class="seq-trigger">Trigger: <code>attendance</code> · Fields: event, bomType, bomDate, invites, confirmed, showed, guestCount</div>
+      </div>
+    </div>
+    <div class="steps-list">
+      <div class="step-row"><div class="step-num">1</div><div class="step-body"><div class="step-name">Log to Attendance Sheet</div><div class="step-detail">Auto-append to Google Sheets attendance log with date, agent, invites, shows, guests.</div><div class="step-delay">⏱ Immediately on save</div></div></div>
+      <div class="step-row"><div class="step-num">2</div><div class="step-body"><div class="step-name">Low Activity Alert (Internal)</div><div class="step-detail">If invites < 5, send MD alert: "[Agent] only sent [X] invites this BOM. May need coaching."</div><div class="step-delay">Use Zapier filter: invites &lt; 5</div></div></div>
+      <div class="step-row"><div class="step-num">3</div><div class="step-body"><div class="step-name">Missed BOM Nudge</div><div class="step-detail">If agent misses 2 BOMs in a row (track via Sheets), send: "We missed you at BOM! Everything ok? Let's reconnect."</div><div class="step-delay">Track via Zapier + Google Sheets</div></div></div>
+    </div>
+    <div style="margin-top:12px;">
+      <label style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);display:block;margin-bottom:5px;">Zapier Webhook URL</label>
+      <input type="url" id="hook-attendance" placeholder="https://hooks.zapier.com/hooks/catch/…">
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button class="btn btn-gold" style="flex:2" onclick="saveHook('attendance')">Save & Test</button>
+        <button class="btn btn-ghost" style="flex:1" onclick="clearHook('attendance')">Clear</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end page -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+const session = AUTH.getSession();
+const HOOKS_KEY = 'dba_automation_hooks';
+
+function toast(msg, dur=2800) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), dur);
+}
+
+function loadHooks() {
+  try {
+    const hooks = JSON.parse(localStorage.getItem(HOOKS_KEY) || '{}');
+    Object.entries(hooks).forEach(([key, url]) => {
+      const el = document.getElementById('hook-' + key);
+      if (el && url) el.value = url;
+    });
+  } catch(e) {}
+}
+
+function saveHook(key) {
+  const el = document.getElementById('hook-' + key);
+  const url = (el?.value || '').trim();
+  try {
+    const hooks = JSON.parse(localStorage.getItem(HOOKS_KEY) || '{}');
+    if (url) hooks[key] = url; else delete hooks[key];
+    localStorage.setItem(HOOKS_KEY, JSON.stringify(hooks));
+  } catch(e) {}
+
+  if (!url) { toast('⚠ Enter a webhook URL first'); return; }
+
+  // Also save to Netlify env via a note — user must set env vars manually
+  toast('✓ Saved — firing test payload…');
+
+  // Fire test payload
+  const testData = {
+    trigger: key,
+    data: { test: true, message: 'Test payload from DBA Automation Manager', key },
+    agentId:   session?.agentId || 'test',
+    agentName: session?.name    || 'Test Agent',
+    timestamp: new Date().toISOString(),
+  };
+
+  fetch(url, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(testData),
+  }).then(() => {
+    toast('✓ Test payload sent — check Zapier for the data');
+  }).catch(e => {
+    toast('⚠ Could not reach webhook — check the URL');
+  });
+
+  // Show env var instruction
+  setTimeout(() => {
+    toast(`Also set ZAPIER_${key.toUpperCase()} in Netlify env vars for server-side firing`, 4000);
+  }, 3500);
+}
+
+function clearHook(key) {
+  const el = document.getElementById('hook-' + key);
+  if (el) el.value = '';
+  try {
+    const hooks = JSON.parse(localStorage.getItem(HOOKS_KEY) || '{}');
+    delete hooks[key];
+    localStorage.setItem(HOOKS_KEY, JSON.stringify(hooks));
+  } catch(e) {}
+  toast('✓ Webhook cleared');
+}
+
+function testHook(key) {
+  const el = document.getElementById('hook-' + key);
+  const url = el?.value?.trim();
+  if (!url) { toast('⚠ Enter a webhook URL first'); return; }
+  saveHook(key);
+}
+
+loadHooks();
+</script>
+</body>
+</html>
