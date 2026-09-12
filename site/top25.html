@@ -496,13 +496,22 @@ async function resolveAgentBoardId(){
 
   // ── 1. Read directly from AGENTS roster in auth.js (fastest, no API call) ──
   try {
-    const agentRecord = typeof AGENTS !== 'undefined'
-      ? AGENTS.find(a => a.id === s.agentId)
-      : null;
-    if (agentRecord?.top25BoardId && /^\d+$/.test(agentRecord.top25BoardId)) {
-      console.log(`[Top25] Board from AGENTS roster: ${agentRecord.top25BoardId}`);
-      cacheAgentBoardId(agentRecord.top25BoardId);
-      return agentRecord.top25BoardId;
+    if (typeof AGENTS !== 'undefined') {
+      // Match by agentId OR by name (case-insensitive) — whichever works
+      const agentRecord = AGENTS.find(a =>
+        a.id === s.agentId ||
+        a.id === s.id ||
+        (a.name || '').toLowerCase() === (s.name || '').toLowerCase()
+      );
+      if (agentRecord?.top25BoardId && /^\d+$/.test(agentRecord.top25BoardId)) {
+        console.log(`[Top25] Board from AGENTS roster: ${agentRecord.top25BoardId} (${agentRecord.name})`);
+        cacheAgentBoardId(agentRecord.top25BoardId);
+        return agentRecord.top25BoardId;
+      }
+      // Found agent but no board ID set yet
+      if (agentRecord && !agentRecord.top25BoardId) {
+        console.warn(`[Top25] Agent found (${agentRecord.name}) but no top25BoardId set in auth.js`);
+      }
     }
   } catch(e) { console.warn('[Top25] AGENTS lookup failed:', e.message); }
 
@@ -718,9 +727,27 @@ async function loadProspects(forceRefresh = false){
     <div class="state-box">
       <div class="ico"><span class="spinner"></span></div>
       <div class="s-title">Loading…</div>
-      <p>Fetching your prospects from Monday.com</p>
+      <p>Fetching your prospects from Monday.com<br>
+         <span style="font-family:'DM Mono',monospace;font-size:10px;opacity:.5;">Board ${activeBoardId}</span>
+      </p>
     </div>`;
   if (refreshBtn) refreshBtn.textContent = '↻ Loading…';
+
+  // Safety timeout — if nothing loads in 12s, show error with override option
+  const safetyTimer = setTimeout(() => {
+    const cc = document.getElementById('cards-container');
+    if (cc && cc.querySelector('.spinner')) {
+      cc.innerHTML = `
+        <div class="state-box">
+          <div class="ico">⏱</div>
+          <div class="s-title">Taking too long</div>
+          <p>Board ${activeBoardId} isn't responding.<br><br>
+            <button onclick="loadProspects(true)" class="btn btn-accent btn-sm">↻ Retry</button>
+            <button onclick="promptSetBoard()" class="btn btn-ghost btn-sm">⚙ Set Board ID</button>
+          </p>
+        </div>`;
+    }
+  }, 12000);
 
   try {
     const gRes = await mondayQuery(`{ boards(ids:${activeBoardId}) { groups { id title color } } }`);
@@ -734,10 +761,12 @@ async function loadProspects(forceRefresh = false){
         <div class="s-title">Load Failed</div>
         <p>Board ${activeBoardId}<br>${e.message}<br><br>
           <button onclick="loadProspects(true)" class="btn btn-accent btn-sm">↻ Retry</button>
-          <button onclick="promptSetBoard()" class="btn btn-ghost btn-sm">⚙ Override Board ID</button>
+          <button onclick="promptSetBoard()" class="btn btn-ghost btn-sm">⚙ Set Board ID</button>
         </p>
       </div>`;
     console.error('Top25 load error:', e);
+  } finally {
+    clearTimeout(safetyTimer);
   }
   if (refreshBtn) refreshBtn.textContent = '↻ Refresh';
 }

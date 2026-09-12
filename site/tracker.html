@@ -675,7 +675,14 @@ function updateWeekly() {
 async function loadFromTop25() {
   // Key handled via auth.js MONDAY_KEY_DEFAULT
   const session  = AUTH.getSession();
-  const boardId  = localStorage.getItem('dba_top25_board_' + (session?.agentId||'')) || '18216458584';
+  // Board lookup: check AGENTS roster (same source as top25.html) then localStorage then fallback
+  let boardId = localStorage.getItem('dba_top25_board_' + (session?.agentId||'')) || '';
+  if (!boardId && typeof AGENTS !== 'undefined' && session) {
+    const ar = AGENTS.find(a => a.id === session.agentId || a.id === session.id ||
+      (a.name||'').toLowerCase() === (session.name||'').toLowerCase());
+    if (ar?.top25BoardId) boardId = ar.top25BoardId;
+  }
+  if (!boardId) boardId = '18419015866'; // Obi's default board
 
   toast('Loading from Top 25 board…');
   try {
