@@ -222,6 +222,92 @@ input:focus,select:focus{outline:none;border-color:var(--gold);}
   </div>
 
 </div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- BOM INCOME CALCULATOR -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div style="padding:16px 14px 0;">
+  <div style="background:rgba(45,202,115,.05);border:1px solid rgba(45,202,115,.2);border-radius:14px;padding:16px;margin-bottom:16px;">
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;
+        color:#2DCA73;letter-spacing:.06em;text-transform:uppercase;">💰 BOM Income Calculator</div>
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(250,246,238,.4);">
+        Captain 60% · Generator 40% of referral credit
+      </div>
+    </div>
+
+    <!-- SUMMARY STATS -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;" id="income-summary-grid">
+      <div style="background:rgba(0,0,0,.2);border-radius:10px;padding:12px;text-align:center;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:900;color:#2DCA73;" id="ic-total-clients">0</div>
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(250,246,238,.4);">Clients</div>
+      </div>
+      <div style="background:rgba(0,0,0,.2);border-radius:10px;padding:12px;text-align:center;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:900;color:#E8C97A;" id="ic-total-premium">$0</div>
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(250,246,238,.4);">Total Premium</div>
+      </div>
+      <div style="background:rgba(0,0,0,.2);border-radius:10px;padding:12px;text-align:center;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:900;color:#9B59B6;" id="ic-same-day">0</div>
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(250,246,238,.4);">Same Day</div>
+      </div>
+    </div>
+
+    <!-- AGENT COMMISSION RATE INPUT -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+      <div>
+        <label style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(250,246,238,.5);display:block;margin-bottom:5px;">Captain Comm Rate (%)</label>
+        <input type="number" id="ic-captain-rate" value="75" min="0" max="100" step="0.5"
+          onchange="recalcIncome()"
+          style="width:100%;background:#0A1628;border:1px solid rgba(201,168,76,.2);color:#FAF6EE;
+            font-size:14px;padding:9px 12px;border-radius:6px;outline:none;">
+      </div>
+      <div>
+        <label style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(250,246,238,.5);display:block;margin-bottom:5px;">Generator Comm Rate (%)</label>
+        <input type="number" id="ic-generator-rate" value="75" min="0" max="100" step="0.5"
+          onchange="recalcIncome()"
+          style="width:100%;background:#0A1628;border:1px solid rgba(201,168,76,.2);color:#FAF6EE;
+            font-size:14px;padding:9px 12px;border-radius:6px;outline:none;">
+      </div>
+    </div>
+
+    <!-- INCOME BY CAPTAIN -->
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(250,246,238,.5);
+      text-transform:uppercase;letter-spacing:.09em;margin-bottom:8px;">⚓ Captain Earnings</div>
+    <div id="ic-captain-table" style="margin-bottom:14px;"></div>
+
+    <!-- INCOME BY GENERATOR -->
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(250,246,238,.5);
+      text-transform:uppercase;letter-spacing:.09em;margin-bottom:8px;">⚡ Generator Earnings</div>
+    <div id="ic-generator-table" style="margin-bottom:14px;"></div>
+
+    <!-- CLIENT DETAIL TABLE -->
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(250,246,238,.5);
+      text-transform:uppercase;letter-spacing:.09em;margin-bottom:8px;">📋 Client Detail</div>
+    <div style="overflow-x:auto;">
+    <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:480px;" id="ic-detail-table">
+      <thead>
+        <tr style="border-bottom:1px solid rgba(255,255,255,.1);">
+          <th style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(250,246,238,.4);padding:6px 8px;text-align:left;">Guest / Client</th>
+          <th style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(250,246,238,.4);padding:6px 8px;">Type</th>
+          <th style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(250,246,238,.4);padding:6px 8px;">Captain</th>
+          <th style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(250,246,238,.4);padding:6px 8px;">Generator</th>
+          <th style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(250,246,238,.4);padding:6px 8px;text-align:right;">Premium</th>
+          <th style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(250,246,238,.4);padding:6px 8px;text-align:right;">Capt Earn</th>
+          <th style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(250,246,238,.4);padding:6px 8px;text-align:right;">Gen Earn</th>
+        </tr>
+      </thead>
+      <tbody id="ic-detail-tbody"></tbody>
+    </table>
+    </div>
+
+    <div style="margin-top:12px;font-family:'DM Mono',monospace;font-size:9px;color:rgba(250,246,238,.3);line-height:1.7;">
+      ⚠ Estimates only. Actual commissions depend on carrier, product, state, and agent contract level. 
+      Captain earns 60% · Generator earns 40% of their commission rate applied to annual premium.
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -280,26 +366,72 @@ function openGuestModal(guestId) {
 async function autoSyncGuest(guest) {
   if (!AUTH.getMondayKey()) return;
   try {
-    const guestName = (guest.name||'Unknown Guest').replace(/"/g,"'");
+    const guestName = (guest.name || 'Unknown Guest').replace(/"/g, "'");
+
+    // Check if item already exists (by guest name match)
+    let existingId = guest.mondayId || null;
+    if (!existingId) {
+      try {
+        const check = await mondayQuery(`{
+          boards(ids:${BOM_GUESTS_BOARD}) {
+            items_page(limit:200) { items { id name } }
+          }
+        }`);
+        const items = check?.data?.boards?.[0]?.items_page?.items || [];
+        const match = items.find(i => i.name.toLowerCase() === guestName.toLowerCase());
+        if (match) existingId = match.id;
+      } catch(e) { /* ignore — will create new */ }
+    }
+
+    // Build column values with hardcoded IDs from board 18393747809
+    const bomDay = new Date().getDay() === 2 ? 'Tuesday' : 'Saturday';
     const cv = {
-      "color_mkzde7z4": { label: guest.captain   || '' },
-      "text_mkz8jwyh":  guest.generator || '',
-      "color_mm3wf94t": { label: guest.status    || 'Invited' },
-      "phone_mkz8bstv": { phone: (guest.phone||'').replace(/\D/g,''), countryShortName: 'US' },
-      "date_mkz7nvys":  { date: guest.date || new Date().toISOString().slice(0,10) },
-      "text_mm3wmee6":  guest.bomType || guest.day || '',
-      "color_mkz7t8k6": { label: session?.name || '' },
+      "color_mkzde7z4": guest.captain   ? { label: guest.captain }   : null,  // Captain's Name
+      "text_mkz8jwyh":  guest.generator || '',                                  // Generator's Name
+      "color_mm3wf94t": guest.status    ? { label: guest.status }    : null,  // Status
+      "phone_mkz8bstv": guest.phone ? { phone: guest.phone.replace(/\D/g,''), countryShortName:'US' } : null, // Phone
+      "email_mkz8m224": guest.email || '',                                      // Email
+      "date_mkz7nvys":  guest.date ? { date: guest.date } : { date: new Date().toISOString().slice(0,10) },   // BOM Date
+      "text_mm3wmee6":  guest.bomType || guest.day || bomDay,                   // BOM Type
+      "color_mkz7t8k6": session?.name ? { label: session.name } : null,        // MD
     };
+    // Remove nulls
+    Object.keys(cv).forEach(k => cv[k] === null && delete cv[k]);
     const cvStr = JSON.stringify(JSON.stringify(cv));
-    await mondayQuery(`mutation {
-      create_item(
-        board_id: ${BOM_GUESTS_BOARD},
-        item_name: "${guestName}",
-        column_values: ${cvStr},
-        create_labels_if_missing: true
-      ) { id }
-    }`);
-    console.log('[BOM] Guest synced to Monday:', guestName);
+
+    let newMondayId = null;
+    if (existingId) {
+      // Update existing row
+      await mondayQuery(`mutation {
+        change_multiple_column_values(
+          board_id: ${BOM_GUESTS_BOARD},
+          item_id: ${existingId},
+          column_values: ${cvStr},
+          create_labels_if_missing: true
+        ) { id }
+      }`);
+      newMondayId = existingId;
+      console.log('[BOM] Guest updated in Monday:', guestName, existingId);
+    } else {
+      // Create new row
+      const res = await mondayQuery(`mutation {
+        create_item(
+          board_id: ${BOM_GUESTS_BOARD},
+          item_name: "${guestName}",
+          column_values: ${cvStr},
+          create_labels_if_missing: true
+        ) { id }
+      }`);
+      newMondayId = res?.data?.create_item?.id;
+      console.log('[BOM] Guest created in Monday:', guestName, newMondayId);
+    }
+
+    // Store mondayId on the guest for future updates
+    if (newMondayId) {
+      const g = guests.find(x => x.name === guest.name);
+      if (g) { g.mondayId = newMondayId; }
+      try { localStorage.setItem(BOM_GUESTS_KEY, JSON.stringify(guests)); } catch(e) {}
+    }
   } catch(e) {
     console.warn('[BOM] Guest sync failed:', e.message);
   }
@@ -309,15 +441,21 @@ function saveGuestModal() {
   const id   = parseInt(document.getElementById('gm-id').value) || null;
   const name = document.getElementById('gm-name').value.trim();
   if (!name) { toast('Guest name required'); return; }
+  const status = document.getElementById('gm-status').value;
   const data = {
     name,
-    phone:     document.getElementById('gm-phone').value.trim(),
-    email:     document.getElementById('gm-email').value.trim(),
-    date:      document.getElementById('gm-date').value,
-    captain:   document.getElementById('gm-captain').value.trim(),
-    generator: document.getElementById('gm-generator').value.trim(),
-    notes:     document.getElementById('gm-notes').value.trim(),
-    status:    document.getElementById('gm-status').value,
+    phone:          document.getElementById('gm-phone').value.trim(),
+    email:          document.getElementById('gm-email').value.trim(),
+    date:           document.getElementById('gm-date').value,
+    captain:        document.getElementById('gm-captain').value.trim(),
+    generator:      document.getElementById('gm-generator').value.trim(),
+    notes:          document.getElementById('gm-notes').value.trim(),
+    status,
+    becameClient:   ['Became Client','Follow-Up Converted'].includes(status),
+    policyAmount:   parseFloat(document.getElementById('gm-policy-amount').value) || 0,
+    annualPremium:  parseFloat(document.getElementById('gm-annual-premium').value) || 0,
+    conversionType: document.getElementById('gm-conversion-type').value,
+    clientDate:     document.getElementById('gm-client-date').value,
   };
   if (id) {
     const g = guests.find(x => x.id === id);
@@ -331,6 +469,11 @@ function saveGuestModal() {
   document.getElementById('guest-modal').classList.remove('open');
   renderGuests();
   updateStatus();
+  // Sync this guest to Monday immediately (background, non-blocking)
+  if (AUTH.getMondayKey()) {
+    const savedGuest = id ? guests.find(x => x.id === id) : guests[guests.length - 1];
+    if (savedGuest) autoSyncGuest(savedGuest).catch(e => console.warn('[BOM] Guest sync:', e.message));
+  }
 }
 
 function closeGuestModal() {
@@ -910,6 +1053,127 @@ function renderLeaderboard(guestRows, metric, dayFilter) {
 setTimeout(loadLeaderboard, 500);
 
 renderGuests();
+
+// ════════════════════════════════════════════════════════════════
+// BOM INCOME CALCULATOR
+// ════════════════════════════════════════════════════════════════
+
+// Call recalcIncome whenever guests change or on page load
+function recalcIncome() {
+  const captainRate   = parseFloat(document.getElementById('ic-captain-rate')?.value   || 75) / 100;
+  const generatorRate = parseFloat(document.getElementById('ic-generator-rate')?.value || 75) / 100;
+
+  // Only include converted clients
+  const clients = guests.filter(g => g.becameClient || ['Became Client','Follow-Up Converted'].includes(g.status));
+
+  // Summary stats
+  const totalClients  = clients.length;
+  const totalPremium  = clients.reduce((s,g) => s + (g.annualPremium || g.policyAmount || 0), 0);
+  const sameDayCount  = clients.filter(g => g.conversionType === 'same_day').length;
+
+  const el = id => document.getElementById(id);
+  if (el('ic-total-clients')) el('ic-total-clients').textContent = totalClients;
+  if (el('ic-total-premium')) el('ic-total-premium').textContent = '$' + totalPremium.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0});
+  if (el('ic-same-day'))      el('ic-same-day').textContent      = sameDayCount;
+
+  if (!clients.length) {
+    [el('ic-captain-table'), el('ic-generator-table'), el('ic-detail-tbody')].forEach(t => {
+      if (t) t.innerHTML = '<div style="font-family:DM Mono,monospace;font-size:11px;color:rgba(250,246,238,.35);padding:10px 0;">No converted clients yet. Mark a guest as "Became Client" and enter the policy amount.</div>';
+    });
+    return;
+  }
+
+  // ── Aggregate by captain ───────────────────────────────────
+  // Commission logic:
+  //   Captain credit  = 60% of referral credit
+  //   Generator credit = 40% of referral credit
+  //   Each earns their commission rate × their credit × annual premium
+  //   Referral credit is typically 10-15% of annual premium (we show the dollar commission)
+  const captainMap   = {};
+  const generatorMap = {};
+
+  clients.forEach(g => {
+    const premium = g.annualPremium || g.policyAmount || 0;
+    // Commission = rate × premium (annual commission)
+    const captainEarn   = premium * captainRate   * 0.60;  // captain gets 60% of credit
+    const generatorEarn = premium * generatorRate * 0.40;  // generator gets 40% of credit
+
+    const capt = g.captain   || '(no captain)';
+    const gen  = g.generator || '(no generator)';
+
+    if (!captainMap[capt])   captainMap[capt]   = { name: capt, clients: 0, premium: 0, earned: 0 };
+    if (!generatorMap[gen])  generatorMap[gen]  = { name: gen,  clients: 0, premium: 0, earned: 0 };
+
+    captainMap[capt].clients++;
+    captainMap[capt].premium += premium;
+    captainMap[capt].earned  += captainEarn;
+
+    generatorMap[gen].clients++;
+    generatorMap[gen].premium += premium;
+    generatorMap[gen].earned  += generatorEarn;
+  });
+
+  const fmt$ = n => '$' + n.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0});
+  const fmtR = n => '$' + n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+  function agentTable(map) {
+    const rows = Object.values(map).sort((a,b) => b.earned - a.earned);
+    if (!rows.length) return '<div style="font-family:DM Mono,monospace;font-size:11px;color:rgba(250,246,238,.35);padding:8px 0;">No data</div>';
+    return rows.map((r,i) => {
+      const pct = rows[0].earned > 0 ? (r.earned / rows[0].earned * 100) : 0;
+      const rank = i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
+      return `<div style="background:rgba(0,0,0,.15);border-radius:8px;padding:10px 12px;margin-bottom:7px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <span style="font-size:14px;">${rank}</span>
+          <span style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;flex:1;">${r.name}</span>
+          <span style="font-family:'DM Mono',monospace;font-size:12px;color:rgba(250,246,238,.5);">${r.clients} client${r.clients!==1?'s':''}</span>
+          <span style="font-family:'DM Mono',monospace;font-size:14px;font-weight:700;color:#2DCA73;">${fmtR(r.earned)}</span>
+        </div>
+        <div style="height:4px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;">
+          <div style="width:${pct}%;height:100%;background:#2DCA73;border-radius:2px;"></div>
+        </div>
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(250,246,238,.3);margin-top:4px;">
+          Premium: ${fmt$(r.premium)}
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  const captainTableEl   = document.getElementById('ic-captain-table');
+  const generatorTableEl = document.getElementById('ic-generator-table');
+  if (captainTableEl)   captainTableEl.innerHTML   = agentTable(captainMap);
+  if (generatorTableEl) generatorTableEl.innerHTML = agentTable(generatorMap);
+
+  // ── Detail table ─────────────────────────────────────────
+  const tbody = document.getElementById('ic-detail-tbody');
+  if (tbody) {
+    const TYPE_LABEL = { same_day: '🏢 Same Day', followup: '📅 Follow-Up', phone: '📞 Phone', '': '—' };
+    tbody.innerHTML = clients.map(g => {
+      const premium       = g.annualPremium || g.policyAmount || 0;
+      const captainEarn   = premium * captainRate   * 0.60;
+      const generatorEarn = premium * generatorRate * 0.40;
+      return `<tr style="border-bottom:1px solid rgba(255,255,255,.05);">
+        <td style="padding:7px 8px;font-weight:600;">${g.name}</td>
+        <td style="padding:7px 8px;text-align:center;font-family:'DM Mono',monospace;font-size:10px;color:rgba(250,246,238,.5);">${TYPE_LABEL[g.conversionType||'']}</td>
+        <td style="padding:7px 8px;text-align:center;font-size:12px;">${g.captain||'—'}</td>
+        <td style="padding:7px 8px;text-align:center;font-size:12px;">${g.generator||'—'}</td>
+        <td style="padding:7px 8px;text-align:right;font-family:'DM Mono',monospace;font-size:12px;">${fmt$(premium)}</td>
+        <td style="padding:7px 8px;text-align:right;font-family:'DM Mono',monospace;font-size:12px;color:#2DCA73;">${fmtR(captainEarn)}</td>
+        <td style="padding:7px 8px;text-align:right;font-family:'DM Mono',monospace;font-size:12px;color:#E8C97A;">${fmtR(generatorEarn)}</td>
+      </tr>`;
+    }).join('');
+  }
+}
+
+// Recalc whenever guests are rendered (so it stays in sync)
+const _origRenderGuests = renderGuests;
+renderGuests = function() {
+  _origRenderGuests();
+  setTimeout(recalcIncome, 0);
+};
+
+// Initial calc on load
+setTimeout(recalcIncome, 300);
 </script>
 
 <!-- ── GUEST ADD/EDIT MODAL ── -->
@@ -954,6 +1218,9 @@ renderGuests();
             <option>Confirmed</option>
             <option>Showed</option>
             <option>No-Show</option>
+            <option>Became Client</option>
+            <option>Follow-Up Scheduled</option>
+            <option>Follow-Up Converted</option>
           </select>
         </div>
         <div style="grid-column:1/-1;">
