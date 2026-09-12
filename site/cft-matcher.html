@@ -783,6 +783,18 @@ async function connectGoogle() {
 
   if(!clientId) {
     document.getElementById('cal-connect-box').innerHTML = `
+      <div style="background:rgba(231,76,60,.08);border:1px solid rgba(231,76,60,.25);border-radius:10px;padding:14px;margin-bottom:12px;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:900;color:#E74C3C;margin-bottom:6px;">⚠ Google Calendar Setup Required</div>
+        <div style="font-family:'DM Mono',monospace;font-size:11px;color:#A8B8CC;line-height:1.8;">
+          To fix the OAuth error:<br>
+          1. Go to <strong style="color:#E8EDF5;">console.cloud.google.com</strong> → APIs & Services → Credentials<br>
+          2. Edit your OAuth 2.0 Client ID<br>
+          3. Under <strong style="color:#E8EDF5;">Authorized redirect URIs</strong> add:<br>
+          <code style="background:rgba(0,0,0,.3);padding:2px 6px;border-radius:3px;color:#E8C97A;">https://agent.dynastybuildersapp.com/cft-matcher.html</code><br>
+          4. Also verify <strong style="color:#E8EDF5;">GOOGLE_CLIENT_ID</strong> in Netlify env vars matches this client<br><br>
+          <em style="color:#6B7C93;">Or use the CFT Matcher without calendar — set availability manually below.</em>
+        </div>
+      </div>
       <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--orange);line-height:1.8;text-align:left;padding:12px;background:rgba(230,126,34,.06);border-radius:8px;border:1px solid rgba(230,126,34,.2);">
         ⚙️ <strong>Google Client ID not found</strong><br>
         The env var is set but may need a redeploy to take effect.<br><br>

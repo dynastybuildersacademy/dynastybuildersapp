@@ -122,8 +122,8 @@ input:focus,select:focus{outline:none;border-color:var(--gold);}
   <!-- ── TAB: GUESTS ── -->
   <div id="bom-view-guests">
 
-    <div class="page-title">Business Opportunity Meeting</div>
-    <div class="page-sub">Track guests, captains, and income across your Tuesday &amp; Saturday BOMs.</div>
+    <div class="page-title">🏢 My BOM Tracker</div>
+    <div class="page-sub">Your guests, captain stats and income. Directors can view the full team.</div>
 
     <!-- SCHEDULE STRIP -->
     <div class="schedule">
@@ -178,6 +178,18 @@ input:focus,select:focus{outline:none;border-color:var(--gold);}
     </div>
 
     <!-- GUEST LIST -->
+    <!-- Agent filter — Directors+ only -->
+    <div id="agent-filter-bar" style="display:none;background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.15);
+      border-radius:8px;padding:10px 12px;margin-bottom:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+      <span style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:var(--gold);white-space:nowrap;">👁 Viewing:</span>
+      <select id="agent-filter" onchange="applyGuestFilter()"
+        style="flex:1;min-width:140px;font-size:12px;padding:7px 10px;background:var(--navy);
+          border:1px solid var(--border);color:var(--cream);border-radius:4px;">
+        <option value="me">My Guests Only</option>
+        <option value="team">Whole Team</option>
+      </select>
+    </div>
+
     <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap;">
       <select id="guest-period-filter" onchange="applyGuestFilter()"
         style="flex:1;min-width:110px;font-size:12px;padding:7px 10px;background:var(--navy);
@@ -1088,8 +1100,7 @@ function renderLeaderboard(guestRows, metric, dayFilter) {
 }
 
 
-// Load leaderboard on page open
-setTimeout(loadLeaderboard, 500);
+// Leaderboard loads on-demand when tab is tapped
 
 renderGuests();
 
@@ -1254,6 +1265,7 @@ function switchBOMTab(tab) {
       btn.style.color = t === tab ? 'var(--gold-light)' : 'var(--slate)';
     }
   });
+  if (tab === 'guests')     { applyGuestFilter(); }
   if (tab === 'leaderboard') loadLeaderboard();
   if (tab === 'income')      recalcIncome();
 }
@@ -1269,12 +1281,29 @@ function getGuestCutoffDate(days) {
 }
 
 function applyGuestFilter() {
-  const days   = document.getElementById('guest-period-filter')?.value || 'all';
-  const dayFlt = document.getElementById('guest-day-filter')?.value || 'all';
-  const cutoff = getGuestCutoffDate(days);
-  const today  = new Date().toISOString().slice(0, 10);
+  const days      = document.getElementById('guest-period-filter')?.value || 'all';
+  const dayFlt    = document.getElementById('guest-day-filter')?.value || 'all';
+  const agentFlt  = document.getElementById('agent-filter')?.value || 'me';
+  const cutoff    = getGuestCutoffDate(days);
+  const today     = new Date().toISOString().slice(0, 10);
+  const myName    = (session?.name || '').toLowerCase();
+
+  // Show agent filter bar for Directors+ (level >= 60)
+  const filterBar = document.getElementById('agent-filter-bar');
+  if (filterBar) filterBar.style.display = session && session.level >= 60 ? 'flex' : 'none';
 
   const filtered = guests.filter(g => {
+    // Agent filter — non-directors only see their own guests
+    if (session && session.level < 60) {
+      const cap = (g.captain || '').toLowerCase();
+      const gen = (g.generator || '').toLowerCase();
+      if (!cap.includes(myName.split(' ')[0]) && !gen.includes(myName.split(' ')[0])) return false;
+    } else if (agentFlt === 'me') {
+      const cap = (g.captain || '').toLowerCase();
+      const gen = (g.generator || '').toLowerCase();
+      if (!cap.includes(myName.split(' ')[0]) && !gen.includes(myName.split(' ')[0])) return false;
+    }
+    // else agentFlt === 'team' — show all
     if (cutoff && g.date && g.date < cutoff) return false;
     if (g.date && g.date > today) return false;
     if (dayFlt !== 'all') {
@@ -1332,21 +1361,11 @@ function renderGuestList(list) {
     </div>`).join('');
 }
 
-// Override renderGuests to use filter
-const _baseRenderGuests = renderGuests;
-renderGuests = function() {
-  // Persist
-  try { localStorage.setItem('dba_bom_guests', JSON.stringify(guests)); } catch(e) {}
-  try { localStorage.setItem(BOM_GUESTS_KEY, JSON.stringify(guests)); } catch(e) {}
+// Apply guest filter immediately on page load
+document.addEventListener('DOMContentLoaded', function() {
   applyGuestFilter();
   recalcIncome();
-};
-
-// Auto-apply 90-day filter on load
-setTimeout(() => {
-  applyGuestFilter();
-  recalcIncome();
-}, 200);
+});
 </script>
 
 <!-- ── GUEST ADD/EDIT MODAL ── -->

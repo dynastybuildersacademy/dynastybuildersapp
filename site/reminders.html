@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0">
+<title>Team Reminders · Dynasty Builders</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=Barlow:wght@400;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="auth.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --navy:#0A1628;--navy-mid:#0F1E38;--navy-light:#132240;
+  --gold:#C9A84C;--gold-light:#E8C97A;--green:#2DCA73;
+  --blue:#5DADE2;--purple:#9B59B6;--orange:#E67E22;--red:#E74C3C;
+  --text:#E8EDF5;--muted:#6B7C93;--border:rgba(255,255,255,.08);
+}
+body{background:var(--navy);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh;padding-bottom:80px;}
+.header{background:linear-gradient(135deg,#0A1628,#0F1E38);border-bottom:1px solid rgba(201,168,76,.15);
+  padding:14px 18px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;}
+.header-title{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;color:var(--gold-light);flex:1;}
+.back-btn{background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:8px;
+  padding:7px 12px;color:var(--muted);font-family:'DM Mono',monospace;font-size:11px;text-decoration:none;}
+.page{padding:16px 14px;}
+.card{background:var(--navy-mid);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px;}
+.card-title{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:900;color:var(--gold);
+  text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.reminder-row{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.05);}
+.reminder-row:last-child{border-bottom:none;}
+.reminder-icon{font-size:24px;flex-shrink:0;margin-top:2px;}
+.reminder-body{flex:1;}
+.reminder-name{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;color:var(--text);}
+.reminder-schedule{font-family:'DM Mono',monospace;font-size:10px;color:var(--gold);margin-top:2px;}
+.reminder-preview{font-size:12px;color:var(--muted);margin-top:5px;line-height:1.6;}
+.toggle-btn{flex-shrink:0;width:44px;height:24px;border-radius:12px;border:none;cursor:pointer;
+  position:relative;transition:background .2s;}
+.toggle-btn.on{background:var(--green);}
+.toggle-btn.off{background:rgba(255,255,255,.12);}
+.toggle-btn::after{content:'';position:absolute;top:2px;width:20px;height:20px;border-radius:50%;
+  background:#fff;transition:left .2s;}
+.toggle-btn.on::after{left:22px;}
+.toggle-btn.off::after{left:2px;}
+label{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.06em;}
+input,select,textarea{width:100%;background:var(--navy-light);border:1px solid rgba(255,255,255,.12);
+  color:var(--text);border-radius:8px;padding:9px 12px;font-family:'DM Mono',monospace;font-size:12px;
+  outline:none;transition:border-color .2s;}
+input:focus,select:focus,textarea:focus{border-color:rgba(201,168,76,.4);}
+textarea{resize:vertical;line-height:1.6;}
+.btn{padding:10px 18px;border-radius:9px;font-family:'Barlow Condensed',sans-serif;font-size:15px;
+  font-weight:800;cursor:pointer;border:none;letter-spacing:.04em;}
+.btn-gold{background:linear-gradient(135deg,#C9A84C,#E8C97A);color:#0A1628;}
+.btn-ghost{background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--text);}
+.btn-blue{background:rgba(93,173,226,.12);border:1px solid rgba(93,173,226,.3);color:var(--blue);}
+.section-label{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;
+  letter-spacing:.1em;margin:16px 0 8px;}
+.msg-preview{background:rgba(0,0,0,.2);border-radius:8px;padding:12px;font-size:13px;
+  line-height:1.7;color:var(--text);white-space:pre-wrap;border-left:3px solid var(--gold);}
+.status-bar{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);
+  text-align:center;padding:6px;margin-top:8px;}
+.zapier-note{background:rgba(255,111,0,.06);border:1px solid rgba(255,111,0,.2);border-radius:10px;
+  padding:12px;margin-bottom:14px;}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);
+  background:var(--navy-mid);border:1px solid var(--gold);border-radius:8px;padding:10px 18px;
+  font-size:12px;font-family:'DM Mono',monospace;color:var(--gold-light);
+  transition:all .3s;opacity:0;z-index:999;white-space:nowrap;}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+</style>
+</head>
+<body>
+<script>AUTH.require('reminders.html', 40);</script>
+
+<div class="header">
+  <a href="hub.html" class="back-btn">← Hub</a>
+  <div class="header-title">🔔 Team Reminders</div>
+</div>
+
+<div class="page">
+
+  <!-- DELIVERY METHOD -->
+  <div class="card" style="border-color:rgba(93,173,226,.2);">
+    <div class="card-title">📡 Delivery Method</div>
+    <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);line-height:1.8;margin-bottom:12px;">
+      Reminders are sent via Zapier. Connect your Zapier webhook below, then build a Zap that sends to your team's group chat, email, or SMS list.
+    </div>
+    <div class="zapier-note">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:#FF6B00;margin-bottom:6px;">⚡ Zapier Setup</div>
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);line-height:1.8;">
+        1. Zapier → New Zap → <strong style="color:var(--text);">Schedule by Zapier</strong> trigger → set your time<br>
+        2. Add a <strong style="color:var(--text);">Webhooks → GET</strong> step pointing to this page's reminder endpoint<br>
+        3. Or use <strong style="color:var(--text);">Webhooks → Catch Hook</strong> and click Send Test below<br>
+        4. Connect to Gmail, GroupMe, Slack, Twilio SMS, or WhatsApp
+      </div>
+    </div>
+    <div style="margin-bottom:10px;">
+      <label>Zapier Webhook URL (for manual sends)</label>
+      <input type="url" id="reminder-webhook" placeholder="https://hooks.zapier.com/hooks/catch/…">
+    </div>
+    <div style="margin-bottom:10px;">
+      <label>Team Name / Identifier</label>
+      <input type="text" id="team-name" placeholder="Dynasty Builders · DBA" value="Dynasty Builders">
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-gold" style="flex:2" onclick="saveDelivery()">✓ Save</button>
+      <button class="btn btn-ghost" style="flex:1" onclick="testWebhook()">Send Test</button>
+    </div>
+  </div>
+
+  <!-- SCHEDULED REMINDERS -->
+  <div class="card-title" style="padding:0 2px;margin-bottom:8px;">📅 Scheduled Reminders</div>
+
+  <!-- BOM REMINDER -->
+  <div class="card">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px;">
+      <div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;color:var(--text);">🏢 BOM Reminder</div>
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--gold);margin-top:2px;">Tuesdays 12:00 PM · Saturdays 8:00 AM</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px;">Reminds agents to confirm guests and arrive early</div>
+      </div>
+      <button class="toggle-btn on" id="toggle-bom" onclick="toggleReminder('bom')"></button>
+    </div>
+    <div style="margin-bottom:10px;">
+      <label>Message Template <span style="color:rgba(255,255,255,.3);">(use {teamName}, {day}, {time})</span></label>
+      <textarea id="msg-bom" rows="5">🏢 BOM DAY — {teamName}!
+
+Today is {day} BOM · {time}
+
+⚓ CAPTAIN CHECKLIST:
+✅ Text your guests a confirmation this morning
+✅ Arrive 20 minutes early to greet them
+✅ Dress professionally — you represent the brand
+✅ Bring business cards and prequal forms
+
+Your guest could change their life today. Show up like it.
+
+📍 [Office Address] · {time} sharp</textarea>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-blue" style="flex:1;font-size:12px;" onclick="previewMessage('bom')">👁 Preview</button>
+      <button class="btn btn-gold" style="flex:1;font-size:12px;" onclick="sendNow('bom')">📤 Send Now</button>
+    </div>
+    <div id="status-bom" class="status-bar"></div>
+  </div>
+
+  <!-- THANKFUL THURSDAY -->
+  <div class="card">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px;">
+      <div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;color:var(--text);">⭐ Thankful Thursday</div>
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--gold);margin-top:2px;">Thursdays 9:00 AM</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px;">Weekly recognition and team appreciation</div>
+      </div>
+      <button class="toggle-btn on" id="toggle-thankful" onclick="toggleReminder('thankful')"></button>
+    </div>
+    <div style="margin-bottom:10px;">
+      <label>Message Template</label>
+      <textarea id="msg-thankful" rows="6">⭐ THANKFUL THURSDAY — {teamName}
+
+It's that time of the week! Let's take a moment to recognize each other.
+
+💬 Share in the comments:
+→ ONE person on this team you're grateful for
+→ ONE win from this week (small or big — it counts!)
+→ ONE thing you're committed to this week
+
+Recognition fuels momentum. Let's lift each other up. 🙌
+
+Tag someone who showed up this week! 👇</textarea>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-blue" style="flex:1;font-size:12px;" onclick="previewMessage('thankful')">👁 Preview</button>
+      <button class="btn btn-gold" style="flex:1;font-size:12px;" onclick="sendNow('thankful')">📤 Send Now</button>
+    </div>
+    <div id="status-thankful" class="status-bar"></div>
+  </div>
+
+  <!-- BOOK CLUB WISDOM — Tue & Thu 7:30am -->
+  <div class="card">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px;">
+      <div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;color:var(--text);">📚 Book Club Wisdom</div>
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--gold);margin-top:2px;">Tuesdays & Thursdays · 7:30 AM</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px;">Daily motivation & wisdom from this month's book</div>
+      </div>
+      <button class="toggle-btn on" id="toggle-bookclub" onclick="toggleReminder('bookclub')"></button>
+    </div>
+    <div style="margin-bottom:8px;">
+      <label>Current Book</label>
+      <input type="text" id="book-title" placeholder="3 Feet From Gold" value="3 Feet From Gold">
+    </div>
+    <div style="margin-bottom:10px;">
+      <label>Message Template</label>
+      <textarea id="msg-bookclub" rows="7">📚 GOOD MORNING, {teamName}! 7:30 AM
+
+This week's wisdom from our book club read:
+📖 {bookTitle}
+
+{wisdom}
+
+💭 REFLECT: Where in your business are you 3 feet from gold right now?
+
+Today's challenge: Send 10 invites before noon.
+
+Let's WIN today! 🏆 — {teamName} Leadership</textarea>
+    </div>
+    <div style="margin-bottom:10px;">
+      <label>Today's Wisdom (AI-generated or custom)</label>
+      <div style="display:flex;gap:8px;margin-bottom:8px;">
+        <button class="btn btn-blue" style="flex:1;font-size:11px;padding:7px;" onclick="generateWisdom()">🤖 Generate with AI</button>
+        <button class="btn btn-ghost" style="flex:1;font-size:11px;padding:7px;" onclick="rotateWisdom()">🔄 Rotate Quote</button>
+      </div>
+      <textarea id="wisdom-text" rows="4" placeholder="Enter today's wisdom or generate with AI…">Most people quit three feet from gold. The moment of maximum resistance is always right before the breakthrough. Whatever you're facing today — don't stop now. The win is closer than you think.</textarea>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-blue" style="flex:1;font-size:12px;" onclick="previewMessage('bookclub')">👁 Preview</button>
+      <button class="btn btn-gold" style="flex:1;font-size:12px;" onclick="sendNow('bookclub')">📤 Send Now</button>
+    </div>
+    <div id="status-bookclub" class="status-bar"></div>
+  </div>
+
+  <!-- DAILY MOTIVATION -->
+  <div class="card">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px;">
+      <div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;color:var(--text);">🔥 Daily Motivation</div>
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--gold);margin-top:2px;">Mon – Fri · 7:30 AM</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px;">Short morning fire-up for the whole team</div>
+      </div>
+      <button class="toggle-btn off" id="toggle-daily" onclick="toggleReminder('daily')"></button>
+    </div>
+    <div style="margin-bottom:10px;">
+      <label>Message Template</label>
+      <textarea id="msg-daily" rows="5">🔥 GOOD MORNING, {teamName}!
+
+{motivation}
+
+TODAY'S TARGETS:
+📞 Calls: 50+
+🤝 Contacts: 10+
+📅 Appts: 2+
+
+Every call is a decision. Make them count. Let's GO! 💪</textarea>
+    </div>
+    <div style="margin-bottom:10px;">
+      <label>Today's Motivation</label>
+      <div style="display:flex;gap:8px;margin-bottom:8px;">
+        <button class="btn btn-blue" style="flex:1;font-size:11px;padding:7px;" onclick="generateMotivation()">🤖 Generate with AI</button>
+      </div>
+      <textarea id="motivation-text" rows="3" placeholder="Enter today's motivational message or generate with AI…">Your competition is sleeping in. Your future clients need someone who shows up. Be the one who shows up. Every. Single. Day.</textarea>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-blue" style="flex:1;font-size:12px;" onclick="previewMessage('daily')">👁 Preview</button>
+      <button class="btn btn-gold" style="flex:1;font-size:12px;" onclick="sendNow('daily')">📤 Send Now</button>
+    </div>
+    <div id="status-daily" class="status-bar"></div>
+  </div>
+
+  <!-- MESSAGE PREVIEW MODAL -->
+  <div id="preview-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:500;
+    align-items:flex-end;justify-content:center;">
+    <div style="background:#0F1E38;border:1px solid rgba(201,168,76,.2);border-radius:16px 16px 0 0;
+      width:100%;max-width:500px;padding:20px;max-height:80vh;overflow-y:auto;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:14px;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;color:var(--gold);">Message Preview</div>
+        <button onclick="closePreview()" style="background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;">✕</button>
+      </div>
+      <div id="preview-content" class="msg-preview"></div>
+      <div style="display:flex;gap:8px;margin-top:14px;">
+        <button class="btn btn-gold" style="flex:1" onclick="sendFromPreview()">📤 Send Now</button>
+        <button class="btn btn-ghost" style="flex:1" onclick="copyPreview()">📋 Copy</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const session = AUTH.getSession();
+const REMINDERS_KEY = 'dba_reminders_config';
+const AI_KEY        = localStorage.getItem('dba_ai_api_key') || '';
+
+// ── QUOTES LIBRARY ────────────────────────────────────────────
+const WISDOM_QUOTES = [
+  "Most people quit three feet from gold. The moment of maximum resistance is always right before the breakthrough.",
+  "Your why has to be bigger than your fear. When you know why you're doing it, every obstacle becomes a stepping stone.",
+  "Success doesn't come to those who wait — it comes to those who show up consistently when no one is watching.",
+  "Every person you don't call today is a family you don't protect. Your work matters more than your comfort.",
+  "You are one conversation away from changing someone's life. Pick up the phone.",
+  "The compound effect means your daily habits are either building your future or costing you it. Choose wisely today.",
+  "Mentorship compresses decades into days. Who are you learning from? Who are you teaching?",
+  "Power doesn't need to force. It attracts. Lead with service and watch what comes to you.",
+  "Passion + Talent + Association. You're already here. That's the association. Now find where your passion and talent meet.",
+  "Failure is data. Every no gets you closer to a yes. Study the pattern, adjust, and go again.",
+];
+
+const MOTIVATIONS = [
+  "Your competition is sleeping in. Your future clients need someone who shows up. Be the one who shows up. Every. Single. Day.",
+  "You don't need motivation. You need discipline. Motivation fades — habits stay. Build the habit of showing up.",
+  "The difference between where you are and where you want to be is the conversations you haven't had yet.",
+  "Rejection is not failure. Rejection is redirection. Keep going.",
+  "Your team is watching how you handle the hard days. Lead by example — especially today.",
+  "One appointment today can lead to a promoted agent next year. Nothing you do is small.",
+  "The phone doesn't weigh 100 pounds. Pick it up.",
+  "You joined this business to change your life. Act like it today.",
+];
+
+let _currentPreviewKey = '';
+let _reminderToggles = {};
+
+// ── TOAST ─────────────────────────────────────────────────────
+function toast(msg, dur = 2800) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), dur);
+}
+
+// ── LOAD / SAVE CONFIG ────────────────────────────────────────
+function loadConfig() {
+  try {
+    const cfg = JSON.parse(localStorage.getItem(REMINDERS_KEY) || '{}');
+    if (cfg.webhook) document.getElementById('reminder-webhook').value = cfg.webhook;
+    if (cfg.teamName) document.getElementById('team-name').value = cfg.teamName;
+    if (cfg.msgs) {
+      Object.entries(cfg.msgs).forEach(([k, v]) => {
+        const el = document.getElementById('msg-' + k);
+        if (el && v) el.value = v;
+      });
+    }
+    _reminderToggles = cfg.toggles || { bom: true, thankful: true, bookclub: true, daily: false };
+    ['bom','thankful','bookclub','daily'].forEach(k => {
+      const btn = document.getElementById('toggle-' + k);
+      if (btn) { btn.className = 'toggle-btn ' + (_reminderToggles[k] ? 'on' : 'off'); }
+    });
+  } catch(e) {}
+}
+
+function saveConfig() {
+  try {
+    const cfg = {
+      webhook:  document.getElementById('reminder-webhook').value,
+      teamName: document.getElementById('team-name').value,
+      toggles:  _reminderToggles,
+      msgs: {
+        bom:      document.getElementById('msg-bom').value,
+        thankful: document.getElementById('msg-thankful').value,
+        bookclub: document.getElementById('msg-bookclub').value,
+        daily:    document.getElementById('msg-daily').value,
+      }
+    };
+    localStorage.setItem(REMINDERS_KEY, JSON.stringify(cfg));
+  } catch(e) {}
+}
+
+function saveDelivery() { saveConfig(); toast('✓ Delivery settings saved'); }
+
+// ── TOGGLE ────────────────────────────────────────────────────
+function toggleReminder(key) {
+  _reminderToggles[key] = !_reminderToggles[key];
+  const btn = document.getElementById('toggle-' + key);
+  if (btn) btn.className = 'toggle-btn ' + (_reminderToggles[key] ? 'on' : 'off');
+  saveConfig();
+  toast(_reminderToggles[key] ? `✓ ${key} reminder enabled` : `${key} reminder disabled`);
+}
+
+// ── BUILD MESSAGE ─────────────────────────────────────────────
+function buildMessage(key) {
+  const teamName  = document.getElementById('team-name').value || 'Dynasty Builders';
+  const now       = new Date();
+  const days      = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const day       = days[now.getDay()];
+  const isWeekend = now.getDay() === 6;
+  const time      = now.getDay() === 2 ? '7:00 PM' : '10:00 AM';
+  const bookTitle = document.getElementById('book-title')?.value || '3 Feet From Gold';
+  const wisdom    = document.getElementById('wisdom-text')?.value || '';
+  const motivation = document.getElementById('motivation-text')?.value || '';
+
+  let template = document.getElementById('msg-' + key)?.value || '';
+  return template
+    .replace(/{teamName}/g, teamName)
+    .replace(/{day}/g, isWeekend ? 'Saturday' : 'Tuesday')
+    .replace(/{time}/g, time)
+    .replace(/{bookTitle}/g, bookTitle)
+    .replace(/{wisdom}/g, wisdom)
+    .replace(/{motivation}/g, motivation);
+}
+
+// ── PREVIEW ──────────────────────────────────────────────────
+function previewMessage(key) {
+  _currentPreviewKey = key;
+  const msg = buildMessage(key);
+  document.getElementById('preview-content').textContent = msg;
+  document.getElementById('preview-modal').style.display = 'flex';
+}
+function closePreview() { document.getElementById('preview-modal').style.display = 'none'; }
+function copyPreview() {
+  const text = document.getElementById('preview-content').textContent;
+  navigator.clipboard.writeText(text).then(() => toast('✓ Copied to clipboard'));
+}
+function sendFromPreview() { closePreview(); sendNow(_currentPreviewKey); }
+
+// ── SEND ──────────────────────────────────────────────────────
+async function sendNow(key) {
+  const webhook = document.getElementById('reminder-webhook').value.trim();
+  const msg     = buildMessage(key);
+  const status  = document.getElementById('status-' + key);
+
+  if (!webhook) {
+    toast('⚠ Enter a Zapier webhook URL first');
+    return;
+  }
+  if (status) status.textContent = '⟳ Sending…';
+
+  try {
+    await fetch(webhook, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: key,
+        message: msg,
+        teamName: document.getElementById('team-name').value,
+        sentBy: session?.name || '',
+        timestamp: new Date().toISOString(),
+      }),
+    });
+    if (status) { status.textContent = `✓ Sent at ${new Date().toLocaleTimeString()}`; status.style.color = 'var(--green)'; }
+    toast(`✓ ${key} message sent`);
+    saveConfig();
+  } catch(e) {
+    if (status) { status.textContent = '✗ Failed: ' + e.message; status.style.color = 'var(--red)'; }
+    toast('✗ Send failed: ' + e.message);
+  }
+}
+
+async function testWebhook() {
+  const webhook = document.getElementById('reminder-webhook').value.trim();
+  if (!webhook) { toast('⚠ Enter a webhook URL first'); return; }
+  toast('⟳ Sending test…');
+  try {
+    await fetch(webhook, {
+      method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'test', message: 'Test from DBA Team Reminders ✓', timestamp: new Date().toISOString() }),
+    });
+    toast('✓ Test sent — check Zapier');
+    saveDelivery();
+  } catch(e) { toast('✗ ' + e.message); }
+}
+
+// ── AI GENERATION ─────────────────────────────────────────────
+function rotateWisdom() {
+  const q = WISDOM_QUOTES[Math.floor(Math.random() * WISDOM_QUOTES.length)];
+  document.getElementById('wisdom-text').value = q;
+  toast('✓ Quote rotated');
+}
+
+async function generateWisdom() {
+  if (!AI_KEY) { rotateWisdom(); toast('💡 No AI key — using library quote. Connect AI in AI Assistant.'); return; }
+  const bookTitle = document.getElementById('book-title').value || '3 Feet From Gold';
+  const el = document.getElementById('wisdom-text');
+  el.value = '⏳ Generating…';
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json','x-api-key':AI_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6', max_tokens: 150,
+        messages: [{ role:'user', content:`Write a 2-3 sentence motivational morning message inspired by the book "${bookTitle}" for life insurance agents. Make it specific, actionable, and energizing. No hashtags.` }]
+      })
+    });
+    const data = await res.json();
+    el.value = data.content?.[0]?.text || WISDOM_QUOTES[0];
+  } catch(e) { rotateWisdom(); }
+}
+
+async function generateMotivation() {
+  if (!AI_KEY) {
+    const q = MOTIVATIONS[Math.floor(Math.random() * MOTIVATIONS.length)];
+    document.getElementById('motivation-text').value = q;
+    toast('💡 No AI key — using library. Connect AI in AI Assistant.');
+    return;
+  }
+  const el = document.getElementById('motivation-text');
+  el.value = '⏳ Generating…';
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json','x-api-key':AI_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6', max_tokens: 120,
+        messages: [{ role:'user', content:`Write a 2-3 sentence morning motivation for life insurance agents at Dynasty Builders Academy. Direct, punchy, no fluff. No hashtags.` }]
+      })
+    });
+    const data = await res.json();
+    el.value = data.content?.[0]?.text || MOTIVATIONS[0];
+  } catch(e) {
+    const q = MOTIVATIONS[Math.floor(Math.random() * MOTIVATIONS.length)];
+    el.value = q;
+  }
+}
+
+loadConfig();
+</script>
+</body>
+</html>
