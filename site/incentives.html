@@ -99,6 +99,146 @@ input[type=number]:focus{outline:none;border-color:var(--gold);}
   <div class="page-title">Incentives & Recognition</div>
   <div class="page-sub">Track contest progress, earn your trip to Las Vegas, and build toward every DBA milestone.</div>
 
+  <!-- SEPTEMBER MANSION CONTEST -->
+  <div style="background:linear-gradient(135deg,rgba(155,89,182,.15),rgba(201,168,76,.08));
+    border:1px solid rgba(155,89,182,.35);border-radius:16px;padding:20px;margin-bottom:20px;">
+
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
+      <div>
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:#C39BD3;font-weight:700;
+          text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;">🏆 Monthly Contest · September 2026</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:32px;font-weight:900;
+          color:#E8EDF5;line-height:1;">SEPTEMBER MANSION</div>
+        <div style="font-family:'DM Mono',monospace;font-size:11px;color:#C39BD3;margin-top:4px;">
+          Top performers earn an exclusive Mansion Weekend experience
+        </div>
+      </div>
+      <a href="https://contest.agencycalculators.com" target="_blank"
+        style="background:linear-gradient(135deg,#9B59B6,#C39BD3);color:#fff;font-family:'Barlow Condensed',sans-serif;
+          font-size:14px;font-weight:900;padding:10px 18px;border-radius:9px;text-decoration:none;
+          white-space:nowrap;letter-spacing:.04em;">
+        📊 Update My Numbers ↗
+      </a>
+    </div>
+
+    <!-- LEADERBOARD CATEGORIES — Golf Scoring (lower = better) -->
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.5);
+      text-transform:uppercase;letter-spacing:.09em;margin-bottom:10px;">
+      🏌️ Golf Score Format — Lowest Score Wins Each Category
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+
+      <!-- Personal Recruits -->
+      <div style="background:rgba(0,0,0,.2);border-radius:10px;padding:14px;border:1px solid rgba(155,89,182,.2);">
+        <div style="font-size:20px;margin-bottom:6px;">🤝</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:900;color:#C39BD3;">Personal Recruits</div>
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.4);margin-top:3px;">
+          Direct recruits this month
+        </div>
+        <div id="mansion-recruit-board" style="margin-top:10px;">
+          <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.3);">
+            Loading standings…
+          </div>
+        </div>
+      </div>
+
+      <!-- Personal Submitted Points -->
+      <div style="background:rgba(0,0,0,.2);border-radius:10px;padding:14px;border:1px solid rgba(201,168,76,.2);">
+        <div style="font-size:20px;margin-bottom:6px;">📝</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:900;color:#E8C97A;">Submitted Points</div>
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.4);margin-top:3px;">
+          Personal submitted ATP
+        </div>
+        <div id="mansion-submitted-board" style="margin-top:10px;">
+          <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.3);">
+            Loading standings…
+          </div>
+        </div>
+      </div>
+
+      <!-- Personal Paid Points -->
+      <div style="background:rgba(0,0,0,.2);border-radius:10px;padding:14px;border:1px solid rgba(45,202,115,.2);">
+        <div style="font-size:20px;margin-bottom:6px;">💰</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:900;color:#2DCA73;">Paid Points</div>
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.4);margin-top:3px;">
+          Personal paid ATP
+        </div>
+        <div id="mansion-paid-board" style="margin-top:10px;">
+          <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.3);">
+            Loading standings…
+          </div>
+        </div>
+      </div>
+
+      <!-- Overall Golf Score / Top 15 Qualifier -->
+      <div style="background:rgba(0,0,0,.2);border-radius:10px;padding:14px;border:1px solid rgba(93,173,226,.2);">
+        <div style="font-size:20px;margin-bottom:6px;">⛳</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:900;color:#5DADE2;">Overall Golf Score</div>
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.4);margin-top:3px;">
+          Combined score — Top 15 qualify for Mansion
+        </div>
+        <div style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(93,173,226,.6);margin-top:2px;">
+          Showing top 25 · Top 15 line marked
+        </div>
+        <div id="mansion-cashflow-board" style="margin-top:10px;">
+          <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.3);">
+            Loading standings…
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- MANUAL ENTRY / ADMIN SCORE SUBMISSION -->
+    <details>
+      <summary style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;
+        color:#C39BD3;cursor:pointer;padding:8px 0;list-style:none;letter-spacing:.04em;">
+        ✏️ Enter / Update Standings ›
+      </summary>
+      <div style="padding-top:14px;">
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.4);
+          margin-bottom:10px;line-height:1.6;">
+          Enter agent names and scores (one per line: <code style="color:#E8C97A;">Agent Name, Score</code>).
+          Lower score = better rank (golf format).
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div>
+            <label style="font-family:'DM Mono',monospace;font-size:10px;color:#C39BD3;display:block;margin-bottom:4px;">🤝 Recruits</label>
+            <textarea id="mansion-input-recruits" rows="8" placeholder="Obi Iroezi, 8&#10;Antoine Penn, 6&#10;Candy Perez, 5"
+              style="width:100%;background:rgba(0,0,0,.3);border:1px solid rgba(155,89,182,.3);color:#E8EDF5;
+                font-family:'DM Mono',monospace;font-size:11px;padding:9px;border-radius:6px;outline:none;resize:vertical;"></textarea>
+          </div>
+          <div>
+            <label style="font-family:'DM Mono',monospace;font-size:10px;color:#E8C97A;display:block;margin-bottom:4px;">📝 Submitted Pts</label>
+            <textarea id="mansion-input-submitted" rows="8" placeholder="Obi Iroezi, 45000&#10;Antoine Penn, 38000&#10;Candy Perez, 31000"
+              style="width:100%;background:rgba(0,0,0,.3);border:1px solid rgba(201,168,76,.3);color:#E8EDF5;
+                font-family:'DM Mono',monospace;font-size:11px;padding:9px;border-radius:6px;outline:none;resize:vertical;"></textarea>
+          </div>
+          <div>
+            <label style="font-family:'DM Mono',monospace;font-size:10px;color:#2DCA73;display:block;margin-bottom:4px;">💰 Paid Pts</label>
+            <textarea id="mansion-input-paid" rows="8" placeholder="Obi Iroezi, 38000&#10;Antoine Penn, 30000&#10;Candy Perez, 27000"
+              style="width:100%;background:rgba(0,0,0,.3);border:1px solid rgba(45,202,115,.3);color:#E8EDF5;
+                font-family:'DM Mono',monospace;font-size:11px;padding:9px;border-radius:6px;outline:none;resize:vertical;"></textarea>
+          </div>
+          <div>
+            <label style="font-family:'DM Mono',monospace;font-size:10px;color:#5DADE2;display:block;margin-bottom:4px;">⛳ Overall Golf Score (top 25 shown · top 15 qualify)</label>
+            <textarea id="mansion-input-cashflow" rows="8" placeholder="Obi Iroezi, 145&#10;Antoine Penn, 138&#10;Candy Perez, 132"
+              style="width:100%;background:rgba(0,0,0,.3);border:1px solid rgba(93,173,226,.3);color:#E8EDF5;
+                font-family:'DM Mono',monospace;font-size:11px;padding:9px;border-radius:6px;outline:none;resize:vertical;"></textarea>
+          </div>
+        </div>
+        <button onclick="saveMansionScores()"
+          style="margin-top:12px;width:100%;background:linear-gradient(135deg,#9B59B6,#C39BD3);border:none;
+            border-radius:10px;color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:18px;
+            font-weight:900;padding:12px;cursor:pointer;letter-spacing:.05em;">
+          💾 Save Standings
+        </button>
+      </div>
+    </details>
+
+  </div>
+
   <!-- EVENT HERO -->
   <div class="event-hero">
     <div class="event-name">PHP Agency · August 2026</div>
@@ -537,6 +677,96 @@ document.getElementById('lb-mini').innerHTML = sorted.map((a, i) => {
     <div class="lb-pts">${a.pts.toLocaleString()}<span style="font-size:10px;color:var(--slate);margin-left:2px;">pts</span></div>
   </div>`;
 }).join('');
+
+// ── SEPTEMBER MANSION CONTEST ────────────────────────────────
+const MANSION_KEY = 'dba_mansion_sept_2026';
+
+function loadMansionScores() {
+  try {
+    const data = JSON.parse(localStorage.getItem(MANSION_KEY) || '{}');
+    const categories = {
+      recruits:  { id:'mansion-recruit-board',   input:'mansion-input-recruits',   color:'#C39BD3', label:'Recruits',  suffix:'',     limit:25, cutoff:null },
+      submitted: { id:'mansion-submitted-board', input:'mansion-input-submitted',  color:'#E8C97A', label:'Sub Pts',   suffix:' pts', limit:25, cutoff:null },
+      paid:      { id:'mansion-paid-board',       input:'mansion-input-paid',       color:'#2DCA73', label:'Paid Pts',  suffix:' pts', limit:25, cutoff:null },
+      cashflow:  { id:'mansion-cashflow-board',   input:'mansion-input-cashflow',   color:'#5DADE2', label:'Golf Score',suffix:'',     limit:25, cutoff:15  },
+    };
+    Object.entries(categories).forEach(([key, cfg]) => {
+      const scores = data[key] || [];
+      const el = document.getElementById(cfg.id);
+      const inp = document.getElementById(cfg.input);
+      if (inp && scores.length) {
+        inp.value = scores.map(s => `${s.name}, ${s.score}`).join('\n');
+      }
+      if (!el) return;
+      if (!scores.length) {
+        el.innerHTML = '<div style="font-family:\'DM Mono\',monospace;font-size:10px;color:rgba(255,255,255,.3);">No scores yet — enter standings above.</div>';
+        return;
+      }
+      const max = scores[0]?.score || 1;
+      const limit = key === 'cashflow' ? 15 : scores.length;
+      const rows = scores.slice(0, cfg.limit || 25).map((s, i) => {
+        const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i+1}.`;
+        const pct = Math.round(s.score / max * 100);
+        const fmtScore = key === 'submitted' || key === 'paid'
+          ? Number(s.score).toLocaleString() + ' pts'
+          : s.score;
+        const isQualifier = cfg.cutoff && i < cfg.cutoff;
+        const isCutoffLine = cfg.cutoff && i === cfg.cutoff - 1;
+        const rowStyle = isQualifier
+          ? 'margin-bottom:7px;background:rgba(93,173,226,.05);border-radius:5px;padding:3px 4px;'
+          : 'margin-bottom:7px;opacity:.65;padding:3px 4px;';
+        return (isCutoffLine
+          ? `<div style="border-top:2px dashed rgba(93,173,226,.5);margin:4px 0 8px;display:flex;align-items:center;gap:6px;">
+               <span style="font-family:'DM Mono',monospace;font-size:9px;color:#5DADE2;white-space:nowrap;">✂ TOP 15 CUT LINE</span>
+             </div>`
+          : '') +
+        `<div style="${rowStyle}">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">
+            <span style="font-size:12px;min-width:20px;">${medal}</span>
+            <span style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;flex:1;color:${isQualifier||!cfg.cutoff?'#E8EDF5':'#8A9BB5'};">${s.name}</span>
+            <span style="font-family:'DM Mono',monospace;font-size:12px;font-weight:700;color:${isQualifier||!cfg.cutoff?cfg.color:'#6B7C93'};">${fmtScore}</span>
+          </div>
+          <div style="height:3px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;margin-left:26px;">
+            <div style="width:${pct}%;height:100%;background:${isQualifier||!cfg.cutoff?cfg.color:'rgba(107,124,147,.4)'};border-radius:2px;"></div>
+          </div>
+        </div>`;
+      });
+      // Add cut line after row 15 if not already added inline
+      if (cfg.cutoff && scores.length > cfg.cutoff) {
+        rows.splice(cfg.cutoff, 0,
+          `<div style="border-top:2px dashed rgba(255,255,255,.2);margin:2px 0 8px;text-align:center;">
+            <span style="font-family:'DM Mono',monospace;font-size:9px;color:#6B7C93;">positions ${cfg.cutoff+1}–${Math.min(scores.length,cfg.limit||25)} (outside Top 15)</span>
+           </div>`
+        );
+      }
+      el.innerHTML = rows.join('');
+    });
+  } catch(e) {}
+}
+
+function saveMansionScores() {
+  const parse = (id) => {
+    const raw = document.getElementById(id)?.value || '';
+    return raw.split('\n').filter(l => l.trim()).map(line => {
+      const parts = line.split(',');
+      const name  = parts[0]?.trim() || '';
+      const score = parseFloat(parts[1]?.trim().replace(/[$,]/g,'')) || 0;
+      return { name, score };
+    }).filter(s => s.name).sort((a,b) => b.score - a.score);
+  };
+  const data = {
+    recruits:  parse('mansion-input-recruits'),
+    submitted: parse('mansion-input-submitted'),
+    paid:      parse('mansion-input-paid'),
+    cashflow:  parse('mansion-input-cashflow'),
+    updatedAt: new Date().toISOString(),
+  };
+  try { localStorage.setItem(MANSION_KEY, JSON.stringify(data)); } catch(e) {}
+  loadMansionScores();
+  if (typeof toast === 'function') toast('✓ Mansion standings saved');
+}
+
+loadMansionScores();
 </script>
 </body>
 </html>
