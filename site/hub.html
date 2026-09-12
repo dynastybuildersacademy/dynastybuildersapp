@@ -250,9 +250,9 @@ html,body{height:100%;background:var(--navy);color:var(--text);font-family:'Barl
 </div>
 
 <div class="hero">
-  <div class="hero-name" id="hero-name">Welcome</div>
-  <div class="hero-role" id="hero-role"></div>
-  <div class="hero-date" id="hero-date"></div>
+  <div class="hero-name" id="hero-name"></div>
+  <div class="hero-role" id="hero-role" style="display:none;"></div>
+  <div class="hero-date" id="hero-date" style="display:none;"></div>
   <div class="hero-bar" id="hero-bar"></div>
 </div>
 
@@ -463,15 +463,25 @@ function renderHub(session) {
     ${QUICK_LINKS.map(l=>`<a class="quick-pill" href="${l.href}" ${l.ext?'target="_blank"':''}>${l.label}</a>`).join('')}
   </div>`;
 
-  // ── BOOK CLUB STRIP ────────────────────────────────────────
+  // ── BOOK CLUB STRIP — reads from localStorage (set by training.html) ─
+  const _bcBooks = [
+    { emoji:'📖', title:'3 Feet From Gold',  author:'Sharon L. Lechter & Greg S. Reid', tagline:'Most people quit right before the breakthrough.' },
+    { emoji:'⚡', title:'Power vs Force',    author:'Dr. David R. Hawkins',              tagline:'Why Force depletes and Power attracts.' },
+    { emoji:'💡', title:'Think and Grow Rich', author:'Napoleon Hill',                   tagline:'Whatever the mind can conceive and believe, it can achieve.' },
+    { emoji:'🔄', title:'The Compound Effect', author:'Darren Hardy',                    tagline:'Small consistent actions compound into undeniable results.' },
+    { emoji:'🤝', title:'The Go-Giver',       author:'Bob Burg & John David Mann',       tagline:'Place others first and abundance follows.' },
+  ];
+  const _bcIdx  = parseInt(localStorage.getItem('dba_current_book_idx') || '0');
+  const _curBk  = _bcBooks[_bcIdx]  || _bcBooks[0];
+  const _nextBk = _bcBooks[_bcIdx + 1] || null;
+
   html += `<div style="margin-bottom:20px;">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
       <div style="font-size:18px;width:32px;height:32px;background:#132240;border-radius:8px;display:flex;align-items:center;justify-content:center;">📚</div>
       <div style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#8A9BB5;">Book Club</div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+    <div style="display:grid;grid-template-columns:${_nextBk ? '1fr 1fr' : '1fr'};gap:10px;">
 
-      <!-- CURRENT BOOK -->
       <a href="training.html#bookclub"
         style="background:rgba(15,30,56,.8);border:1px solid rgba(201,168,76,.35);border-radius:14px;
           padding:16px 14px 14px;text-decoration:none;color:#E8EDF5;display:flex;flex-direction:column;
@@ -479,25 +489,24 @@ function renderHub(session) {
         <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#C9A84C,transparent);opacity:.8;"></div>
         <div style="position:absolute;top:10px;right:10px;font-family:'DM Mono',monospace;font-size:9px;
           padding:2px 8px;border-radius:10px;background:rgba(45,202,115,.15);color:#2DCA73;font-weight:700;letter-spacing:.04em;">NOW READING</div>
-        <div style="font-size:28px;line-height:1;">📖</div>
-        <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;line-height:1.1;color:#E8EDF5;padding-right:60px;">3 Feet From Gold</div>
-        <div style="font-family:'DM Mono',monospace;font-size:11px;color:#8A9BB5;">Sharon L. Lechter &amp; Greg S. Reid</div>
-        <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(250,246,238,.6);margin-top:2px;line-height:1.5;">Most people quit right before the breakthrough. This book is about staying in.</div>
+        <div style="font-size:28px;line-height:1;">${_curBk.emoji}</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;line-height:1.1;color:#E8EDF5;padding-right:60px;">${_curBk.title}</div>
+        <div style="font-family:'DM Mono',monospace;font-size:11px;color:#8A9BB5;">${_curBk.author}</div>
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(250,246,238,.6);margin-top:2px;line-height:1.5;">${_curBk.tagline}</div>
       </a>
 
-      <!-- NEXT BOOK -->
-      <a href="training.html#bookclub"
+      ${_nextBk ? `<a href="training.html#bookclub"
         style="background:rgba(15,30,56,.5);border:1px solid rgba(255,255,255,.08);border-radius:14px;
           padding:16px 14px 14px;text-decoration:none;color:#E8EDF5;display:flex;flex-direction:column;
           gap:6px;position:relative;overflow:hidden;min-height:110px;opacity:.85;">
         <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#9B59B6,transparent);opacity:.6;"></div>
         <div style="position:absolute;top:10px;right:10px;font-family:'DM Mono',monospace;font-size:9px;
           padding:2px 8px;border-radius:10px;background:rgba(155,89,182,.15);color:#C39BD3;font-weight:700;letter-spacing:.04em;">UP NEXT</div>
-        <div style="font-size:28px;line-height:1;">⬆</div>
-        <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;line-height:1.1;color:rgba(250,246,238,.7);padding-right:55px;">Power vs Force</div>
-        <div style="font-family:'DM Mono',monospace;font-size:11px;color:#8A9BB5;">Dr. David R. Hawkins</div>
-        <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(250,246,238,.45);margin-top:2px;line-height:1.5;">The science of consciousness — why Force depletes and Power attracts.</div>
-      </a>
+        <div style="font-size:28px;line-height:1;">${_nextBk.emoji}</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;line-height:1.1;color:rgba(250,246,238,.7);padding-right:55px;">${_nextBk.title}</div>
+        <div style="font-family:'DM Mono',monospace;font-size:11px;color:#8A9BB5;">${_nextBk.author}</div>
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(250,246,238,.45);margin-top:2px;line-height:1.5;">${_nextBk.tagline}</div>
+      </a>` : ''}
 
     </div>
   </div>`;
@@ -760,10 +769,13 @@ function checkNotifications(session) {
     (hr<12?'Good morning':hr<17?'Good afternoon':'Good evening') + ', ' + session.name.split(' ')[0];
 
   // Hero
-  document.getElementById('hero-name').textContent = session.name.split(' ')[0] + '\u2019s Hub';
-  document.getElementById('hero-role').textContent = (typeof ROLES!=='undefined' && ROLES[session.role]?.label) || session.role;
-  document.getElementById('hero-date').textContent = new Date().toLocaleDateString('en-US',
-    {weekday:'long', month:'long', day:'numeric', year:'numeric'});
+  // hero-name set above
+  const _roleEl = document.getElementById('hero-role');
+  const _dateEl = document.getElementById('hero-date');
+  const _nameEl = document.getElementById('hero-name');
+  if (_roleEl) { _roleEl.textContent = (typeof ROLES!=='undefined' && ROLES[session.role]?.label) || session.role; _roleEl.style.display=''; }
+  if (_dateEl) { _dateEl.textContent = new Date().toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric', year:'numeric'}); _dateEl.style.display=''; }
+  if (_nameEl && !_nameEl.textContent) _nameEl.textContent = session.name.split(' ')[0] + '’s Hub';
 
   // Manage button (Director+)
   if(session.level >= 40) document.getElementById('tb-manage-btn').style.display = 'inline-block';

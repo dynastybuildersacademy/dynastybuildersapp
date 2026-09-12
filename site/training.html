@@ -998,19 +998,29 @@ function renderBookClub() {
 
   // ── ADMIN BOOK SWITCHER ───────────────────────────────────────
   const currentEl = document.getElementById('bc-current');
-  if (currentEl && isAdmin) {
-    const adminBar = document.createElement('div');
-    adminBar.style.cssText = 'background:rgba(155,89,182,.1);border:1px solid rgba(155,89,182,.3);border-radius:10px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;';
-    adminBar.innerHTML = '<span style="font-family:Barlow Condensed,sans-serif;font-size:13px;font-weight:800;color:#9B59B6;letter-spacing:.06em;">⚙️ ADMIN — CURRENT BOOK</span>'
-      + BOOK_CATALOG.slice(0,2).map((bk,i) =>
+  // Admin switcher — only render once (idempotent)
+  if (isAdmin) {
+    let adminBar = document.getElementById('bc-admin-bar');
+    if (!adminBar) {
+      adminBar = document.createElement('div');
+      adminBar.id = 'bc-admin-bar';
+      // Insert before the bc-current div if it exists, else at top of bookclub panel
+      const panel = document.getElementById('panel-bookclub') || document.querySelector('.bc-panel');
+      if (panel) panel.insertBefore(adminBar, panel.firstChild);
+      else if (currentEl && currentEl.parentNode) currentEl.parentNode.insertBefore(adminBar, currentEl);
+    }
+    adminBar.style.cssText = 'background:rgba(155,89,182,.1);border:1px solid rgba(155,89,182,.3);border-radius:10px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;';
+    adminBar.innerHTML = '<span style="font-family:Barlow Condensed,sans-serif;font-size:13px;font-weight:800;color:#9B59B6;letter-spacing:.06em;white-space:nowrap;">⚙️ ADMIN — CURRENT BOOK</span>'
+      + BOOK_CATALOG.map((bk,i) =>
           `<button onclick="setCurrentBook(${i})"
-            style="padding:6px 14px;border-radius:7px;font-family:DM Mono,monospace;font-size:11px;font-weight:700;cursor:pointer;border:1px solid ${i===CURRENT_BOOK_IDX?'rgba(201,168,76,.5)':'rgba(255,255,255,.12)'};background:${i===CURRENT_BOOK_IDX?'rgba(201,168,76,.15)':'rgba(255,255,255,.05)'};color:${i===CURRENT_BOOK_IDX?'#E8C97A':'#6B7C93'};">
+            style="padding:6px 14px;border-radius:7px;font-family:'DM Mono',monospace;font-size:11px;font-weight:700;cursor:pointer;
+              border:1px solid ${i===CURRENT_BOOK_IDX?'rgba(201,168,76,.5)':'rgba(255,255,255,.12)'};
+              background:${i===CURRENT_BOOK_IDX?'rgba(201,168,76,.15)':'rgba(255,255,255,.05)'};
+              color:${i===CURRENT_BOOK_IDX?'#E8C97A':'#6B7C93'};">
             ${bk.emoji} ${bk.title}${i===CURRENT_BOOK_IDX?' ✓':''}
           </button>`
         ).join('')
-      + '<span style="font-family:DM Mono,monospace;font-size:10px;color:#6B7C93;">Click to set as current book for all agents</span>';
-    // Insert before current book card
-    currentEl.parentNode.insertBefore(adminBar, currentEl);
+      + '<span style="font-family:DM Mono,monospace;font-size:10px;color:#6B7C93;white-space:nowrap;">Sets current book for all agents</span>';
   }
 
   if(currentEl) {
