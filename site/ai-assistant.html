@@ -185,63 +185,116 @@ label{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);display:
   </div>
 
   <div class="card">
-    <div class="card-title">✉️ Email Account</div>
-    <div class="section-label">Connect your email to analyze support threads</div>
-    <div class="acct-badge" id="email-acct-badge">
-      <div class="acct-icon">✉️</div>
-      <div style="flex:1">
-        <div class="acct-name" id="email-acct-name">Not connected</div>
-        <div class="acct-status" id="email-acct-status">Enter your email credentials or OAuth below</div>
-      </div>
-      <span class="conn-pill disconnected" id="email-conn-pill">● Disconnected</span>
-    </div>
+    <div class="card-title">✉️ Email Accounts <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);font-weight:400;text-transform:none;">up to 5</span></div>
 
-    <div class="form-group">
-      <label>Email Provider</label>
-      <select id="email-provider">
-        <option value="gmail">Gmail</option>
-        <option value="outlook">Outlook / Office 365</option>
-        <option value="yahoo">Yahoo Mail</option>
-        <option value="imap">Custom (IMAP)</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label>Email Address</label>
-      <input type="email" id="email-address" placeholder="you@example.com">
-    </div>
-    <div class="form-group">
-      <label>App Password <span style="color:var(--muted);font-size:9px;">— use App Password, not your main password</span></label>
-      <input type="password" id="email-password" placeholder="16-character app password">
-    </div>
-    <div style="display:flex;gap:8px;">
-      <button class="btn btn-blue" style="flex:2" onclick="saveEmailAccount()">✓ Connect Email</button>
-      <button class="btn btn-ghost" style="flex:1" onclick="clearEmailAccount()">Clear</button>
-    </div>
-    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-top:10px;line-height:1.7;">
-      ℹ For Gmail: enable 2FA → Google Account → Security → App Passwords → select Mail.<br>
-      Your credentials are stored only in your browser's localStorage — never sent to any server.
+    <!-- Connected accounts list -->
+    <div id="email-accounts-list" style="margin-bottom:12px;"></div>
+
+    <!-- Add account form -->
+    <details id="add-email-details" style="margin-bottom:8px;">
+      <summary style="font-family:'DM Mono',monospace;font-size:11px;color:var(--blue);cursor:pointer;padding:8px 0;list-style:none;">
+        + Add Email Account
+      </summary>
+      <div style="padding-top:10px;">
+        <div class="form-group">
+          <label>Provider</label>
+          <select id="email-provider">
+            <option value="gmail">Gmail</option>
+            <option value="outlook">Outlook / Office 365</option>
+            <option value="yahoo">Yahoo Mail</option>
+            <option value="imap">Custom (IMAP)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" id="email-address" placeholder="you@example.com">
+        </div>
+        <div class="form-group">
+          <label>App Password</label>
+          <input type="password" id="email-password" placeholder="16-char app password">
+        </div>
+        <div class="form-group">
+          <label>Label / Nickname <span style="color:var(--muted);font-size:9px;">(optional)</span></label>
+          <input type="text" id="email-label" placeholder="e.g. Work, Support, Personal">
+        </div>
+        <button class="btn btn-blue" style="width:100%;" onclick="addEmailAccount()">+ Add This Account</button>
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-top:8px;line-height:1.6;">
+          Gmail: Account → Security → 2-Step Verification → App Passwords.<br>
+          Credentials stored only in your browser — never sent to any server.
+        </div>
+      </div>
+    </details>
+
+    <!-- Recommended connector callout -->
+    <div style="background:rgba(93,173,226,.06);border:1px solid rgba(93,173,226,.2);border-radius:10px;padding:12px;margin-top:4px;">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:var(--blue);margin-bottom:6px;">
+        💡 Recommended: Use Zapier or Make for 5+ Accounts
+      </div>
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);line-height:1.7;margin-bottom:8px;">
+        For teams managing multiple email accounts and calendars, a dedicated connector is more powerful:<br><br>
+        <strong style="color:var(--text);">• Zapier</strong> — connects Gmail, Outlook, Yahoo + 6,000 apps. Free tier: 100 tasks/month.<br>
+        <strong style="color:var(--text);">• Make (Integromat)</strong> — more flexible automation. Free tier: 1,000 ops/month.<br>
+        <strong style="color:var(--text);">• Nylas</strong> — developer API for unified email/calendar across providers. Best for scale.<br>
+        <strong style="color:var(--text);">• Superhuman / Missive</strong> — team email clients with AI built in.
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <a href="https://zapier.com" target="_blank" class="btn btn-ghost" style="font-size:10px;padding:5px 12px;text-decoration:none;">Zapier ↗</a>
+        <a href="https://make.com" target="_blank" class="btn btn-ghost" style="font-size:10px;padding:5px 12px;text-decoration:none;">Make ↗</a>
+        <a href="https://nylas.com" target="_blank" class="btn btn-ghost" style="font-size:10px;padding:5px 12px;text-decoration:none;">Nylas ↗</a>
+      </div>
     </div>
   </div>
 
   <div class="card">
-    <div class="card-title">📅 Calendar</div>
-    <div class="acct-badge">
-      <div class="acct-icon">📅</div>
-      <div style="flex:1">
-        <div class="acct-name" id="gcal-acct-name">Google Calendar</div>
-        <div class="acct-status" id="gcal-acct-status">Connect via the CFT Matcher or below</div>
-      </div>
-      <span class="conn-pill disconnected" id="gcal-conn-pill">● Disconnected</span>
-    </div>
-    <button class="btn btn-blue" style="width:100%;" onclick="connectGoogleCal()">
-      <svg width="16" height="16" viewBox="0 0 48 48" style="vertical-align:middle;margin-right:6px;">
-        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-        <path fill="#FBBC05" d="M10.53 28.59c-.5-1.45-.79-3-.79-4.59s.29-3.14.79-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-      </svg>
-      Connect Google Calendar
+    <div class="card-title">📅 Calendars <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);font-weight:400;text-transform:none;">up to 5</span></div>
+
+    <div id="calendar-accounts-list" style="margin-bottom:12px;"></div>
+
+    <!-- Google Calendar -->
+    <button class="btn btn-blue" style="width:100%;margin-bottom:8px;" onclick="connectGoogleCal()">
+      <svg width="14" height="14" viewBox="0 0 48 48" style="vertical-align:middle;margin-right:6px;"><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="#FBBC05" d="M10.53 28.59c-.5-1.45-.79-3-.79-4.59s.29-3.14.79-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/></svg>
+      + Connect Google Calendar
     </button>
+
+    <!-- ICS / Outlook link -->
+    <details style="margin-bottom:8px;">
+      <summary style="font-family:'DM Mono',monospace;font-size:11px;color:var(--blue);cursor:pointer;padding:6px 0;list-style:none;">
+        + Add Calendar by ICS URL (Outlook, Apple, etc.)
+      </summary>
+      <div style="padding-top:10px;">
+        <div class="form-group">
+          <label>Calendar Name</label>
+          <input type="text" id="ics-label" placeholder="e.g. Work, Team, Outlook">
+        </div>
+        <div class="form-group">
+          <label>ICS Feed URL</label>
+          <input type="url" id="ics-url" placeholder="https://outlook.live.com/owa/…ical">
+        </div>
+        <button class="btn btn-blue" style="width:100%;" onclick="addICSCalendar()">+ Add Calendar</button>
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-top:6px;line-height:1.6;">
+          Outlook: Settings → View all → Calendar → Shared calendars → Publish → Copy ICS link.<br>
+          Apple: Calendar → Share → Copy Link.
+        </div>
+      </div>
+    </details>
+
+    <!-- Connector recommendation -->
+    <div style="background:rgba(155,89,182,.06);border:1px solid rgba(155,89,182,.2);border-radius:10px;padding:12px;">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:var(--purple);margin-bottom:6px;">
+        💡 Managing 5+ Calendars? Use a Unified Tool
+      </div>
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);line-height:1.7;margin-bottom:8px;">
+        <strong style="color:var(--text);">• Calendly</strong> — booking links that sync with multiple calendars. Agents love it for RIs.<br>
+        <strong style="color:var(--text);">• Cal.com</strong> — open-source Calendly. Free, connects Google + Outlook simultaneously.<br>
+        <strong style="color:var(--text);">• Fantastical</strong> — unified calendar view across all accounts (iOS/Mac).<br>
+        <strong style="color:var(--text);">• Motion</strong> — AI scheduler that blocks time automatically across calendars.
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <a href="https://cal.com" target="_blank" class="btn btn-ghost" style="font-size:10px;padding:5px 12px;text-decoration:none;">Cal.com ↗</a>
+        <a href="https://calendly.com" target="_blank" class="btn btn-ghost" style="font-size:10px;padding:5px 12px;text-decoration:none;">Calendly ↗</a>
+        <a href="https://usemotion.com" target="_blank" class="btn btn-ghost" style="font-size:10px;padding:5px 12px;text-decoration:none;">Motion ↗</a>
+      </div>
+    </div>
   </div>
 
 </div>
@@ -1143,13 +1196,11 @@ function analyzeSchedule() { runCalendarAI(); }
   }
   updateProviderHint();
 
-  // Restore email state
-  const emailAcct = getEmailAccount();
-  if (emailAcct) {
-    document.getElementById('email-address').value = emailAcct.email;
-    document.getElementById('email-provider').value = emailAcct.provider || 'gmail';
-    updateEmailUI(true, emailAcct.email);
-  }
+  // Restore multi-account state
+  renderEmailAccounts();
+  renderCalAccounts();
+  const emailAccts = getEmailAccounts();
+  if (emailAccts.length) updateEmailUI(true, emailAccts[0].email);
 
   // Restore cal state
   const calToken = localStorage.getItem('dba_cal_token');
@@ -1297,6 +1348,162 @@ function editDraftInChat(idx) {
 
 // ── COMPOSE SECTION TOGGLE (legacy — now handled by tab) ──────
 function composeEmail() { setEmailMode('compose'); }
+
+// ════════════════════════════════════════════════════════════════
+// MULTI-ACCOUNT: EMAIL (up to 5)
+// ════════════════════════════════════════════════════════════════
+const EMAIL_ACCOUNTS_KEY = 'dba_email_accounts_v2';
+const MAX_EMAIL_ACCTS = 5;
+
+function getEmailAccounts() {
+  try { return JSON.parse(localStorage.getItem(EMAIL_ACCOUNTS_KEY) || '[]'); } catch { return []; }
+}
+function saveEmailAccounts(accts) {
+  try { localStorage.setItem(EMAIL_ACCOUNTS_KEY, JSON.stringify(accts)); } catch {}
+}
+
+function addEmailAccount() {
+  const accts = getEmailAccounts();
+  if (accts.length >= MAX_EMAIL_ACCTS) { toast(`⚠ Max ${MAX_EMAIL_ACCTS} email accounts`); return; }
+  const email    = (document.getElementById('email-address')?.value || '').trim();
+  const password = (document.getElementById('email-password')?.value || '').trim();
+  const provider = document.getElementById('email-provider')?.value || 'gmail';
+  const label    = (document.getElementById('email-label')?.value || '').trim() || email.split('@')[0];
+  if (!email) { toast('⚠ Email address required'); return; }
+  if (accts.find(a => a.email === email)) { toast('⚠ Already added'); return; }
+  accts.push({ email, password, provider, label, addedAt: Date.now() });
+  saveEmailAccounts(accts);
+  if (document.getElementById('email-address')) document.getElementById('email-address').value = '';
+  if (document.getElementById('email-password')) document.getElementById('email-password').value = '';
+  if (document.getElementById('email-label'))    document.getElementById('email-label').value    = '';
+  renderEmailAccounts();
+  updateEmailUI(true, email);
+  toast(`✓ ${label} connected`);
+  // Close the details
+  const det = document.getElementById('add-email-details');
+  if (det) det.open = false;
+}
+
+function removeEmailAccount(email) {
+  const accts = getEmailAccounts().filter(a => a.email !== email);
+  saveEmailAccounts(accts);
+  renderEmailAccounts();
+  if (!accts.length) updateEmailUI(false, '');
+  toast('✓ Account removed');
+}
+
+function renderEmailAccounts() {
+  const el = document.getElementById('email-accounts-list');
+  if (!el) return;
+  const accts = getEmailAccounts();
+  if (!accts.length) {
+    el.innerHTML = '<div style="font-family:\'DM Mono\',monospace;font-size:11px;color:var(--muted);padding:4px 0;">No email accounts connected yet.</div>';
+    return;
+  }
+  const ICONS = { gmail:'📧', outlook:'📮', yahoo:'📨', imap:'✉️' };
+  el.innerHTML = accts.map(a => `
+    <div class="acct-badge" style="margin-bottom:7px;">
+      <div class="acct-icon">${ICONS[a.provider]||'✉️'}</div>
+      <div style="flex:1;min-width:0;">
+        <div class="acct-name">${a.label || a.email}</div>
+        <div class="acct-status">${a.email} · ${a.provider}</div>
+      </div>
+      <span class="conn-pill connected" style="font-size:9px;">● Active</span>
+      <button onclick="removeEmailAccount('${a.email}')"
+        style="background:rgba(231,76,60,.08);border:1px solid rgba(231,76,60,.2);border-radius:6px;
+          padding:4px 8px;color:var(--red);font-size:11px;cursor:pointer;">✕</button>
+    </div>`).join('') +
+    (accts.length < MAX_EMAIL_ACCTS
+      ? `<div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);padding:2px 0;">${accts.length}/${MAX_EMAIL_ACCTS} accounts connected</div>`
+      : `<div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--orange);">Max ${MAX_EMAIL_ACCTS} accounts reached</div>`);
+}
+
+// Override getEmailAccount to return the primary (first) account
+function getEmailAccount() {
+  const accts = getEmailAccounts();
+  return accts[0] || null;
+}
+// Legacy compat
+function saveEmailAccount() { addEmailAccount(); }
+function clearEmailAccount() {
+  localStorage.removeItem(EMAIL_ACCOUNTS_KEY);
+  renderEmailAccounts();
+  updateEmailUI(false, '');
+  toast('✓ All email accounts removed');
+}
+
+// ════════════════════════════════════════════════════════════════
+// MULTI-ACCOUNT: CALENDAR (up to 5)
+// ════════════════════════════════════════════════════════════════
+const CAL_ACCOUNTS_KEY = 'dba_cal_accounts';
+const MAX_CAL_ACCTS = 5;
+
+function getCalAccounts() {
+  try { return JSON.parse(localStorage.getItem(CAL_ACCOUNTS_KEY) || '[]'); } catch { return []; }
+}
+function saveCalAccounts(accts) {
+  try { localStorage.setItem(CAL_ACCOUNTS_KEY, JSON.stringify(accts)); } catch {}
+}
+
+function addICSCalendar() {
+  const accts = getCalAccounts();
+  if (accts.length >= MAX_CAL_ACCTS) { toast(`⚠ Max ${MAX_CAL_ACCTS} calendars`); return; }
+  const url   = (document.getElementById('ics-url')?.value   || '').trim();
+  const label = (document.getElementById('ics-label')?.value || '').trim() || 'Calendar';
+  if (!url) { toast('⚠ ICS URL required'); return; }
+  if (accts.find(a => a.url === url)) { toast('⚠ Already added'); return; }
+  accts.push({ type: 'ics', url, label, addedAt: Date.now() });
+  saveCalAccounts(accts);
+  if (document.getElementById('ics-url'))   document.getElementById('ics-url').value   = '';
+  if (document.getElementById('ics-label')) document.getElementById('ics-label').value = '';
+  renderCalAccounts();
+  toast(`✓ ${label} calendar added`);
+}
+
+function removeCalAccount(idx) {
+  const accts = getCalAccounts();
+  accts.splice(idx, 1);
+  saveCalAccounts(accts);
+  renderCalAccounts();
+  toast('✓ Calendar removed');
+}
+
+function renderCalAccounts() {
+  const el = document.getElementById('calendar-accounts-list');
+  if (!el) return;
+  const accts = getCalAccounts();
+
+  // Also check if Google Calendar is connected
+  const gcalToken = localStorage.getItem('dba_cal_token');
+  let gcalBadge = '';
+  if (gcalToken) {
+    gcalBadge = `<div class="acct-badge" style="margin-bottom:7px;">
+      <div class="acct-icon">📅</div>
+      <div style="flex:1;"><div class="acct-name">Google Calendar</div><div class="acct-status">OAuth connected</div></div>
+      <span class="conn-pill connected" style="font-size:9px;">● Active</span>
+      <button onclick="localStorage.removeItem('dba_cal_token');renderCalAccounts();updateGCalUI(false,'');toast('✓ Google Calendar disconnected')"
+        style="background:rgba(231,76,60,.08);border:1px solid rgba(231,76,60,.2);border-radius:6px;padding:4px 8px;color:var(--red);font-size:11px;cursor:pointer;">✕</button>
+    </div>`;
+  }
+
+  const icsBadges = accts.map((a, i) => `
+    <div class="acct-badge" style="margin-bottom:7px;">
+      <div class="acct-icon">📅</div>
+      <div style="flex:1;min-width:0;">
+        <div class="acct-name">${a.label}</div>
+        <div class="acct-status">${a.type === 'ics' ? 'ICS feed' : a.type}</div>
+      </div>
+      <span class="conn-pill connected" style="font-size:9px;">● Active</span>
+      <button onclick="removeCalAccount(${i})"
+        style="background:rgba(231,76,60,.08);border:1px solid rgba(231,76,60,.2);border-radius:6px;
+          padding:4px 8px;color:var(--red);font-size:11px;cursor:pointer;">✕</button>
+    </div>`).join('');
+
+  const total = (gcalToken ? 1 : 0) + accts.length;
+  el.innerHTML = gcalBadge + icsBadges + (total
+    ? `<div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);padding:2px 0;">${total}/${MAX_CAL_ACCTS} calendars connected</div>`
+    : '<div style="font-family:\'DM Mono\',monospace;font-size:11px;color:var(--muted);padding:4px 0;">No calendars connected yet.</div>');
+}
 </script>
 </body>
 </html>

@@ -321,6 +321,7 @@ function getDateRange() {
 // ─── LOAD DATA ────────────────────────────────────────────────
 async function loadData() {
   // API key handled by Netlify proxy
+  const MONDAY_KEY = typeof AUTH !== 'undefined' ? AUTH.getMondayKey() : null;
   if (!MONDAY_KEY) {
     allData = DEMO;
     renderAll();
@@ -330,6 +331,10 @@ async function loadData() {
   document.getElementById('state-msg').style.display = 'block';
   document.getElementById('lb-body').innerHTML = '';
   try {
+    // Re-check key inside try — guard against race conditions
+    if (!MONDAY_KEY || typeof mondayQuery !== 'function') {
+      throw new Error('No API key or mondayQuery not available');
+    }
     const { start, end } = getDateRange();
     // Must fetch column `title` so parseItems can match by column name
     const q = `{boards(ids:${BOARD_ID}){items_page(limit:500){items{id name created_at column_values{id text}}}}}`;
@@ -569,8 +574,17 @@ function exportCSV() {
 // ─── INIT ─────────────────────────────────────────────────────
 const now = new Date();
 document.getElementById('month-picker').value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+// Load once on startup, then refresh every 5 minutes only if connected
 loadData();
-setInterval(loadData, 60000); // refresh every 60s
+let _lbRefreshTimer = null;
+function startLBRefresh() {
+  if (_lbRefreshTimer) return;
+  _lbRefreshTimer = setInterval(() => {
+    const key = typeof AUTH !== 'undefined' ? AUTH.getMondayKey() : null;
+    if (key) loadData();
+  }, 5 * 60 * 1000); // 5 minutes, only when key is present
+}
+startLBRefresh();
 </script>
 </body>
 </html>
