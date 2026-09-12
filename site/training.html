@@ -418,6 +418,7 @@ function switchTab(id, el) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.getElementById('panel-'+id).classList.add('active');
   el.classList.add('active');
+  if (id === 'bookclub') renderBookClub();
 }
 
 function buildModules(containerId, modules) {
@@ -1163,6 +1164,9 @@ function renderBookClub() {
 // ── 3 FEET FROM GOLD — Study Modules (legacy, handled by BOOK_CATALOG) ─
 
 // Legacy book modules removed — content now rendered from BOOK_CATALOG
+
+// Pre-render book club
+try { renderBookClub(); } catch(e) {}
 
 function showFeedback(text) {
   document.getElementById('rp-chatbox').style.display = 'none';
