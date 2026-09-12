@@ -180,14 +180,17 @@ input:focus,select:focus{outline:none;border-color:var(--gold);}
     <!-- GUEST LIST -->
     <!-- Agent filter — Directors+ only -->
     <div id="agent-filter-bar" style="display:none;background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.15);
-      border-radius:8px;padding:10px 12px;margin-bottom:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-      <span style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:var(--gold);white-space:nowrap;">👁 Viewing:</span>
-      <select id="agent-filter" onchange="applyGuestFilter()"
-        style="flex:1;min-width:140px;font-size:12px;padding:7px 10px;background:var(--navy);
-          border:1px solid var(--border);color:var(--cream);border-radius:4px;">
-        <option value="me">My Guests Only</option>
-        <option value="team">Whole Team</option>
-      </select>
+      border-radius:8px;padding:10px 12px;margin-bottom:10px;gap:10px;flex-wrap:wrap;align-items:center;">
+      <span style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:var(--gold);white-space:nowrap;flex-shrink:0;">👁 Filter by Agent:</span>
+      <input type="text" id="agent-filter" placeholder="Type agent name… (blank = all guests)"
+        oninput="applyGuestFilter()"
+        style="flex:1;min-width:150px;font-size:12px;padding:7px 10px;background:var(--navy);
+          border:1px solid var(--border);color:var(--cream);border-radius:4px;outline:none;">
+      <button onclick="document.getElementById('agent-filter').value='';applyGuestFilter();"
+        style="background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:6px;
+          padding:6px 12px;color:var(--muted);font-family:'DM Mono',monospace;font-size:10px;cursor:pointer;white-space:nowrap;">
+        ✕ Clear
+      </button>
     </div>
 
     <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap;">
@@ -210,13 +213,21 @@ input:focus,select:focus{outline:none;border-color:var(--gold);}
     </div>
 
     <div class="card">
-      <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;">
+      <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">
         <span>👥 Guest List <span id="guest-count" style="color:var(--slate);font-weight:400;font-size:11px;">0 guests</span></span>
-        <button onclick="openGuestModal(null)"
-          style="background:var(--gold);color:var(--navy);border:none;padding:6px 14px;border-radius:3px;
-            font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;cursor:pointer;">
-          + Add Guest
-        </button>
+        <div style="display:flex;gap:6px;">
+          <button onclick="refreshGuests()"
+            style="background:rgba(93,173,226,.12);border:1px solid rgba(93,173,226,.3);color:#5DADE2;
+              padding:6px 12px;border-radius:3px;font-family:'Barlow Condensed',sans-serif;
+              font-size:12px;font-weight:700;cursor:pointer;" title="Reload from Monday.com">
+            ↻ Refresh
+          </button>
+          <button onclick="openGuestModal(null)"
+            style="background:var(--gold);color:var(--navy);border:none;padding:6px 14px;border-radius:3px;
+              font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;cursor:pointer;">
+            + Add Guest
+          </button>
+        </div>
       </div>
       <div id="guest-list" style="margin-top:10px;">
         <div style="color:var(--slate);font-size:13px;padding:8px 0;">No guests yet — click Add Guest to start tracking.</div>
@@ -1281,37 +1292,34 @@ function getGuestCutoffDate(days) {
 }
 
 function applyGuestFilter() {
-  const days      = document.getElementById('guest-period-filter')?.value || 'all';
-  const dayFlt    = document.getElementById('guest-day-filter')?.value || 'all';
-  const agentFlt  = document.getElementById('agent-filter')?.value || 'me';
-  const cutoff    = getGuestCutoffDate(days);
-  const today     = new Date().toISOString().slice(0, 10);
-  const myName    = (session?.name || '').toLowerCase();
+  const days     = document.getElementById('guest-period-filter')?.value || 'all';
+  const dayFlt   = document.getElementById('guest-day-filter')?.value   || 'all';
+  const agentFlt = document.getElementById('agent-filter')?.value       || 'all';
+  const cutoff   = getGuestCutoffDate(days);
+  const today    = new Date().toISOString().slice(0, 10);
 
   // Show agent filter bar for Directors+ (level >= 60)
   const filterBar = document.getElementById('agent-filter-bar');
   if (filterBar) filterBar.style.display = session && session.level >= 60 ? 'flex' : 'none';
 
   const filtered = guests.filter(g => {
-    // Agent filter — non-directors only see their own guests
-    if (session && session.level < 60) {
-      const cap = (g.captain || '').toLowerCase();
+    // Agent filter — only active when director picks a specific agent
+    if (agentFlt && agentFlt !== 'all') {
+      const cap = (g.captain   || '').toLowerCase();
       const gen = (g.generator || '').toLowerCase();
-      if (!cap.includes(myName.split(' ')[0]) && !gen.includes(myName.split(' ')[0])) return false;
-    } else if (agentFlt === 'me') {
-      const cap = (g.captain || '').toLowerCase();
-      const gen = (g.generator || '').toLowerCase();
-      if (!cap.includes(myName.split(' ')[0]) && !gen.includes(myName.split(' ')[0])) return false;
+      const cft = (g.cft       || '').toLowerCase();
+      const name = agentFlt.toLowerCase();
+      if (!cap.includes(name) && !gen.includes(name) && !cft.includes(name)) return false;
     }
-    // else agentFlt === 'team' — show all
+    // Date cutoff
     if (cutoff && g.date && g.date < cutoff) return false;
     if (g.date && g.date > today) return false;
+    // Day filter
     if (dayFlt !== 'all') {
-      // Match against stored bomType/day field, OR derive from date's day of week
       const storedDay = (g.bomType || g.day || '').toLowerCase();
       let matchDay = storedDay;
       if (!matchDay && g.date) {
-        const dow = new Date(g.date + 'T12:00:00').getDay(); // 0=Sun,2=Tue,6=Sat
+        const dow = new Date(g.date + 'T12:00:00').getDay();
         matchDay = dow === 2 ? 'tuesday' : dow === 6 ? 'saturday' : '';
       }
       if (!matchDay.includes(dayFlt.toLowerCase())) return false;
@@ -1319,18 +1327,19 @@ function applyGuestFilter() {
     return true;
   });
 
-  // Update count display
+  // Count display
   const countEl = document.getElementById('guest-filter-count');
   if (countEl) {
     countEl.textContent = filtered.length === guests.length
-      ? `${guests.length} guests`
+      ? `${guests.length} guest${guests.length !== 1 ? 's' : ''}`
       : `${filtered.length} of ${guests.length} guests`;
   }
-  document.getElementById('guest-count').textContent = filtered.length + ' guest' + (filtered.length !== 1 ? 's' : '');
+  const countTitle = document.getElementById('guest-count');
+  if (countTitle) countTitle.textContent = filtered.length + ' guest' + (filtered.length !== 1 ? 's' : '');
 
-  // Render filtered list
   renderGuestList(filtered);
 }
+
 
 // Split renderGuests into render + filter so filter works cleanly
 function renderGuestList(list) {
@@ -1366,6 +1375,90 @@ document.addEventListener('DOMContentLoaded', function() {
   applyGuestFilter();
   recalcIncome();
 });
+
+// ── REFRESH GUESTS ────────────────────────────────────────────
+async function refreshGuests() {
+  const btn = document.querySelector('button[onclick="refreshGuests()"]');
+  if (btn) { btn.textContent = '⟳ Loading…'; btn.disabled = true; }
+
+  // 1. Re-read from localStorage first (instant)
+  try {
+    const stored = JSON.parse(localStorage.getItem(BOM_GUESTS_KEY) || '[]');
+    if (stored.length) {
+      guests = stored;
+      applyGuestFilter();
+      if (btn) { btn.textContent = `✓ ${guests.length} loaded`; btn.disabled = false; }
+    }
+  } catch(e) {}
+
+  // 2. Pull fresh from Monday (background)
+  if (AUTH.getMondayKey()) {
+    try {
+      const res = await mondayQuery(`{
+        boards(ids: ${BOM_GUESTS_BOARD}) {
+          items_page(limit: 200) {
+            items {
+              id name
+              column_values(ids: [
+                "color_mkzde7z4","text_mkz8jwyh","text_cft","color_mm3wf94t",
+                "color_mkz7vw2m","phone_mkz8bstv","date_mkz7nvys","text_mm3wmee6"
+              ]) { id text value }
+            }
+          }
+        }
+      }`);
+      const items = res?.data?.boards?.[0]?.items_page?.items || [];
+      if (items.length) {
+        const get = (item, colId) => {
+          const cv = item.column_values?.find(c => c.id === colId);
+          if (!cv) return '';
+          if (cv.text) return cv.text;
+          try { const v = JSON.parse(cv.value||'null'); return v?.label?.text || v?.text || ''; } catch { return ''; }
+        };
+        // Merge Monday items into local guests — update existing or add new
+        const localIds = new Set(guests.map(g => g.mondayId).filter(Boolean));
+        items.forEach(item => {
+          if (localIds.has(item.id)) {
+            // Update existing
+            const g = guests.find(g => g.mondayId === item.id);
+            if (g) {
+              g.captain   = get(item, 'color_mkzde7z4') || g.captain;
+              g.generator = get(item, 'text_mkz8jwyh')  || g.generator;
+              g.cft       = get(item, 'text_cft')        || g.cft;
+              g.status    = get(item, 'color_mm3wf94t') || get(item, 'color_mkz7vw2m') || g.status;
+              g.phone     = get(item, 'phone_mkz8bstv')  || g.phone;
+              g.date      = get(item, 'date_mkz7nvys')   || g.date;
+            }
+          } else {
+            // Add new guest from Monday
+            guests.push({
+              id:        Date.now() + Math.random(),
+              mondayId:  item.id,
+              name:      item.name,
+              captain:   get(item, 'color_mkzde7z4'),
+              generator: get(item, 'text_mkz8jwyh'),
+              cft:       get(item, 'text_cft'),
+              status:    get(item, 'color_mm3wf94t') || get(item, 'color_mkz7vw2m') || 'Invited',
+              phone:     get(item, 'phone_mkz8bstv'),
+              date:      get(item, 'date_mkz7nvys'),
+              bomType:   get(item, 'text_mm3wmee6'),
+            });
+          }
+        });
+        try { localStorage.setItem(BOM_GUESTS_KEY, JSON.stringify(guests)); } catch(e) {}
+        applyGuestFilter();
+        if (btn) { btn.textContent = `✓ ${guests.length} loaded`; btn.disabled = false; }
+        setTimeout(() => { if (btn) btn.textContent = '↻ Refresh'; }, 2000);
+        return;
+      }
+    } catch(e) {
+      console.warn('[BOM] Refresh from Monday failed:', e.message);
+    }
+  }
+
+  applyGuestFilter();
+  if (btn) { btn.textContent = '↻ Refresh'; btn.disabled = false; }
+}
 </script>
 
 <!-- ── GUEST ADD/EDIT MODAL ── -->
