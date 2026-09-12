@@ -96,16 +96,15 @@ input:focus,select:focus{outline:none;border-color:var(--gold);}
 </div>
 <div class="content">
   <div class="page-title">Business Opportunity Meeting</div>
-  <div class="page-sub">Your team meets twice weekly. Every agent is a Captain — bring at least 1 guest every BOM.</div>
+  <div class="page-sub">Track guests, captains, and income across your Tuesday &amp; Saturday BOMs.</div>
 
-  <!-- SCHEDULE -->
+  <!-- SCHEDULE STRIP -->
   <div class="schedule">
     <div class="sched-card">
       <div class="sched-icon">🌙</div>
       <div>
         <div class="sched-day">Tuesday Evenings</div>
         <div class="sched-time">7:00 PM – 9:00 PM</div>
-        <div class="sched-tip">Dress professionally. Arrive 20 min early to greet your guests. Lead from the front.</div>
       </div>
     </div>
     <div class="sched-card">
@@ -113,24 +112,12 @@ input:focus,select:focus{outline:none;border-color:var(--gold);}
       <div>
         <div class="sched-day">Saturday Mornings</div>
         <div class="sched-time">10:30 AM – 12:30 PM</div>
-        <div class="sched-tip">Best for weekend prospects. Protects family afternoons. Great energy for the week ahead.</div>
       </div>
     </div>
   </div>
 
-  <!-- CAPTAIN SYSTEM -->
-  <div class="captain-banner">
-    <div class="cap-title">⚓ The Captain System</div>
-    <div class="cap-nums">
-      <div class="cap-num"><div class="cap-n">10</div><div class="cap-l">Invites Sent</div></div>
-      <div class="cap-num"><div class="cap-n">3</div><div class="cap-l">Confirmations</div></div>
-      <div class="cap-num"><div class="cap-n">1</div><div class="cap-l">Guest Shows</div></div>
-    </div>
-    <div class="cap-note">Every agent aims for this ratio. Send 10 invites expecting 3 to confirm and 1 to show. That 1 show is your recruiting momentum — it compounds over time.</div>
-  </div>
-
-  <!-- LOG THIS BOM -->
-  <div class="card">
+  <!-- SESSION LOG -->
+  <div class="card" style="margin-bottom:12px;">
     <div class="card-title">📊 Log This Session</div>
     <div class="counter-row">
       <div class="counter-input">
@@ -163,151 +150,195 @@ input:focus,select:focus{outline:none;border-color:var(--gold);}
     </div>
   </div>
 
-  <!-- GUEST LIST -->
-  <div class="card">
-    <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;">
-      <span>👥 Guest List <span id="guest-count" style="color:var(--slate);font-weight:400;font-size:11px;">0 guests</span></span>
-      <button onclick="openGuestModal(null)" style="background:var(--gold);color:var(--navy);border:none;padding:6px 14px;border-radius:3px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;cursor:pointer;">+ Add Guest</button>
+  <!-- ══ THREE TABS ══ -->
+  <div style="display:flex;gap:0;border-bottom:2px solid rgba(255,255,255,.08);margin-bottom:14px;">
+    <button id="bom-tab-guests" onclick="switchBOMTab('guests')"
+      style="flex:1;padding:10px 4px;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;
+      background:none;border:none;border-bottom:3px solid var(--gold);color:var(--gold-light);cursor:pointer;
+      letter-spacing:.04em;transition:all .2s;margin-bottom:-2px;">
+      👥 Guests
+    </button>
+    <button id="bom-tab-leaderboard" onclick="switchBOMTab('leaderboard')"
+      style="flex:1;padding:10px 4px;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;
+      background:none;border:none;border-bottom:3px solid transparent;color:var(--slate);cursor:pointer;
+      letter-spacing:.04em;transition:all .2s;margin-bottom:-2px;">
+      🏆 Leaderboard
+    </button>
+    <button id="bom-tab-income" onclick="switchBOMTab('income')"
+      style="flex:1;padding:10px 4px;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;
+      background:none;border:none;border-bottom:3px solid transparent;color:var(--slate);cursor:pointer;
+      letter-spacing:.04em;transition:all .2s;margin-bottom:-2px;">
+      💰 Income
+    </button>
+  </div>
+
+  <!-- ── TAB: GUESTS ── -->
+  <div id="bom-view-guests">
+
+    <!-- Filter strip -->
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap;">
+      <select id="guest-period-filter" onchange="applyGuestFilter()"
+        style="flex:1;min-width:120px;font-size:12px;padding:7px 10px;background:var(--navy);
+          border:1px solid var(--border);color:var(--cream);border-radius:4px;">
+        <option value="90" selected>Last 90 days</option>
+        <option value="30">Last 30 days</option>
+        <option value="7">Last 7 days</option>
+        <option value="all">All time</option>
+      </select>
+      <select id="guest-day-filter" onchange="applyGuestFilter()"
+        style="flex:1;min-width:100px;font-size:12px;padding:7px 10px;background:var(--navy);
+          border:1px solid var(--border);color:var(--cream);border-radius:4px;">
+        <option value="all">All days</option>
+        <option value="Tuesday">Tuesdays</option>
+        <option value="Saturday">Saturdays</option>
+      </select>
+      <span id="guest-filter-count" style="font-family:'DM Mono',monospace;font-size:10px;color:var(--slate);white-space:nowrap;"></span>
     </div>
-    <div id="guest-list" style="margin-top:10px;"><div style="color:var(--slate);font-size:13px;padding:8px 0;">No guests yet — click Add Guest to start tracking.</div></div>
+
+    <div class="card">
+      <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;">
+        <span>👥 Guest List <span id="guest-count" style="color:var(--slate);font-weight:400;font-size:11px;">0 guests</span></span>
+        <button onclick="openGuestModal(null)"
+          style="background:var(--gold);color:var(--navy);border:none;padding:6px 14px;border-radius:3px;
+            font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;cursor:pointer;">
+          + Add Guest
+        </button>
+      </div>
+      <div id="guest-list" style="margin-top:10px;">
+        <div style="color:var(--slate);font-size:13px;padding:8px 0;">No guests yet — click Add Guest to start tracking.</div>
+      </div>
+    </div>
+
+    <!-- BOM Scripts (collapsed) -->
+    <details style="margin-top:10px;">
+      <summary style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;
+        color:var(--gold);letter-spacing:.06em;cursor:pointer;padding:10px 0;list-style:none;">
+        📝 Invite Scripts ›
+      </summary>
+      <div class="card" style="margin-top:8px;">
+        <div style="font-size:12px;font-weight:600;color:var(--gold-light);margin-bottom:6px;">Text Message Invite:</div>
+        <div class="script-box">"Hey [Name], I've been meaning to reach out. I'm doing something in the financial services space and I wanted to invite you to an info session I'm hosting with some colleagues. Zero pressure — just sharing what we do. This [Tuesday 7PM / Saturday 10:30AM]. Can you make it?"</div>
+        <div style="font-size:12px;font-weight:600;color:var(--gold-light);margin-top:14px;margin-bottom:6px;">Confirmation Call (Day Before):</div>
+        <div class="script-box">"Hey [Name], just confirming for tomorrow! We start at [time] — the session usually wraps in about 90 minutes. You'll be hearing from some top producers in our field. Excited for you to see this. You're still coming?"</div>
+        <div style="font-size:12px;font-weight:600;color:var(--gold-light);margin-top:14px;margin-bottom:6px;">Same-Night Follow-Up:</div>
+        <div class="script-box">"Hey [Name], glad you came tonight! What stood out most to you? [Listen] — Great. I'd love to get you started. When are you free this week to sit down for 20 minutes?"</div>
+      </div>
+    </details>
   </div>
 
-  <!-- BOM SCRIPTS -->
-  <div class="card">
-    <div class="card-title">📝 BOM Invite Scripts</div>
-    <p style="font-size:12px;color:var(--slate);margin-bottom:12px;">Use these when inviting prospects — keep it short and create curiosity, not information overload.</p>
-    <div style="font-size:12px;font-weight:600;color:var(--gold-light);margin-bottom:6px;">Text Message Invite:</div>
-    <div class="script-box">"Hey [Name], I've been meaning to reach out. I'm doing something in the financial services space and I wanted to invite you to an info session I'm hosting with some colleagues. Zero pressure — just sharing what we do. This [Tuesday 7PM / Saturday 10:30AM]. Can you make it?"</div>
-    <div style="font-size:12px;font-weight:600;color:var(--gold-light);margin-top:14px;margin-bottom:6px;">Confirmation Call (Day Before):</div>
-    <div class="script-box">"Hey [Name], just confirming for tomorrow! We start at [time] — the session usually wraps in about 90 minutes. You'll be hearing from some top producers in our field. Excited for you to see this. You're still coming?"</div>
-    <div style="font-size:12px;font-weight:600;color:var(--gold-light);margin-top:14px;margin-bottom:6px;">Same-Night Follow-Up (After BOM):</div>
-    <div class="script-box">"Hey [Name], glad you came tonight! What stood out most to you? [Listen] — Great. I'd love to get you started. When are you free this week to sit down for 20 minutes?"</div>
-    <a href="portal.html" style="display:inline-block;margin-top:14px;font-size:12px;color:var(--gold);text-decoration:none;">More scripts in Agent Portal → Scripts tab →</a>
-  </div>
-
-  <!-- ── CAPTAIN LEADERBOARD ─────────────────────────────────── -->
-  <div class="card" style="margin-top:24px;">
-    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px;">
-      <div class="card-title" style="margin:0;">🏆 Captain Leaderboard</div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
-        <select id="lb-period" onchange="loadLeaderboard()" style="font-size:11px;padding:6px 10px;">
-          <option value="all">All Time</option>
-          <option value="30">Last 30 Days</option>
-          <option value="7">Last 7 Days</option>
-          <option value="month">This Month</option>
-          <option value="custom">Custom Range</option>
-        </select>
-        <div id="lb-custom-range" style="display:none;gap:5px;align-items:center;display:none;">
-          <input type="date" id="lb-from" onchange="loadLeaderboard()" style="font-size:11px;padding:5px 8px;">
-          <span style="font-size:11px;color:var(--slate);">to</span>
-          <input type="date" id="lb-to" onchange="loadLeaderboard()" style="font-size:11px;padding:5px 8px;">
+  <!-- ── TAB: LEADERBOARD ── -->
+  <div id="bom-view-leaderboard" style="display:none;">
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px;">
+        <div class="card-title" style="margin:0;">🏆 Captain Leaderboard</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+          <select id="lb-period" onchange="loadLeaderboard()" style="font-size:11px;padding:6px 10px;background:var(--navy);border:1px solid var(--border);color:var(--cream);border-radius:4px;">
+            <option value="90" selected>Last 90 Days</option>
+            <option value="30">Last 30 Days</option>
+            <option value="7">Last 7 Days</option>
+            <option value="month">This Month</option>
+            <option value="all">All Time</option>
+            <option value="custom">Custom Range</option>
+          </select>
+          <div id="lb-custom-range" style="display:none;gap:5px;align-items:center;">
+            <input type="date" id="lb-from" onchange="loadLeaderboard()" style="font-size:11px;padding:5px 8px;background:var(--navy);border:1px solid var(--border);color:var(--cream);border-radius:4px;">
+            <span style="font-size:11px;color:var(--slate);">to</span>
+            <input type="date" id="lb-to" onchange="loadLeaderboard()" style="font-size:11px;padding:5px 8px;background:var(--navy);border:1px solid var(--border);color:var(--cream);border-radius:4px;">
+          </div>
+          <select id="lb-day-filter" onchange="loadLeaderboard()" style="font-size:11px;padding:6px 10px;background:var(--navy);border:1px solid var(--border);color:var(--cream);border-radius:4px;">
+            <option value="all">All Days</option>
+            <option value="Tuesday">Tuesdays</option>
+            <option value="Saturday">Saturdays</option>
+          </select>
+          <select id="lb-metric" onchange="loadLeaderboard()" style="font-size:11px;padding:6px 10px;background:var(--navy);border:1px solid var(--border);color:var(--cream);border-radius:4px;">
+            <option value="showed">Guests Showed</option>
+            <option value="invites">Guests Invited</option>
+            <option value="confirmed">Guests Confirmed</option>
+          </select>
+          <button onclick="loadLeaderboard()"
+            style="font-size:11px;background:var(--gold);color:var(--navy);border:none;
+              padding:6px 12px;border-radius:3px;font-family:'Barlow Condensed',sans-serif;font-weight:700;cursor:pointer;">
+            ↻ Refresh
+          </button>
         </div>
-        <select id="lb-day-filter" onchange="loadLeaderboard()" style="font-size:11px;padding:6px 10px;">
-          <option value="all">All Days</option>
-          <option value="Tuesday">Tuesdays</option>
-          <option value="Saturday">Saturdays</option>
-        </select>
-        <select id="lb-metric" onchange="loadLeaderboard()" style="font-size:11px;padding:6px 10px;">
-          <option value="showed">Guests Showed</option>
-          <option value="invites">Guests Invited</option>
-          <option value="confirmed">Guests Confirmed</option>
-          <option value="sessions">Sessions Attended</option>
-        </select>
-        <button onclick="loadLeaderboard()" style="font-size:11px;background:var(--gold);color:var(--navy);border:none;padding:6px 12px;border-radius:3px;font-family:'Barlow Condensed',sans-serif;font-weight:700;cursor:pointer;">↻ Refresh</button>
+      </div>
+      <div id="lb-loading" style="font-size:13px;color:var(--slate);text-align:center;padding:20px;display:none;">Loading…</div>
+      <div id="lb-content"></div>
+      <div id="lb-detail" style="margin-top:12px;"></div>
+    </div>
+  </div>
+
+  <!-- ── TAB: INCOME ── -->
+  <div id="bom-view-income" style="display:none;">
+    <div style="background:rgba(45,202,115,.05);border:1px solid rgba(45,202,115,.2);border-radius:14px;padding:16px;">
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;
+          color:#2DCA73;letter-spacing:.06em;text-transform:uppercase;">💰 BOM Income Calculator</div>
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(250,246,238,.4);">
+          Captain 60% · Generator 40%
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;">
+        <div style="background:rgba(0,0,0,.2);border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:900;color:#2DCA73;" id="ic-total-clients">0</div>
+          <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(250,246,238,.4);">Clients</div>
+        </div>
+        <div style="background:rgba(0,0,0,.2);border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:900;color:#E8C97A;" id="ic-total-premium">$0</div>
+          <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(250,246,238,.4);">Total Premium</div>
+        </div>
+        <div style="background:rgba(0,0,0,.2);border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:900;color:#9B59B6;" id="ic-same-day">0</div>
+          <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(250,246,238,.4);">Same Day</div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+        <div>
+          <label style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(250,246,238,.5);display:block;margin-bottom:5px;">Captain Comm Rate (%)</label>
+          <input type="number" id="ic-captain-rate" value="75" min="0" max="100" step="0.5" onchange="recalcIncome()"
+            style="width:100%;background:#0A1628;border:1px solid rgba(201,168,76,.2);color:#FAF6EE;font-size:14px;padding:9px 12px;border-radius:6px;outline:none;">
+        </div>
+        <div>
+          <label style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(250,246,238,.5);display:block;margin-bottom:5px;">Generator Comm Rate (%)</label>
+          <input type="number" id="ic-generator-rate" value="75" min="0" max="100" step="0.5" onchange="recalcIncome()"
+            style="width:100%;background:#0A1628;border:1px solid rgba(201,168,76,.2);color:#FAF6EE;font-size:14px;padding:9px 12px;border-radius:6px;outline:none;">
+        </div>
+      </div>
+
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(250,246,238,.5);text-transform:uppercase;letter-spacing:.09em;margin-bottom:8px;">⚓ Captain Earnings</div>
+      <div id="ic-captain-table" style="margin-bottom:14px;"></div>
+
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(250,246,238,.5);text-transform:uppercase;letter-spacing:.09em;margin-bottom:8px;">⚡ Generator Earnings</div>
+      <div id="ic-generator-table" style="margin-bottom:14px;"></div>
+
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(250,246,238,.5);text-transform:uppercase;letter-spacing:.09em;margin-bottom:8px;">📋 Client Detail</div>
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:480px;">
+          <thead>
+            <tr style="border-bottom:1px solid rgba(255,255,255,.1);">
+              <th style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(250,246,238,.4);padding:6px 8px;text-align:left;">Client</th>
+              <th style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(250,246,238,.4);padding:6px 8px;">Type</th>
+              <th style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(250,246,238,.4);padding:6px 8px;">Captain</th>
+              <th style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(250,246,238,.4);padding:6px 8px;">Generator</th>
+              <th style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(250,246,238,.4);padding:6px 8px;text-align:right;">Premium</th>
+              <th style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(250,246,238,.4);padding:6px 8px;text-align:right;">Capt</th>
+              <th style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(250,246,238,.4);padding:6px 8px;text-align:right;">Gen</th>
+            </tr>
+          </thead>
+          <tbody id="ic-detail-tbody"></tbody>
+        </table>
+      </div>
+
+      <div style="margin-top:12px;font-family:'DM Mono',monospace;font-size:9px;color:rgba(250,246,238,.3);line-height:1.7;">
+        ⚠ Estimates only. Captain earns 60% · Generator earns 40% of commission × annual premium.
       </div>
     </div>
-    <div id="lb-loading" style="font-size:13px;color:var(--slate);text-align:center;padding:20px;display:none;">Loading from Monday.com…</div>
-    <div id="lb-content"></div>
-    <div id="lb-detail" style="margin-top:12px;"></div>
   </div>
 
 </div>
-
-<!-- ══════════════════════════════════════════════════════════ -->
-<!-- BOM INCOME CALCULATOR -->
-<!-- ══════════════════════════════════════════════════════════ -->
-<div style="padding:16px 14px 0;">
-  <div style="background:rgba(45,202,115,.05);border:1px solid rgba(45,202,115,.2);border-radius:14px;padding:16px;margin-bottom:16px;">
-
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
-      <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;
-        color:#2DCA73;letter-spacing:.06em;text-transform:uppercase;">💰 BOM Income Calculator</div>
-      <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(250,246,238,.4);">
-        Captain 60% · Generator 40% of referral credit
-      </div>
-    </div>
-
-    <!-- SUMMARY STATS -->
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;" id="income-summary-grid">
-      <div style="background:rgba(0,0,0,.2);border-radius:10px;padding:12px;text-align:center;">
-        <div style="font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:900;color:#2DCA73;" id="ic-total-clients">0</div>
-        <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(250,246,238,.4);">Clients</div>
-      </div>
-      <div style="background:rgba(0,0,0,.2);border-radius:10px;padding:12px;text-align:center;">
-        <div style="font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:900;color:#E8C97A;" id="ic-total-premium">$0</div>
-        <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(250,246,238,.4);">Total Premium</div>
-      </div>
-      <div style="background:rgba(0,0,0,.2);border-radius:10px;padding:12px;text-align:center;">
-        <div style="font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:900;color:#9B59B6;" id="ic-same-day">0</div>
-        <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(250,246,238,.4);">Same Day</div>
-      </div>
-    </div>
-
-    <!-- AGENT COMMISSION RATE INPUT -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
-      <div>
-        <label style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(250,246,238,.5);display:block;margin-bottom:5px;">Captain Comm Rate (%)</label>
-        <input type="number" id="ic-captain-rate" value="75" min="0" max="100" step="0.5"
-          onchange="recalcIncome()"
-          style="width:100%;background:#0A1628;border:1px solid rgba(201,168,76,.2);color:#FAF6EE;
-            font-size:14px;padding:9px 12px;border-radius:6px;outline:none;">
-      </div>
-      <div>
-        <label style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(250,246,238,.5);display:block;margin-bottom:5px;">Generator Comm Rate (%)</label>
-        <input type="number" id="ic-generator-rate" value="75" min="0" max="100" step="0.5"
-          onchange="recalcIncome()"
-          style="width:100%;background:#0A1628;border:1px solid rgba(201,168,76,.2);color:#FAF6EE;
-            font-size:14px;padding:9px 12px;border-radius:6px;outline:none;">
-      </div>
-    </div>
-
-    <!-- INCOME BY CAPTAIN -->
-    <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(250,246,238,.5);
-      text-transform:uppercase;letter-spacing:.09em;margin-bottom:8px;">⚓ Captain Earnings</div>
-    <div id="ic-captain-table" style="margin-bottom:14px;"></div>
-
-    <!-- INCOME BY GENERATOR -->
-    <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(250,246,238,.5);
-      text-transform:uppercase;letter-spacing:.09em;margin-bottom:8px;">⚡ Generator Earnings</div>
-    <div id="ic-generator-table" style="margin-bottom:14px;"></div>
-
-    <!-- CLIENT DETAIL TABLE -->
-    <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(250,246,238,.5);
-      text-transform:uppercase;letter-spacing:.09em;margin-bottom:8px;">📋 Client Detail</div>
-    <div style="overflow-x:auto;">
-    <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:480px;" id="ic-detail-table">
-      <thead>
-        <tr style="border-bottom:1px solid rgba(255,255,255,.1);">
-          <th style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(250,246,238,.4);padding:6px 8px;text-align:left;">Guest / Client</th>
-          <th style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(250,246,238,.4);padding:6px 8px;">Type</th>
-          <th style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(250,246,238,.4);padding:6px 8px;">Captain</th>
-          <th style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(250,246,238,.4);padding:6px 8px;">Generator</th>
-          <th style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(250,246,238,.4);padding:6px 8px;text-align:right;">Premium</th>
-          <th style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(250,246,238,.4);padding:6px 8px;text-align:right;">Capt Earn</th>
-          <th style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(250,246,238,.4);padding:6px 8px;text-align:right;">Gen Earn</th>
-        </tr>
-      </thead>
-      <tbody id="ic-detail-tbody"></tbody>
-    </table>
-    </div>
-
-    <div style="margin-top:12px;font-family:'DM Mono',monospace;font-size:9px;color:rgba(250,246,238,.3);line-height:1.7;">
-      ⚠ Estimates only. Actual commissions depend on carrier, product, state, and agent contract level. 
-      Captain earns 60% · Generator earns 40% of their commission rate applied to annual premium.
-    </div>
-  </div>
-</div>
-
 <div class="toast" id="toast"></div>
 
 <script>
@@ -441,21 +472,22 @@ function saveGuestModal() {
   const id   = parseInt(document.getElementById('gm-id').value) || null;
   const name = document.getElementById('gm-name').value.trim();
   if (!name) { toast('Guest name required'); return; }
-  const status = document.getElementById('gm-status').value;
+  const _gv = id => { const el = document.getElementById(id); return el ? el.value : ''; };
+  const status = _gv('gm-status') || 'Invited';
   const data = {
     name,
-    phone:          document.getElementById('gm-phone').value.trim(),
-    email:          document.getElementById('gm-email').value.trim(),
-    date:           document.getElementById('gm-date').value,
-    captain:        document.getElementById('gm-captain').value.trim(),
-    generator:      document.getElementById('gm-generator').value.trim(),
-    notes:          document.getElementById('gm-notes').value.trim(),
+    phone:          _gv('gm-phone').trim(),
+    email:          _gv('gm-email').trim(),
+    date:           _gv('gm-date'),
+    captain:        _gv('gm-captain').trim(),
+    generator:      _gv('gm-generator').trim(),
+    notes:          _gv('gm-notes').trim(),
     status,
     becameClient:   ['Became Client','Follow-Up Converted'].includes(status),
-    policyAmount:   parseFloat(document.getElementById('gm-policy-amount').value) || 0,
-    annualPremium:  parseFloat(document.getElementById('gm-annual-premium').value) || 0,
-    conversionType: document.getElementById('gm-conversion-type').value,
-    clientDate:     document.getElementById('gm-client-date').value,
+    policyAmount:   parseFloat(_gv('gm-policy-amount')) || 0,
+    annualPremium:  parseFloat(_gv('gm-annual-premium')) || 0,
+    conversionType: _gv('gm-conversion-type'),
+    clientDate:     _gv('gm-client-date'),
   };
   if (id) {
     const g = guests.find(x => x.id === id);
@@ -1174,6 +1206,104 @@ renderGuests = function() {
 
 // Initial calc on load
 setTimeout(recalcIncome, 300);
+
+// ════════════════════════════════════════════════════════════════
+// BOM TAB SWITCHER
+// ════════════════════════════════════════════════════════════════
+function switchBOMTab(tab) {
+  ['guests','leaderboard','income'].forEach(t => {
+    const view = document.getElementById('bom-view-' + t);
+    const btn  = document.getElementById('bom-tab-' + t);
+    if (view) view.style.display = t === tab ? 'block' : 'none';
+    if (btn) {
+      btn.style.borderBottomColor = t === tab ? 'var(--gold)' : 'transparent';
+      btn.style.color = t === tab ? 'var(--gold-light)' : 'var(--slate)';
+    }
+  });
+  if (tab === 'leaderboard') loadLeaderboard();
+  if (tab === 'income')      recalcIncome();
+}
+
+// ════════════════════════════════════════════════════════════════
+// GUEST FILTER — 90-day default
+// ════════════════════════════════════════════════════════════════
+function getGuestCutoffDate(days) {
+  if (!days || days === 'all') return null;
+  const d = new Date();
+  d.setDate(d.getDate() - parseInt(days));
+  return d.toISOString().slice(0, 10);
+}
+
+function applyGuestFilter() {
+  const days   = document.getElementById('guest-period-filter')?.value || '90';
+  const dayFlt = document.getElementById('guest-day-filter')?.value || 'all';
+  const cutoff = getGuestCutoffDate(days);
+  const today  = new Date().toISOString().slice(0, 10);
+
+  const filtered = guests.filter(g => {
+    if (cutoff && g.date && g.date < cutoff) return false;
+    if (g.date && g.date > today) return false;
+    if (dayFlt !== 'all' && g.bomType && !g.bomType.toLowerCase().includes(dayFlt.toLowerCase())) return false;
+    return true;
+  });
+
+  // Update count display
+  const countEl = document.getElementById('guest-filter-count');
+  if (countEl) {
+    countEl.textContent = filtered.length === guests.length
+      ? `${guests.length} guests`
+      : `${filtered.length} of ${guests.length} guests`;
+  }
+  document.getElementById('guest-count').textContent = filtered.length + ' guest' + (filtered.length !== 1 ? 's' : '');
+
+  // Render filtered list
+  renderGuestList(filtered);
+}
+
+// Split renderGuests into render + filter so filter works cleanly
+function renderGuestList(list) {
+  const el = document.getElementById('guest-list');
+  if (!el) return;
+  if (!list.length) {
+    el.innerHTML = '<div style="color:var(--slate);font-size:13px;padding:8px 0;">No guests in this period — add a guest or expand the filter.</div>';
+    return;
+  }
+  el.innerHTML = list.map(g => `
+    <div class="guest-row" style="flex-wrap:wrap;gap:8px;padding:12px 0;">
+      <div style="flex:1;min-width:180px;">
+        <div class="g-name">${g.name}</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:3px;">
+          ${g.phone ? `<a href="tel:${g.phone}" style="font-size:11px;color:var(--gold-light);text-decoration:none;">📞 ${g.phone}</a>` : ''}
+          ${g.email ? `<span style="font-size:11px;color:var(--slate);">✉ ${g.email}</span>` : ''}
+          ${g.captain ? `<span style="font-size:11px;color:var(--slate);">⚓ Captain: ${g.captain}</span>` : ''}
+          ${g.generator ? `<span style="font-size:11px;color:var(--gold-light);">⚡ Gen: ${g.generator}</span>` : ''}
+          ${g.date ? `<span style="font-size:11px;color:var(--slate);">📅 ${g.date}</span>` : ''}
+          ${g.becameClient ? `<span style="font-size:11px;color:#2DCA73;font-weight:700;">✅ Client</span>` : ''}
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
+        <button class="status-pill ${STATUS_CLS[g.status]||'sp-invited'}" onclick="cycleStatus(${g.id})">${g.status}</button>
+        <button onclick="openGuestModal(${g.id})" style="background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.25);color:var(--gold);padding:4px 10px;border-radius:3px;font-size:11px;cursor:pointer;">✏️</button>
+        <button class="del-btn" onclick="removeGuest(${g.id})">✕</button>
+      </div>
+    </div>`).join('');
+}
+
+// Override renderGuests to use filter
+const _baseRenderGuests = renderGuests;
+renderGuests = function() {
+  // Persist
+  try { localStorage.setItem('dba_bom_guests', JSON.stringify(guests)); } catch(e) {}
+  try { localStorage.setItem(BOM_GUESTS_KEY, JSON.stringify(guests)); } catch(e) {}
+  applyGuestFilter();
+  recalcIncome();
+};
+
+// Auto-apply 90-day filter on load
+setTimeout(() => {
+  applyGuestFilter();
+  recalcIncome();
+}, 200);
 </script>
 
 <!-- ── GUEST ADD/EDIT MODAL ── -->
