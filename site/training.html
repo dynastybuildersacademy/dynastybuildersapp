@@ -5,6 +5,8 @@
 <title>DBA — Training Hub</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,400&family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="auth.js"></script>
+<script src="quiz-engine.js"></script>
+<script src="quizzes.js"></script>
 <style>
 :root{--navy:#0A1628;--navy-mid:#112040;--navy-light:#1A3158;--gold:#C9A84C;--gold-light:#E8C97A;--cream:#FAF6EE;--success:#27AE60;--warn:#E67E22;--danger:#C0392B;--slate:#6B7C93;--border:rgba(201,168,76,0.22);}
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -424,6 +426,7 @@ function switchTab(id, el) {
 
 function buildModules(containerId, modules) {
   const el = document.getElementById(containerId);
+  if (!el) return;
   el.innerHTML = modules.map((m,i) => `
     <div class="module">
       <div class="module-hdr" onclick="toggleMod(this)">
@@ -433,6 +436,32 @@ function buildModules(containerId, modules) {
       </div>
       <div class="module-body">${m.body}</div>
     </div>`).join('');
+
+  // Append quizzes for this module section
+  if (typeof QUIZ_MAP !== 'undefined' && QUIZ_MAP[containerId]) {
+    QUIZ_MAP[containerId].forEach(qid => {
+      const quiz = QUIZ_BANK[qid];
+      if (!quiz) return;
+      const prog = typeof quizLoadProgress === 'function' ? quizLoadProgress() : {};
+      const prior = prog[qid];
+      const quizDiv = document.createElement('div');
+      quizDiv.id = 'quiz-' + qid;
+      quizDiv.style.marginTop = '16px';
+      quizDiv.innerHTML = prior?.passed
+        ? `<div style="background:rgba(45,202,115,.06);border:1px solid rgba(45,202,115,.2);border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:10px;">
+            <span style="font-size:20px;">✅</span>
+            <div>
+              <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:900;color:#2DCA73;">Quiz Passed — ${prior.pct}%</div>
+              <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(250,246,238,.4);">${quiz.title} · Completed</div>
+            </div>
+            <button onclick="renderQuiz('quiz-${qid}', QUIZ_BANK['${qid}'])" style="margin-left:auto;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:4px 10px;color:var(--muted);font-family:'DM Mono',monospace;font-size:10px;cursor:pointer;">Retake</button>
+          </div>`
+        : `<button onclick="renderQuiz('quiz-${qid}', QUIZ_BANK['${qid}'])" style="width:100%;background:rgba(201,168,76,.08);border:1px dashed rgba(201,168,76,.3);border-radius:10px;padding:12px;color:var(--gold-light);font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;cursor:pointer;letter-spacing:.04em;">
+            🧠 Take Quiz: ${quiz.title} →
+          </button>`;
+      el.appendChild(quizDiv);
+    });
+  }
 }
 
 function toggleMod(hdr) {
@@ -1409,6 +1438,25 @@ function stopMic() {
     trySwitch(10);
   }
 })();
+
+// ── QUIZ SYSTEM INIT ───────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+  // Show quiz progress panel if hash
+  if (window.location.hash === '#quiz-progress') {
+    document.getElementById('quiz-progress-panel').style.display = 'block';
+    if (typeof ALL_QUIZ_IDS !== 'undefined' && typeof quizRenderProgressTable === 'function') {
+      quizRenderProgressTable('quiz-progress-table', ALL_QUIZ_IDS);
+    }
+  }
+});
+
+function syncQuizToMonday() {
+  // Future: sync quiz completions to a Monday board for admin visibility
+  const prog = typeof quizLoadProgress === 'function' ? quizLoadProgress() : {};
+  const passed = Object.values(prog).filter(p => p.passed).length;
+  const total = Object.keys(prog).length;
+  if (typeof toast === 'function') toast('✓ ' + passed + '/' + total + ' quizzes passed — Monday sync requires QUIZ_BOARD env var');
+}
 </script>
 </body>
 </html>

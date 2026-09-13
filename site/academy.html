@@ -6,6 +6,8 @@
 <title>DBA Academy · Dynasty Builders</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Barlow:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="auth.js"></script>
+<script src="quiz-engine.js"></script>
+<script src="quizzes.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 :root{
@@ -861,6 +863,40 @@ const _origSwitchTab = switchTab;
 switchTab = function(id) {
   _origSwitchTab(id);
   if (id === 'scripts') renderScripts();
+};
+
+// ── ACADEMY QUIZ SYSTEM ────────────────────────────────────────
+function startQuizInModal(quizId) {
+  const modal = document.getElementById('quiz-modal');
+  const content = document.getElementById('quiz-modal-content');
+  if (!modal || !content) return;
+  modal.style.display = 'flex';
+  content.innerHTML = '';
+  renderQuiz('quiz-modal-content', QUIZ_BANK[quizId]);
+}
+
+function syncQuizToMonday() {
+  const prog = (typeof quizLoadProgress === 'function') ? quizLoadProgress() : {};
+  const passed = Object.values(prog).filter(p => p?.passed).length;
+  const total = typeof ALL_QUIZ_IDS !== 'undefined' ? ALL_QUIZ_IDS.length : Object.keys(prog).length;
+  if (typeof toast === 'function') toast(`✓ ${passed}/${total} quizzes passed recorded`);
+  // Re-render the table after sync
+  if (typeof quizRenderProgressTable === 'function' && typeof ALL_QUIZ_IDS !== 'undefined') {
+    quizRenderProgressTable('quiz-progress-table', ALL_QUIZ_IDS);
+  }
+}
+
+// Extend switchTab to render quiz table when progress tab is opened
+const _academyOrigSwitchTab = typeof switchTab !== 'undefined' ? switchTab : null;
+switchTab = function(id) {
+  if (_academyOrigSwitchTab) _academyOrigSwitchTab(id);
+  if (id === 'progress') {
+    setTimeout(() => {
+      if (typeof quizRenderProgressTable === 'function' && typeof ALL_QUIZ_IDS !== 'undefined') {
+        quizRenderProgressTable('quiz-progress-table', ALL_QUIZ_IDS);
+      }
+    }, 50);
+  }
 };
 </script>
 </body>
