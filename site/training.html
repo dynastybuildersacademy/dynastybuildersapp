@@ -512,61 +512,159 @@ buildModules('ft-modules', [
 
 // ── SALES CONTENT ─────────────────────────────────────────────
 buildModules('sales-modules', [
-  { title: 'Step 1 — Connect (Build Rapport in 2 Minutes)', body: `<p>People buy from people they trust. The first 2 minutes set the tone for the entire appointment.</p><ul>
-    <li>Use their name 2–3 times in the first 5 minutes</li>
-    <li>Find common ground before talking business — family, work, city they're from</li>
-    <li>Mirror their energy level — relaxed prospect needs a relaxed agent</li>
-    <li>Never start with product — start with them</li>
-  </ul>
-  <div class="script-box">"Before we dive in, tell me a little about your family — I like to understand who I'm actually talking to."</div>` },
-  { title: 'Step 2 — Discover (Ask, Don\'t Tell)', body: `<p>The best salespeople talk less and ask more. Use these discovery questions:</p><ul>
-    <li>"If something happened to you tomorrow, what's your biggest concern for your family?"</li>
-    <li>"Do you have any life insurance right now? Do you know what it would actually pay out?"</li>
-    <li>"On a scale of 1–10, how protected does your family feel financially right now?"</li>
-    <li>"What would need to happen for you to feel like your family was fully taken care of?"</li>
-  </ul><p style="margin-top:10px;color:var(--slate);">Let them talk. Their answers are your close.</p>` },
-  { title: 'Step 3 — Present (Living Benefits First)', body: `<ul>
-    <li>Lead with <strong>living benefits</strong> — most people have never heard of a policy that pays while you're alive</li>
-    <li>Show the illustration — always have visual proof</li>
-    <li>Anchor the premium to something they already spend money on</li>
-    <li>Keep it simple: "This policy pays your family if you die. AND it pays YOU if you have a heart attack, stroke, or cancer."</li>
-  </ul>
-  <div class="script-box">"What if I told you there's a policy that pays you while you're still alive — if you have a heart attack, stroke, or cancer diagnosis? That's what separates what we offer from what most people have. Let me show you the numbers."</div>` },
-  { title: 'Step 4 — Handle the 4 Core Objections', body: `<ul>
-    <li><strong>"I need to think about it"</strong> — "What specifically do you need to think about? Let me address that right now."</li>
-    <li><strong>"I can't afford it"</strong> — "Can your family afford it if something happens to you? This is $[X]/month — less than your phone bill."</li>
-    <li><strong>"I already have coverage"</strong> — "Great — does it have living benefits? Most group plans don't. Can I show you what you might be missing?"</li>
-    <li><strong>"I need to talk to my spouse"</strong> — "Of course. When can we all meet together? I can do [Day] or [Day]."</li>
-  </ul>` },
-  { title: 'Step 5 — Close (Ask for the Business)', body: `<p>Most agents lose the sale because they never clearly ask. Use one of these:</p><ul>
-    <li><strong>Assumptive:</strong> "Let's go ahead and get the paperwork started — do you have your ID handy?"</li>
-    <li><strong>Choice:</strong> "Does the $250,000 or $500,000 policy make more sense for your family's situation?"</li>
-    <li><strong>Urgency:</strong> "Underwriting is based on your age and health today. Rates go up every year — let's lock this in now."</li>
-    <li><strong>Emotion:</strong> "You just told me your biggest fear is your family struggling. This is how we solve that — today."</li>
-  </ul>` }
+  {
+    title: '5 Question Types — Your Closing Toolkit',
+    body: `<p style="margin-bottom:10px;color:var(--slate);">Top producers ask 3x more questions than they make statements. Average producers do the opposite.</p>
+    <ul>
+      <li><strong>1. Tie Down</strong> — End sentences with a lock-in word. <em>"Increasing your income is important to you, right?"</em><br>
+        Words: Wouldn't · Couldn't · Shouldn't · Haven't · Doesn't · Isn't · Can't · Right · Don't · Won't</li>
+      <li><strong>2. Alternate of Choice</strong> — Don't ask <em>if</em>, ask <em>which</em>. Both answers are yes.<br>
+        <em>"What's better for you — later today or tomorrow? Weekday or weekend? $250,000 or $500,000?"</em></li>
+      <li><strong>3. Assumptive</strong> — Speak as if they've already said yes.<br>
+        <em>"Once you get your license, who would you want to help first? If you started your own business, who would be the first 5 people you'd bring on board?"</em></li>
+      <li><strong>4. Involvement</strong> — Get them to picture themselves in the win. Use Who/When/Where/How.<br>
+        <em>"Who are you going to bring when you qualify for your first company trip? Where would you like to open your first office?"</em></li>
+      <li><strong>5. Open Ended</strong> — Replace yes/no with statements that invite more.<br>
+        Instead of "Would you like to get started?" → <em>"I don't see a reason we shouldn't work together, do you?"</em></li>
+    </ul>`
+  },
+  {
+    title: 'Small Yeses Build the Big Yes — Closing Principles',
+    body: `<ul>
+      <li>If they've been saying yes the whole presentation, it feels incongruent to say no at the close</li>
+      <li><strong>Pre-close tie-downs:</strong> Get them nodding before you ask for the commitment</li>
+      <li>"If you could get the same coverage but pay less, you'd be open right?"</li>
+      <li>"Having a plan is important to you, isn't it?"</li>
+      <li>"You would want to be able to retire sooner if you could, right?"</li>
+      <li><strong>Good vs bad words:</strong> "Investment" not "cost." "Protection" not "policy." "Monthly contribution" not "payment."</li>
+      <li><strong>Emotion closes, logic justifies.</strong> Find the emotion first, then give them the numbers to justify what they already want to do</li>
+    </ul>
+    <div class="script-box">"I don't see a reason we shouldn't work together, do you?"</div>`
+  },
+  {
+    title: 'Objection Handling — The 12 Most Common',
+    body: `<ul>
+      <li><strong>"I need to think about it"</strong> → "I understand. What specifically would you like to think about? Maybe I can answer that right now." [Then tie down the actual concern]</li>
+      <li><strong>"I need to talk to my spouse"</strong> → "Of course. If your spouse were here right now and liked what you liked, would you be ready to move forward today?"</li>
+      <li><strong>"I can't afford it"</strong> → "I understand. Can I ask — can you afford NOT to have this protection?" [168-hour close: "Out of 168 hours a week, if you could work 8-10 of them, would $X/month feel different?"]</li>
+      <li><strong>"I already have insurance"</strong> → "Great — that tells me protecting your family is already important to you. My only question is whether what you have is enough. Do you mind if I take a look?"</li>
+      <li><strong>"I don't have enough time"</strong> → "That means you're busy — and we like busy people, because busy people get things done. We need just 15–20 minutes. What's better for you?"</li>
+      <li><strong>"Is this a pyramid scheme?"</strong> → "What do you mean by that? [Let them explain.] If it was, I wouldn't be part of it. What's better for you, today or tomorrow?"</li>
+      <li><strong>"What is PHP?"</strong> → "PHP is a financial marketing organization. We do marketing for companies like AIG, National Life, American National and many others. We'll go through that when we get together. What's better — today or tomorrow?"</li>
+      <li><strong>"Do I have to recruit?"</strong> → "Do you want to? [Yes/No] Great — what's better for you, today or tomorrow?"</li>
+      <li><strong>"Is there a start-up fee?"</strong> → "What do you mean by that? You have a state license and software fee — I'll explain those and the income potential when we speak. What's better for you?"</li>
+      <li><strong>"Is this sales?"</strong> → "Do you like sales? [Yes: Great, what's better for you?] [No: Great, what's better for you?]"</li>
+    </ul>`
+  },
+  {
+    title: '33 Wide — The Prospecting Model',
+    body: `<ul>
+      <li>Go <strong>wide first</strong> — always. Build pipeline before you try to close anyone</li>
+      <li>The 33 Wide model: every agent you work with should be working 33 active contacts simultaneously</li>
+      <li>At any point in time: 11 hot leads (ready to move), 11 warm leads (in follow-up), 11 cold leads (building trust)</li>
+      <li>Your job is to keep all 33 slots filled. When someone falls out, immediately replace them</li>
+      <li>80% of your results come from 20% of your activities — and that 20% is <strong>prospecting and calls</strong></li>
+      <li>Always add 2–5 numbers per day to your Top 25. Treat them like gold</li>
+    </ul>
+    <div class="script-box">"Conviction closes everything else. The person with the most belief in what they're presenting always wins. Before every call: remind yourself why you believe in this — for your family, for the families you're protecting, for the people on your team who are counting on you."</div>`
+  },
+  {
+    title: 'The Field Training Appointment — 5 Steps',
+    body: `<ul>
+      <li><strong>Step 1 — Building Rapport (Trust · Respect · Customized)</strong><br>
+        "What is/are your current career(s)? Do you love your job? What do you like about it? What would you change?"</li>
+      <li><strong>Step 2 — Discovery</strong><br>
+        "What is the most important thing in your life?" → Let them tell you. Their answer is your close.</li>
+      <li><strong>Step 3 — Presentation Direction</strong><br>
+        "At this point we can go two directions: (1) PHP Business Opportunity, (2) Financial Strategies & Concepts we teach clients. Which do you prefer?"</li>
+      <li><strong>Step 4 — DIME Framework</strong><br>
+        Death · Income · Mortgage · Education — walk through each gap with their real numbers</li>
+      <li><strong>Step 5 — Close + Handle Objections</strong><br>
+        Tie-downs → Assumptive close → Alt of choice → Address one real objection → Ask for the business</li>
+    </ul>
+    <div class="script-box">"Based on what you just shared with me — that your family is the most important thing — I want to ask you something. If something happened to you tomorrow, would [spouse/kids] be able to maintain the life you've built for them? [Pause.] That's exactly why we're here today."</div>`
+  }
 ]);
 
-// ── RECRUITING CONTENT ────────────────────────────────────────
+// ── RECRUITING CONTENT ─────────────────────────────────────────
 buildModules('rec-modules', [
-  { title: 'The Top 25 System', body: `<p>Keep <strong>25 active recruiting prospects</strong> in your pipeline at all times. Every time one converts or goes cold, add a fresh name — never let it drop below 25.</p><ul>
-    <li>Best profile: 25–45 years old, money-motivated, coachable, has people skills</li>
-    <li>Sources: warm market, social media connections, referrals from clients, coworkers</li>
-    <li>Rule: Don't pre-judge. The person you least expect often becomes your best builder.</li>
-  </ul>` },
-  { title: 'Invite Scripts', body: `
-  <div class="script-box"><strong>Warm Market Text:</strong><br>"Hey [Name], I've been thinking about you. I'm growing a financial services team and you came to mind immediately. I'm not sure if it's for you, but can we get on a 15-minute call this week? I'd love to share what I'm doing."</div>
-  <div class="script-box" style="margin-top:10px;"><strong>Social Media DM:</strong><br>"Hey! I've been following your content — I love your hustle. I'm building a team in financial services and I think you'd be great at this. Would you be open to a quick 15-minute conversation?"</div>
-  <div class="script-box" style="margin-top:10px;"><strong>Referral from Client:</strong><br>"Who do you know who's ambitious, money-motivated, and might want to earn an extra $2K–5K a month? I'm not asking them to quit their job — I'm looking for someone to add to my team."</div>` },
-  { title: 'The Edification Formula', body: `<p>Before every prospect call or BOM, edify your upline. Edification removes you from the selling seat and positions your leader as the expert.</p>
-  <div class="script-box">"Before we talk, I want to tell you about [Upline Name]. They built a 6-figure income in this business and personally helped me get started. They're going to be on this call with us. You're going to want to hear everything they say."</div>
-  <p style="margin-top:10px;color:var(--slate);">Rule: Never edify less than 3 levels above the prospect's perception of you. If they think you're a beginner, point them to someone who clearly isn't.</p>` },
-  { title: 'BOM Follow-Up Formula (5-Touch System)', body: `<p>Most recruits say YES on the 3rd–5th contact. Don't quit after one "no response."</p><ul>
-    <li><strong>Night of BOM:</strong> "Hey, great meeting you tonight! What stood out most to you?"</li>
-    <li><strong>Day 2:</strong> Share an income story, PHP testimonial, or Lights Out highlight reel</li>
-    <li><strong>Day 4:</strong> "Have you had a chance to think about it? I'd love to get you started."</li>
-    <li><strong>Day 7:</strong> "I have one opening on my team this month. Are you in?"</li>
-    <li><strong>Day 14:</strong> "I'm reaching out one last time — I want to respect your time. If the timing ever feels right, I'm here."</li>
-  </ul>` }
+  {
+    title: 'The 3 Call Scripts — Invite, Help Me, BOM Prospect',
+    body: `<div style="margin-bottom:14px;">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:900;color:var(--gold-light);margin-bottom:6px;">📞 BOM INVITE (Warm Market)</div>
+      <div class="script-box">"Hi [Name], it's [your name]. The reason I'm calling is because I recently took a position with a company that I'm really excited about. I'm possibly making a career change and I want to get your opinion. [What is it?] It's in the financial services industry. I want you to see what I'm doing so in the future you could possibly give me some referrals. I'm new so I can't explain much and I want you to hear it from an expert. You'll be able to help me, won't you? Great — what's better for you, a weekday or weekend?"</div>
+    </div>
+    <div style="margin-bottom:14px;">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:900;color:var(--gold-light);margin-bottom:6px;">🤝 HELP ME (Booking Field Training)</div>
+      <div class="script-box">"Hi [Name], this is [your name]. I'm calling to let you know I recently started with a financial services firm called PHP Agency and I need your help. I'm in their training program — classroom training, getting my license and 10 hands-on field training appointments. My goal is to complete them this week. I value your opinion and I'm hoping you and your spouse would help me out by being one of my training appointments. All I need is 15–20 minutes. You'll help me, won't you? Great — what's better for you, later today or tomorrow?"</div>
+    </div>
+    <div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:900;color:var(--gold-light);margin-bottom:6px;">🎯 BOM PROSPECT SCRIPT</div>
+      <div class="script-box">"Hey, is this [Name]? I wanted to give you a quick call before my next appointment. I know when we talked it was brief — but I asked if you kept an open mind to making more money. That's still the case, right? Awesome — what do you have going on at 7pm by chance? I actually have an overview going on at the office — a chance to learn more about who we are, what we do, and meet executives making 7 figures. I only have two seats left. Can I save you one?"</div>
+    </div>`
+  },
+  {
+    title: 'Booking Field Training for a New Agent',
+    body: `<div class="script-box">"Hello [Name], you don't know me, but I was given your name and number by [New Agent]. Great — [they] recently got started with us and put you as a reference. Do you have a minute? So our firm teaches people how to make and save money. [New Agent] will be getting their license through the state in the next week or two and needs to see 10 practice appointments. They take 20–30 minutes. We'll run through who we are and what we do while [they sit] beside me and take notes. This way once licensed, they can sit with families. Would you be able to help with one of their training appointments? Great — what does your schedule look like later today or tomorrow?"</div>
+    <ul style="margin-top:10px;">
+      <li>The new agent is silent and takes notes — they never speak during the FT</li>
+      <li>The trainer runs the full presentation while the new agent observes</li>
+      <li>Debrief immediately after every appointment — what landed, what didn't</li>
+    </ul>`
+  },
+  {
+    title: 'What Do You Do? — The 30-Second Answer',
+    body: `<div class="script-box">"We show people how to make and save money. Everybody needs to save money, right? Have you heard of companies like AIG, National Life, Fidelity & Guaranty? We do marketing for those companies and several more. It's something we'll go into more detail about when we get together. So here's what I'd like to do — get together for 20–30 minutes and tell you more about who we are, what we do, and find out more about you and see if there's a fit. What's better for you — [option A] or [option B]?"</div>
+    <ul style="margin-top:10px;">
+      <li>Control the conversation — no pausing, happy strong tone</li>
+      <li>Don't answer questions that aren't asked</li>
+      <li>Always redirect to the alternate of choice close</li>
+      <li><strong>"Is this sales?"</strong> → "Do you like sales? [Yes/No] Great — what's better for you later today or tomorrow?"</li>
+    </ul>`
+  },
+  {
+    title: 'General Call Mastery — The 3 Phases',
+    body: `<ul>
+      <li><strong>Phase 1 — Awkward:</strong> Every new agent starts here. You feel stiff, the words don't flow. This is normal. Push through it with volume.</li>
+      <li><strong>Phase 2 — Mechanical:</strong> You know the script but it sounds scripted. Good — keep going. You're almost there.</li>
+      <li><strong>Phase 3 — Natural:</strong> The words become yours. Conviction takes over. This is where results explode.</li>
+    </ul>
+    <div style="margin-top:12px;background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.15);border-radius:8px;padding:12px;">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:900;color:var(--gold);margin-bottom:8px;">⚡ CALL COMMANDMENTS</div>
+      <ul>
+        <li>Calls should be 2 minutes max — get to the alternate of choice fast</li>
+        <li>55% body language · 38% tone · 7% content — your energy transmits over the phone</li>
+        <li>Always answer a question with a question</li>
+        <li>The person asking the questions controls the conversation</li>
+        <li>The person with the most conviction wins</li>
+        <li>Don't answer questions that aren't asked</li>
+        <li>Be obsessed with follow-up — follow up like a smooth operator</li>
+        <li>Always add 2–5 new numbers per day to your Top 25</li>
+      </ul>
+    </div>`
+  },
+  {
+    title: 'CFT — Certified Field Trainer Program',
+    body: `<p style="margin-bottom:10px;color:var(--slate);">Becoming a CFT is the fastest way to multiply your income, duplicate your skills, and position yourself for Marketing Director.</p>
+    <ul>
+      <li><strong>Benefits:</strong> Ranked on the Match-Up list · Better personal recruiter & producer · Increased income from commission splits · Duplicate CFTs on your team</li>
+      <li><strong>Qualifications:</strong> Licensed · Associate level minimum · Attended Orientation, ABCs of Life Insurance, ABCs of Annuity, Scripts Class · Must be a client · Next big event ticket</li>
+      <li><strong>9-Week Program:</strong> Week 1 Bamboo/Fast Start → Week 2 Calls/Scripts → Week 3 Prospecting → Week 4 Recruiting → Week 5 KTP (Life) → Week 6 KTP (Annuity) → Week 7 CFT Certification → Week 8 Fast Start Leadership → Week 9 Personal Development</li>
+      <li><strong>Graduation Requirements:</strong> 6 RI appointments · 1 direct + 3 base recruits · 3 KTP appointments · 1 client/week (1K pts min) · 3 base clients (3K pts min)</li>
+      <li><strong>Rewards:</strong> CFT PIN · Silver Badge · Jacket · Polo shirt · CFT Plaque (top grad) · CFT Certificate · Points-based ranking system</li>
+    </ul>
+    <p style="margin-top:10px;color:var(--slate);">Target income for an active CFT: <strong>$50,000+/year</strong> from personal production and splits</p>`
+  },
+  {
+    title: 'Your 2-Minute Story — Edification',
+    body: `<p style="margin-bottom:10px;color:var(--slate);">Master your 2-minute story. It edifies you, creates belief, and recruits through your story before you say a word about the opportunity.</p>
+    <ul>
+      <li><strong>Beginning:</strong> Why did you get involved? What was your situation before PHP?</li>
+      <li><strong>Middle:</strong> How has your involvement impacted your life? What changed?</li>
+      <li><strong>End:</strong> What are you looking forward to PHP allowing you to do? How has it already improved your finances?</li>
+    </ul>
+    <div class="script-box"><strong>Template:</strong> "Before PHP, I was [background — what you did]. I got involved because [your why]. Since starting, [what's changed — concrete]. I'm now working toward [your vision]. And that's why I'm so excited about what we do — because if this can work for me, it can work for anyone who's willing to put in the work."</div>`
+  }
 ]);
 
 // ── LEADERSHIP CONTENT ────────────────────────────────────────
