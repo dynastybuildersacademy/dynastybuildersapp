@@ -741,6 +741,120 @@ function showAuthSnippet(agentId) {
   toast('✓ auth.js line copied to clipboard');
 }
 
+
+// ════════════════════════════════════════════════════════════════
+// GENEALOGY EDITOR
+// ════════════════════════════════════════════════════════════════
+let geneEditAgentId = null;
+
+function renderGenealogy() {
+  const q    = (document.getElementById('gene-search')?.value || '').toLowerCase();
+  const root = document.getElementById('gene-root')?.value || '';
+  const tree = document.getElementById('gene-tree');
+  if (!tree) return;
+
+  // Populate root selector
+  const rootSel = document.getElementById('gene-root');
+  if (rootSel && rootSel.options.length <= 1) {
+    agentList.filter(a => !a.uplineId).forEach(a => {
+      const opt = document.createElement('option');
+      opt.value = a.id; opt.textContent = a.name;
+      rootSel.appendChild(opt);
+    });
+  }
+
+  // Build children map
+  const childMap = {};
+  agentList.forEach(a => {
+    const pid = a.uplineId || '__root__';
+    if (!childMap[pid]) childMap[pid] = [];
+    childMap[pid].push(a);
+  });
+
+  function renderNode(agent, depth) {
+    const children = childMap[agent.id] || [];
+    const matchesSearch = !q || agent.name.toLowerCase().includes(q) || agent.id.includes(q);
+    const indent = depth * 18;
+    const roleColors = { trainee:'#6B7C93', director:'#5DADE2', marketing_director:'#E8C97A',
+      agency_build:'#2DCA73', rmd:'#9B59B6', admin:'#E67E22' };
+    const roleColor = roleColors[agent.role] || '#6B7C93';
+
+    const uplineName = agent.uplineId
+      ? (agentList.find(a => a.id === agent.uplineId)?.name || agent.uplineId)
+      : '—';
+
+    const html = matchesSearch ? `
+      <div style="display:flex;align-items:center;gap:8px;padding:7px 8px;
+        border-bottom:1px solid rgba(255,255,255,.04);margin-left:${indent}px;
+        background:${depth===0?'rgba(201,168,76,.04)':'transparent'};
+        border-radius:${depth===0?'6px':'0'};">
+        <span style="font-size:12px;flex-shrink:0;">${children.length ? '▾' : '·'}</span>
+        <div style="flex:1;min-width:0;">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;
+            white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${agent.name}</div>
+          <div style="font-size:10px;color:${roleColor};">${agent.role||'trainee'}
+            ${agent.phpId ? ' · PHP: '+agent.phpId : ''}
+            <span style="color:#6B7C93;"> · Upline: ${uplineName}</span>
+          </div>
+        </div>
+        <span style="font-family:'DM Mono',monospace;font-size:10px;color:#6B7C93;flex-shrink:0;">${children.length > 0 ? children.length+'↓' : ''}</span>
+        <button onclick="openGeneEdit('${agent.id}')"
+          style="background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.2);color:var(--gold);
+            border-radius:5px;padding:3px 8px;font-family:'DM Mono',monospace;font-size:10px;cursor:pointer;flex-shrink:0;">
+          ✏️ Upline
+        </button>
+      </div>` : '';
+
+    return html + children.map(c => renderNode(c, depth+1)).join('');
+  }
+
+  let roots = root
+    ? agentList.filter(a => a.id === root)
+    : agentList.filter(a => !a.uplineId);
+
+  if (!roots.length && root) roots = agentList.filter(a => a.uplineId === root);
+
+  const output = roots.map(a => renderNode(a, 0)).join('');
+  tree.innerHTML = output || '<div style="color:var(--muted);padding:16px;text-align:center;">No agents found</div>';
+}
+
+function openGeneEdit(agentId) {
+  geneEditAgentId = agentId;
+  const agent = agentList.find(a => a.id === agentId);
+  if (!agent) return;
+
+  document.getElementById('gene-edit-name').textContent = `Editing: ${agent.name}`;
+
+  const sel = document.getElementById('gene-upline-select');
+  sel.innerHTML = '<option value="">(No upline — top of tree)</option>';
+  agentList
+    .filter(a => a.id !== agentId)
+    .sort((a,b) => a.name.localeCompare(b.name))
+    .forEach(a => {
+      const opt = document.createElement('option');
+      opt.value = a.id;
+      opt.textContent = a.name + (a.role ? ' · ' + a.role : '');
+      if (a.id === agent.uplineId) opt.selected = true;
+      sel.appendChild(opt);
+    });
+
+  document.getElementById('gene-modal').style.display = 'flex';
+}
+
+function saveGenealogyEdit() {
+  const agent = agentList.find(a => a.id === geneEditAgentId);
+  if (!agent) return;
+  const newUpline = document.getElementById('gene-upline-select').value;
+  agent.uplineId = newUpline || null;
+  try { localStorage.setItem('dba_agent_roster', JSON.stringify(agentList)); } catch(e) {}
+  document.getElementById('gene-modal').style.display = 'none';
+  renderGenealogy();
+  renderRoster();
+  if (AUTH.getMondayKey()) {
+    syncAgentToMonday(agent, 'update');
+  }
+  if (typeof toast === 'function') toast(`✓ ${agent.name} upline updated`);
+}
 </script>
 </body>
 </html>

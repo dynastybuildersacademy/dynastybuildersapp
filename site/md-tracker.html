@@ -394,7 +394,11 @@ body::before{content:"";position:fixed;inset:0;
           <thead><tr><th>#</th><th>Date</th><th>Name + PHP Code</th><th></th></tr></thead>
           <tbody id="r-tbody"></tbody>
         </table>
-        <button class="add-row-btn" onclick="addRecruit()">+ Add Recruit</button>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;padding:8px 0 4px;">
+          <button class="add-row-btn" onclick="addRecruit()" style="flex:1;">+ Add Recruit</button>
+          <button class="add-row-btn" onclick="openRecruitImport()" style="flex:1;background:rgba(93,173,226,.1);border-color:rgba(93,173,226,.3);color:#5DADE2;">⬆ Import CSV</button>
+        </div>
+        <input type="file" id="recruit-csv-input" accept=".csv,.txt" style="display:none;" onchange="handleRecruitCSV(event)">
       </div>
 
       <div class="table-card">
@@ -406,7 +410,11 @@ body::before{content:"";position:fixed;inset:0;
           <thead><tr><th>#</th><th>Date</th><th>Policy #</th><th>Client Name</th><th>Apps</th><th>Points</th><th></th></tr></thead>
           <tbody id="a-tbody"></tbody>
         </table>
-        <button class="add-row-btn" onclick="addApp()">+ Add Application</button>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;padding:8px 0 4px;">
+          <button class="add-row-btn" onclick="addApp()" style="flex:1;">+ Add Policy</button>
+          <button class="add-row-btn" onclick="openPolicyImport()" style="flex:1;background:rgba(201,168,76,.08);border-color:rgba(201,168,76,.3);color:var(--gold);">⬆ Import CSV</button>
+        </div>
+        <input type="file" id="policy-csv-input" accept=".csv,.xlsx,.txt" style="display:none;" onchange="handlePolicyCSV(event)">
       </div>
     </div>
 
@@ -3316,6 +3324,123 @@ document.addEventListener("DOMContentLoaded",()=>{
   renderBar();
   if(runs.length){document.getElementById("empty-state").style.display="none";selectRun(runs[0].id);}
 });
+
+// ════════════════════════════════════════════════════════════════
+// RECRUIT CSV IMPORT
+// Expected CSV: Date, Name, PHP Code (header optional)
+// ════════════════════════════════════════════════════════════════
+function openRecruitImport() {
+  document.getElementById('recruit-csv-input').click();
+}
+
+function handleRecruitCSV(evt) {
+  const file = evt.target.files[0]; if (!file) return;
+  const run = runs.find(r => r.id === activeId); if (!run) return;
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    const lines = e.target.result.split('\n').map(l => l.trim()).filter(Boolean);
+    let imported = 0, skipped = 0;
+    lines.forEach((line, idx) => {
+      // Skip header row
+      if (idx === 0 && /date|name/i.test(line)) return;
+      const parts = line.split(',').map(p => p.trim().replace(/^"|"$/g,''));
+      if (parts.length < 2) return;
+
+      // Parse: first col = date or name, handle both orders
+      let date = '', name = '', php = '';
+      const isDate = /^\d{4}-\d{2}-\d{2}|\d{1,2}\/\d{1,2}/.test(parts[0]);
+      if (isDate) {
+        date = parts[0].includes('/') ? normaliseDate(parts[0]) : parts[0];
+        name = parts[1] || '';
+        php  = parts[2] || '';
+      } else {
+        name = parts[0];
+        php  = parts[1] || '';
+        date = parts[2] || new Date().toISOString().slice(0,10);
+      }
+      if (!name) { skipped++; return; }
+
+      // Detect month from date
+      const month = detectMonthForDate(date, run) || activeMonth;
+      if (!run.recruits[month]) run.recruits[month] = [];
+      run.recruits[month].push({
+        d: date,
+        n: php ? `${name} · ${php}` : name,
+      });
+      imported++;
+    });
+    save(); renderAll();
+    toast(`✓ Imported ${imported} recruit${imported!==1?'s':''}` + (skipped ? ` (${skipped} skipped)` : ''));
+    evt.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
+function normaliseDate(d) {
+  const parts = d.split('/');
+  if (parts.length === 3) {
+    const [m, day, y] = parts;
+    return `${y.length===2?'20'+y:y}-${m.padStart(2,'0')}-${day.padStart(2,'0')}`;
+  }
+  return d;
+}
+
+// ════════════════════════════════════════════════════════════════
+// POLICY CSV IMPORT
+// Expected CSV: Date, Policy#, Client Name, Apps, Points, Paid(Y/N)
+// ════════════════════════════════════════════════════════════════
+function openPolicyImport() {
+  document.getElementById('policy-csv-input').click();
+}
+
+function handlePolicyCSV(evt) {
+  const file = evt.target.files[0]; if (!file) return;
+  const run = runs.find(r => r.id === activeId); if (!run) return;
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    const lines = e.target.result.split('\n').map(l => l.trim()).filter(Boolean);
+    let imported = 0, skipped = 0;
+
+    // Show a preview modal before committing
+    const previews = [];
+    lines.forEach((line, idx) => {
+      if (idx === 0 && /date|policy|client/i.test(line)) return;
+      const parts = line.split(',').map(p => p.trim().replace(/^"|"$/g,''));
+      if (parts.length < 2) { skipped++; return; }
+
+      const date   = parts[0]?.includes('/') ? normaliseDate(parts[0]) : (parts[0] || new Date().toISOString().slice(0,10));
+      const pol    = parts[1] || '';
+      const client = parts[2] || '';
+      const apps   = parseInt(parts[3]) || 1;
+      const pts    = parseFloat(parts[4]) || 0;
+      const paid   = /y|yes|1|true/i.test(parts[5] || '');
+
+      previews.push({ date, pol, client, apps, pts, paid });
+    });
+
+    if (!previews.length) { toast('⚠ No valid rows found in file'); return; }
+
+    // Show confirm dialog
+    const msg = `Import ${previews.length} policies?\n\nSample:\n` +
+      previews.slice(0,3).map(p => `${p.date} · ${p.pol} · ${p.client} · ${p.pts} pts`).join('\n');
+
+    if (!confirm(msg)) { evt.target.value = ''; return; }
+
+    previews.forEach(p => {
+      const month = detectMonthForDate(p.date, run) || activeMonth;
+      if (!run.apps[month]) run.apps[month] = [];
+      run.apps[month].push({ d:p.date, pol:p.pol, c:p.client, a:p.apps, pts:p.pts, p:p.paid?1:0 });
+      imported++;
+    });
+
+    save(); renderAll();
+    toast(`✓ Imported ${imported} polic${imported!==1?'ies':'y'}`);
+    evt.target.value = '';
+  };
+  reader.readAsText(file);
+}
 </script>
 
 <!-- IMPORT DATA MODAL -->

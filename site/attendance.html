@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0">
+<title>Training Attendance · Dynasty Builders</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=Barlow:wght@400;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="auth.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --navy:#0A1628;--navy-mid:#0F1E38;--navy-light:#132240;
+  --gold:#C9A84C;--gold-light:#E8C97A;--green:#2DCA73;
+  --blue:#5DADE2;--purple:#9B59B6;--orange:#E67E22;--red:#E74C3C;
+  --text:#E8EDF5;--muted:#6B7C93;--border:rgba(255,255,255,.08);
+  --card:rgba(15,30,56,.9);
+}
+body{background:var(--navy);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh;padding-bottom:80px;}
+.header{background:linear-gradient(135deg,#0A1628,#0F1E38);border-bottom:1px solid rgba(201,168,76,.15);
+  padding:14px 18px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:100;}
+.header-title{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;color:var(--gold-light);flex:1;}
+.back-btn{background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:8px;
+  padding:7px 12px;color:var(--muted);font-family:'DM Mono',monospace;font-size:11px;text-decoration:none;}
+/* TABS */
+.tab-bar{display:flex;border-bottom:2px solid var(--border);background:var(--navy-mid);position:sticky;top:56px;z-index:90;}
+.tab-btn{flex:1;padding:11px 4px;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;
+  background:none;border:none;border-bottom:3px solid transparent;color:var(--muted);cursor:pointer;
+  letter-spacing:.04em;transition:all .2s;margin-bottom:-2px;}
+.tab-btn.active{border-bottom-color:var(--gold);color:var(--gold-light);}
+.tab-view{display:none;padding:14px;} .tab-view.active{display:block;}
+/* CARDS */
+.card{background:var(--navy-mid);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;}
+.card-title{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:900;color:var(--gold);
+  text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;}
+/* FORM */
+label{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em;}
+input,select,textarea{width:100%;background:var(--navy-light);border:1px solid rgba(255,255,255,.12);
+  color:var(--text);border-radius:8px;padding:9px 12px;font-family:'DM Mono',monospace;font-size:12px;outline:none;}
+input:focus,select:focus{border-color:rgba(201,168,76,.4);}
+.frow{margin-bottom:10px;}
+.btn{padding:10px 18px;border-radius:9px;font-family:'Barlow Condensed',sans-serif;font-size:15px;
+  font-weight:800;cursor:pointer;border:none;letter-spacing:.04em;}
+.btn-gold{background:linear-gradient(135deg,#C9A84C,#E8C97A);color:#0A1628;}
+.btn-ghost{background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--text);}
+.btn-green{background:rgba(45,202,115,.12);border:1px solid rgba(45,202,115,.3);color:var(--green);}
+.btn-red{background:rgba(231,76,60,.08);border:1px solid rgba(231,76,60,.2);color:var(--red);font-size:12px;padding:5px 10px;}
+.btn-sm{font-size:12px;padding:6px 12px;}
+/* AGENT GRID */
+.agent-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;}
+.agent-card{background:rgba(0,0,0,.2);border:1px solid var(--border);border-radius:9px;
+  padding:10px 12px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:8px;}
+.agent-card.present{background:rgba(45,202,115,.12);border-color:rgba(45,202,115,.4);}
+.agent-card.absent{background:rgba(231,76,60,.06);border-color:rgba(231,76,60,.2);}
+.agent-card.confirmed{background:rgba(93,173,226,.10);border-color:rgba(93,173,226,.35);}
+.agent-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;background:var(--border);}
+.agent-card.present .agent-dot{background:var(--green);}
+.agent-card.absent .agent-dot{background:var(--red);}
+.agent-card.confirmed .agent-dot{background:var(--blue);}
+.agent-name{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;flex:1;}
+.agent-sub{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);}
+/* SEARCH */
+.search-bar{display:flex;gap:8px;margin-bottom:10px;}
+.search-bar input{flex:1;}
+/* EVENT LIST */
+.event-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);}
+.event-row:last-child{border:none;}
+.event-type-badge{font-family:'DM Mono',monospace;font-size:9px;font-weight:700;padding:2px 7px;
+  border-radius:10px;white-space:nowrap;}
+.badge-bom{background:rgba(201,168,76,.15);color:var(--gold);}
+.badge-zoom{background:rgba(93,173,226,.15);color:var(--blue);}
+.badge-custom{background:rgba(155,89,182,.15);color:var(--purple);}
+.badge-call{background:rgba(45,202,115,.12);color:var(--green);}
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;}
+.stat-box{background:rgba(0,0,0,.2);border-radius:9px;padding:12px;text-align:center;}
+.stat-num{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:900;}
+.stat-lbl{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);margin-top:2px;}
+/* SELF CHECK-IN */
+.checkin-card{background:linear-gradient(135deg,rgba(45,202,115,.08),rgba(93,173,226,.05));
+  border:1px solid rgba(45,202,115,.25);border-radius:14px;padding:20px;text-align:center;}
+.pin-input{font-size:32px;letter-spacing:.3em;text-align:center;background:rgba(0,0,0,.3);
+  border:2px solid rgba(201,168,76,.3);border-radius:10px;padding:14px;width:100%;color:var(--gold-light);}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);
+  background:var(--navy-mid);border:1px solid var(--gold);border-radius:8px;padding:10px 18px;
+  font-size:12px;font-family:'DM Mono',monospace;color:var(--gold-light);
+  transition:all .3s;opacity:0;z-index:999;white-space:nowrap;}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+.pill{display:inline-flex;align-items:center;padding:2px 8px;border-radius:10px;font-family:'DM Mono',monospace;font-size:9px;font-weight:700;}
+.pill-green{background:rgba(45,202,115,.12);border:1px solid rgba(45,202,115,.3);color:var(--green);}
+.pill-red{background:rgba(231,76,60,.08);border:1px solid rgba(231,76,60,.2);color:var(--red);}
+.pill-blue{background:rgba(93,173,226,.12);border:1px solid rgba(93,173,226,.3);color:var(--blue);}
+</style>
+</head>
+<body>
+<script>AUTH.require('attendance.html', 20);</script>
+
+<div class="header">
+  <a href="hub.html" class="back-btn">← Hub</a>
+  <div class="header-title">📋 Training Attendance</div>
+  <button class="btn btn-gold btn-sm" onclick="openNewEventModal()" id="new-event-btn" style="display:none;">+ Event</button>
+</div>
+
+<!-- TABS -->
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('take')">📝 Take Attendance</button>
+  <button class="tab-btn" onclick="switchTab('checkin')">✅ Self Check-In</button>
+  <button class="tab-btn" onclick="switchTab('history')">📊 History</button>
+  <button class="tab-btn" onclick="switchTab('report')">📈 Reports</button>
+</div>
+
+<!-- ══ TAB: TAKE ATTENDANCE (Admin) ══ -->
+<div id="tab-take" class="tab-view active">
+  <div id="no-event-msg" class="card" style="text-align:center;padding:30px;">
+    <div style="font-size:40px;margin-bottom:10px;">📋</div>
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;color:var(--gold);margin-bottom:8px;">No Active Event</div>
+    <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:16px;">Create an event to start taking attendance</div>
+    <button class="btn btn-gold" onclick="openNewEventModal()">+ Create Event</button>
+  </div>
+
+  <div id="active-event-panel" style="display:none;">
+    <!-- Event header -->
+    <div class="card" style="border-color:rgba(201,168,76,.2);">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+        <div>
+          <div id="ae-title" style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;color:var(--gold-light);"></div>
+          <div id="ae-meta" style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-top:3px;"></div>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button class="btn btn-green btn-sm" onclick="saveAttendance()">💾 Save to Monday</button>
+          <button class="btn btn-ghost btn-sm" onclick="closeActiveEvent()">✕ Close</button>
+        </div>
+      </div>
+      <!-- Stats -->
+      <div class="stat-grid" style="margin-top:14px;">
+        <div class="stat-box"><div class="stat-num" id="stat-present" style="color:var(--green);">0</div><div class="stat-lbl">Present</div></div>
+        <div class="stat-box"><div class="stat-num" id="stat-absent" style="color:var(--red);">0</div><div class="stat-lbl">Absent</div></div>
+        <div class="stat-box"><div class="stat-num" id="stat-pct" style="color:var(--gold);">0%</div><div class="stat-lbl">Rate</div></div>
+      </div>
+    </div>
+
+    <!-- Search + bulk actions -->
+    <div class="search-bar">
+      <input type="text" id="agent-search" placeholder="Search agents…" oninput="filterAgents()">
+      <button class="btn btn-ghost btn-sm" onclick="markAll('present')">✅ All</button>
+      <button class="btn btn-ghost btn-sm" onclick="markAll('absent')">❌ All</button>
+    </div>
+
+    <div id="agent-grid" class="agent-grid"></div>
+  </div>
+</div>
+
+<!-- ══ TAB: SELF CHECK-IN ══ -->
+<div id="tab-checkin" class="tab-view">
+  <div class="checkin-card">
+    <div style="font-size:36px;margin-bottom:8px;">✅</div>
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;color:var(--green);margin-bottom:4px;">Agent Self Check-In</div>
+    <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:16px;" id="checkin-event-label">
+      No active event — ask your MD to open an event first
+    </div>
+    <div id="checkin-form" style="display:none;">
+      <div class="frow">
+        <label>Enter your 4-digit PIN</label>
+        <input type="tel" inputmode="numeric" maxlength="4" class="pin-input" id="checkin-pin" placeholder="••••" oninput="pinChanged(this)">
+      </div>
+      <div id="checkin-name-preview" style="font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);text-align:center;min-height:20px;margin-bottom:10px;"></div>
+      <button class="btn btn-gold" style="width:100%;" onclick="selfCheckIn()">Check In ✓</button>
+    </div>
+    <div id="checkin-confirmed" style="display:none;">
+      <div style="font-size:48px;">🎉</div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:900;color:var(--green);margin-top:8px;" id="checkin-confirmed-name"></div>
+      <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px;">Checked in ✓</div>
+    </div>
+  </div>
+
+  <!-- Agent's own attendance record -->
+  <div class="card" style="margin-top:12px;">
+    <div class="card-title">My Attendance Record</div>
+    <div id="my-attendance-list">
+      <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);">Loading…</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TAB: HISTORY ══ -->
+<div id="tab-history" class="tab-view">
+  <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+    <select id="hist-type" onchange="loadHistory()" style="flex:1;min-width:110px;font-size:12px;padding:7px;background:var(--navy);border:1px solid var(--border);color:var(--text);border-radius:6px;">
+      <option value="all">All Events</option>
+      <option value="BOM">BOM</option>
+      <option value="Zoom Call">Zoom Call</option>
+      <option value="Team Call">Team Call</option>
+      <option value="Custom">Custom</option>
+    </select>
+    <input type="month" id="hist-month" onchange="loadHistory()"
+      style="flex:1;min-width:110px;font-size:12px;padding:7px;background:var(--navy);border:1px solid var(--border);color:var(--text);border-radius:6px;">
+    <button class="btn btn-ghost btn-sm" onclick="loadHistory()">↻</button>
+  </div>
+  <div id="history-list">
+    <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);padding:20px;text-align:center;">No events yet</div>
+  </div>
+</div>
+
+<!-- ══ TAB: REPORTS ══ -->
+<div id="tab-report" class="tab-view">
+  <div class="card">
+    <div class="card-title">📈 Attendance by Agent</div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+      <input type="date" id="rpt-from" style="flex:1;font-size:12px;padding:7px;background:var(--navy);border:1px solid var(--border);color:var(--text);border-radius:6px;">
+      <input type="date" id="rpt-to" style="flex:1;font-size:12px;padding:7px;background:var(--navy);border:1px solid var(--border);color:var(--text);border-radius:6px;">
+      <button class="btn btn-gold btn-sm" onclick="buildReport()">Run Report</button>
+    </div>
+    <div id="report-output">
+      <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);text-align:center;padding:20px;">Set a date range and run the report</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ NEW EVENT MODAL ══ -->
+<div id="event-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:500;align-items:flex-end;justify-content:center;">
+  <div style="background:#0F1E38;border:1px solid rgba(201,168,76,.2);border-radius:16px 16px 0 0;
+    width:100%;max-width:500px;padding:20px;max-height:85vh;overflow-y:auto;">
+    <div style="display:flex;justify-content:space-between;margin-bottom:16px;">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;color:var(--gold);">New Training Event</div>
+      <button onclick="closeEventModal()" style="background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;">✕</button>
+    </div>
+    <div class="frow">
+      <label>Event Type</label>
+      <select id="ev-type" onchange="updateEventDefaults()">
+        <option value="BOM">🏢 BOM (Business Opportunity Meeting)</option>
+        <option value="Zoom Call">💻 Zoom Team Call</option>
+        <option value="Team Call">📞 Team Call / Huddle</option>
+        <option value="Fast Start">🚀 Fast Start Training</option>
+        <option value="Field Training">🎯 Field Training (FT)</option>
+        <option value="Convention">🏆 Convention / Event</option>
+        <option value="Custom">✏️ Custom Event</option>
+      </select>
+    </div>
+    <div class="frow">
+      <label>Event Name</label>
+      <input type="text" id="ev-name" placeholder="e.g. Saturday BOM · Sep 13">
+    </div>
+    <div class="frow">
+      <label>Date & Time</label>
+      <input type="datetime-local" id="ev-datetime">
+    </div>
+    <div class="frow">
+      <label>Location / Link</label>
+      <input type="text" id="ev-location" placeholder="Office address or Zoom link">
+    </div>
+    <div class="frow">
+      <label>Monday Board ID (for sync)</label>
+      <input type="text" id="ev-board" placeholder="Leave blank to use default attendance board">
+    </div>
+    <div class="frow">
+      <label>Notes</label>
+      <textarea id="ev-notes" rows="2" placeholder="Any notes for this event…" style="resize:none;"></textarea>
+    </div>
+    <button class="btn btn-gold" style="width:100%;margin-top:4px;" onclick="createEvent()">📋 Open Attendance Sheet</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ════════════════════════════════════════════════════════════════
+// CONSTANTS & STATE
+// ════════════════════════════════════════════════════════════════
+const session      = AUTH.getSession();
+const isAdmin      = session && session.level >= 60; // Directors+
+const ATTEND_KEY   = 'dba_attendance_events';
+const ACTIVE_KEY   = 'dba_active_event';
+const ATTEND_BOARD = localStorage.getItem('dba_attend_board') || '';
+
+// Attendance statuses per agent per event: 'present' | 'absent' | 'confirmed' | ''
+let activeEvent  = null;   // the event currently being taken
+let attendRecord = {};     // { agentId: 'present'|'absent'|'confirmed'|'' }
+let allAgents    = [];     // from AGENTS in auth.js
+let filteredAgents = [];
+
+// ════════════════════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════════════════════
+function init() {
+  // Show + Event button for admins
+  const newBtn = document.getElementById('new-event-btn');
+  if (newBtn && isAdmin) newBtn.style.display = 'block';
+
+  // Build agent list from AGENTS roster
+  allAgents = (typeof AGENTS !== 'undefined' ? AGENTS : [])
+    .filter(a => a.id !== 'dba000' && a.level !== 100 || a.id === session?.agentId)
+    .sort((a,b) => a.name.localeCompare(b.name));
+
+  // Restore active event if exists
+  try {
+    const saved = JSON.parse(localStorage.getItem(ACTIVE_KEY) || 'null');
+    if (saved) { activeEvent = saved.event; attendRecord = saved.record || {}; showActiveEvent(); }
+  } catch(e) {}
+
+  // Default history month to current
+  const now = new Date();
+  const histMonth = document.getElementById('hist-month');
+  if (histMonth) histMonth.value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+
+  // Default report date range
+  const from = document.getElementById('rpt-from');
+  const to   = document.getElementById('rpt-to');
+  if (from) { const d = new Date(); d.setDate(1); from.value = d.toISOString().slice(0,10); }
+  if (to)   to.value = new Date().toISOString().slice(0,10);
+
+  loadHistory();
+  loadMyAttendance();
+  updateCheckinState();
+}
+
+// ════════════════════════════════════════════════════════════════
+// TABS
+// ════════════════════════════════════════════════════════════════
+function switchTab(id) {
+  document.querySelectorAll('.tab-btn').forEach((b,i) => {
+    const tabs = ['take','checkin','history','report'];
+    b.classList.toggle('active', tabs[i] === id);
+  });
+  document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('active'));
+  const el = document.getElementById('tab-' + id);
+  if (el) el.classList.add('active');
+  if (id === 'history') loadHistory();
+  if (id === 'report')  buildReport();
+}
+
+// ════════════════════════════════════════════════════════════════
+// EVENT MODAL
+// ════════════════════════════════════════════════════════════════
+function openNewEventModal() {
+  const now = new Date();
+  now.setMinutes(0,0,0);
+  document.getElementById('ev-datetime').value = now.toISOString().slice(0,16);
+  updateEventDefaults();
+  document.getElementById('event-modal').style.display = 'flex';
+}
+function closeEventModal() { document.getElementById('event-modal').style.display = 'none'; }
+
+function updateEventDefaults() {
+  const type = document.getElementById('ev-type').value;
+  const now  = new Date();
+  const dateStr = now.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  const defaults = {
+    'BOM':           `${now.getDay()===6?'Saturday':'Tuesday'} BOM · ${dateStr}`,
+    'Zoom Call':     `Weekly Zoom · ${dateStr}`,
+    'Team Call':     `Team Huddle · ${dateStr}`,
+    'Fast Start':    `Fast Start Training · ${dateStr}`,
+    'Field Training':`Field Training (FT) · ${dateStr}`,
+    'Convention':    `Convention · ${dateStr}`,
+    'Custom':        '',
+  };
+  document.getElementById('ev-name').value = defaults[type] || '';
+}
+
+function createEvent() {
+  const type     = document.getElementById('ev-type').value;
+  const name     = document.getElementById('ev-name').value.trim() || type;
+  const datetime = document.getElementById('ev-datetime').value;
+  const location = document.getElementById('ev-location').value.trim();
+  const boardId  = document.getElementById('ev-board').value.trim() || ATTEND_BOARD;
+  const notes    = document.getElementById('ev-notes').value.trim();
+
+  activeEvent = {
+    id:       Date.now().toString(),
+    type, name, datetime, location, boardId, notes,
+    createdBy: session?.name || '',
+    createdAt: new Date().toISOString(),
+    status:    'open',
+  };
+  attendRecord = {};
+  // Pre-populate all agents as '' (unmarked)
+  allAgents.forEach(a => attendRecord[a.id] = '');
+
+  saveActiveState();
+  closeEventModal();
+  showActiveEvent();
+  updateCheckinState();
+  toast('✓ Event created — take attendance below');
+}
+
+// ════════════════════════════════════════════════════════════════
+// TAKE ATTENDANCE
+// ════════════════════════════════════════════════════════════════
+function showActiveEvent() {
+  document.getElementById('no-event-msg').style.display = 'none';
+  document.getElementById('active-event-panel').style.display = 'block';
+
+  const TYPE_ICON = {BOM:'🏢','Zoom Call':'💻','Team Call':'📞','Fast Start':'🚀',
+    'Field Training':'🎯','Convention':'🏆','Custom':'📋'};
+  document.getElementById('ae-title').textContent =
+    (TYPE_ICON[activeEvent.type]||'📋') + ' ' + activeEvent.name;
+  document.getElementById('ae-meta').textContent =
+    (activeEvent.datetime ? new Date(activeEvent.datetime).toLocaleString('en-US',
+      {weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}) : '') +
+    (activeEvent.location ? '  ·  ' + activeEvent.location : '');
+
+  filteredAgents = [...allAgents];
+  renderAgentGrid();
+  updateStats();
+}
+
+function filterAgents() {
+  const q = (document.getElementById('agent-search')?.value || '').toLowerCase();
+  filteredAgents = q ? allAgents.filter(a => a.name.toLowerCase().includes(q)) : [...allAgents];
+  renderAgentGrid();
+}
+
+function renderAgentGrid() {
+  const grid = document.getElementById('agent-grid');
+  if (!grid) return;
+  if (!filteredAgents.length) {
+    grid.innerHTML = `<div style="grid-column:1/-1;font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);padding:16px;text-align:center;">No agents found</div>`;
+    return;
+  }
+  grid.innerHTML = filteredAgents.map(a => {
+    const status = attendRecord[a.id] || '';
+    const cls = status === 'present' ? 'present' : status === 'absent' ? 'absent' : status === 'confirmed' ? 'confirmed' : '';
+    const icon = status === 'present' ? '✅' : status === 'absent' ? '❌' : status === 'confirmed' ? '🔵' : '⬜';
+    return `<div class="agent-card ${cls}" onclick="cycleAgentStatus('${a.id}')">
+      <div class="agent-dot"></div>
+      <div style="flex:1;min-width:0;">
+        <div class="agent-name">${a.name}</div>
+        <div class="agent-sub">${a.role||''}</div>
+      </div>
+      <span style="font-size:16px;">${icon}</span>
+    </div>`;
+  }).join('');
+}
+
+function cycleAgentStatus(agentId) {
+  const cycle = ['', 'present', 'absent'];
+  const cur = attendRecord[agentId] || '';
+  // confirmed stays confirmed unless manually cycled past it
+  if (cur === 'confirmed') {
+    attendRecord[agentId] = 'present';
+  } else {
+    const idx = cycle.indexOf(cur);
+    attendRecord[agentId] = cycle[(idx + 1) % cycle.length];
+  }
+  saveActiveState();
+  renderAgentGrid();
+  updateStats();
+}
+
+function markAll(status) {
+  filteredAgents.forEach(a => attendRecord[a.id] = status);
+  saveActiveState();
+  renderAgentGrid();
+  updateStats();
+}
+
+function updateStats() {
+  const vals = Object.values(attendRecord);
+  const present = vals.filter(v => v === 'present' || v === 'confirmed').length;
+  const absent  = vals.filter(v => v === 'absent').length;
+  const total   = allAgents.length || 1;
+  const pct     = Math.round(present / total * 100);
+  document.getElementById('stat-present').textContent = present;
+  document.getElementById('stat-absent').textContent  = absent;
+  document.getElementById('stat-pct').textContent     = pct + '%';
+}
+
+function closeActiveEvent() {
+  if (!confirm('Close this event without saving? Unsaved attendance will be lost.')) return;
+  activeEvent  = null;
+  attendRecord = {};
+  localStorage.removeItem(ACTIVE_KEY);
+  document.getElementById('no-event-msg').style.display = 'block';
+  document.getElementById('active-event-panel').style.display = 'none';
+  updateCheckinState();
+}
+
+function saveActiveState() {
+  try { localStorage.setItem(ACTIVE_KEY, JSON.stringify({ event: activeEvent, record: attendRecord })); } catch(e) {}
+}
+
+// ════════════════════════════════════════════════════════════════
+// SAVE TO MONDAY
+// ════════════════════════════════════════════════════════════════
+async function saveAttendance() {
+  if (!activeEvent) { toast('No active event'); return; }
+
+  // Save to local history first
+  const record = {
+    event:      { ...activeEvent },
+    attendance: { ...attendRecord },
+    savedAt:    new Date().toISOString(),
+    savedBy:    session?.name || '',
+  };
+
+  try {
+    const hist = JSON.parse(localStorage.getItem(ATTEND_KEY) || '[]');
+    const existIdx = hist.findIndex(h => h.event.id === activeEvent.id);
+    if (existIdx >= 0) hist[existIdx] = record; else hist.unshift(record);
+    localStorage.setItem(ATTEND_KEY, JSON.stringify(hist.slice(0, 200)));
+  } catch(e) {}
+
+  // ── Also write to leaderboard's STORAGE_KEY format ──────────
+  // dba_attendance_records: [{ agentId, agentName, date, meetingType, notes }]
+  try {
+    const lbRecords = JSON.parse(localStorage.getItem('dba_attendance_records') || '[]');
+    const evDate    = (activeEvent.datetime || new Date().toISOString()).slice(0,10);
+    const evType    = activeEvent.type || 'Training';
+    // Remove existing records for this event (re-save clean)
+    const filtered  = lbRecords.filter(r => !(r.eventId === activeEvent.id));
+    // Add present/confirmed agents
+    Object.entries(attendRecord).forEach(([agentId, status]) => {
+      if (status === 'present' || status === 'confirmed') {
+        const agent = allAgents.find(a => a.id === agentId);
+        filtered.push({
+          agentId,
+          agentName: agent?.name || agentId,
+          date:      evDate,
+          meetingType: evType,
+          notes:     status === 'confirmed' ? 'Self check-in' : '',
+          eventId:   activeEvent.id,
+          eventName: activeEvent.name,
+        });
+      }
+    });
+    localStorage.setItem('dba_attendance_records', JSON.stringify(filtered.slice(0, 2000)));
+  } catch(e) {}
+
+  toast('✓ Saved locally');
+
+  // Sync to Monday if board is set
+  if (!AUTH.getMondayKey()) { toast('⚠ No Monday key — saved locally only'); return; }
+
+  const boardId = activeEvent.boardId || ATTEND_BOARD;
+  if (!boardId) {
+    toast('⚠ Set attendance board ID in Netlify env (ATTEND_BOARD) to sync to Monday');
+    return;
+  }
+
+  toast('⟳ Syncing to Monday…');
+  let synced = 0, failed = 0;
+
+  for (const agent of allAgents) {
+    const status = attendRecord[agent.id] || 'absent';
+    const itemName = `${activeEvent.name} · ${agent.name}`;
+    const cv = {
+      text_attend_agent:  agent.name,
+      text_attend_id:     agent.id,
+      text_attend_event:  activeEvent.name,
+      text_attend_type:   activeEvent.type,
+      date_attend:        { date: (activeEvent.datetime || new Date().toISOString()).slice(0,10) },
+      status_attend:      { label: status === 'present' || status === 'confirmed' ? 'Present' : 'Absent' },
+      text_attend_notes:  status === 'confirmed' ? 'Self check-in' : '',
+    };
+    const cvStr = JSON.stringify(JSON.stringify(cv));
+    try {
+      await mondayQuery(`mutation {
+        create_item(board_id:${boardId}, item_name:"${itemName.replace(/"/g,"'")}",
+          column_values:${cvStr}, create_labels_if_missing:true) { id }
+      }`);
+      synced++;
+    } catch(e) { failed++; }
+  }
+  toast(`✓ Synced ${synced} records to Monday` + (failed ? ` (${failed} failed)` : ''));
+  loadHistory();
+}
+
+// ════════════════════════════════════════════════════════════════
+// SELF CHECK-IN
+// ════════════════════════════════════════════════════════════════
+function updateCheckinState() {
+  const form      = document.getElementById('checkin-form');
+  const label     = document.getElementById('checkin-event-label');
+  const confirmed = document.getElementById('checkin-confirmed');
+  if (!form) return;
+
+  if (activeEvent) {
+    label.textContent = `Checking in for: ${activeEvent.name}`;
+    form.style.display = 'block';
+    confirmed.style.display = 'none';
+    document.getElementById('checkin-pin').value = '';
+    document.getElementById('checkin-name-preview').textContent = '';
+  } else {
+    label.textContent = 'No active event — ask your MD to open an event first';
+    form.style.display = 'none';
+    confirmed.style.display = 'none';
+  }
+}
+
+function pinChanged(input) {
+  const pin = input.value.trim();
+  const preview = document.getElementById('checkin-name-preview');
+  if (pin.length === 4) {
+    const agent = (typeof AGENTS !== 'undefined' ? AGENTS : []).find(a => a.pin === pin);
+    preview.textContent = agent ? '👤 ' + agent.name : '⚠ PIN not found';
+    preview.style.color = agent ? 'var(--green)' : 'var(--red)';
+  } else {
+    preview.textContent = '';
+  }
+}
+
+function selfCheckIn() {
+  const pin   = document.getElementById('checkin-pin').value.trim();
+  const agent = (typeof AGENTS !== 'undefined' ? AGENTS : []).find(a => a.pin === pin);
+  if (!agent) { toast('⚠ PIN not found — try again'); return; }
+  if (!activeEvent) { toast('No active event'); return; }
+
+  // Mark as confirmed (self check-in)
+  attendRecord[agent.id] = 'confirmed';
+  saveActiveState();
+  if (activeEvent) updateStats();
+
+  // Show confirmation
+  document.getElementById('checkin-form').style.display = 'none';
+  document.getElementById('checkin-confirmed').style.display = 'block';
+  document.getElementById('checkin-confirmed-name').textContent = agent.name;
+
+  toast(`✓ ${agent.name} checked in!`);
+
+  // Reset after 4 seconds for next agent
+  setTimeout(() => {
+    document.getElementById('checkin-confirmed').style.display = 'none';
+    document.getElementById('checkin-form').style.display = 'block';
+    document.getElementById('checkin-pin').value = '';
+    document.getElementById('checkin-name-preview').textContent = '';
+  }, 4000);
+}
+
+// ════════════════════════════════════════════════════════════════
+// HISTORY
+// ════════════════════════════════════════════════════════════════
+function loadHistory() {
+  const typeFilter  = document.getElementById('hist-type')?.value || 'all';
+  const monthFilter = document.getElementById('hist-month')?.value || '';
+  const list = document.getElementById('history-list');
+  if (!list) return;
+
+  let records = [];
+  try { records = JSON.parse(localStorage.getItem(ATTEND_KEY) || '[]'); } catch(e) {}
+
+  let filtered = records.filter(r => {
+    if (typeFilter !== 'all' && r.event?.type !== typeFilter) return false;
+    if (monthFilter) {
+      const evDate = (r.event?.datetime || r.savedAt || '').slice(0,7);
+      if (evDate !== monthFilter) return false;
+    }
+    return true;
+  });
+
+  if (!filtered.length) {
+    list.innerHTML = '<div style="font-family:\'DM Mono\',monospace;font-size:11px;color:var(--muted);padding:20px;text-align:center;">No events in this period</div>';
+    return;
+  }
+
+  const TYPE_BADGE = { BOM:'badge-bom', 'Zoom Call':'badge-zoom', 'Team Call':'badge-zoom',
+    'Fast Start':'badge-call', 'Field Training':'badge-call', 'Custom':'badge-custom','Convention':'badge-custom' };
+
+  list.innerHTML = '<div class="card">' + filtered.map(r => {
+    const present = Object.values(r.attendance||{}).filter(v => v==='present'||v==='confirmed').length;
+    const total   = Object.keys(r.attendance||{}).length;
+    const pct     = total ? Math.round(present/total*100) : 0;
+    const evDate  = r.event?.datetime ? new Date(r.event.datetime).toLocaleDateString('en-US',
+      {weekday:'short',month:'short',day:'numeric'}) : '—';
+    return `<div class="event-row">
+      <span class="event-type-badge ${TYPE_BADGE[r.event?.type]||'badge-custom'}">${r.event?.type||'Event'}</span>
+      <div style="flex:1;min-width:0;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.event?.name||'Untitled'}</div>
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);">${evDate} · ${present}/${total} present · ${pct}%</div>
+      </div>
+      <span class="pill ${pct>=80?'pill-green':pct>=50?'pill-blue':'pill-red'}">${pct}%</span>
+    </div>`;
+  }).join('') + '</div>';
+}
+
+// ════════════════════════════════════════════════════════════════
+// REPORTS — attendance by agent across events
+// ════════════════════════════════════════════════════════════════
+function buildReport() {
+  const from = document.getElementById('rpt-from')?.value;
+  const to   = document.getElementById('rpt-to')?.value;
+  const out  = document.getElementById('report-output');
+  if (!out) return;
+
+  let records = [];
+  try { records = JSON.parse(localStorage.getItem(ATTEND_KEY) || '[]'); } catch(e) {}
+
+  // Filter by date range
+  const filtered = records.filter(r => {
+    const d = (r.event?.datetime || r.savedAt || '').slice(0,10);
+    if (from && d < from) return false;
+    if (to   && d > to)   return false;
+    return true;
+  });
+
+  if (!filtered.length) {
+    out.innerHTML = '<div style="font-family:\'DM Mono\',monospace;font-size:11px;color:var(--muted);text-align:center;padding:16px;">No events in this range</div>';
+    return;
+  }
+
+  // Build per-agent stats
+  const agentStats = {};
+  allAgents.forEach(a => agentStats[a.id] = { name:a.name, present:0, total:0 });
+
+  filtered.forEach(r => {
+    Object.entries(r.attendance||{}).forEach(([agentId, status]) => {
+      if (!agentStats[agentId]) agentStats[agentId] = { name: agentId, present:0, total:0 };
+      agentStats[agentId].total++;
+      if (status === 'present' || status === 'confirmed') agentStats[agentId].present++;
+    });
+  });
+
+  const rows = Object.values(agentStats)
+    .filter(s => s.total > 0)
+    .sort((a,b) => (b.present/b.total) - (a.present/a.total));
+
+  const maxPct = rows.length ? Math.max(...rows.map(r => r.present/r.total*100)) : 100;
+
+  out.innerHTML = `
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:10px;">
+      ${filtered.length} event${filtered.length!==1?'s':''} · ${rows.length} agents
+    </div>
+    ${rows.map((r,i) => {
+      const pct = r.total ? Math.round(r.present/r.total*100) : 0;
+      const bar = Math.round(pct/maxPct*100);
+      const medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
+      return `<div style="margin-bottom:10px;">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">
+          <span style="font-size:12px;min-width:18px;">${medal}</span>
+          <span style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;flex:1;">${r.name}</span>
+          <span style="font-family:'DM Mono',monospace;font-size:11px;color:${pct>=80?'var(--green)':pct>=50?'var(--blue)':'var(--red)'};">${r.present}/${r.total} · ${pct}%</span>
+        </div>
+        <div style="height:4px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;margin-left:24px;">
+          <div style="width:${bar}%;height:100%;background:${pct>=80?'var(--green)':pct>=50?'var(--blue)':'var(--red)'};border-radius:2px;"></div>
+        </div>
+      </div>`;
+    }).join('')}`;
+}
+
+// ════════════════════════════════════════════════════════════════
+// MY ATTENDANCE (for non-admins on check-in tab)
+// ════════════════════════════════════════════════════════════════
+function loadMyAttendance() {
+  const list = document.getElementById('my-attendance-list');
+  if (!list || !session) return;
+
+  // Read from shared leaderboard records (dba_attendance_records)
+  let lbRecs = [];
+  try { lbRecs = JSON.parse(localStorage.getItem('dba_attendance_records') || '[]'); } catch(e) {}
+  const myLbRecs = lbRecs.filter(r => r.agentId === session?.agentId).slice(0, 10);
+
+  if (!myLbRecs.length) {
+    list.innerHTML = `<div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);">No attendance records yet</div>`;
+    return;
+  }
+  list.innerHTML = myLbRecs.map(r => {
+    const evDate = r.date ? new Date(r.date + 'T12:00:00').toLocaleDateString('en-US',
+      {month:'short',day:'numeric'}) : '—';
+    return `<div class="event-row">
+      <div style="flex:1;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;">${r.eventName || r.meetingType || 'Training'}</div>
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);">${evDate} · ${r.meetingType || ''}</div>
+      </div>
+      <span class="pill pill-green">Present</span>
+    </div>`;
+  }).join('');
+
+  const myRecords = [];  // kept for later use
+  const ignore_orig_records = true;
+
+  if (!myRecords.length) {
+    list.innerHTML = '<div style="font-family:\'DM Mono\',monospace;font-size:11px;color:var(--muted);">No attendance records yet</div>';
+    return;
+  }
+
+  list.innerHTML = myRecords.map(r => {
+    const status = r.attendance?.[session.agentId] || 'absent';
+    const evDate = r.event?.datetime ? new Date(r.event.datetime).toLocaleDateString('en-US',
+      {month:'short',day:'numeric'}) : '—';
+    const pill = status === 'present' || status === 'confirmed'
+      ? '<span class="pill pill-green">Present</span>'
+      : '<span class="pill pill-red">Absent</span>';
+    return `<div class="event-row">
+      <div style="flex:1;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;">${r.event?.name||'Event'}</div>
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);">${evDate} · ${r.event?.type||''}</div>
+      </div>
+      ${pill}
+    </div>`;
+  }).join('');
+}
+
+// ════════════════════════════════════════════════════════════════
+// HELPERS
+// ════════════════════════════════════════════════════════════════
+function toast(msg, dur=2800) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), dur);
+}
+
+function mondayQuery(query) {
+  return fetch('/api/monday', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ query })
+  }).then(r => r.json());
+}
+
+init();
+</script>
+</body>
+</html>
