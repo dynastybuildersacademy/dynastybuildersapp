@@ -91,6 +91,7 @@ select option{background:var(--navy-mid);}
 </div>
 <div class="tab-bar">
   <div class="tab active" onclick="switchTab('fasttrack',this)">🚀 Fast Track</div>
+  <div class="tab" onclick="window.location.href='academy.html'" style="background:rgba(201,168,76,.1);border-bottom:2px solid var(--gold);">🏛️ Academy</div>
   <div class="tab" onclick="switchTab('sales',this)">💰 Sales Mastery</div>
   <div class="tab" onclick="switchTab('recruiting',this)">👥 Recruiting</div>
   <div class="tab" onclick="switchTab('leadership',this)">🏆 Leadership</div>
@@ -443,41 +444,70 @@ function toggleMod(hdr) {
 
 // ── FAST TRACK CONTENT ────────────────────────────────────────
 buildModules('ft-modules', [
-  { title: 'Step 1 — Get Your License', body: `<ul>
-    <li>Complete PHP Quest pre-licensing course on <a href="https://app.phpbamboo.com" target="_blank" style="color:var(--gold);">Bamboo</a></li>
-    <li>Schedule your state Life & Health exam within 14 days</li>
-    <li>Pass the exam — PHP Quest prepares you for it</li>
-    <li>Submit your license copy to your upline: <strong>${getAgentById(session.agentId)?.uplineId ? getAgentById(getAgentById(session.agentId).uplineId)?.name : 'your sponsor'}</strong></li>
-    <li>Register on Integrity Connect for carrier appointments</li>
-  </ul><p style="margin-top:10px;color:var(--slate);">Goal: Licensed within 30 days of enrollment. Every day unlicensed is a day you can't earn.</p>` },
-  { title: 'Step 2 — Set Up Your Business Accounts', body: `<ul>
-    <li>Activate PHP Bamboo: <a href="https://app.phpbamboo.com/agent/signin" target="_blank" style="color:var(--gold);">app.phpbamboo.com</a></li>
-    <li>Register on Integrity Connect for carrier access</li>
-    <li>Bookmark your personal Call Tracker: <code style="background:var(--navy);padding:2px 6px;border-radius:2px;color:var(--gold-light);">tracker.html?agent=${session.agentId}</code></li>
-    <li>Save the financial survey link to send clients: <code style="background:var(--navy);padding:2px 6px;border-radius:2px;color:var(--gold-light);">survey.html</code></li>
-    <li>Join the Dynasty Builders team group chat</li>
-  </ul>` },
-  { title: 'Step 3 — Build Your Dream 20 List', body: `<ul>
-    <li>Write 20 names right now — people who have families, mortgages, or want to earn more</li>
-    <li>Don't pre-judge anyone. Your job is to sort, not decide</li>
-    <li>Add them to your <a href="portal.html" style="color:var(--gold);">Portal → Referrals</a> pipeline</li>
-    <li>Categories: warm market (family/friends), social media connections, coworkers, referrals</li>
-  </ul>
-  <div class="script-box">"Hey [Name], I recently started working with a financial protection company. I'm not trying to sell you anything today — I just want to share something I think every family should know. Can we get 20 minutes on the calendar this week?"</div>` },
-  { title: 'Step 4 — Run Your First Appointment', body: `<ul>
-    <li>Send the <a href="survey.html" target="_blank" style="color:var(--gold);">Financial Survey</a> link before every appointment</li>
-    <li>Review their answers before you meet — this is your discovery</li>
-    <li>Use the 5-step process: Connect → Discover → Present → Handle → Close</li>
-    <li>Practice with your upline before your first real appointment</li>
-    <li>Submit your first application — every policy protects a real family</li>
-  </ul>` },
-  { title: 'Step 5 — Bring Your First BOM Guest', body: `<ul>
-    <li><strong>Tuesday 7:00 PM</strong> and <strong>Saturday 10:30 AM</strong> — attend both if possible in your first month</li>
-    <li>Invite 10 people for every BOM. Expect 3 to confirm, 1 to show. That's the Captain System.</li>
-    <li>Arrive 20 minutes early to meet guests and introduce them to your upline</li>
-    <li>Follow up the same night: "What stood out most to you?"</li>
-    <li>First BOM guest who joins = your first personal recruit. 2 recruits = Associate promotion.</li>
-  </ul>` }
+  {
+    title: 'Step 1 — Set Up PHP Bamboo',
+    body: `<ul>
+      <li>Log in to <a href="https://app.phpbamboo.com/agent/signin" target="_blank" style="color:var(--gold);font-weight:700;">app.phpbamboo.com ↗</a> — your business command center</li>
+      <li>Complete your agent profile: photo, phone, state, and upline info</li>
+      <li>Activate <strong>PHP Quest</strong> — your pre-licensing study course lives here</li>
+      <li>Register on <strong>Integrity Connect</strong> for carrier appointments</li>
+      <li>Bookmark your personal Activity Log: <code style="background:var(--navy);padding:2px 6px;border-radius:2px;color:var(--gold-light);">tracker.html</code></li>
+      <li>Save your financial survey link to send prospects: <code style="background:var(--navy);padding:2px 6px;border-radius:2px;color:var(--gold-light);">survey.html</code></li>
+      <li>Join the Dynasty Builders team group chat and introduce yourself</li>
+    </ul>
+    <p style="margin-top:10px;color:var(--slate);">✅ Goal: Bamboo fully set up and active within 48 hours of enrollment.</p>`
+  },
+  {
+    title: 'Step 2 — Build Your Top 25',
+    body: `<ul>
+      <li>Write <strong>25 names right now</strong> — people who have families, mortgages, or want to earn more</li>
+      <li>Don't pre-judge anyone. Your job is to sort, not decide for them</li>
+      <li><a href="top25.html" style="color:var(--gold);font-weight:700;font-size:14px;">→ Open Your Top 25 Worksheet</a> — add them now before you sleep tonight</li>
+      <li>Categories to draw from: family, close friends, coworkers, social media, referrals</li>
+      <li>Live rule: never let your Top 25 drop below 25 — every week swap out cold contacts for fresh names</li>
+      <li>Your top 25 are your first prospects AND your first recruit candidates</li>
+    </ul>
+    <div class="script-box">"Hey [Name], I just started with a financial protection company and I'm learning a ton about protecting families and building income. I'd love your feedback on something — can we hop on a call for 20 minutes this week?"</div>
+    <p style="margin-top:10px;color:var(--slate);">✅ Goal: 25 names in your worksheet within your first 72 hours.</p>`
+  },
+  {
+    title: 'Step 3 — Bring Your First BOM Guest',
+    body: `<ul>
+      <li>BOM schedule: <strong>Tuesday 7:00–9:00 PM</strong> · <strong>Saturday 10:00 AM–12:00 PM</strong></li>
+      <li>Pick 2–3 names from your Top 25 and personally invite them to your first BOM this week</li>
+      <li>The captain system: invite 10, confirm 3–5, expect 1–2 to show — volume is the key</li>
+      <li>Arrive <strong>20 minutes early</strong> to greet your guest and introduce them to your upline</li>
+      <li>Log every guest in <a href="bom.html" style="color:var(--gold);">→ My BOM Tracker</a> before the meeting starts</li>
+      <li>Same-night follow-up: <em>"What stood out most to you? When can we talk this week?"</em></li>
+      <li>First guest who joins becomes your first personal recruit → 2 recruits = Associate promotion</li>
+    </ul>
+    <p style="margin-top:10px;color:var(--slate);">✅ Goal: Bring at least 1 guest to a BOM within your first 7 days.</p>`
+  },
+  {
+    title: 'Step 4 — Get Licensed',
+    body: `<ul>
+      <li>Start PHP Quest on Bamboo <strong>today</strong> — treat it like a part-time job: 2 hrs/day minimum</li>
+      <li>Schedule your state Life &amp; Health exam within <strong>14 days</strong> of enrollment</li>
+      <li>Study with your upline or accountability partner — pair studying beats solo every time</li>
+      <li>Pass the exam → submit your license copy to your upline immediately</li>
+      <li>Complete carrier appointments through <strong>Integrity Connect</strong></li>
+      <li>Track every stage in the <a href="licensing.html" style="color:var(--gold);">→ Licensing Tracker</a></li>
+    </ul>
+    <p style="margin-top:10px;color:var(--slate);">✅ Goal: Licensed and appointed within 30 days. Every unlicensed day is lost income.</p>`
+  },
+  {
+    title: 'Step 5 — Run Your First Appointment',
+    body: `<ul>
+      <li>Send the <a href="survey.html" target="_blank" style="color:var(--gold);">→ Financial Survey</a> to your prospect before every appointment</li>
+      <li>Review their answers before you meet — their survey does the discovery for you</li>
+      <li>Shadow your upline on 2–3 appointments first. Watch and take notes.</li>
+      <li>Run your first solo appointment using the 5-step process: <strong>Connect → Discover → Present → Handle → Close</strong></li>
+      <li>Submit your first application — every policy protects a real family and counts toward promotion points</li>
+      <li>Debrief with your upline within 24 hours: what worked, what to sharpen</li>
+    </ul>
+    <div class="script-box">"Before we dive in — if something happened to you tomorrow, what's your family's biggest concern? [Listen.] That's exactly what we're solving today."</div>
+    <p style="margin-top:10px;color:var(--slate);">✅ Goal: First appointment within 7 days of getting licensed. First application within 14 days.</p>`
+  }
 ]);
 
 // ── SALES CONTENT ─────────────────────────────────────────────
@@ -518,7 +548,7 @@ buildModules('sales-modules', [
 
 // ── RECRUITING CONTENT ────────────────────────────────────────
 buildModules('rec-modules', [
-  { title: 'The Dream 20 System', body: `<p>Keep 20 active recruiting prospects in your pipeline at all times. Every time one converts or goes cold, add a new name.</p><ul>
+  { title: 'The Top 25 System', body: `<p>Keep <strong>25 active recruiting prospects</strong> in your pipeline at all times. Every time one converts or goes cold, add a fresh name — never let it drop below 25.</p><ul>
     <li>Best profile: 25–45 years old, money-motivated, coachable, has people skills</li>
     <li>Sources: warm market, social media connections, referrals from clients, coworkers</li>
     <li>Rule: Don't pre-judge. The person you least expect often becomes your best builder.</li>

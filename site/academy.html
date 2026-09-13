@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0">
+<title>DBA Academy · Dynasty Builders</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Barlow:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="auth.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --navy:#0A1628;--navy-mid:#0F1E38;--navy-light:#132240;
+  --gold:#C9A84C;--gold-light:#E8C97A;--green:#2DCA73;
+  --blue:#5DADE2;--purple:#9B59B6;--red:#E74C3C;--orange:#E67E22;
+  --text:#E8EDF5;--muted:#6B7C93;--border:rgba(255,255,255,.08);
+}
+body{background:var(--navy);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh;padding-bottom:100px;}
+/* HEADER */
+.header{background:linear-gradient(135deg,#0A1628,#0F1E38);border-bottom:1px solid rgba(201,168,76,.2);
+  padding:14px 18px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:100;}
+.header-title{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;color:var(--gold-light);flex:1;}
+.back-btn{background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:8px;
+  padding:7px 12px;color:var(--muted);font-family:'DM Mono',monospace;font-size:11px;text-decoration:none;}
+/* HERO */
+.hero{background:linear-gradient(160deg,#0A1628 0%,#111E3A 50%,#0A1628 100%);
+  padding:28px 18px 22px;text-align:center;border-bottom:1px solid rgba(201,168,76,.1);}
+.hero-eyebrow{font-family:'DM Mono',monospace;font-size:10px;color:var(--gold);letter-spacing:.15em;
+  text-transform:uppercase;margin-bottom:8px;}
+.hero-title{font-family:'Barlow Condensed',sans-serif;font-size:40px;font-weight:900;
+  color:#fff;line-height:1.05;margin-bottom:6px;}
+.hero-title span{color:var(--gold-light);}
+.hero-sub{font-size:14px;color:var(--muted);line-height:1.6;max-width:340px;margin:0 auto 16px;}
+.hero-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.hstat{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:12px 8px;}
+.hstat-n{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:900;color:var(--gold-light);}
+.hstat-l{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);margin-top:2px;}
+/* TABS */
+.tab-bar{display:flex;overflow-x:auto;border-bottom:2px solid var(--border);background:var(--navy-mid);
+  position:sticky;top:56px;z-index:90;scrollbar-width:none;}
+.tab-bar::-webkit-scrollbar{display:none;}
+.tab-btn{flex:0 0 auto;padding:11px 14px;font-family:'Barlow Condensed',sans-serif;font-size:13px;
+  font-weight:800;background:none;border:none;border-bottom:3px solid transparent;
+  color:var(--muted);cursor:pointer;letter-spacing:.04em;white-space:nowrap;transition:all .2s;}
+.tab-btn.active{border-bottom-color:var(--gold);color:var(--gold-light);}
+.tab-view{display:none;padding:14px;} .tab-view.active{display:block;}
+/* CARDS */
+.card{background:var(--navy-mid);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px;}
+/* WEEK CARD */
+.week-card{border-radius:14px;margin-bottom:16px;overflow:hidden;}
+.week-header{padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;}
+.week-num{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:900;
+  color:rgba(255,255,255,.5);letter-spacing:.08em;min-width:60px;}
+.week-title{font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:900;color:#fff;flex:1;}
+.week-theme{font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.5);margin-top:2px;}
+.week-chevron{color:rgba(255,255,255,.4);transition:transform .2s;font-size:16px;}
+.week-body{display:none;padding:0 16px 16px;}
+.week-body.open{display:block;}
+/* PLAY COLORS */
+.play-1{background:linear-gradient(135deg,rgba(93,173,226,.15),rgba(93,173,226,.05));border:1px solid rgba(93,173,226,.2);}
+.play-2{background:linear-gradient(135deg,rgba(45,202,115,.12),rgba(45,202,115,.05));border:1px solid rgba(45,202,115,.2);}
+.play-3{background:linear-gradient(135deg,rgba(201,168,76,.12),rgba(201,168,76,.05));border:1px solid rgba(201,168,76,.2);}
+.play-4{background:linear-gradient(135deg,rgba(155,89,182,.12),rgba(155,89,182,.05));border:1px solid rgba(155,89,182,.2);}
+.play-5{background:linear-gradient(135deg,rgba(230,126,34,.12),rgba(230,126,34,.05));border:1px solid rgba(230,126,34,.2);}
+.play-6{background:linear-gradient(135deg,rgba(201,168,76,.15),rgba(255,111,0,.08));border:1px solid rgba(201,168,76,.3);}
+/* DAY BLOCK */
+.day-block{margin-bottom:12px;}
+.day-label{font-family:'DM Mono',monospace;font-size:10px;color:var(--gold);font-weight:700;
+  letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+.session{background:rgba(0,0,0,.2);border-radius:8px;padding:12px;margin-bottom:6px;}
+.session-title{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;margin-bottom:4px;}
+.session-body{font-size:12px;color:var(--muted);line-height:1.7;}
+.session-body li{margin-left:14px;margin-bottom:3px;}
+.script-box{background:rgba(0,0,0,.3);border-left:3px solid var(--gold);border-radius:0 6px 6px 0;
+  padding:10px 12px;font-size:12px;line-height:1.7;color:rgba(250,246,238,.8);margin-top:8px;font-style:italic;}
+.kpi-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+.kpi{background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);border-radius:7px;
+  padding:5px 10px;font-family:'DM Mono',monospace;font-size:10px;color:var(--gold);}
+/* PLAY PAGE */
+.play-card{border-radius:14px;padding:16px;margin-bottom:14px;}
+.play-num{font-family:'DM Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.12em;
+  text-transform:uppercase;margin-bottom:4px;opacity:.7;}
+.play-title{font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:900;margin-bottom:8px;}
+.play-desc{font-size:13px;line-height:1.7;margin-bottom:12px;}
+.play-steps{margin-left:4px;}
+.play-step{display:flex;gap:10px;margin-bottom:12px;}
+.ps-num{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;
+  color:var(--gold);min-width:24px;flex-shrink:0;}
+.ps-body{flex:1;}
+.ps-title{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;margin-bottom:3px;}
+.ps-detail{font-size:12px;color:var(--muted);line-height:1.6;}
+/* ONGOING */
+.milestone-row{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);}
+.milestone-row:last-child{border:none;}
+.ms-num{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;color:var(--gold);min-width:42px;}
+.ms-body{flex:1;}
+.ms-title{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;}
+.ms-detail{font-size:12px;color:var(--muted);line-height:1.6;}
+/* PROGRESS */
+.prog-bar-bg{height:6px;background:rgba(255,255,255,.06);border-radius:4px;margin-top:6px;overflow:hidden;}
+.prog-bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--gold),var(--gold-light));transition:width .4s;}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:8px;
+  font-family:'DM Mono',monospace;font-size:9px;font-weight:700;background:rgba(201,168,76,.1);
+  border:1px solid rgba(201,168,76,.2);color:var(--gold);}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);
+  background:var(--navy-mid);border:1px solid var(--gold);border-radius:8px;padding:10px 18px;
+  font-size:12px;font-family:'DM Mono',monospace;color:var(--gold-light);
+  transition:all .3s;opacity:0;z-index:999;white-space:nowrap;}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+</style>
+</head>
+<body>
+<script>AUTH.require('academy.html');</script>
+
+<div class="header">
+  <a href="training.html" class="back-btn">← Training</a>
+  <div class="header-title">🏛️ DBA Academy</div>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-eyebrow">Dynasty Builders Academy · Elite Development Program</div>
+  <div class="hero-title">Built to Produce<br><span>1,000 Six-Figure</span><br>Earners</div>
+  <div class="hero-sub">6 weeks to activation. Ongoing to mastery. The 6 plays of the PHP system — drilled until they're automatic.</div>
+  <div class="hero-stats">
+    <div class="hstat"><div class="hstat-n">6</div><div class="hstat-l">Weeks to Launch</div></div>
+    <div class="hstat"><div class="hstat-n">6</div><div class="hstat-l">Core Plays</div></div>
+    <div class="hstat"><div class="hstat-n">1K+</div><div class="hstat-l">Target Earners</div></div>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('overview')">🗺 Overview</button>
+  <button class="tab-btn" onclick="switchTab('week1')">W1</button>
+  <button class="tab-btn" onclick="switchTab('week2')">W2</button>
+  <button class="tab-btn" onclick="switchTab('week3')">W3</button>
+  <button class="tab-btn" onclick="switchTab('week4')">W4</button>
+  <button class="tab-btn" onclick="switchTab('week5')">W5</button>
+  <button class="tab-btn" onclick="switchTab('week6')">W6</button>
+  <button class="tab-btn" onclick="switchTab('plays')">⚡ 6 Plays</button>
+  <button class="tab-btn" onclick="switchTab('ongoing')">🔁 Ongoing</button>
+  <button class="tab-btn" onclick="switchTab('progress')">📈 My Progress</button>
+</div>
+
+<!-- ══ OVERVIEW ══ -->
+<div id="tab-overview" class="tab-view active">
+  <div class="card" style="border-color:rgba(201,168,76,.2);">
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;color:var(--gold);margin-bottom:10px;">🎯 The Mission</div>
+    <div style="font-size:13px;line-height:1.8;color:var(--text);">
+      DBA Academy exists to develop the next 1,000 six-figure earners and 100 seven-figure earners inside Dynasty Builders. Every agent who completes this 6-week program will have the skills, activity, and mindset to build a business that outlasts them.
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;color:var(--gold);margin-bottom:12px;">📅 6-Week Roadmap</div>
+    <div id="roadmap-rows"></div>
+  </div>
+
+  <div class="card">
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;color:var(--gold);margin-bottom:12px;">⚡ The 6 Plays</div>
+    <div id="plays-summary"></div>
+  </div>
+
+  <div class="card">
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;color:var(--gold);margin-bottom:10px;">💰 Income Milestones</div>
+    <div style="font-size:12px;color:var(--muted);line-height:1.8;margin-bottom:10px;">What consistent execution of the 6 plays looks like in income:</div>
+    <div id="income-milestones"></div>
+  </div>
+</div>
+
+<!-- ══ WEEK TABS ══ -->
+<div id="tab-week1" class="tab-view"></div>
+<div id="tab-week2" class="tab-view"></div>
+<div id="tab-week3" class="tab-view"></div>
+<div id="tab-week4" class="tab-view"></div>
+<div id="tab-week5" class="tab-view"></div>
+<div id="tab-week6" class="tab-view"></div>
+
+<!-- ══ 6 PLAYS ══ -->
+<div id="tab-plays" class="tab-view">
+  <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:14px;line-height:1.7;">
+    These 6 plays are the entire PHP system. Master all 6 and you have an unlimited income. Skip any one and you have a ceiling.
+  </div>
+  <div id="plays-detail"></div>
+</div>
+
+<!-- ══ ONGOING ══ -->
+<div id="tab-ongoing" class="tab-view">
+  <div class="card" style="border-color:rgba(201,168,76,.15);">
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;color:var(--gold);margin-bottom:4px;">🔁 Post-Academy Mastery System</div>
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:12px;">Months 2–12 and beyond. The 6 weeks launched you. This is what builds your dynasty.</div>
+  </div>
+  <div id="ongoing-content"></div>
+</div>
+
+<!-- ══ PROGRESS ══ -->
+<div id="tab-progress" class="tab-view">
+  <div class="card">
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;color:var(--gold);margin-bottom:14px;">📈 My Academy Progress</div>
+    <div id="progress-content"></div>
+  </div>
+  <div class="card" style="margin-top:12px;">
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:900;color:var(--gold);margin-bottom:10px;">✅ Check Off Completed Milestones</div>
+    <div id="checklist-content"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const session = AUTH.getSession();
+const PROG_KEY = 'dba_academy_progress_' + (session?.agentId || 'guest');
+
+// ════════════════════════════════════════════════════════════════
+// DATA
+// ════════════════════════════════════════════════════════════════
+const PLAYS = [
+  {
+    num:1, icon:'🎯', title:'Prospect, Approach & Contact',
+    color:'#5DADE2', cls:'play-1',
+    tagline:'Your pipeline is your paycheck. No contacts = no income.',
+    desc:'The lifeblood of the business. Every dollar you ever earn starts with a name on a list and a conversation. This play is about building and maintaining a relentless, growing pipeline of people who need what we offer.',
+    steps:[
+      { title:'Build Your Ever-Green Top 25', detail:'Never let your list drop below 25 active prospects. Every week: retire cold contacts, add fresh names. Sources: warm market, social media, referrals, COI (centers of influence).' },
+      { title:'Approach with Curiosity, Not a Pitch', detail:'Lead with a question, not a statement. "I\'m working on something — can I get your take on it?" is more powerful than any sales line.' },
+      { title:'Contact First, Qualify Second', detail:'Send the financial survey before qualifying anyone. Let their answers tell you what they need. Contact 10/day minimum on an active week.' },
+      { title:'Referral Engine', detail:'After every appointment: "Who\'s the one person you know who would benefit most from this conversation?" One satisfied client = 3–5 referrals.' },
+    ],
+    kpis:['25+ active prospects at all times','10 contacts/day on active weeks','3 referrals per closed client','Weekly Top 25 review and refresh'],
+    script:'"Hey [Name], I\'ve been working with a company that helps families protect their income and build financial security. I\'d love to share what we\'re doing — not to sell you anything, just to get your thoughts. Do you have 20 minutes this week?"'
+  },
+  {
+    num:2, icon:'📞', title:'Calls',
+    color:'#2DCA73', cls:'play-2',
+    tagline:'The phone is the business. Pick it up.',
+    desc:'Every activity in this business goes through the phone. Calling is a skill — it gets better with volume and debrief. The goal is not to close on the call; it\'s to get a yes to a meeting or a BOM invitation.',
+    steps:[
+      { title:'The 3-Call System', detail:'Call 1: Invite to meeting or BOM. Call 2 (24h before): Confirm and anchor. Call 3 (2h after): "What stood out most?" — this is your real opener.' },
+      { title:'Volume Cures Everything', detail:'New agents: 50 dials/day. Experienced: 20 dials minimum. You can\'t control outcomes, only volume. Log every call in your Activity Log.' },
+      { title:'Master the Voicemail', detail:'Leave voicemails that create curiosity, not information. "Hey [Name], I have something I think could really help you — give me a call when you get a chance. It\'s [your name]."' },
+      { title:'Track and Debrief', detail:'Log every call. After 5 calls in a row with no pickup, change your time of day. After 3 nos in a row, role-play with your upline before the next call.' },
+    ],
+    kpis:['20–50 dials/day','Every call logged in Activity Log','3-call system on every BOM invite','Weekly call debrief with upline'],
+    script:'"Hey [Name], it\'s [your name]. I wanted to personally invite you to something I think you\'d find really eye-opening. We\'re having a casual info session [day] at [time] — it\'s not a sales thing, just a conversation about protecting your family\'s future. Can you make it?"'
+  },
+  {
+    num:3, icon:'🏢', title:'Presentations',
+    color:'#C9A84C', cls:'play-3',
+    tagline:'One great presentation beats a thousand mediocre ones.',
+    desc:'The BOM and the 1-on-1 appointment are where everything converts. Your job is to bring people to a presentation and then let the system do the work. But you have to know the system cold.',
+    steps:[
+      { title:'The BOM — Your Most Powerful Tool', detail:'Attend every BOM. Bring at least 1 guest every time. The BOM is a professionally-run presentation that converts for you — you just need bodies in seats.' },
+      { title:'The 5-Step 1-on-1 Appointment', detail:'Connect (build rapport, 3–5 min) → Discover (financial survey review, 10 min) → Present (tell the story, 15 min) → Handle (address hesitation) → Close (assume the sale).' },
+      { title:'Know the Story Cold', detail:'Practice your presentation until you can give it on a 20-minute notice, on a bad day, after a hard week. Role-play twice a week minimum.' },
+      { title:'Send the Survey First', detail:'Always send the <a href="survey.html" style="color:var(--gold);">Financial Survey ↗</a> 24–48 hours before every appointment. People who fill it out show up and buy.' },
+    ],
+    kpis:['1+ BOM guest/week','2 appointments/week minimum','Practice presentation 2x/week','Survey sent before every appointment'],
+    script:'"Before we dive into the numbers — tell me, if something happened to you tomorrow, what\'s your biggest concern for your family? [Pause. Let them talk.] That\'s exactly what we\'re here to solve today."'
+  },
+  {
+    num:4, icon:'🔄', title:'Follow Up',
+    color:'#9B59B6', cls:'play-4',
+    tagline:'The fortune is in the follow-up. Most agents quit after the first no.',
+    desc:'80% of sales happen between the 5th and 12th contact. Most agents give up after the 2nd. Your follow-up system is your unfair advantage. Build it and protect it.',
+    steps:[
+      { title:'The 24-Hour Rule', detail:'Every prospect gets a follow-up within 24 hours of your first contact. Every BOM guest gets a call the same night: "What stood out most to you?"' },
+      { title:'The 5-Touch Sequence', detail:'Day 1: Post-meeting call. Day 3: Value text (share a stat or story). Day 7: Check-in. Day 14: BOM invitation. Day 30: "Anything changed?" Re-qualify and re-invite.' },
+      { title:'Move the "No" Forward', detail:'A no is never final — it\'s a "not yet." Keep them in your pipeline. Set a 30 or 60-day reminder and always part on a positive note.' },
+      { title:'Top 25 = Follow-Up Machine', detail:'Your Top 25 Worksheet is your follow-up system. Every name has a status and a next action. If someone doesn\'t have a next action date, they\'re not really in your pipeline.' },
+    ],
+    kpis:['0 prospects without a next-action date','Same-night follow-up after every BOM','5-touch sequence on every prospect','30-day re-contact on long-cycle leads'],
+    script:'"Hey [Name], just following up from [meeting/BOM]. I know you said you needed to think about it — totally get that. I just wanted to share one thing that might help with that decision. Do you have 5 minutes?"'
+  },
+  {
+    num:5, icon:'🚀', title:'Fast Start',
+    color:'#E67E22', cls:'play-5',
+    tagline:'Speed creates momentum. Momentum creates belief. Belief creates results.',
+    desc:'The Fast Start is the critical 30–90 day window where a new agent establishes their identity as a business owner. What they do here determines whether they become a 6-figure earner or fade out. Your job is to activate them fast.',
+    steps:[
+      { title:'Activate Within 48 Hours', detail:'Day 1: Bamboo set up, group chat joined, Top 25 started. Day 2: First calls made. Day 3: First BOM invitation sent. Every hour of delay costs them belief.' },
+      { title:'The 90-Day Game Plan', detail:'Week 1: Setup + Top 25 + first BOM. Week 2–4: Get licensed. Week 2 (simultaneously): Daily calls + BOMs + appointments with upline. Day 30: First application submitted.' },
+      { title:'Run First Appointments Together', detail:'Shadow 3 appointments before running solo. Then co-run 2 appointments with your upline present. Then debrief after first solo. Speed of skill = speed of income.' },
+      { title:'Fast Start Wins = Identity Building', detail:'Every win in the first 30 days compounds belief. Celebrate publicly: first call, first guest, first application, first check. Recognition is the fuel of fast starts.' },
+    ],
+    kpis:['First BOM guest within 7 days','Licensed within 30 days','First application within 14 days of licensing','Associate promotion within 60 days'],
+    script:'"[New agent name], the agents in this business who make it are the ones who go all-in in the first 30 days. What does all-in look like for you this week — specifically, how many calls will you make and who are you inviting to the next BOM?"'
+  },
+  {
+    num:6, icon:'🏆', title:'Duplication',
+    color:'#C9A84C', cls:'play-6',
+    tagline:'You don\'t build a business. You build people who build the business.',
+    desc:'The 6th play is what separates 6-figure earners from 7-figure earners. When you duplicate yourself — your habits, your systems, your belief — your income compounds without you having to be in every room. This is the endgame.',
+    steps:[
+      { title:'Recruit to Lead, Not Just to Count', detail:'Every recruit is a potential leader. Identify the 1 in 5 who wants to build something, not just earn a check. Pour your energy into those people disproportionately.' },
+      { title:'Teach by Doing, Not by Telling', detail:'Don\'t explain calls — make calls with them. Don\'t explain appointments — run appointments with them. Don\'t explain BOMs — bring guests with them. Be the model.' },
+      { title:'Build Captains, Not Dependents', detail:'A captain brings their own guests. A dependent brings excuses. Every agent you lead should be able to run a BOM without you within 90 days. If they can\'t, you haven\'t duplicated.' },
+      { title:'The Multiplication Table', detail:'1 agent doing 4 apps/week = $4K/mo commission. 1 agent + 5 duplicating agents = $25K+/mo. 1 agent + 20 duplicating agents = $100K+/mo. Duplication is the only path to the 7-figure club.' },
+    ],
+    kpis:['2 personally recruited agents/month','Each recruit brings first BOM guest within 7 days','Each recruit submits first app within 14 days of licensing','1 captain-level agent promoted per quarter'],
+    script:'"I\'m not looking for people who want to work for me. I\'m looking for people who want to build their own dynasty — and I\'m willing to show you exactly how. The question is: are you serious about changing your family\'s financial picture?"'
+  }
+];
+
+const WEEKS = [
+  {
+    week:1, theme:'Prospect, Approach & Contact', play:1, playColor:'#5DADE2',
+    headline:'LAUNCH WEEK — Build Your Foundation',
+    subtitle:'Your market is everyone who has a family and an income. Start there.',
+    sessions:[
+      { day:'Day 1 (Mon)', title:'Orientation & Mindset Install', body:'<li>Why we\'re here: the mission to build 1,000 six-figure earners</li><li>The PHP model: service + system + duplication = unlimited income</li><li>Set up Bamboo, join team chat, bookmark your tools</li><li>Complete your personal "why" statement — write it, post it where you\'ll see it daily</li><li>Homework: Call 5 people from your warm market tonight. Just "I have something exciting going on."</li>' },
+      { day:'Day 2–3', title:'Build Your Top 25 + First Contacts', body:'<li>Open your <a href="top25.html" style="color:var(--gold);">Top 25 Worksheet</a> — fill all 25 names before you sleep</li><li>Categories: family, close friends, coworkers, social media, former colleagues</li><li>Write a short "approach script" for each contact based on your relationship</li><li>Make your first 10 contacts — not pitches, just conversations</li><li>Send the financial survey to anyone who says "tell me more"</li>', script:'"Hey [Name], I\'ve been doing something really interesting lately and I thought of you specifically. Not trying to sell you anything — I just think this might be something you\'d want to know about. Can I share it with you real quick?"' },
+      { day:'Day 4–5', title:'First BOM Prep & Invite Blitz', body:'<li>Learn the BOM invite script — practice it 10 times out loud</li><li>Invite 10 people to the next BOM from your Top 25</li><li>Confirm guests the night before: "We start at [time] — you\'re still coming, right?"</li><li>Arrive 20 minutes early to set up and greet your guest</li><li>Log your guest in <a href="bom.html" style="color:var(--gold);">My BOM Tracker</a></li>' },
+      { day:'Day 6–7', title:'Week 1 Debrief + Sprint Planning', body:'<li>Count your contacts: did you hit 10/day? If not, what stopped you?</li><li>Review your Top 25: who responded? Update statuses</li><li>Plan Week 2: schedule calls, BOM dates, pre-study sessions</li><li>Celebrate any win, no matter how small. First call = win. First conversation = win.</li>' },
+    ],
+    kpis:['25 names in Top 25','10 contacts made','1 BOM attended','1 guest invited to next BOM']
+  },
+  {
+    week:2, theme:'Calls — Volume & System', play:2, playColor:'#2DCA73',
+    headline:'CALLS WEEK — The Phone Is the Business',
+    subtitle:'You can\'t close what you don\'t contact. Make the calls.',
+    sessions:[
+      { day:'Day 1–2', title:'Call Mastery Fundamentals', body:'<li>The 3-call system for every BOM invite: Invite → Confirm → Same-night follow-up</li><li>Voicemail script practice: curiosity-driven, not information-driven</li><li>Time blocking: 9–10 AM and 6–8 PM are your highest-pickup windows</li><li>Log every call in your <a href="tracker.html" style="color:var(--gold);">Activity Log</a></li><li>Target: 20 dials today. Tomorrow: 25. Build the muscle.</li>', script:'"This is [name] — I\'m calling because I think I might have something that would really matter to you and your family. It\'s not a sales call, I promise. Can I get 20 minutes with you this week?"' },
+      { day:'Day 3–4', title:'Objection Handling + Role Play', body:'<li>The 3 most common objections: "I\'m busy" / "I\'m not interested" / "Send me info"</li><li>"I\'m busy" → "I totally get that — this would only take 20 minutes. I can work around your schedule."</li><li>"Not interested" → "Completely fair. Can I ask — what would make it worth 20 minutes of your time?"</li><li>"Send info" → "I will — I just want to make sure I send you the right thing. Can we do a quick 5-minute call first?"</li><li>Role-play 10 objection scenarios with your upline or accountability partner</li>' },
+      { day:'Day 5–7', title:'Invite Blitz + BOM + Follow-Up', body:'<li>Make 50 calls over 3 days — track results in your Activity Log</li><li>Attend BOM — bring at least 1 guest from your Top 25</li><li>Same-night follow-up on every BOM guest: "What stood out most?"</li><li>Update Top 25 statuses after every contact</li><li>Debrief: What time of day got the most pickups? Adjust next week.</li>' },
+    ],
+    kpis:['100+ dials this week','BOM guest brought','Every call logged','3-call system executed on 5+ prospects']
+  },
+  {
+    week:3, theme:'Presentations — The Art of the Appointment', play:3, playColor:'#C9A84C',
+    headline:'PRESENTATIONS WEEK — Learn to Close',
+    subtitle:'A great presentation is a conversation, not a performance.',
+    sessions:[
+      { day:'Day 1–2', title:'The 5-Step Appointment Framework', body:'<li><strong>Step 1 — Connect (3–5 min):</strong> Build real rapport. Find 1 thing you genuinely have in common. People buy from people they trust.</li><li><strong>Step 2 — Discover (10 min):</strong> Review their financial survey together. Let them tell you the problem. You\'re just listening and taking notes.</li><li><strong>Step 3 — Present (15 min):</strong> Tell the story of what we do, tied to their specific situation. Numbers + emotion.</li><li><strong>Step 4 — Handle (5–10 min):</strong> Address hesitation with curiosity: "What would it take for this to make sense for your family?"</li><li><strong>Step 5 — Close (2 min):</strong> Assume the next step. "Let\'s get you protected today — it takes about 20 minutes to start the application."</li>' },
+      { day:'Day 3', title:'Shadow + Role-Play Marathon', body:'<li>Shadow your upline on a live appointment (or watch a recorded one)</li><li>Write out the full presentation from memory</li><li>Role-play the full 5 steps 3x with a partner — once as the agent, once as the client, once as the observer giving feedback</li><li>The goal: you can give the presentation in your sleep</li>' },
+      { day:'Day 4–5', title:'Run Your First Co-Appointment', body:'<li>Identify a prospect from your Top 25 who\'s ready for a 1-on-1</li><li>Send the financial survey 48 hours before</li><li>Run the appointment with your upline present (they\'re backup, you\'re leading)</li><li>Debrief immediately after: what landed, what didn\'t, what you\'ll adjust</li>', script:'"Based on what you shared in your survey, I can see that your biggest concern is [X]. Let me show you exactly how we address that — and how much it would cost to have that protection starting this month."' },
+      { day:'Day 6–7', title:'BOM Week + Appointment Review', body:'<li>Attend BOM — bring 2 guests if possible</li><li>Review your co-appointment debrief. Write 3 things to improve</li><li>Schedule 2 more appointments for next week</li><li>Track all activity in <a href="tracker.html" style="color:var(--gold);">Activity Log</a></li>' },
+    ],
+    kpis:['1 co-appointment completed','2 appointments scheduled for next week','BOM guest brought','5-step framework memorized']
+  },
+  {
+    week:4, theme:'Follow Up — The Fortune Is Here', play:4, playColor:'#9B59B6',
+    headline:'FOLLOW-UP WEEK — Most Agents Stop Here. You Won\'t.',
+    subtitle:'80% of sales happen between the 5th and 12th contact.',
+    sessions:[
+      { day:'Day 1–2', title:'Build Your Follow-Up Machine', body:'<li>Open your Top 25 — every single name must have a "next action" date and status</li><li>If it doesn\'t have a next action, it\'s not in your pipeline — it\'s a wish list</li><li>Set up a contact rhythm: new leads → 5-touch sequence. Warm leads → monthly. Cold leads → quarterly.</li><li>Use the notes field in your Top 25 to log every conversation detail — what they said, what they care about, what stopped them</li>' },
+      { day:'Day 3–4', title:'The 5-Touch Sequence Drill', body:'<li><strong>Touch 1 (Day 1):</strong> Post-meeting or post-BOM same-night call. "What stood out most?"</li><li><strong>Touch 2 (Day 3):</strong> Value text. Share a stat, a client story, or a relevant article. No ask.</li><li><strong>Touch 3 (Day 7):</strong> Check-in. "How\'s the family?" Re-anchor to their specific concern.</li><li><strong>Touch 4 (Day 14):</strong> BOM invitation. "I have another session coming up — I think you\'d get even more out of it now that you know the basics."</li><li><strong>Touch 5 (Day 30):</strong> "Anything changed?" Re-qualify, re-invite, or close.</li><li>Execute the 5-touch sequence on 5 prospects this week</li>' },
+      { day:'Day 5–7', title:'Resurrect Dead Leads + BOM', body:'<li>Go back 60–90 days in your pipeline. Find 10 "lost" prospects. Call them: "Hey, I was thinking of you — has anything changed in your situation?"</li><li>Attend BOM — bring a guest</li><li>Track all follow-ups in Activity Log</li><li>Debrief: How many "resurrections" converted to appointments?</li>', script:'"Hey [Name], I\'ve been thinking about our last conversation. You mentioned you were concerned about [X]. I actually have a client who had the exact same situation — and here\'s what ended up happening for them. Got 5 minutes?"' },
+    ],
+    kpis:['Every Top 25 prospect has a next-action date','5-touch sequence executed on 5 prospects','10 resurrected leads contacted','BOM guest brought']
+  },
+  {
+    week:5, theme:'Fast Start — Activate Your Team', play:5, playColor:'#E67E22',
+    headline:'FAST START WEEK — You\'re Now the Upline',
+    subtitle:'Your income multiplies when you can activate someone else the way you were activated.',
+    sessions:[
+      { day:'Day 1–2', title:'Fast Start Bootcamp Framework', body:'<li>You\'ve now experienced weeks 1–4. You know what a new agent needs. Your job this week is to build the playbook to give that to someone else.</li><li>Map out the 7-day activation plan you wish you had: what to do each day, what to say, what to track</li><li>Identify your first recruit candidate — someone from your Top 25 who has shown entrepreneurial energy</li><li>Practice the "opportunity conversation" — not a pitch, a door-opener</li>', script:'"I\'m building something here and I\'m looking for someone who might want to be part of it. Not everyone is cut out for it — but based on what I know about you, I think you might be. Can I share what I\'m doing over coffee?"' },
+      { day:'Day 3–4', title:'Run a Fast Start Drill', body:'<li>Take a new agent (or yourself at Day 1) through the full 48-hour activation: Bamboo setup, Top 25, first calls, BOM invite</li><li>Identify: what are the 3 moments where new agents get stuck? Build a simple script or tool to unstick each one</li><li>Practice the debrief conversation: "What worked? What got in the way? What\'s the plan for tomorrow?"</li>' },
+      { day:'Day 5–7', title:'Your First Recruit + BOM', body:'<li>Have the opportunity conversation with your top recruit candidate</li><li>Attend BOM — bring a guest AND your recruit candidate (or a prospect for both paths)</li><li>Schedule a 1-on-1 debrief with your upline: your biggest strengths and your biggest growth edge at the 5-week mark</li><li>Update your <a href="md-tracker.html" style="color:var(--gold);">Promotion Tracker</a> — are you on pace for Associate?</li>' },
+    ],
+    kpis:['Recruit candidate identified and approached','48-hour activation plan written','BOM guest brought','Promotion tracker updated']
+  },
+  {
+    week:6, theme:'Duplication — Build Your Dynasty', play:6, playColor:'#C9A84C',
+    headline:'GRADUATION WEEK — Now Build What Lasts',
+    subtitle:'You don\'t build a business. You build people who build the business.',
+    sessions:[
+      { day:'Day 1–2', title:'The Duplication Mindset', body:'<li>The math of duplication: 1 agent × 4 apps/week = $4K. 6 duplicating agents = $24K+. 20 duplicating agents = $100K+.</li><li>Your job is no longer just to produce — it\'s to produce AND develop people who produce</li><li>The 3 types of people in your downline: Producers (work the 6 plays), Builders (recruit and develop), Leaders (duplicate themselves). Identify which type each person is becoming.</li><li>Build your first personal development plan for a team member: what play do they need to master next?</li>' },
+      { day:'Day 3–4', title:'Build Your Captain System', body:'<li>A captain brings guests to every BOM without being reminded. Build at least 1 captain in your first 90 days.</li><li>Your captain system: identify agents who can invite consistently → train them on the invite script → track their BOM guests in <a href="bom.html" style="color:var(--gold);">BOM Tracker</a> → recognize publicly when they bring guests</li><li>A captain who brings 2 guests/BOM generates 8 guest-contacts per month — roughly 1 new recruit per quarter from their activity alone</li>' },
+      { day:'Day 5–7', title:'6-Week Graduation + Next 90-Day Plan', body:'<li><strong>Graduation requirements:</strong> 25 Top 25 contacts, 1 BOM guest, 1 co-appointment, 1 recruit candidate approached, first application submitted (if licensed)</li><li>Write your personal 90-day plan: income goal, appointment target, recruit target, promotion level</li><li>Share your 90-day plan with your upline — commitment with accountability = execution</li><li>Check off your progress in the <a href="academy.html#progress" style="color:var(--gold);">My Progress</a> tab</li><li>Welcome to the Dynasty. The Academy is over. The building has just begun.</li>' },
+    ],
+    kpis:['90-day plan written and shared with upline','1 captain identified','Graduation checklist completed','Promotion tracker updated']
+  }
+];
+
+const ONGOING = [
+  {
+    phase:'Months 2–3', title:'Master the Basics at Volume',
+    items:[
+      'Execute all 6 plays simultaneously — no play ever stops',
+      'Target: 4 apps/week, 2 recruits/month, 8 BOM guests/month',
+      'Shadow your upline on 2 appointments per week',
+      'Run your own appointments solo — debrief every one',
+      'Hit Associate promotion: 2R / 2A / 2,000 pts',
+    ]
+  },
+  {
+    phase:'Months 4–6', title:'Build Your Captain Network',
+    items:[
+      'Develop 3–5 agents who run the 6 plays independently',
+      'Each captain brings their own BOM guests without being asked',
+      'Target: Director promotion — 2 personally promoted agents, 8+ team recruits',
+      'Run weekly team debrief: what\'s working, what\'s stuck, who needs support',
+      'Introduce agents to Book Club — shared language creates culture',
+    ]
+  },
+  {
+    phase:'Months 7–12', title:'Scale — Build Your Marketing Director',
+    items:[
+      'Identify 1 agent with Marketing Director potential — pour into them',
+      'Systems: automate your follow-up, systematize your BOM captain rotation, run contests',
+      'Hit Marketing Director: 75–115% commission, override income kicks in',
+      'Your team should be able to run BOMs without you for 1 week',
+      'Target: $10,000+/month personal income by month 12',
+    ]
+  },
+  {
+    phase:'Year 2+', title:'The 6-Figure & 7-Figure Track',
+    items:[
+      '6-Figure Track: $8,333+/month consistently — 3–5 captains running independently',
+      '7-Figure Track: Multiple promoted MDs duplicating the full 6-play system',
+      'Your income becomes a function of your team\'s activity, not just your own',
+      'You become the trainer — host Academy sessions for your own downline',
+      'Legacy: agents you developed who develop agents of their own. That\'s Dynasty.',
+    ]
+  }
+];
+
+const MILESTONES = [
+  { label:'First Application', income:'$200–800/mo', req:'Licensed + 1 app/week' },
+  { label:'Associate', income:'$2,000–4,000/mo', req:'2R + 2A + 2K pts' },
+  { label:'Field Associate', income:'$4,000–6,000/mo', req:'4R + 4A + 4K pts' },
+  { label:'Director', income:'$6,000–10,000/mo', req:'2 promoted agents + 8 team recruits' },
+  { label:'Marketing Director', income:'$10,000–25,000/mo', req:'75–115% commission + overrides' },
+  { label:'6-Figure Club ✓', income:'$100K+/year', req:'3–5 producing captains + MD promotion' },
+  { label:'7-Figure Club ✓', income:'$1M+/year', req:'Multiple MDs duplicating the system' },
+];
+
+// ════════════════════════════════════════════════════════════════
+// PROGRESS TRACKING
+// ════════════════════════════════════════════════════════════════
+const CHECKLIST_ITEMS = [
+  { id:'bamboo',     label:'Bamboo set up within 48 hours' },
+  { id:'top25',      label:'25 names in Top 25 Worksheet' },
+  { id:'bom1',       label:'First BOM attended' },
+  { id:'bomguest1',  label:'First BOM guest brought' },
+  { id:'calls50',    label:'50 dials completed in one week' },
+  { id:'appt1',      label:'First co-appointment shadowed' },
+  { id:'apptsolo1',  label:'First solo appointment run' },
+  { id:'followup5',  label:'5-touch sequence executed on 5 prospects' },
+  { id:'recruit1',   label:'First recruit candidate approached' },
+  { id:'app1',       label:'First application submitted' },
+  { id:'captain1',   label:'First captain identified and trained' },
+  { id:'plan90',     label:'90-day plan written and shared with upline' },
+  { id:'associate',  label:'Associate promotion achieved' },
+  { id:'director',   label:'Director promotion achieved' },
+  { id:'md',         label:'Marketing Director promotion achieved' },
+  { id:'100k',       label:'$100K annual income milestone' },
+];
+
+function loadProgress() {
+  try { return JSON.parse(localStorage.getItem(PROG_KEY) || '{}'); } catch(e) { return {}; }
+}
+function saveProgress(p) {
+  try { localStorage.setItem(PROG_KEY, JSON.stringify(p)); } catch(e) {}
+}
+
+// ════════════════════════════════════════════════════════════════
+// RENDER
+// ════════════════════════════════════════════════════════════════
+function switchTab(id) {
+  document.querySelectorAll('.tab-btn').forEach((b,i) => {
+    const tabs = ['overview','week1','week2','week3','week4','week5','week6','plays','ongoing','progress'];
+    b.classList.toggle('active', tabs[i] === id);
+  });
+  document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('active'));
+  const el = document.getElementById('tab-' + id);
+  if (el) el.classList.add('active');
+}
+
+function renderOverview() {
+  // Roadmap
+  const roadmap = document.getElementById('roadmap-rows');
+  if (roadmap) {
+    roadmap.innerHTML = WEEKS.map(w => `
+      <div style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05);" onclick="switchTab('week${w.week}')">
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);min-width:48px;flex-shrink:0;margin-top:2px;">Week ${w.week}</div>
+        <div style="flex:1;">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;">${w.headline}</div>
+          <div style="font-family:'DM Mono',monospace;font-size:10px;color:${w.playColor};margin-top:2px;">Play ${w.play}: ${w.theme}</div>
+        </div>
+        <span style="color:var(--muted);font-size:16px;">›</span>
+      </div>`).join('');
+  }
+
+  // Plays summary
+  const playsSumEl = document.getElementById('plays-summary');
+  if (playsSumEl) {
+    playsSumEl.innerHTML = PLAYS.map(p => `
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05);" onclick="switchTab('plays')">
+        <span style="font-size:22px;flex-shrink:0;">${p.icon}</span>
+        <div style="flex:1;">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;">Play ${p.num}: ${p.title}</div>
+          <div style="font-family:'DM Mono',monospace;font-size:10px;color:${p.color};margin-top:2px;">${p.tagline}</div>
+        </div>
+      </div>`).join('');
+  }
+
+  // Income milestones
+  const incEl = document.getElementById('income-milestones');
+  if (incEl) {
+    incEl.innerHTML = MILESTONES.map(m => `
+      <div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04);">
+        <div style="flex:1;">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;">${m.label}</div>
+          <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);">${m.req}</div>
+        </div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:900;color:var(--green);flex-shrink:0;">${m.income}</div>
+      </div>`).join('');
+  }
+}
+
+function renderWeek(w) {
+  const el = document.getElementById('tab-week' + w.week);
+  if (!el) return;
+
+  el.innerHTML = `
+    <div style="background:linear-gradient(135deg,${w.playColor}18,${w.playColor}05);border:1px solid ${w.playColor}30;
+      border-radius:14px;padding:16px;margin-bottom:14px;">
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:${w.playColor};letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px;">
+        Week ${w.week} · Play ${w.play}: ${w.theme}
+      </div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:900;color:#fff;margin-bottom:4px;">${w.headline}</div>
+      <div style="font-size:13px;color:rgba(255,255,255,.55);">${w.subtitle}</div>
+    </div>
+
+    ${w.sessions.map(s => `
+      <div class="session" style="margin-bottom:10px;">
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:${w.playColor};font-weight:700;margin-bottom:4px;">${s.day}</div>
+        <div class="session-title">${s.title}</div>
+        <ul class="session-body" style="margin-top:6px;">${s.body}</ul>
+        ${s.script ? `<div class="script-box">${s.script}</div>` : ''}
+      </div>`).join('')}
+
+    <div style="background:rgba(0,0,0,.2);border-radius:10px;padding:12px;margin-top:6px;">
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Week ${w.week} KPIs</div>
+      <div class="kpi-row">${w.kpis.map(k => `<div class="kpi">✓ ${k}</div>`).join('')}</div>
+    </div>`;
+}
+
+function renderPlays() {
+  const el = document.getElementById('plays-detail');
+  if (!el) return;
+  el.innerHTML = PLAYS.map(p => `
+    <div class="play-card ${p.cls}" style="margin-bottom:16px;">
+      <div class="play-num">Play ${p.num}</div>
+      <div class="play-title">${p.icon} ${p.title}</div>
+      <div style="font-family:'DM Mono',monospace;font-size:11px;color:${p.color};margin-bottom:10px;font-weight:700;">"${p.tagline}"</div>
+      <div class="play-desc">${p.desc}</div>
+      <div class="play-steps">
+        ${p.steps.map((s,i) => `
+          <div class="play-step">
+            <div class="ps-num">${i+1}.</div>
+            <div class="ps-body">
+              <div class="ps-title">${s.title}</div>
+              <div class="ps-detail">${s.detail}</div>
+            </div>
+          </div>`).join('')}
+      </div>
+      ${p.script ? `<div class="script-box" style="margin-top:10px;">${p.script}</div>` : ''}
+      <div class="kpi-row" style="margin-top:12px;">${p.kpis.map(k => `<div class="kpi">📊 ${k}</div>`).join('')}</div>
+    </div>`).join('');
+}
+
+function renderOngoing() {
+  const el = document.getElementById('ongoing-content');
+  if (!el) return;
+  el.innerHTML = ONGOING.map(phase => `
+    <div class="card" style="margin-bottom:12px;">
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--gold);font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px;">${phase.phase}</div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;margin-bottom:10px;">${phase.title}</div>
+      <ul style="font-size:13px;color:var(--muted);line-height:1.8;margin-left:16px;">
+        ${phase.items.map(i => `<li>${i}</li>`).join('')}
+      </ul>
+    </div>`).join('');
+}
+
+function renderProgress() {
+  const prog = loadProgress();
+  const completed = CHECKLIST_ITEMS.filter(i => prog[i.id]).length;
+  const total = CHECKLIST_ITEMS.length;
+  const pct = Math.round(completed / total * 100);
+
+  const progEl = document.getElementById('progress-content');
+  if (progEl) {
+    progEl.innerHTML = `
+      <div style="text-align:center;margin-bottom:16px;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:48px;font-weight:900;color:var(--gold);">${pct}%</div>
+        <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);">${completed} of ${total} milestones</div>
+      </div>
+      <div class="prog-bar-bg"><div class="prog-bar-fill" style="width:${pct}%;"></div></div>
+      ${pct === 100 ? '<div style="text-align:center;margin-top:14px;font-family:\'Barlow Condensed\',sans-serif;font-size:20px;font-weight:900;color:var(--green);">🏆 Academy Complete — Welcome to the Dynasty!</div>' : ''}`;
+  }
+
+  const chkEl = document.getElementById('checklist-content');
+  if (chkEl) {
+    chkEl.innerHTML = CHECKLIST_ITEMS.map(item => `
+      <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer;"
+        onclick="toggleMilestone('${item.id}')">
+        <div style="width:22px;height:22px;border-radius:6px;border:2px solid ${prog[item.id]?'var(--green)':'var(--border)'};
+          background:${prog[item.id]?'rgba(45,202,115,.15)':'transparent'};display:flex;align-items:center;justify-content:center;
+          flex-shrink:0;transition:all .2s;">
+          ${prog[item.id]?'<span style="color:var(--green);font-size:13px;">✓</span>':''}
+        </div>
+        <div style="font-family:'Barlow',sans-serif;font-size:13px;color:${prog[item.id]?'var(--green)':'var(--text)'};
+          text-decoration:${prog[item.id]?'line-through':'none'};transition:all .2s;">${item.label}</div>
+      </div>`).join('');
+  }
+}
+
+function toggleMilestone(id) {
+  const prog = loadProgress();
+  prog[id] = !prog[id];
+  saveProgress(prog);
+  renderProgress();
+  if (prog[id]) toast('✓ Milestone checked!');
+}
+
+function toast(msg, dur=2200) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), dur);
+}
+
+// INIT
+renderOverview();
+WEEKS.forEach(renderWeek);
+renderPlays();
+renderOngoing();
+renderProgress();
+</script>
+</body>
+</html>
