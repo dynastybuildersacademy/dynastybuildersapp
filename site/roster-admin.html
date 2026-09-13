@@ -464,6 +464,9 @@ function editAgent(agentId) {
   document.getElementById('add-board').value = agent.top25BoardId||'';
   document.getElementById('add-states').value = (agent.licenseStates||[]).join(', ');
   document.getElementById('add-role').value = agent.role||'trainee';
+  const _ls = document.getElementById('add-license-status'); if (_ls) _ls.value = agent.licenseStatus||'unlicensed';
+  const _ln = document.getElementById('add-license-num'); if (_ln) _ln.value = agent.licenseNum||'';
+  const _le = document.getElementById('add-license-expiry'); if (_le) _le.value = agent.licenseExpiry||'';
   document.getElementById('add-result').innerHTML = `<span style="color:var(--muted);">Editing ${agent.name} (${agentId})</span>`;
 }
 

@@ -2511,19 +2511,82 @@ const AUTH = {
       a.id.toLowerCase() === agentId.trim().toLowerCase() && a.pin === pin.trim()
     );
     if (!agent) return { success: false, error: 'Invalid PIN. Try again.' };
+
+    const now      = new Date();
+    const today    = now.toISOString().slice(0, 10);
+    const loginAt  = now.toISOString();
+
+    // ── Streak tracking ──────────────────────────────────────
+    const STREAK_KEY = 'dba_streak_' + agent.id;
+    let streakData = {};
+    try { streakData = JSON.parse(localStorage.getItem(STREAK_KEY) || '{}'); } catch(e) {}
+    const lastDate  = streakData.lastDate || null;
+    const yesterday = new Date(now); yesterday.setDate(yesterday.getDate() - 1);
+    const yStr      = yesterday.toISOString().slice(0, 10);
+    let streak = streakData.streak || 0;
+    if (lastDate === today) {
+      // Already logged in today — keep streak as-is
+    } else if (lastDate === yStr) {
+      // Logged in yesterday — extend streak
+      streak++;
+    } else {
+      // Missed a day — reset streak
+      streak = 1;
+    }
+    const longestStreak = Math.max(streak, streakData.longestStreak || 0);
+    const totalDays     = (streakData.totalDays || 0) + (lastDate === today ? 0 : 1);
+    streakData = { streak, longestStreak, totalDays, lastDate: today, lastLoginAt: loginAt };
+    try { localStorage.setItem(STREAK_KEY, JSON.stringify(streakData)); } catch(e) {}
+
+    // ── Login history (rolling 60-day log per agent) ─────────
+    const HIST_KEY = 'dba_login_hist_' + agent.id;
+    let hist = [];
+    try { hist = JSON.parse(localStorage.getItem(HIST_KEY) || '[]'); } catch(e) {}
+    if (!hist.length || hist[hist.length-1].date !== today) {
+      hist.push({ date: today, at: loginAt });
+      if (hist.length > 60) hist = hist.slice(-60);
+      try { localStorage.setItem(HIST_KEY, JSON.stringify(hist)); } catch(e) {}
+    }
+
+    // ── Global activity log (for admin dashboard) ───────────
+    const GLOBAL_KEY = 'dba_activity_log';
+    try {
+      let global = JSON.parse(localStorage.getItem(GLOBAL_KEY) || '[]');
+      const last = global.find(e => e.agentId === agent.id && e.date === today);
+      if (!last) {
+        global.unshift({ agentId: agent.id, name: agent.name, date: today, at: loginAt, streak });
+        if (global.length > 500) global = global.slice(0, 500);
+        localStorage.setItem(GLOBAL_KEY, JSON.stringify(global));
+      }
+    } catch(e) {}
+
     const session = {
-      agentId:  agent.id,
-      name:     agent.name,
-      role:     agent.role,
-      level:    ROLES[agent.role]?.level || 0,
-      phpId:    agent.phpId,
-      phone:    agent.phone,
-      email:    agent.email,
-      loginAt:  new Date().toISOString(),
-      source:   'local'
+      agentId:       agent.id,
+      name:          agent.name,
+      role:          agent.role,
+      level:         ROLES[agent.role]?.level || 0,
+      phpId:         agent.phpId,
+      phone:         agent.phone,
+      email:         agent.email,
+      loginAt,
+      streak,
+      longestStreak,
+      totalDays,
+      source:        'local'
     };
     sessionStorage.setItem(AUTH.SESSION_KEY, JSON.stringify(session));
     return { success: true, session };
+  },
+
+  // ── Streak helpers ─────────────────────────────────────────
+  getStreak(agentId) {
+    try { return JSON.parse(localStorage.getItem('dba_streak_' + agentId) || '{}'); } catch(e) { return {}; }
+  },
+  getLoginHistory(agentId) {
+    try { return JSON.parse(localStorage.getItem('dba_login_hist_' + agentId) || '[]'); } catch(e) { return []; }
+  },
+  getActivityLog() {
+    try { return JSON.parse(localStorage.getItem('dba_activity_log') || '[]'); } catch(e) { return []; }
   },
 
   // Alias so login page async call still works without change

@@ -556,7 +556,32 @@ function load() {
     if (d) { records = d.records||[]; mondayItemMap = d.mondayItemMap||{}; }
   } catch(e){}
 
-  // ── SEED NEW AGENTS (added if not already in tracker) ──────
+  // ── AUTO-SEED from AGENTS roster (unlicensed + expired only) ──
+  if (typeof AGENTS !== 'undefined') {
+    const JOURNEY_STATUSES = ['unlicensed','studying','exam_scheduled','expired'];
+    // Also seed agents with no licenseStatus set (legacy agents without the field)
+    AGENTS.filter(a => {
+      if (a.id === 'dba000') return false;
+      const st = a.licenseStatus || 'unlicensed';
+      return JOURNEY_STATUSES.includes(st);
+    }).forEach(agent => {
+      if (!records.find(r => r.agentId === agent.id)) {
+        // Map roster licenseStatus to STAGES id
+        const stageMap = { unlicensed:'not_started', studying:'studying', exam_scheduled:'exam_scheduled', expired:'not_started' };
+        records.push(newRecord({
+          agentId:   agent.id,
+          name:      agent.name,
+          phone:     agent.phone||'',
+          upline:    agent.uplineId ? (AGENTS.find(a2=>a2.id===agent.uplineId)?.name||agent.uplineId) : '',
+          stage:     stageMap[agent.licenseStatus||'unlicensed'] || 'not_started',
+          stageDate: new Date().toISOString().slice(0,10),
+        }));
+        save();
+      }
+    });
+  }
+
+  // ── Legacy manual seed ────────────────────────────────────────
   const seedAgents = [
     { agentId:'romcru001', name:'Romeo Cruz', phone:'310-733-9994', stage:'not_started', upline:'Obi Iroezi' },
   ];

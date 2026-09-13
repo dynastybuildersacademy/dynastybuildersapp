@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0">
+<title>License Management · Dynasty Builders</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=Barlow:wght@400;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="auth.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --navy:#0A1628;--navy-mid:#0F1E38;--navy-light:#132240;
+  --gold:#C9A84C;--gold-light:#E8C97A;--green:#2DCA73;
+  --blue:#5DADE2;--purple:#9B59B6;--orange:#E67E22;--red:#E74C3C;
+  --text:#E8EDF5;--muted:#6B7C93;--border:rgba(255,255,255,.08);
+}
+body{background:var(--navy);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh;padding-bottom:80px;}
+.header{background:linear-gradient(135deg,#0A1628,#0F1E38);border-bottom:1px solid rgba(201,168,76,.15);
+  padding:14px 18px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:100;}
+.header-title{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;color:var(--gold-light);flex:1;}
+.back-btn{background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:8px;
+  padding:7px 12px;color:var(--muted);font-family:'DM Mono',monospace;font-size:11px;text-decoration:none;}
+.tab-bar{display:flex;border-bottom:2px solid var(--border);background:var(--navy-mid);
+  position:sticky;top:56px;z-index:90;}
+.tab-btn{flex:1;padding:11px 4px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;
+  background:none;border:none;border-bottom:3px solid transparent;color:var(--muted);cursor:pointer;transition:all .2s;margin-bottom:-2px;}
+.tab-btn.active{border-bottom-color:var(--gold);color:var(--gold-light);}
+.tab-view{display:none;padding:14px;} .tab-view.active{display:block;}
+.card{background:var(--navy-mid);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;}
+.card-title{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:900;color:var(--gold);
+  text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;}
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;}
+.stat-box{background:rgba(0,0,0,.2);border-radius:9px;padding:12px;text-align:center;}
+.stat-num{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:900;}
+.stat-lbl{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);margin-top:2px;}
+/* TABLE */
+.data-table{width:100%;border-collapse:collapse;font-size:12px;}
+.data-table th{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);padding:7px 8px;
+  text-align:left;border-bottom:1px solid rgba(255,255,255,.08);white-space:nowrap;}
+.data-table td{padding:9px 8px;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:middle;}
+.pill{display:inline-flex;padding:2px 8px;border-radius:8px;font-family:'DM Mono',monospace;font-size:9px;font-weight:700;}
+.pill-green{background:rgba(45,202,115,.1);border:1px solid rgba(45,202,115,.3);color:var(--green);}
+.pill-gold{background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.3);color:var(--gold);}
+.pill-red{background:rgba(231,76,60,.08);border:1px solid rgba(231,76,60,.2);color:var(--red);}
+.pill-orange{background:rgba(230,126,34,.1);border:1px solid rgba(230,126,34,.3);color:var(--orange);}
+.pill-blue{background:rgba(93,173,226,.1);border:1px solid rgba(93,173,226,.3);color:var(--blue);}
+/* EXPIRY WARNING */
+.expiry-soon{animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.6;}}
+/* FORM */
+label{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em;}
+input,select{width:100%;background:var(--navy-light);border:1px solid rgba(255,255,255,.12);color:var(--text);
+  border-radius:7px;padding:9px 12px;font-family:'DM Mono',monospace;font-size:12px;outline:none;margin-bottom:10px;}
+input:focus,select:focus{border-color:rgba(201,168,76,.4);}
+.btn{padding:9px 16px;border-radius:8px;font-family:'Barlow Condensed',sans-serif;font-size:14px;
+  font-weight:800;cursor:pointer;border:none;letter-spacing:.04em;}
+.btn-gold{background:linear-gradient(135deg,#C9A84C,#E8C97A);color:#0A1628;}
+.btn-ghost{background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--text);}
+.btn-red{background:rgba(231,76,60,.08);border:1px solid rgba(231,76,60,.2);color:var(--red);font-size:11px;padding:5px 10px;}
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:500;align-items:flex-end;justify-content:center;}
+.modal-sheet{background:#0F1E38;border:1px solid rgba(201,168,76,.2);border-radius:16px 16px 0 0;
+  width:100%;max-width:500px;padding:20px;max-height:88vh;overflow-y:auto;}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);
+  background:var(--navy-mid);border:1px solid var(--gold);border-radius:8px;padding:10px 18px;
+  font-size:12px;font-family:'DM Mono',monospace;color:var(--gold-light);
+  transition:all .3s;opacity:0;z-index:999;white-space:nowrap;}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+</style>
+</head>
+<body>
+<script>AUTH.require('license-management.html', 40);</script>
+
+<div class="header">
+  <a href="hub.html" class="back-btn">← Hub</a>
+  <div class="header-title">🪪 License Management</div>
+  <button onclick="openAddModal()" style="background:var(--gold);color:var(--navy);border:none;
+    border-radius:7px;padding:7px 14px;font-family:'Barlow Condensed',sans-serif;
+    font-size:13px;font-weight:800;cursor:pointer;">+ Add Agent</button>
+</div>
+
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('licensed')">🪪 Licensed</button>
+  <button class="tab-btn" onclick="switchTab('appointed')">🏆 Appointed</button>
+  <button class="tab-btn" onclick="switchTab('expiring')">⚠️ Expiring</button>
+  <button class="tab-btn" onclick="switchTab('carriers')">🤝 Carriers</button>
+</div>
+
+<!-- ══ LICENSED ══ -->
+<div id="tab-licensed" class="tab-view active">
+  <div class="stat-grid" id="stats-licensed"></div>
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:6px;">
+      <div class="card-title" style="margin:0;">Licensed Agents</div>
+      <div style="display:flex;gap:6px;">
+        <input type="text" id="search-licensed" placeholder="Search…" oninput="renderTables()"
+          style="width:130px;padding:6px 10px;margin:0;">
+        <select id="filter-state" onchange="renderTables()" style="padding:6px 10px;margin:0;width:80px;">
+          <option value="">All States</option>
+          <option>CA</option><option>TX</option><option>FL</option><option>IL</option>
+          <option>NY</option><option>NV</option><option>AZ</option><option>GA</option>
+        </select>
+      </div>
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="data-table">
+        <thead><tr>
+          <th>Agent</th><th>License #</th><th>State(s)</th><th>Status</th><th>Expiry</th><th>Days Left</th><th></th>
+        </tr></thead>
+        <tbody id="tbody-licensed"></tbody>
+      </table>
+    </div>
+  </div>
+  <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);padding:0 2px;line-height:1.7;">
+    ← Unlicensed &amp; expired agents are in the <a href="licensing.html" style="color:var(--gold);">Licensing Journey Tracker</a>
+  </div>
+</div>
+
+<!-- ══ APPOINTED ══ -->
+<div id="tab-appointed" class="tab-view">
+  <div class="card">
+    <div class="card-title">Appointed Agents</div>
+    <div style="overflow-x:auto;">
+      <table class="data-table">
+        <thead><tr>
+          <th>Agent</th><th>License #</th><th>Carriers</th><th>Appointment Date</th><th>Expiry</th><th>Days Left</th><th></th>
+        </tr></thead>
+        <tbody id="tbody-appointed"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══ EXPIRING ══ -->
+<div id="tab-expiring" class="tab-view">
+  <div class="card" style="border-color:rgba(231,76,60,.25);">
+    <div class="card-title" style="color:var(--red);">⚠️ Expiring Soon / Expired</div>
+    <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:12px;">
+      Licenses expiring within 90 days or already expired. Renewals must be filed BEFORE the expiry date.
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="data-table">
+        <thead><tr>
+          <th>Agent</th><th>License #</th><th>State</th><th>Expiry</th><th>Status</th><th>Action</th>
+        </tr></thead>
+        <tbody id="tbody-expiring"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Renewal Checklist</div>
+    <ul style="font-size:12px;color:var(--muted);line-height:2;margin-left:16px;">
+      <li>Check renewal deadline on your state DOI website</li>
+      <li>Complete continuing education (CE) hours if required (CA: 24 hrs/2 years)</li>
+      <li>Submit renewal application online through state DOI portal</li>
+      <li>Pay renewal fee (CA: ~$188)</li>
+      <li>Update license copy in PHP Bamboo after renewal</li>
+      <li>Notify upline and admin with new expiry date</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ══ CARRIERS ══ -->
+<div id="tab-carriers" class="tab-view">
+  <div class="card">
+    <div class="card-title">Carrier Appointments by Agent</div>
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:12px;line-height:1.7;">
+      Track which carriers each agent is appointed with. Common carriers: AIG · National Life · American National · Fidelity &amp; Guaranty · Athene · North American
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="data-table">
+        <thead><tr>
+          <th>Agent</th><th>Carriers Appointed</th><th>Appointment Date</th><th>Status</th><th></th>
+        </tr></thead>
+        <tbody id="tbody-carriers"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ADD / EDIT MODAL -->
+<div class="modal-overlay" id="agent-modal">
+  <div class="modal-sheet">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;color:var(--gold);" id="modal-title">Add Licensed Agent</div>
+      <button onclick="closeModal()" style="background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;">✕</button>
+    </div>
+    <input type="hidden" id="modal-id">
+    <label>Agent Name</label>
+    <input type="text" id="modal-name" placeholder="Full name">
+    <label>Agent ID (from roster)</label>
+    <input type="text" id="modal-agent-id" placeholder="e.g. obi001">
+    <label>License Number</label>
+    <input type="text" id="modal-license-num" placeholder="e.g. 0L12345">
+    <label>Licensed States (comma-separated)</label>
+    <input type="text" id="modal-states" placeholder="CA, TX, FL">
+    <label>License Status</label>
+    <select id="modal-license-status">
+      <option value="licensed">Licensed</option>
+      <option value="appointed">Licensed &amp; Appointed</option>
+    </select>
+    <label>License Expiry Date</label>
+    <input type="date" id="modal-expiry">
+    <label>Appointment Date</label>
+    <input type="date" id="modal-appt-date">
+    <label>Carriers Appointed (comma-separated)</label>
+    <input type="text" id="modal-carriers" placeholder="AIG, National Life, American National">
+    <label>PHP Bamboo ID</label>
+    <input type="text" id="modal-phpid" placeholder="PHP agent ID">
+    <label>Notes</label>
+    <input type="text" id="modal-notes" placeholder="Any notes…">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px;">
+      <button class="btn btn-gold" onclick="saveAgent()">Save</button>
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+    </div>
+    <div id="modal-delete-row" style="display:none;margin-top:10px;text-align:center;">
+      <button class="btn btn-red" onclick="deleteAgent()">Delete Record</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const session = AUTH.getSession();
+const LM_KEY  = 'dba_license_mgmt';
+let agents = [];
+
+// ── LOAD / SAVE ───────────────────────────────────────────────
+function load() {
+  try { agents = JSON.parse(localStorage.getItem(LM_KEY) || '[]'); } catch(e) { agents = []; }
+
+  // Auto-seed from AGENTS roster (licensed + appointed)
+  if (typeof AGENTS !== 'undefined') {
+    const MGMT_STATUSES = ['licensed','appointed'];
+    AGENTS.filter(a => {
+      if (a.id === 'dba000') return false;
+      return MGMT_STATUSES.includes(a.licenseStatus || '');
+    }).forEach(agent => {
+      if (!agents.find(r => r.agentId === agent.id)) {
+        agents.push({
+          id:            Date.now().toString() + Math.random(),
+          agentId:       agent.id,
+          name:          agent.name,
+          licenseNum:    agent.licenseNum || '',
+          states:        (agent.licenseStates || []).join(', '),
+          licenseStatus: agent.licenseStatus || 'licensed',
+          expiry:        agent.licenseExpiry || '',
+          apptDate:      '',
+          carriers:      '',
+          phpId:         agent.phpId || '',
+          notes:         '',
+          createdAt:     new Date().toISOString(),
+        });
+        save();
+      }
+    });
+  }
+}
+
+function save() {
+  try { localStorage.setItem(LM_KEY, JSON.stringify(agents)); } catch(e) {}
+}
+
+function toast(msg, dur=2500) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), dur);
+}
+
+// ── TABS ─────────────────────────────────────────────────────
+function switchTab(id) {
+  document.querySelectorAll('.tab-btn').forEach((b,i) => {
+    const tabs = ['licensed','appointed','expiring','carriers'];
+    b.classList.toggle('active', tabs[i] === id);
+  });
+  document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  renderTables();
+}
+
+// ── HELPERS ───────────────────────────────────────────────────
+function daysUntilExpiry(expiry) {
+  if (!expiry) return null;
+  const now  = new Date(); now.setHours(0,0,0,0);
+  const exp  = new Date(expiry + 'T00:00:00');
+  return Math.round((exp - now) / 86400000);
+}
+
+function expiryBadge(expiry) {
+  const days = daysUntilExpiry(expiry);
+  if (days === null) return '<span class="pill pill-blue">No Expiry Set</span>';
+  if (days < 0)   return `<span class="pill pill-red expiry-soon">Expired ${Math.abs(days)}d ago</span>`;
+  if (days < 30)  return `<span class="pill pill-red">${days}d left ⚠</span>`;
+  if (days < 90)  return `<span class="pill pill-orange">${days}d left</span>`;
+  return `<span class="pill pill-green">${days}d left</span>`;
+}
+
+function fmtDate(d) {
+  if (!d) return '—';
+  return new Date(d + 'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+}
+
+// ── RENDER ────────────────────────────────────────────────────
+function renderTables() {
+  const q       = (document.getElementById('search-licensed')?.value||'').toLowerCase();
+  const stateF  = document.getElementById('filter-state')?.value || '';
+
+  const licensed  = agents.filter(a => a.licenseStatus === 'licensed' || a.licenseStatus === 'appointed');
+  const appointed = agents.filter(a => a.licenseStatus === 'appointed');
+  const expiring  = agents.filter(a => {
+    const days = daysUntilExpiry(a.expiry);
+    return days !== null && days < 90;
+  }).sort((a,b) => daysUntilExpiry(a.expiry) - daysUntilExpiry(b.expiry));
+
+  // Stats
+  const today = agents.filter(a => { const d = daysUntilExpiry(a.expiry); return d !== null && d < 0; }).length;
+  const soon  = agents.filter(a => { const d = daysUntilExpiry(a.expiry); return d !== null && d >= 0 && d < 90; }).length;
+  const statsEl = document.getElementById('stats-licensed');
+  if (statsEl) statsEl.innerHTML = `
+    <div class="stat-box"><div class="stat-num" style="color:var(--green);">${licensed.length}</div><div class="stat-lbl">Licensed</div></div>
+    <div class="stat-box"><div class="stat-num" style="color:var(--gold);">${appointed.length}</div><div class="stat-lbl">Appointed</div></div>
+    <div class="stat-box"><div class="stat-num" style="color:var(--red);">${today + soon}</div><div class="stat-lbl">Expiring ⚠</div></div>`;
+
+  const filtered = licensed.filter(a => {
+    if (q && !a.name.toLowerCase().includes(q) && !a.licenseNum.toLowerCase().includes(q)) return false;
+    if (stateF && !a.states.toLowerCase().includes(stateF.toLowerCase())) return false;
+    return true;
+  });
+
+  const rowHtml = (a) => {
+    const days = daysUntilExpiry(a.expiry);
+    return `<tr>
+      <td><div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;">${a.name}</div>
+          <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);">${a.phpId||a.agentId}</div></td>
+      <td style="font-family:'DM Mono',monospace;font-size:11px;">${a.licenseNum||'—'}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:11px;">${a.states||'—'}</td>
+      <td>${a.licenseStatus==='appointed'?'<span class="pill pill-gold">Appointed</span>':'<span class="pill pill-green">Licensed</span>'}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:11px;">${fmtDate(a.expiry)}</td>
+      <td>${expiryBadge(a.expiry)}</td>
+      <td><button onclick="openEditModal('${a.id}')" style="background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);border-radius:5px;padding:3px 8px;color:var(--gold);font-family:'DM Mono',monospace;font-size:10px;cursor:pointer;">✏️</button></td>
+    </tr>`;
+  };
+
+  const tb = document.getElementById('tbody-licensed');
+  if (tb) tb.innerHTML = filtered.length ? filtered.map(rowHtml).join('') :
+    '<tr><td colspan="7" style="padding:16px;text-align:center;font-family:\'DM Mono\',monospace;font-size:11px;color:var(--muted);">No licensed agents found</td></tr>';
+
+  const ta = document.getElementById('tbody-appointed');
+  if (ta) ta.innerHTML = appointed.length ? appointed.map(a => `<tr>
+    <td><div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;">${a.name}</div></td>
+    <td style="font-family:'DM Mono',monospace;font-size:11px;">${a.licenseNum||'—'}</td>
+    <td style="font-family:'DM Mono',monospace;font-size:12px;">${a.carriers||'—'}</td>
+    <td style="font-family:'DM Mono',monospace;font-size:11px;">${fmtDate(a.apptDate)}</td>
+    <td style="font-family:'DM Mono',monospace;font-size:11px;">${fmtDate(a.expiry)}</td>
+    <td>${expiryBadge(a.expiry)}</td>
+    <td><button onclick="openEditModal('${a.id}')" style="background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);border-radius:5px;padding:3px 8px;color:var(--gold);font-family:'DM Mono',monospace;font-size:10px;cursor:pointer;">✏️</button></td>
+  </tr>`).join('') :
+    '<tr><td colspan="7" style="padding:16px;text-align:center;font-family:\'DM Mono\',monospace;font-size:11px;color:var(--muted);">No appointed agents yet</td></tr>';
+
+  const te = document.getElementById('tbody-expiring');
+  if (te) te.innerHTML = expiring.length ? expiring.map(a => {
+    const days = daysUntilExpiry(a.expiry);
+    return `<tr style="${days!==null&&days<0?'opacity:.75;':''}">
+      <td><div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;">${a.name}</div></td>
+      <td style="font-family:'DM Mono',monospace;font-size:11px;">${a.licenseNum||'—'}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:11px;">${a.states||'—'}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:11px;">${fmtDate(a.expiry)}</td>
+      <td>${expiryBadge(a.expiry)}</td>
+      <td><button onclick="openEditModal('${a.id}')" style="background:rgba(231,76,60,.08);border:1px solid rgba(231,76,60,.2);border-radius:5px;padding:3px 8px;color:var(--red);font-family:'DM Mono',monospace;font-size:10px;cursor:pointer;">Update</button></td>
+    </tr>`;
+  }).join('') :
+    '<tr><td colspan="6" style="padding:16px;text-align:center;font-family:\'DM Mono\',monospace;font-size:11px;color:var(--muted);">No agents expiring within 90 days ✓</td></tr>';
+
+  const tc = document.getElementById('tbody-carriers');
+  if (tc) tc.innerHTML = appointed.length ? appointed.map(a => `<tr>
+    <td><div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;">${a.name}</div></td>
+    <td>${(a.carriers||'').split(',').map(c=>c.trim()).filter(Boolean).map(c=>`<span class="pill pill-blue" style="margin:2px;">${c}</span>`).join(' ')||'<span style="font-family:\'DM Mono\',monospace;font-size:10px;color:var(--muted);">None set</span>'}</td>
+    <td style="font-family:'DM Mono',monospace;font-size:11px;">${fmtDate(a.apptDate)}</td>
+    <td><span class="pill pill-gold">Appointed</span></td>
+    <td><button onclick="openEditModal('${a.id}')" style="background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);border-radius:5px;padding:3px 8px;color:var(--gold);font-family:'DM Mono',monospace;font-size:10px;cursor:pointer;">✏️</button></td>
+  </tr>`).join('') :
+    '<tr><td colspan="5" style="padding:16px;text-align:center;font-family:\'DM Mono\',monospace;font-size:11px;color:var(--muted);">No appointed agents yet</td></tr>';
+}
+
+// ── MODAL ─────────────────────────────────────────────────────
+function openAddModal() {
+  document.getElementById('modal-id').value = '';
+  document.getElementById('modal-name').value = '';
+  document.getElementById('modal-agent-id').value = '';
+  document.getElementById('modal-license-num').value = '';
+  document.getElementById('modal-states').value = '';
+  document.getElementById('modal-license-status').value = 'licensed';
+  document.getElementById('modal-expiry').value = '';
+  document.getElementById('modal-appt-date').value = '';
+  document.getElementById('modal-carriers').value = '';
+  document.getElementById('modal-phpid').value = '';
+  document.getElementById('modal-notes').value = '';
+  document.getElementById('modal-title').textContent = 'Add Licensed Agent';
+  document.getElementById('modal-delete-row').style.display = 'none';
+  document.getElementById('agent-modal').style.display = 'flex';
+}
+
+function openEditModal(id) {
+  const a = agents.find(x => x.id === id);
+  if (!a) return;
+  document.getElementById('modal-id').value = a.id;
+  document.getElementById('modal-name').value = a.name;
+  document.getElementById('modal-agent-id').value = a.agentId||'';
+  document.getElementById('modal-license-num').value = a.licenseNum||'';
+  document.getElementById('modal-states').value = a.states||'';
+  document.getElementById('modal-license-status').value = a.licenseStatus||'licensed';
+  document.getElementById('modal-expiry').value = a.expiry||'';
+  document.getElementById('modal-appt-date').value = a.apptDate||'';
+  document.getElementById('modal-carriers').value = a.carriers||'';
+  document.getElementById('modal-phpid').value = a.phpId||'';
+  document.getElementById('modal-notes').value = a.notes||'';
+  document.getElementById('modal-title').textContent = 'Edit — ' + a.name;
+  document.getElementById('modal-delete-row').style.display = 'block';
+  document.getElementById('agent-modal').style.display = 'flex';
+}
+
+function closeModal() { document.getElementById('agent-modal').style.display = 'none'; }
+
+function saveAgent() {
+  const id   = document.getElementById('modal-id').value;
+  const name = document.getElementById('modal-name').value.trim();
+  if (!name) { toast('⚠ Name required'); return; }
+
+  const data = {
+    name,
+    agentId:       document.getElementById('modal-agent-id').value.trim(),
+    licenseNum:    document.getElementById('modal-license-num').value.trim(),
+    states:        document.getElementById('modal-states').value.trim(),
+    licenseStatus: document.getElementById('modal-license-status').value,
+    expiry:        document.getElementById('modal-expiry').value,
+    apptDate:      document.getElementById('modal-appt-date').value,
+    carriers:      document.getElementById('modal-carriers').value.trim(),
+    phpId:         document.getElementById('modal-phpid').value.trim(),
+    notes:         document.getElementById('modal-notes').value.trim(),
+  };
+
+  if (id) {
+    const idx = agents.findIndex(a => a.id === id);
+    if (idx >= 0) Object.assign(agents[idx], data);
+    toast('✓ Updated');
+  } else {
+    agents.push({ id: Date.now().toString(), ...data, createdAt: new Date().toISOString() });
+    toast('✓ Agent added');
+  }
+  save();
+  closeModal();
+  renderTables();
+
+  // Also update the agent's licenseStatus in AGENTS roster if possible
+  if (data.agentId && typeof AGENTS !== 'undefined') {
+    const a = AGENTS.find(x => x.id === data.agentId);
+    if (a) {
+      a.licenseStatus = data.licenseStatus;
+      a.licenseNum    = data.licenseNum;
+      a.licenseExpiry = data.expiry;
+    }
+  }
+}
+
+function deleteAgent() {
+  const id = document.getElementById('modal-id').value;
+  if (!id) return;
+  if (!confirm('Remove this agent from License Management?')) return;
+  agents = agents.filter(a => a.id !== id);
+  save();
+  closeModal();
+  renderTables();
+  toast('✓ Record removed');
+}
+
+// Init
+load();
+renderTables();
+</script>
+</body>
+</html>

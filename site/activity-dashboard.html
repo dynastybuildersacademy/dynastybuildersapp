@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0">
+<title>Activity Dashboard · Dynasty Builders</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=Barlow:wght@400;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="auth.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --navy:#0A1628;--navy-mid:#0F1E38;--navy-light:#132240;
+  --gold:#C9A84C;--gold-light:#E8C97A;--green:#2DCA73;
+  --blue:#5DADE2;--orange:#E67E22;--red:#E74C3C;
+  --text:#E8EDF5;--muted:#6B7C93;--border:rgba(255,255,255,.08);
+}
+body{background:var(--navy);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh;padding-bottom:80px;}
+.header{background:linear-gradient(135deg,#0A1628,#0F1E38);border-bottom:1px solid rgba(201,168,76,.15);
+  padding:14px 18px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:100;}
+.header-title{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;color:var(--gold-light);flex:1;}
+.back-btn{background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:8px;
+  padding:7px 12px;color:var(--muted);font-family:'DM Mono',monospace;font-size:11px;text-decoration:none;}
+.tab-bar{display:flex;border-bottom:2px solid var(--border);background:var(--navy-mid);
+  position:sticky;top:56px;z-index:90;}
+.tab-btn{flex:1;padding:11px 4px;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;
+  background:none;border:none;border-bottom:3px solid transparent;color:var(--muted);cursor:pointer;
+  letter-spacing:.04em;transition:all .2s;margin-bottom:-2px;}
+.tab-btn.active{border-bottom-color:var(--gold);color:var(--gold-light);}
+.tab-view{display:none;padding:14px;} .tab-view.active{display:block;}
+.card{background:var(--navy-mid);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;}
+.card-title{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:900;color:var(--gold);
+  text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;}
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;}
+.stat-box{background:rgba(0,0,0,.2);border-radius:9px;padding:12px;text-align:center;}
+.stat-num{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:900;}
+.stat-lbl{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);margin-top:2px;}
+.agent-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.05);}
+.agent-row:last-child{border:none;}
+.streak-bar{height:4px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;margin-top:4px;}
+.streak-fill{height:100%;border-radius:2px;transition:width .4s;}
+.heat-cell{width:12px;height:12px;border-radius:2px;flex-shrink:0;}
+.pill{display:inline-flex;align-items:center;padding:2px 8px;border-radius:10px;
+  font-family:'DM Mono',monospace;font-size:9px;font-weight:700;}
+.pill-fire{background:rgba(230,126,34,.12);border:1px solid rgba(230,126,34,.3);color:#E67E22;}
+.pill-green{background:rgba(45,202,115,.12);border:1px solid rgba(45,202,115,.3);color:var(--green);}
+.pill-muted{background:rgba(107,124,147,.1);border:1px solid rgba(107,124,147,.2);color:var(--muted);}
+input,select{background:var(--navy-light);border:1px solid rgba(255,255,255,.12);color:var(--text);
+  border-radius:7px;padding:8px 12px;font-family:'DM Mono',monospace;font-size:12px;outline:none;}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);
+  background:var(--navy-mid);border:1px solid var(--gold);border-radius:8px;padding:10px 18px;
+  font-size:12px;font-family:'DM Mono',monospace;color:var(--gold-light);
+  transition:all .3s;opacity:0;z-index:999;white-space:nowrap;}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+</style>
+</head>
+<body>
+<script>AUTH.require('activity-dashboard.html', 60);</script>
+
+<div class="header">
+  <a href="hub.html" class="back-btn">← Hub</a>
+  <div class="header-title">📊 Activity Dashboard</div>
+  <button onclick="refreshAll()" style="background:rgba(93,173,226,.1);border:1px solid rgba(93,173,226,.3);
+    border-radius:7px;padding:7px 12px;color:#5DADE2;font-family:'DM Mono',monospace;font-size:11px;cursor:pointer;">
+    ↻ Refresh
+  </button>
+</div>
+
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('overview')">📈 Overview</button>
+  <button class="tab-btn" onclick="switchTab('streaks')">🔥 Streaks</button>
+  <button class="tab-btn" onclick="switchTab('heatmap')">📅 Heatmap</button>
+  <button class="tab-btn" onclick="switchTab('mine')">👤 My Stats</button>
+</div>
+
+<!-- ══ OVERVIEW ══ -->
+<div id="tab-overview" class="tab-view active">
+  <div class="stat-grid" id="overview-stats"></div>
+  <div class="card">
+    <div class="card-title">Today's Logins</div>
+    <div id="today-logins">
+      <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);">Loading…</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Recent Activity (Last 7 Days)</div>
+    <div id="recent-activity">
+      <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);">Loading…</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ STREAKS ══ -->
+<div id="tab-streaks" class="tab-view">
+  <div class="card">
+    <div class="card-title">🔥 Current Streaks — All Agents</div>
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:12px;line-height:1.6;">
+      Ranked by current streak. 7+ days = 🔥 · 14+ = 🔥🔥 · 30+ = 🔥🔥🔥
+    </div>
+    <div id="streak-board"></div>
+  </div>
+</div>
+
+<!-- ══ HEATMAP ══ -->
+<div id="tab-heatmap" class="tab-view">
+  <div class="card">
+    <div class="card-title">📅 Login Heatmap — Last 12 Weeks</div>
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:12px;">
+      Each cell = one day. Darker = more agents logged in.
+    </div>
+    <div id="heatmap-grid" style="overflow-x:auto;"></div>
+    <div style="display:flex;align-items:center;gap:6px;margin-top:10px;">
+      <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);">Less</div>
+      <div style="width:12px;height:12px;border-radius:2px;background:rgba(201,168,76,.1);border:1px solid rgba(255,255,255,.06);"></div>
+      <div style="width:12px;height:12px;border-radius:2px;background:rgba(201,168,76,.3);"></div>
+      <div style="width:12px;height:12px;border-radius:2px;background:rgba(201,168,76,.55);"></div>
+      <div style="width:12px;height:12px;border-radius:2px;background:rgba(201,168,76,.8);"></div>
+      <div style="width:12px;height:12px;border-radius:2px;background:#C9A84C;"></div>
+      <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);">More</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📊 Per-Agent Login Days</div>
+    <div id="per-agent-days"></div>
+  </div>
+</div>
+
+<!-- ══ MY STATS ══ -->
+<div id="tab-mine" class="tab-view">
+  <div id="my-stats-content">
+    <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);">Loading your stats…</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const session = AUTH.getSession();
+const today   = new Date().toISOString().slice(0, 10);
+
+function toast(msg, dur=2500) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), dur);
+}
+
+function switchTab(id) {
+  document.querySelectorAll('.tab-btn').forEach((b,i) => {
+    const tabs = ['overview','streaks','heatmap','mine'];
+    b.classList.toggle('active', tabs[i] === id);
+  });
+  document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  if (id === 'heatmap') renderHeatmap();
+  if (id === 'mine')    renderMyStats();
+}
+
+// ── Load data ─────────────────────────────────────────────────
+// Each agent's streak and history is stored locally — only readable if on same device.
+// For cross-device tracking, a Monday board sync would be needed.
+// This dashboard reads all agent keys from localStorage for agents in the AGENTS roster.
+
+function getAllStreaks() {
+  const result = [];
+  (typeof AGENTS !== 'undefined' ? AGENTS : []).forEach(agent => {
+    if (agent.id === 'dba000') return; // skip super admin
+    try {
+      const s = JSON.parse(localStorage.getItem('dba_streak_' + agent.id) || 'null');
+      if (s) result.push({ ...agent, ...s });
+    } catch(e) {}
+  });
+  return result.sort((a,b) => (b.streak||0) - (a.streak||0));
+}
+
+function getActivityLog() {
+  return AUTH.getActivityLog ? AUTH.getActivityLog() : [];
+}
+
+// ── Overview ──────────────────────────────────────────────────
+function renderOverview() {
+  const log  = getActivityLog();
+  const streaks = getAllStreaks();
+  const todayLog = log.filter(e => e.date === today);
+  const last7 = log.filter(e => { const d = new Date(e.date); const cut = new Date(); cut.setDate(cut.getDate()-7); return d >= cut; });
+  const active7 = new Set(last7.map(e => e.agentId)).size;
+  const avgStreak = streaks.length ? Math.round(streaks.reduce((s,a)=>(s+a.streak||0),0)/streaks.length) : 0;
+  const maxStreak = streaks.length ? Math.max(...streaks.map(a=>a.streak||0)) : 0;
+
+  document.getElementById('overview-stats').innerHTML = `
+    <div class="stat-box"><div class="stat-num" style="color:var(--gold);">${todayLog.length}</div><div class="stat-lbl">Today's Logins</div></div>
+    <div class="stat-box"><div class="stat-num" style="color:var(--blue);">${active7}</div><div class="stat-lbl">Active (7d)</div></div>
+    <div class="stat-box"><div class="stat-num" style="color:var(--orange);">${maxStreak}</div><div class="stat-lbl">Top Streak 🔥</div></div>`;
+
+  // Today's logins
+  const el = document.getElementById('today-logins');
+  if (!todayLog.length) {
+    el.innerHTML = '<div style="font-family:\'DM Mono\',monospace;font-size:11px;color:var(--muted);">No logins recorded today on this device.</div>';
+  } else {
+    el.innerHTML = todayLog.map(e => {
+      const streak = e.streak || 0;
+      const fire = streak >= 30 ? '🔥🔥🔥' : streak >= 14 ? '🔥🔥' : streak >= 7 ? '🔥' : '';
+      const time = e.at ? new Date(e.at).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}) : '';
+      return `<div class="agent-row">
+        <div style="flex:1;">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;">${e.name}</div>
+          <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);">${time}</div>
+        </div>
+        ${streak > 0 ? `<span class="pill ${streak>=7?'pill-fire':'pill-green'}">${fire} ${streak}d streak</span>` : ''}
+      </div>`;
+    }).join('');
+  }
+
+  // Recent activity
+  const recent = document.getElementById('recent-activity');
+  const byDate = {};
+  last7.forEach(e => { if (!byDate[e.date]) byDate[e.date] = []; byDate[e.date].push(e); });
+  const dates = Object.keys(byDate).sort().reverse();
+  if (!dates.length) {
+    recent.innerHTML = '<div style="font-family:\'DM Mono\',monospace;font-size:11px;color:var(--muted);">No recent activity recorded on this device.</div>';
+  } else {
+    recent.innerHTML = dates.map(d => {
+      const entries = byDate[d];
+      const dateLabel = new Date(d + 'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+      return `<div style="margin-bottom:10px;">
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--gold);margin-bottom:6px;">${dateLabel} · ${entries.length} login${entries.length!==1?'s':''}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+          ${entries.map(e => `<span style="background:rgba(255,255,255,.06);border-radius:6px;padding:3px 8px;font-family:'DM Mono',monospace;font-size:10px;">${e.name.split(' ')[0]}</span>`).join('')}
+        </div>
+      </div>`;
+    }).join('');
+  }
+}
+
+// ── Streaks ───────────────────────────────────────────────────
+function renderStreaks() {
+  const streaks = getAllStreaks();
+  const el = document.getElementById('streak-board');
+  if (!streaks.length) {
+    el.innerHTML = '<div style="font-family:\'DM Mono\',monospace;font-size:11px;color:var(--muted);">No streak data yet — agents must log in from this device to record streaks.</div>';
+    return;
+  }
+  const maxStreak = Math.max(...streaks.map(a => a.streak||0), 1);
+  el.innerHTML = streaks.map((a,i) => {
+    const s = a.streak || 0;
+    const pct = Math.round(s/maxStreak*100);
+    const fire = s >= 30 ? '🔥🔥🔥' : s >= 14 ? '🔥🔥' : s >= 7 ? '🔥' : s >= 3 ? '⚡' : '–';
+    const color = s >= 14 ? 'var(--orange)' : s >= 7 ? '#E8C97A' : s >= 3 ? 'var(--green)' : 'var(--muted)';
+    const medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
+    return `<div class="agent-row">
+      <span style="font-size:14px;min-width:22px;">${medal}</span>
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;">${a.name}</span>
+          <span style="font-family:'DM Mono',monospace;font-size:11px;color:${color};font-weight:700;">${fire} ${s}d</span>
+        </div>
+        <div class="streak-bar"><div class="streak-fill" style="width:${pct}%;background:${color};"></div></div>
+        <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);margin-top:3px;">
+          Best: ${a.longestStreak||s}d · Total: ${a.totalDays||1} days
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Heatmap ───────────────────────────────────────────────────
+function renderHeatmap() {
+  const log = getActivityLog();
+  const byDate = {};
+  log.forEach(e => { byDate[e.date] = (byDate[e.date] || 0) + 1; });
+  const maxCount = Math.max(...Object.values(byDate), 1);
+
+  // Build 12-week grid
+  const end = new Date();
+  const start = new Date(end);
+  start.setDate(start.getDate() - 83); // ~12 weeks
+
+  const grid = document.getElementById('heatmap-grid');
+  const days = [];
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate()+1)) {
+    days.push(d.toISOString().slice(0,10));
+  }
+
+  // Build week columns
+  const weeks = [];
+  let week = [];
+  days.forEach(d => {
+    const dow = new Date(d + 'T12:00:00').getDay();
+    if (dow === 0 && week.length) { weeks.push(week); week = []; }
+    week.push(d);
+  });
+  if (week.length) weeks.push(week);
+
+  const cellHtml = (d) => {
+    const count = byDate[d] || 0;
+    const pct = count / maxCount;
+    const alpha = count ? Math.max(0.12, pct * 0.9) : 0.05;
+    const bg = count ? `rgba(201,168,76,${alpha.toFixed(2)})` : 'rgba(255,255,255,.04)';
+    const label = new Date(d + 'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    return `<div class="heat-cell" style="background:${bg};border:1px solid rgba(255,255,255,.04);"
+      title="${label}: ${count} login${count!==1?'s':''}"></div>`;
+  };
+
+  const DOW_LABELS = ['Su','M','T','W','Th','F','Sa'];
+  grid.innerHTML = `<div style="display:flex;gap:3px;align-items:flex-start;">
+    <div style="display:flex;flex-direction:column;gap:3px;margin-right:4px;padding-top:18px;">
+      ${DOW_LABELS.map(l => `<div style="font-family:'DM Mono',monospace;font-size:8px;color:var(--muted);height:12px;line-height:12px;">${l}</div>`).join('')}
+    </div>
+    ${weeks.map(week => `
+      <div style="display:flex;flex-direction:column;gap:3px;">
+        <div style="font-family:'DM Mono',monospace;font-size:7px;color:rgba(255,255,255,.2);height:14px;white-space:nowrap;overflow:hidden;">
+          ${week[0] ? new Date(week[0]+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}) : ''}
+        </div>
+        ${Array.from({length:7}, (_,i) => {
+          const d = week.find(dd => new Date(dd+'T12:00:00').getDay() === i);
+          return d ? cellHtml(d) : `<div style="width:12px;height:12px;"></div>`;
+        }).join('')}
+      </div>`).join('')}
+  </div>`;
+
+  // Per-agent days
+  const streaks = getAllStreaks();
+  const perAgent = document.getElementById('per-agent-days');
+  if (!streaks.length) {
+    perAgent.innerHTML = '<div style="font-family:\'DM Mono\',monospace;font-size:11px;color:var(--muted);">No data yet.</div>';
+  } else {
+    perAgent.innerHTML = streaks.map(a => {
+      const hist = AUTH.getLoginHistory ? AUTH.getLoginHistory(a.id) : [];
+      const pct = Math.round(hist.length / 84 * 100); // out of 12 weeks
+      return `<div class="agent-row">
+        <div style="flex:1;min-width:0;">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;">${a.name}</div>
+          <div style="height:4px;background:rgba(255,255,255,.06);border-radius:2px;margin-top:4px;overflow:hidden;">
+            <div style="width:${pct}%;height:100%;background:var(--gold);border-radius:2px;"></div>
+          </div>
+        </div>
+        <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--gold);min-width:40px;text-align:right;">${a.totalDays||0}d</div>
+      </div>`;
+    }).join('');
+  }
+}
+
+// ── My Stats ─────────────────────────────────────────────────
+function renderMyStats() {
+  if (!session) return;
+  const s = AUTH.getStreak ? AUTH.getStreak(session.agentId) : {};
+  const hist = AUTH.getLoginHistory ? AUTH.getLoginHistory(session.agentId) : [];
+  const streak = s.streak || session.streak || 0;
+  const longest = s.longestStreak || session.longestStreak || 0;
+  const total = s.totalDays || session.totalDays || 0;
+  const fire = streak >= 30 ? '🔥🔥🔥' : streak >= 14 ? '🔥🔥' : streak >= 7 ? '🔥' : '⚡';
+
+  // Build personal 12-week heat
+  const myDates = new Set(hist.map(h => h.date));
+  const end = new Date();
+  const days30 = [];
+  for (let i=29; i>=0; i--) { const d = new Date(end); d.setDate(d.getDate()-i); days30.push(d.toISOString().slice(0,10)); }
+
+  document.getElementById('my-stats-content').innerHTML = `
+    <div class="card">
+      <div style="text-align:center;padding:10px 0 16px;">
+        <div style="font-size:44px;margin-bottom:6px;">${fire}</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:48px;font-weight:900;color:var(--orange);">${streak}</div>
+        <div style="font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);">day streak</div>
+      </div>
+      <div class="stat-grid">
+        <div class="stat-box"><div class="stat-num" style="color:var(--gold);">${longest}</div><div class="stat-lbl">Best Ever</div></div>
+        <div class="stat-box"><div class="stat-num" style="color:var(--blue);">${total}</div><div class="stat-lbl">Total Days</div></div>
+        <div class="stat-box"><div class="stat-num" style="color:var(--green);">${hist.filter(h=>{ const d=new Date(h.date); const cut=new Date(); cut.setDate(cut.getDate()-30); return d>=cut; }).length}</div><div class="stat-lbl">Last 30d</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">My Login History (Last 30 Days)</div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;">
+        ${days30.map(d => {
+          const logged = myDates.has(d);
+          const label = new Date(d+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
+          return `<div style="width:28px;height:28px;border-radius:5px;display:flex;align-items:center;justify-content:center;
+            background:${logged?'rgba(45,202,115,.15)':'rgba(255,255,255,.04)'};
+            border:1px solid ${logged?'rgba(45,202,115,.3)':'rgba(255,255,255,.06)'};
+            font-family:'DM Mono',monospace;font-size:8px;color:${logged?'#2DCA73':'var(--muted)'};"
+            title="${label}">${logged?'✓':new Date(d+'T12:00:00').getDate()}</div>`;
+        }).join('')}
+      </div>
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-top:10px;line-height:1.7;">
+        ✓ = logged in · Streaks reset if you miss a day · Keep showing up!
+      </div>
+    </div>
+
+    ${streak === 0 ? `<div class="card" style="text-align:center;padding:20px;">
+      <div style="font-size:32px;margin-bottom:8px;">📱</div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;color:var(--gold);margin-bottom:6px;">Start Your Streak Today</div>
+      <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);">Log in every day to build your streak. 7 days = 🔥</div>
+    </div>` : ''}`;
+}
+
+function refreshAll() {
+  renderOverview();
+  renderStreaks();
+  toast('✓ Refreshed');
+}
+
+// Init
+renderOverview();
+renderStreaks();
+</script>
+</body>
+</html>
