@@ -191,7 +191,7 @@ const MONDAY_ORG_KEY = 'eyJhbGciOiJIUzI1NiJ9.eyJ0aWQiOjY1Nzg0OTc3NSwiYWFpIjoxMSw
 //   2. Copy the board ID from the Monday.com URL (/boards/XXXXXXXXXX)
 //   3. Add or update: top25BoardId: "XXXXXXXXXX" in their entry below
 //   4. Deploy — the agent will load their board automatically on next login
-//   Agents without a top25BoardId fall back to the template board (18419015866)
+//   Agents without a top25BoardId fall back to the default board (8270757684)
 // Last synced from DBA Agent Roster (board 18411252280): 2026-08-18
 // ─────────────────────────────────────────────────────────────────────────────
 const AGENTS = [
@@ -254,7 +254,7 @@ const AGENTS = [
   },
   {
     id: "bli001", name: "Blessing Ikejemba",
-    pin: "1111", role: "trainee", level: 20,
+    pin: "1111", role: "executive_md", level: 70,
     phpId: "", phone: "",
     email: "",
     top25BoardId: "",
@@ -635,7 +635,7 @@ const AGENTS = [
   {
     id: "tortsa743", name: "Tornike Tsagareishvili",
     pin: "1111", role: "trainee", level: 20,
-    phpId: "1376400", phone: "9084337138",
+    phpId: "1374743", phone: "9084337138",
     email: "n.pachulia@yahoo.com",
     top25BoardId: "18394078194",
     licenseStates: [],
@@ -2403,6 +2403,10 @@ const AGENTS = [
   { id:"proemm2121", phpId:"1422121", name:"Promise Emmanuel", pin:"2121", role:"trainee", uplineId:"obi001", email:"promisewisdom7@gmail.com", phone:"3233581765" },
   { id:"keleke1773", phpId:"1421773", name:"Kelvin Ekeh", pin:"1773", role:"trainee", uplineId:"obi001", email:"ekehkelvin44@gmail.com", phone:"8622319651" },
   { id:"ebeaug4168", phpId:"1404168", name:"Ebenezer Augustine", pin:"4168", role:"trainee", uplineId:"obi001", email:"eseogheneau@gmail.com", phone:"4244305475" },
+  { id:"prochi1109", phpId:"1431109", name:"Prosper Chinatu", pin:"1109", role:"trainee", uplineId:"chieli576", email:"chinatuprosper2006@gmail.com", phone:"2816973330", top25BoardId:"18430883524", enrollmentDate:"2026-09-13" },
+  { id:"marste1078", phpId:"1431078", name:"Markus Steele", pin:"1078", role:"trainee", uplineId:"tortsa743", email:"markussteele20@gmail.com", phone:"4243331628", enrollmentDate:"2026-09-13" },
+  { id:"bricas8135", phpId:"1068135", name:"Brittany Casey", pin:"8135", role:"producing_md", level:50, uplineId:"obi001", email:"", phone:"" },
+  { id:"chesim0407", phpId:"1070407", name:"Cherri Sims", pin:"0407", role:"field_associate", uplineId:"bricas8135", email:"cherrisimsphp@gmail.com", phone:"3104936173", top25BoardId:"8282733428", enrollmentDate:"2021-08-31", mdTeamId:"obi001" },
   {
     id: "maraje415", name: "Mariam Ajetunmobi",
     pin: "1111", role: "trainee", level: 20,
@@ -2653,6 +2657,38 @@ const AUTH = {
 // ── 7. HELPER FUNCTIONS ───────────────────────────────────────
 function getAgentById(id)      { return AGENTS.find(a => a.id === id) || null; }
 function getDirectReports(id)  { return AGENTS.filter(a => a.uplineId === id); }
+
+// Returns the Marketing Director "team" an agent belongs to for reporting/
+// display purposes. Admins can explicitly override this per agent via
+// roster-admin.html (agent.mdTeamId); when no override is set, it's
+// computed by walking the uplineId chain to the nearest agent whose role
+// is Marketing Director (level 60) or above.
+function getAgentMDTeamId(agent) {
+  if (!agent) return '';
+  if (agent.mdTeamId) return agent.mdTeamId; // explicit admin override wins
+  let cur = agent, hops = 0;
+  while (cur && cur.uplineId && hops < 12) {
+    const up = getAgentById(cur.uplineId);
+    if (!up) break;
+    if ((ROLES[up.role]?.level || 0) >= 60) return up.id;
+    cur = up;
+    hops++;
+  }
+  return '';
+}
+function getAgentMDTeamName(agent) {
+  const md = getAgentById(getAgentMDTeamId(agent));
+  return md ? md.name : '';
+}
+// All agents whose MD team resolves to the given MD's agent ID.
+function getMDTeamAgents(mdId) {
+  return AGENTS.filter(a => a.id !== mdId && getAgentMDTeamId(a) === mdId);
+}
+// All agents in the roster who are eligible to "own" a team (MD level+),
+// for populating admin assignment dropdowns.
+function getAllMDs() {
+  return AGENTS.filter(a => (ROLES[a.role]?.level || 0) >= 60);
+}
 
 // Returns the full recursive downline (all levels) for a given agent ID,
 // INCLUDING the agent themself at index 0. Use .slice(1) to exclude self.

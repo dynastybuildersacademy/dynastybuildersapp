@@ -58,6 +58,14 @@ textarea{resize:vertical;min-height:80px;}
 .btn-generate:hover{opacity:0.87;}
 .btn-generate:disabled{opacity:0.5;cursor:not-allowed;}
 .ai-output{background:var(--navy);border:1px solid var(--border);border-radius:4px;padding:16px;margin-top:14px;font-size:13px;line-height:1.8;white-space:pre-wrap;display:none;}
+/* LINKEDIN PROSPECTING */
+.li-connect-box{background:var(--navy-mid);border:1px solid var(--border);border-radius:4px;padding:18px 20px;margin-bottom:22px;}
+.li-connect-box.connected{border-color:rgba(39,174,96,0.4);background:rgba(39,174,96,0.06);}
+.li-btn{display:inline-flex;align-items:center;gap:8px;background:#0A66C2;color:#fff;border:none;padding:11px 20px;border-radius:3px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;letter-spacing:0.05em;cursor:pointer;transition:opacity 0.2s;}
+.li-btn:hover{opacity:0.88;}
+.li-btn:disabled{opacity:0.5;cursor:not-allowed;}
+.li-status{font-size:12px;color:var(--slate);margin-top:10px;line-height:1.6;}
+.li-note{font-size:11px;color:var(--slate);background:rgba(230,126,34,0.08);border:1px solid rgba(230,126,34,0.25);border-radius:4px;padding:10px 12px;margin-top:12px;line-height:1.6;}
 /* CALENDAR */
 .calendar-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
 @media(max-width:600px){.calendar-grid{grid-template-columns:1fr 1fr;}}
@@ -84,6 +92,7 @@ textarea{resize:vertical;min-height:80px;}
   <div class="tab" onclick="switchTab('funnels',this)">🎯 Funnels & Pages</div>
   <div class="tab" onclick="switchTab('surveys',this)">📋 Surveys</div>
   <div class="tab" onclick="switchTab('ai',this)">✨ AI Generator</div>
+  <div class="tab" onclick="switchTab('linkedin',this)">🔗 LinkedIn Prospecting</div>
   <div class="tab" onclick="switchTab('calendar',this)">📅 Content Calendar</div>
   <div class="tab" onclick="switchTab('objections',this)">🛡️ Objection Scripts</div>
 </div>
@@ -178,6 +187,36 @@ textarea{resize:vertical;min-height:80px;}
     <div class="ai-output" id="ai-output"></div>
     <div id="ai-copy-row" style="display:none;margin-top:10px;">
       <button class="copy-btn" onclick="copyAI()">Copy Content</button>
+    </div>
+  </div>
+</div>
+
+<!-- LINKEDIN PROSPECTING -->
+<div class="panel" id="panel-linkedin">
+  <div class="page-title">LinkedIn Prospecting</div>
+  <div class="page-sub">Connect your LinkedIn account, then paste a prospect's profile to generate a personalized, human-sounding outreach message.</div>
+
+  <div class="li-connect-box" id="li-connect-box">
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;color:var(--gold);letter-spacing:0.05em;margin-bottom:4px;">Your LinkedIn Account</div>
+    <div id="li-status-line" style="font-size:12px;color:var(--slate);margin-bottom:12px;">Not connected.</div>
+    <button class="li-btn" id="li-connect-btn" onclick="connectLinkedIn()">
+      <span>in</span> Connect LinkedIn Account
+    </button>
+    <div class="li-note">Connecting verifies it's really you and personalizes messages with your name. LinkedIn does not allow third-party apps to send connection requests or messages automatically — you'll still copy the generated message and paste it into LinkedIn yourself.</div>
+  </div>
+
+  <div class="ai-card">
+    <div class="ai-title">✉️ Generate a Prospecting Message</div>
+    <label class="field-label">Your Name (for the sign-off)</label>
+    <input type="text" id="li-my-name" placeholder="e.g. Gio">
+    <label class="field-label">Your Scheduling / Contact Link (optional)</label>
+    <input type="text" id="li-my-link" placeholder="e.g. https://linktr.ee/yourname">
+    <label class="field-label">Paste the Prospect's LinkedIn Profile</label>
+    <textarea id="li-profile" placeholder="Paste their headline, About section, current role, and any recent posts or activity you can see…" style="min-height:160px;"></textarea>
+    <button class="btn-generate" onclick="generateLinkedInMessage()" id="li-gen-btn">Generate Message →</button>
+    <div class="ai-output" id="li-output"></div>
+    <div id="li-copy-row" style="display:none;margin-top:10px;">
+      <button class="copy-btn" onclick="copyLinkedInMessage()">Copy Message</button>
     </div>
   </div>
 </div>
@@ -519,6 +558,208 @@ function toast(msg) {
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2500);
 }
+
+// ════════════════════════════════════════════════════════════════
+// LINKEDIN PROSPECTING
+// ════════════════════════════════════════════════════════════════
+const LI_TOKEN_KEY = 'dba_linkedin_token_' + (session?.agentId || 'guest');
+
+let _liClientId = null;
+async function getLinkedInClientId() {
+  if (_liClientId !== null) return _liClientId;
+  try {
+    const res = await fetch('/api/config');
+    const data = await res.json();
+    _liClientId = data.linkedinClientId || '';
+  } catch(e) { _liClientId = ''; }
+  return _liClientId;
+}
+
+function getLinkedInToken() {
+  try { return JSON.parse(localStorage.getItem(LI_TOKEN_KEY) || 'null'); } catch { return null; }
+}
+
+async function connectLinkedIn() {
+  const btn = document.getElementById('li-connect-btn');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Connecting…'; }
+
+  const clientId = await getLinkedInClientId();
+  if (!clientId) {
+    document.getElementById('li-connect-box').innerHTML = `
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;color:#E74C3C;margin-bottom:6px;">⚠ LinkedIn Setup Required</div>
+      <div class="li-status">
+        To enable this, register an app at <strong>linkedin.com/developers</strong> with the "Sign In with LinkedIn using OpenID Connect" product, then set
+        <strong>LINKEDIN_CLIENT_ID</strong> and <strong>LINKEDIN_CLIENT_SECRET</strong> as Netlify env vars, and add<br>
+        <code style="background:rgba(0,0,0,.3);padding:2px 6px;border-radius:3px;color:var(--gold-light);">${window.location.origin}/marketing.html</code>
+        as an authorized redirect URL.
+      </div>
+      <div class="li-note">You can still use the message generator below without connecting — connecting only verifies your identity and personalizes the sign-off.</div>`;
+    toast('ℹ LinkedIn app not configured yet');
+    return;
+  }
+
+  const redirectUri = window.location.origin + '/marketing.html';
+  const scope = 'openid profile email';
+  const url = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}`;
+  window.location.href = url;
+}
+
+async function handleLinkedInOAuthCallback(code) {
+  const box = document.getElementById('li-connect-box');
+  if (box) box.querySelector('#li-status-line').textContent = '⏳ Completing LinkedIn sign-in…';
+
+  try {
+    const redirectUri = window.location.origin + '/marketing.html';
+    const res = await fetch('/api/linkedin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'exchange', code, redirectUri }),
+    });
+    const data = await res.json();
+
+    if (data.access_token) {
+      localStorage.setItem(LI_TOKEN_KEY, JSON.stringify({
+        access_token: data.access_token,
+        expires_at: Date.now() + (data.expires_in || 3600) * 1000,
+        connected_at: new Date().toISOString(),
+      }));
+      await loadLinkedInProfile(data.access_token);
+      toast('✓ LinkedIn connected');
+    } else {
+      renderLinkedInDisconnected('Connection failed: ' + (data.error_description || data.error || 'unknown error'));
+    }
+  } catch(e) {
+    renderLinkedInDisconnected('Connection failed: ' + e.message);
+  }
+}
+
+async function loadLinkedInProfile(token) {
+  try {
+    const res = await fetch('/api/linkedin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'profile', token }),
+    });
+    const profile = await res.json();
+    renderLinkedInConnected(profile);
+    if (profile.given_name && !document.getElementById('li-my-name').value) {
+      document.getElementById('li-my-name').value = profile.given_name;
+    }
+  } catch(e) {
+    renderLinkedInConnected({});
+  }
+}
+
+function renderLinkedInConnected(profile) {
+  const box = document.getElementById('li-connect-box');
+  const name = profile.name || [profile.given_name, profile.family_name].filter(Boolean).join(' ') || 'your account';
+  box.classList.add('connected');
+  box.innerHTML = `
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;color:var(--success);letter-spacing:0.05em;margin-bottom:4px;">✅ LinkedIn Connected</div>
+    <div class="li-status">Signed in as <strong style="color:var(--cream);">${name}</strong></div>
+    <button class="li-btn" style="background:transparent;border:1px solid var(--border);color:var(--slate);margin-top:10px;" onclick="disconnectLinkedIn()">Disconnect</button>`;
+}
+
+function renderLinkedInDisconnected(msg) {
+  const box = document.getElementById('li-connect-box');
+  box.classList.remove('connected');
+  box.innerHTML = `
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;color:var(--gold);letter-spacing:0.05em;margin-bottom:4px;">Your LinkedIn Account</div>
+    <div class="li-status" id="li-status-line">${msg || 'Not connected.'}</div>
+    <button class="li-btn" id="li-connect-btn" onclick="connectLinkedIn()"><span>in</span> Connect LinkedIn Account</button>
+    <div class="li-note">Connecting verifies it's really you and personalizes messages with your name. LinkedIn does not allow third-party apps to send connection requests or messages automatically — you'll still copy the generated message and paste it into LinkedIn yourself.</div>`;
+}
+
+function disconnectLinkedIn() {
+  localStorage.removeItem(LI_TOKEN_KEY);
+  renderLinkedInDisconnected('Disconnected.');
+  toast('LinkedIn disconnected');
+}
+
+// The exact rules from the org's LinkedIn outreach prompt — kept verbatim so
+// every agent's generated message follows the same tested structure.
+const LINKEDIN_SYSTEM_PROMPT = `Act as an expert LinkedIn networking and business development copywriter. I will provide a LinkedIn profile. Write a personalized message that sounds like a real person personally reviewed the profile, not AI or a mass recruiting campaign.
+
+I am building a financial brokerage and work with families, professionals, investors, and business owners around life insurance, retirement planning, financial protection, wealth preservation, and long term financial strategies. We also offer full time, part time, and referral partnership opportunities.
+
+Rules:
+- Start with something specific from their profile.
+- Never invent information.
+- Find a natural connection between their work and mine.
+- Keep it conversational, professional, warm, and human.
+- Do not sound salesy or overly corporate.
+- Do not use "no pressure," "no hard pitch," or similar phrases.
+- Do not say I am a real estate agent.
+- Avoid generic or repetitive wording.
+- Do not use dashes or quotation marks.
+- Aim for 100 to 150 words.
+- Senior professionals should receive a peer to peer message.
+- Business owners should receive a business and referral focused message.
+- Financial professionals should receive an industry peer message.
+- Real estate and mortgage professionals should receive a client and referral focused message.
+- HR and recruiting professionals should receive a people, leadership, and team building angle.
+- Young professionals should receive a career development and entrepreneurship angle.
+
+Return ONLY the finished LinkedIn message.`;
+
+async function generateLinkedInMessage() {
+  const profile = document.getElementById('li-profile').value.trim();
+  const myName  = document.getElementById('li-my-name').value.trim() || session?.name || 'your name';
+  const myLink  = document.getElementById('li-my-link').value.trim();
+  const btn     = document.getElementById('li-gen-btn');
+  const out     = document.getElementById('li-output');
+
+  if (!profile) { toast('⚠ Paste the prospect\u2019s LinkedIn profile first'); return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Generating…';
+  out.style.display = 'none';
+
+  const closing = myLink
+    ? `End naturally with: Would you be open to a 30 minute conversation sometime? ${myLink}\nBest, ${myName}`
+    : `End naturally with: Would you be open to a 30 minute conversation sometime?\nBest, ${myName}`;
+  const prompt = `${closing}\n\nPROFILE:\n${profile}`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:400, system: LINKEDIN_SYSTEM_PROMPT, messages:[{role:'user',content:prompt}] })
+    });
+    const d = await res.json();
+    const txt = d?.content?.[0]?.text || '(API key required — set your Anthropic key to enable AI generation)';
+    out.textContent = txt;
+    out.style.display = 'block';
+    document.getElementById('li-copy-row').style.display = 'block';
+  } catch(e) {
+    out.textContent = 'Generation failed. Check your API key configuration.';
+    out.style.display = 'block';
+  }
+  btn.disabled = false;
+  btn.textContent = 'Generate Message →';
+}
+function copyLinkedInMessage() { copyText('li-output'); }
+
+// ── LINKEDIN INIT ─────────────────────────────────────────────
+(function initLinkedIn() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const oauthCode = urlParams.get('code');
+  if (oauthCode) {
+    window.history.replaceState({}, '', window.location.pathname);
+    // Switch to the LinkedIn tab so the connect result is visible
+    const tab = [...document.querySelectorAll('.tab')].find(t => t.getAttribute('onclick')?.includes("'linkedin'"));
+    if (tab) switchTab('linkedin', tab);
+    handleLinkedInOAuthCallback(oauthCode);
+    return;
+  }
+  const existing = getLinkedInToken();
+  if (existing && existing.expires_at > Date.now()) {
+    loadLinkedInProfile(existing.access_token);
+  }
+  if (session?.name) {
+    const nameInput = document.getElementById('li-my-name');
+    if (nameInput && !nameInput.value) nameInput.value = session.name;
+  }
+})();
 </script>
 </body>
 </html>

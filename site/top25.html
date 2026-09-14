@@ -332,7 +332,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
       <option value="today">Due Today</option><option value="overdue">Overdue</option>
       <option value="upcoming">Upcoming</option><option value="planned">Planned</option>
     </select>
-    <select class="fsel" id="filter-group" onchange="loadByGroup()">
+    <select class="fsel" id="filter-group" onchange="filterCards()">
       <option value="">All Groups</option>
     </select>
     <span class="filter-count" id="count-pill">—</span>
@@ -440,7 +440,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 
 <script>
 // ── CONSTANTS ─────────────────────────────────────────────────
-const SHARED_BOARD_ID    = '7030392283';
+const SHARED_BOARD_ID    = '8270757684';
 const TOP25_WORKSPACE_ID = '13768899';
 const AGENT_ROSTER_BOARD = '18411252280';
 
@@ -826,9 +826,10 @@ async function fetchAndRender(boardId){
   document.getElementById('cards-container').innerHTML=`<div class="state-box"><div class="ico"><span class="spinner"></span></div><p>Loading${selGrpTitle?` "${selGrpTitle}"`:''}…</p></div>`;
   let allItems=[],cursor=null;
   try{
-    // Always fetch all items then filter client-side — server-side group filter is unreliable
+    // Always fetch the FULL board once and cache it — group filtering happens
+    // client-side in getFiltered() from here on, so switching the group
+    // dropdown never re-hits Monday (this used to refetch on every change).
     allItems=await fetchAllItems(boardId);
-    if(selGrp) allItems=allItems.filter(item=>item.group?.id===selGrp);
   }catch(e2){
       document.getElementById('cards-container').innerHTML=`
         <div class="state-box">
@@ -939,8 +940,10 @@ function getFiltered(){
   const status=(document.getElementById('filter-status')||{}).value||'';
   const next=(document.getElementById('filter-next')||{}).value||'';
   const fu=(document.getElementById('filter-followup')||{}).value||'';
+  const grp=(document.getElementById('filter-group')||{}).value||'';
   const today=new Date().toISOString().slice(0,10);
   return allProspects.filter(p=>{
+    if(grp&&p.group_id!==grp) return false;
     if(q&&!p.name.toLowerCase().includes(q)&&!(p.phone||'').includes(q)&&!(p.occupation||'').toLowerCase().includes(q)) return false;
     if(status&&p.status!==status) return false;
     if(next&&p.next_action!==next) return false;

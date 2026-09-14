@@ -287,7 +287,7 @@ input:focus,select:focus{outline:none;border-color:var(--gold);}
             <option value="invites">Guests Invited</option>
             <option value="confirmed">Guests Confirmed</option>
           </select>
-          <button onclick="loadLeaderboard()"
+          <button onclick="loadLeaderboard(true)"
             style="font-size:11px;background:var(--gold);color:var(--navy);border:none;
               padding:6px 12px;border-radius:3px;font-family:'Barlow Condensed',sans-serif;font-weight:700;cursor:pointer;">
             ↻ Refresh
@@ -377,6 +377,15 @@ const BOM_GUESTS_KEY  = 'dba_bom_guests';
 const BOM_GUESTS_BOARD = '18393747809'; // 2026 BOM Captains DBA LC Hierarchy // Dynasty BOM Guests board
 const BOM_META_KEY    = 'dba_bom_meta';
 const BOM_CACHE_TTL   = 30 * 60 * 1000;
+
+// CFT column ID is still a placeholder — see handoff notes ("needs real ID").
+// Sending an unknown column id inside column_values makes Monday reject the
+// WHOLE create_item/change_multiple_column_values mutation, not just that
+// field, which was silently breaking every guest sync where a CFT was set.
+// Guard writes here until the real id replaces this placeholder, then flip
+// CFT_COLUMN_CONFIRMED to true.
+const CFT_COLUMN_ID = 'text_cft';
+const CFT_COLUMN_CONFIRMED = false;
 
 const session = AUTH.getSession();
 let counts = { invites:0, confirmed:0, showed:0 };
@@ -470,7 +479,7 @@ async function autoSyncGuest(guest) {
     const cv = {};
     if (guest.captain)   cv["color_mkzde7z4"] = { label: guest.captain };
     if (guest.generator) cv["text_mkz8jwyh"]  = guest.generator;
-    if (guest.cft)       cv["text_cft"]        = guest.cft;
+    if (guest.cft && CFT_COLUMN_CONFIRMED) cv[CFT_COLUMN_ID] = guest.cft;
     if (guest.status)    cv["color_mm3wf94t"]  = { label: guest.status };
     if (guest.phone)     cv["phone_mkz8bstv"]  = { phone: guest.phone.replace(/\D/g,''), countryShortName:'US' };
     if (guest.email)     cv["email_mkz8m224"]  = guest.email;
@@ -764,7 +773,7 @@ async function syncBOMToMonday(bomDate, bomType) {
       const cv2 = {};
       if (g.captain)   cv2["color_mkzde7z4"] = { label: g.captain };
       if (g.generator) cv2["text_mkz8jwyh"]  = g.generator;
-      if (g.cft)       cv2["text_cft"]        = g.cft;
+      if (g.cft && CFT_COLUMN_CONFIRMED) cv2[CFT_COLUMN_ID] = g.cft;
       if (g.status)    cv2["color_mm3wf94t"]  = { label: g.status };
       if (g.phone) {
         const d = (g.phone||'').replace(/\D/g,'');
@@ -897,7 +906,7 @@ document.getElementById('lb-period').addEventListener('change', function() {
   if (this.value !== 'custom') loadLeaderboard();
 });
 
-async function loadLeaderboard() {
+async function loadLeaderboard(forceRefresh) {
   const period    = document.getElementById('lb-period').value;
   const dayFilter = document.getElementById('lb-day-filter').value;
   const metric    = document.getElementById('lb-metric').value;
@@ -942,89 +951,16 @@ async function loadLeaderboard() {
     return true;
   });
 
-  // ── SECONDARY: Try Monday board for additional historical data ─
-  let mondayRows = [];
-  // ── Hardcoded column IDs from board 18393747809 ─────────────
-  // name            → Guest Name
-  // color_mkz7t8k6  → MD
-  // phone_mkz8bstv  → Guest Phone Number
-  // date_mkz7nvys   → BOM Date
-  // color_mkzde7z4  → Captain's Name
-  // text_mkz8jwyh   → Generator's Name
-  // color_mm3wf94t  → Status
-  // text_mm3wbkyc / text_mm3wmee6 → BOM Type
-  const BOM_COLS = {
-    captain:   'color_mkzde7z4',
-    generator: 'text_mkz8jwyh',
-    cft:       'text_cft',         // CFT column — update with actual ID from your board
-    status:    'color_mm3wf94t',
-    results:   'color_mkz7vw2m',
-    phone:     'phone_mkz8bstv',
-    date:      'date_mkz7nvys',
-    md:        'color_mkz7t8k6',
-    bomType:   'text_mm3wmee6',
-    agentId:   'text_mm3ww2vg',
-    agentName: 'text_mm3w2mnw',
-  };
-
-  if (AUTH.getMondayKey()) {
-    try {
-      let cursor = null, pageNum = 0;
-      do {
-        pageNum++;
-        const ca = cursor ? `,cursor:"${cursor}"` : '';
-        const res = await mondayQuery(`{
-          boards(ids: ${BOM_GUESTS_BOARD}) {
-            items_page(limit: 100${ca}) {
-              cursor
-              items {
-                id name
-                column_values(ids: [
-                  "color_mkzde7z4","text_mkz8jwyh","color_mm3wf94t",
-                  "color_mkz7vw2m","phone_mkz8bstv","date_mkz7nvys",
-                  "text_mm3wmee6","color_mkz7t8k6"
-                ]) { id text value }
-              }
-            }
-          }
-        }`);
-        const page = res?.data?.boards?.[0]?.items_page;
-        if (!page) break;
-        const localNames = new Set(guests.map(g => (g.name||'').toLowerCase()));
-        (page.items||[]).forEach(item => {
-          if (localNames.has(item.name.toLowerCase())) return;
-          const get = (colId) => {
-            const cv = item.column_values?.find(c => c.id === colId);
-            if (!cv) return '';
-            if (cv.text) return cv.text;
-            try {
-              const v = JSON.parse(cv.value||'null');
-              return v?.label?.text || v?.text || '';
-            } catch { return ''; }
-          };
-          const date = get(BOM_COLS.date);
-          const day  = get(BOM_COLS.bomType);
-          if (fromDate && date && date < fromDate) return;
-          if (toDate   && date && date > toDate)   return;
-          if (dayFilter !== 'all' && day && !day.toLowerCase().includes(dayFilter.toLowerCase())) return;
-          mondayRows.push({
-            guestName: item.name,
-            captain:   get(BOM_COLS.captain),
-            generator: get(BOM_COLS.generator),
-            cft:       get(BOM_COLS.cft) || get('cft','field trainer','ft'),
-            status:    get(BOM_COLS.status) || get(BOM_COLS.results),
-            phone:     get(BOM_COLS.phone),
-            date,
-            day,
-          });
-        });
-        cursor = page.cursor || null;
-        if (pageNum >= 20) break;
-      } while (cursor);
-    } catch(e) {
-      console.warn('[BOM Leaderboard] Monday fetch failed:', e.message);
-    }
-  }
+  // ── SECONDARY: Monday board for additional historical data ────
+  // Fetched ONCE and cached — changing period/day/metric/date filters
+  // re-filters the cached rows instead of re-hitting Monday every time.
+  const mondayRowsAll = await getLeaderboardMondayRows(forceRefresh);
+  const mondayRows = mondayRowsAll.filter(row => {
+    if (fromDate && row.date && row.date < fromDate) return false;
+    if (toDate   && row.date && row.date > toDate)   return false;
+    if (dayFilter !== 'all' && row.day && !row.day.toLowerCase().includes(dayFilter.toLowerCase())) return false;
+    return true;
+  });
 
   // Merge local + Monday (local takes priority)
   const guestRows = [...localRows, ...mondayRows];
@@ -1040,6 +976,89 @@ async function loadLeaderboard() {
   }
 
   renderLeaderboard(guestRows, metric, dayFilter);
+}
+
+// Fetches every guest row from the Monday board once per cache window
+// (BOM_CACHE_TTL) and reuses it for every leaderboard filter change.
+// Pass forceRefresh=true (e.g. from a "↻ Refresh" button) to bypass it.
+let _lbMondayRowsCache = null;
+let _lbMondayCacheTime = 0;
+async function getLeaderboardMondayRows(forceRefresh) {
+  if (!AUTH.getMondayKey()) return [];
+  if (!forceRefresh && _lbMondayRowsCache && (Date.now() - _lbMondayCacheTime) < BOM_CACHE_TTL) {
+    return _lbMondayRowsCache;
+  }
+
+  const BOM_COLS = {
+    captain:   'color_mkzde7z4',
+    generator: 'text_mkz8jwyh',
+    cft:       CFT_COLUMN_ID,
+    status:    'color_mm3wf94t',
+    results:   'color_mkz7vw2m',
+    phone:     'phone_mkz8bstv',
+    date:      'date_mkz7nvys',
+    md:        'color_mkz7t8k6',
+    bomType:   'text_mm3wmee6',
+    agentId:   'text_mm3ww2vg',
+    agentName: 'text_mm3w2mnw',
+  };
+
+  const rows = [];
+  try {
+    let cursor = null, pageNum = 0;
+    do {
+      pageNum++;
+      const ca = cursor ? `,cursor:"${cursor}"` : '';
+      const res = await mondayQuery(`{
+        boards(ids: ${BOM_GUESTS_BOARD}) {
+          items_page(limit: 100${ca}) {
+            cursor
+            items {
+              id name
+              column_values(ids: [
+                "color_mkzde7z4","text_mkz8jwyh","color_mm3wf94t",
+                "color_mkz7vw2m","phone_mkz8bstv","date_mkz7nvys",
+                "text_mm3wmee6","color_mkz7t8k6"
+              ]) { id text value }
+            }
+          }
+        }
+      }`);
+      const page = res?.data?.boards?.[0]?.items_page;
+      if (!page) break;
+      const localNames = new Set(guests.map(g => (g.name||'').toLowerCase()));
+      (page.items||[]).forEach(item => {
+        if (localNames.has(item.name.toLowerCase())) return;
+        const get = (colId) => {
+          const cv = item.column_values?.find(c => c.id === colId);
+          if (!cv) return '';
+          if (cv.text) return cv.text;
+          try {
+            const v = JSON.parse(cv.value||'null');
+            return v?.label?.text || v?.text || '';
+          } catch { return ''; }
+        };
+        rows.push({
+          guestName: item.name,
+          captain:   get(BOM_COLS.captain),
+          generator: get(BOM_COLS.generator),
+          cft:       get(BOM_COLS.cft),
+          status:    get(BOM_COLS.status) || get(BOM_COLS.results),
+          phone:     get(BOM_COLS.phone),
+          date:      get(BOM_COLS.date),
+          day:       get(BOM_COLS.bomType),
+        });
+      });
+      cursor = page.cursor || null;
+      if (pageNum >= 20) break;
+    } while (cursor);
+  } catch(e) {
+    console.warn('[BOM Leaderboard] Monday fetch failed:', e.message);
+  }
+
+  _lbMondayRowsCache = rows;
+  _lbMondayCacheTime = Date.now();
+  return rows;
 }
 
 

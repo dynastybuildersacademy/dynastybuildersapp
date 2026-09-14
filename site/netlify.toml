@@ -21,6 +21,9 @@
 [functions."automations"]
   timeout = 15
 
+[functions."linkedin"]
+  timeout = 15
+
 # Dynasty Builders Academy — Netlify Configuration
 
 [build]
@@ -85,6 +88,11 @@
   to     = "/.netlify/functions/automations"
   status = 200
 
+[[redirects]]
+  from   = "/api/linkedin"
+  to     = "/.netlify/functions/linkedin"
+  status = 200
+
 # ── REQUIRED ENVIRONMENT VARIABLES ─────────────────────────────
 # Set these in Netlify → Site Configuration → Environment Variables:
 #
@@ -93,6 +101,8 @@
 #   ROSTER_BOARD_ID     Monday board ID for agent roster (optional)
 #   GOOGLE_CLIENT_ID    Google OAuth client ID
 #   GOOGLE_CLIENT_SECRET  Google OAuth client secret
+#   LINKEDIN_CLIENT_ID     LinkedIn OAuth client ID (Sign In with LinkedIn using OpenID Connect)
+#   LINKEDIN_CLIENT_SECRET LinkedIn OAuth client secret
 #
 # TOKEN_SECRET secures all session tokens. If compromised, rotate it
 # and all agents will need to log in again (tokens invalidated).

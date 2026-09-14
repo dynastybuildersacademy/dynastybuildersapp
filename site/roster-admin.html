@@ -116,6 +116,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
     <button class="tab" onclick="switchTab('add',this)">➕ Add Agent</button>
     <button class="tab" onclick="switchTab('upload',this)">📤 Bulk Upload</button>
     <button class="tab" onclick="switchTab('boards',this)">📋 Board Assignments</button>
+    <button class="tab" onclick="switchTab('mdteams',this)">👔 MD Team Assignment</button>
   </div>
 
   <!-- ── ROSTER TAB ── -->
@@ -173,7 +174,11 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
   <!-- ── ADD AGENT TAB ── -->
   <div class="tab-pane" id="pane-add">
     <div class="card">
-      <div class="card-title">Add New Agent</div>
+      <div class="card-title" id="add-card-title">Add New Agent</div>
+      <div id="edit-banner" style="display:none;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.3);border-radius:6px;padding:8px 12px;margin-bottom:14px;font-size:12px;color:var(--gold);">
+        ✏️ Editing <strong id="edit-banner-name"></strong> — saving will update this agent, not create a new one.
+        <a href="#" onclick="cancelEdit();return false;" style="color:var(--muted);margin-left:8px;">Cancel</a>
+      </div>
       <div class="row2">
         <div class="field"><label>First Name</label><input type="text" id="add-first" placeholder="First"></div>
         <div class="field"><label>Last Name</label><input type="text" id="add-last" placeholder="Last"></div>
@@ -182,13 +187,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
         <div class="field"><label>PHP Agent ID</label><input type="text" id="add-phpid" placeholder="e.g. 1353718"></div>
         <div class="field"><label>Login PIN (4 digits)</label><input type="text" id="add-pin" placeholder="1234" maxlength="4" oninput="this.value=this.value.replace(/\D/g,'')"></div>
         <div class="field"><label>Role</label>
-          <select id="add-role">
-            <option value="trainee">Trainee</option>
-            <option value="director">Director / Field Associate</option>
-            <option value="marketing_director">Marketing Director</option>
-            <option value="agency_builder">Agency Builder</option>
-            <option value="admin">Admin</option>
-          </select>
+          <select id="add-role"></select>
         </div>
       </div>
       <div class="row2">
@@ -202,9 +201,12 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
       <div class="field"><label>License States</label><input type="text" id="add-states" placeholder="CA, TX, NY"></div>
       <div style="display:flex;gap:10px;margin-top:6px;">
         <button class="btn btn-ghost" onclick="generatePin()">🎲 Generate PIN</button>
-        <button class="btn btn-gold" onclick="addAgent()" style="flex:1;justify-content:center;">✓ Add Agent to Roster</button>
+        <button class="btn btn-gold" onclick="addAgent()" id="add-submit-btn" style="flex:1;justify-content:center;">✓ Add Agent to Roster</button>
       </div>
       <div id="add-result" style="margin-top:12px;font-family:'DM Mono',monospace;font-size:12px;"></div>
+      <div style="background:rgba(93,173,226,.08);border:1px solid rgba(93,173,226,.25);border-radius:6px;padding:10px 12px;margin-top:12px;font-size:11px;color:var(--muted);line-height:1.6;">
+        ℹ️ Saving here updates the roster immediately for your current session (including login access). It does <strong>not</strong> persist across devices or survive a redeploy until the generated auth.js line below is pasted into <code>auth.js</code> and the site is redeployed.
+      </div>
     </div>
   </div>
 
@@ -252,6 +254,24 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
       </div>
     </div>
   </div>
+
+  <!-- ── MD TEAM ASSIGNMENT TAB ── -->
+  <div class="tab-pane" id="pane-mdteams">
+    <div class="card">
+      <div class="card-title">Marketing Director Team Assignment</div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.7;">Choose which Marketing Director's team each agent is grouped under for reporting and team-scoped views. Leave on "Auto" to use their upline chain — pick a specific MD to override it (e.g. after a lateral move between teams).</p>
+      <div class="search-bar">
+        <span class="si">🔍</span>
+        <input type="text" id="mdteam-search" placeholder="Search agents…" oninput="renderMDTeamTable()">
+      </div>
+      <div class="agent-table-wrap">
+        <table class="agent-table">
+          <thead><tr><th>Agent</th><th>ID</th><th>Role</th><th>Marketing Director Team</th><th>Save</th></tr></thead>
+          <tbody id="mdteam-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -268,6 +288,7 @@ function switchTab(name, el) {
   el.classList.add('active');
   if (name === 'roster') renderRoster();
   if (name === 'boards') renderBoardTable();
+  if (name === 'mdteams') renderMDTeamTable();
 }
 
 // ── ROLE DISPLAY ──────────────────────────────────────────────
@@ -389,6 +410,52 @@ function saveBoard(agentId) {
   }
 }
 
+// ── MD TEAM ASSIGNMENT ──────────────────────────────────────────
+function renderMDTeamTable() {
+  const q = (document.getElementById('mdteam-search')?.value||'').toLowerCase();
+  const filtered = agentList.filter(a =>
+    !q || a.name.toLowerCase().includes(q) || a.id.includes(q)
+  );
+  const mds = getAllMDs(); // every MD-level+ agent, for the dropdown options
+
+  document.getElementById('mdteam-tbody').innerHTML = filtered.map(a => {
+    const autoId   = (() => { const withoutOverride = { ...a, mdTeamId: '' }; return getAgentMDTeamId(withoutOverride); })();
+    const autoName = autoId ? (getAgentById(autoId)?.name || autoId) : '—';
+    const options = [`<option value="">Auto (${autoName})</option>`]
+      .concat(mds.filter(m => m.id !== a.id).map(m =>
+        `<option value="${m.id}" ${a.mdTeamId===m.id?'selected':''}>${m.name}</option>`
+      )).join('');
+    return `
+    <tr>
+      <td><strong>${a.name}</strong></td>
+      <td style="font-family:'DM Mono',monospace;font-size:10px;">${a.id}</td>
+      <td>${rolePill(a.role)}</td>
+      <td>
+        <select id="mdteam-input-${a.id}"
+          style="width:220px;background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:5px 9px;color:var(--text);font-family:'DM Mono',monospace;font-size:11px;outline:none;">
+          ${options}
+        </select>
+      </td>
+      <td>
+        <button class="btn btn-ghost" style="padding:5px 10px;font-size:11px;" onclick="saveMDTeam('${a.id}')">Save</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function saveMDTeam(agentId) {
+  const select = document.getElementById('mdteam-input-'+agentId);
+  const val = select?.value || '';
+  const agent = agentList.find(a => a.id === agentId);
+  if (agent) {
+    agent.mdTeamId = val;
+    select.style.borderColor = 'var(--green)';
+    setTimeout(() => select.style.borderColor = '', 1500);
+    toast(val ? `✓ MD team set for ${agent.name}` : `✓ MD team reset to Auto for ${agent.name}`);
+    saveToLocalStorage();
+  }
+}
+
 // ── ADD AGENT ─────────────────────────────────────────────────
 function generatePin() {
   document.getElementById('add-pin').value = Math.floor(1000+Math.random()*9000);
@@ -405,6 +472,20 @@ function makeAgentId(first, last) {
   return id;
 }
 
+// ── ADD / EDIT AGENT ─────────────────────────────────────────
+let editingAgentId = null; // null = "add" mode; an agent id = "edit" mode
+
+// Populate the Role dropdown straight from ROLES (auth.js) so every
+// promotable rank is always selectable — no more hardcoded, stale list.
+function populateRoleOptions() {
+  const sel = document.getElementById('add-role');
+  if (!sel || typeof ROLE_ORDER === 'undefined') return;
+  sel.innerHTML = [...ROLE_ORDER].reverse()
+    .filter(r => r !== 'guest')
+    .map(r => `<option value="${r}">${ROLES[r]?.label || r}</option>`)
+    .join('');
+}
+
 function addAgent() {
   const first = document.getElementById('add-first').value.trim();
   const last = document.getElementById('add-last').value.trim();
@@ -413,41 +494,68 @@ function addAgent() {
   const pin = document.getElementById('add-pin').value.trim() || String(Math.floor(1000+Math.random()*9000));
   if (!/^\d{4}$/.test(pin)) { toast('⚠ PIN must be 4 digits'); return; }
 
-  const id = makeAgentId(first, last);
   const role = document.getElementById('add-role').value;
-  const level = {admin:100,agency_builder:100,marketing_director:80,director:60,trainee:20}[role]||20;
+  const level = ROLES[role]?.level ?? 20; // always derived from ROLES — never goes stale as new ranks are added
 
-  const agent = {
-    id, name: `${first} ${last}`, pin, role, level,
+  const fields = {
+    name: `${first} ${last}`, pin, role, level,
     phpId: document.getElementById('add-phpid').value.trim(),
     phone: document.getElementById('add-phone').value.trim().replace(/\D/g,''),
     email: document.getElementById('add-email').value.trim(),
     top25BoardId: document.getElementById('add-board').value.trim(),
     licenseStates: document.getElementById('add-states').value.split(',').map(s=>s.trim()).filter(Boolean),
-    enrollmentDate: new Date().toISOString().slice(0,10),
     uplineId: document.getElementById('add-upline').value.trim(),
   };
 
-  agentList.push(agent);
+  let agent, isNew;
+  if (editingAgentId) {
+    // ── EDIT MODE: update the existing record in place ──────────
+    // agentList entries share the same object reference as the global
+    // AGENTS array (agentList = [...AGENTS]), so mutating fields here
+    // updates AGENTS too — the change takes effect immediately across
+    // the whole site for this browser session (login, hub, tracker, etc).
+    agent = agentList.find(a => a.id === editingAgentId);
+    if (!agent) { toast('⚠ Could not find that agent to update'); return; }
+    Object.assign(agent, fields);
+    isNew = false;
+  } else {
+    // ── ADD MODE: create a brand new record ─────────────────────
+    const id = makeAgentId(first, last);
+    agent = { id, enrollmentDate: new Date().toISOString().slice(0,10), ...fields };
+    agentList.push(agent);
+    // Also push into the live global AGENTS array (not just this page's
+    // copy) so the new agent can log in immediately in this session —
+    // without this, only roster-admin.html itself would know they exist.
+    if (typeof AGENTS !== 'undefined') AGENTS.push(agent);
+    isNew = true;
+  }
+
   saveToLocalStorage();
+  const snippet = buildAuthSnippet(agent);
 
   document.getElementById('add-result').innerHTML =
-    `<span style="color:var(--green);">✓ Agent added!</span><br>
-    <strong>Login ID:</strong> <code style="color:var(--gold);">${id}</code> &nbsp;
-    <strong>PIN:</strong> <code style="color:var(--gold);">${pin}</code><br>
-    Share these credentials with ${first}.`;
+    `<span style="color:var(--green);">✓ ${isNew ? 'Agent added' : 'Agent updated'}!</span><br>
+    <strong>Login ID:</strong> <code style="color:var(--gold);">${agent.id}</code> &nbsp;
+    <strong>PIN:</strong> <code style="color:var(--gold);">${agent.pin}</code> &nbsp;
+    <strong>Role:</strong> <code style="color:var(--gold);">${ROLES[agent.role]?.label||agent.role}</code><br>
+    ${isNew ? `Share these credentials with ${first}.` : ''}
+    <div style="margin-top:10px;padding:10px;background:var(--s2);border-radius:6px;">
+      <div style="color:var(--muted);margin-bottom:4px;">Paste this into <code>auth.js</code> to make it permanent:</div>
+      <code style="color:var(--gold-light);word-break:break-all;font-size:10.5px;">${snippet.replace(/</g,'&lt;')}</code>
+      <div style="margin-top:6px;"><button class="btn btn-ghost" style="padding:4px 10px;font-size:10px;" onclick="navigator.clipboard.writeText(${JSON.stringify(snippet)});toast('✓ Copied')">Copy line</button></div>
+    </div>`;
 
-  toast(`✓ ${first} ${last} added — ID: ${id}`);
-
-  // Clear form
-  ['add-first','add-last','add-phpid','add-pin','add-phone','add-email','add-upline','add-board','add-states']
-    .forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  toast(`✓ ${agent.name} ${isNew ? 'added' : 'updated'} — ID: ${agent.id}`);
+  renderRoster();
+  cancelEdit(); // resets form + edit-mode state (keeps the result panel above intact)
 }
 
 // ── EDIT AGENT ────────────────────────────────────────────────
 function editAgent(agentId) {
   const agent = agentList.find(a => a.id === agentId);
   if (!agent) return;
+  editingAgentId = agentId;
+
   switchTab('add', document.querySelector('.tab'));
   document.querySelector('[onclick*="add"]').classList.add('active');
   document.getElementById('pane-add').classList.add('active');
@@ -467,7 +575,22 @@ function editAgent(agentId) {
   const _ls = document.getElementById('add-license-status'); if (_ls) _ls.value = agent.licenseStatus||'unlicensed';
   const _ln = document.getElementById('add-license-num'); if (_ln) _ln.value = agent.licenseNum||'';
   const _le = document.getElementById('add-license-expiry'); if (_le) _le.value = agent.licenseExpiry||'';
-  document.getElementById('add-result').innerHTML = `<span style="color:var(--muted);">Editing ${agent.name} (${agentId})</span>`;
+
+  document.getElementById('edit-banner').style.display = 'block';
+  document.getElementById('edit-banner-name').textContent = agent.name;
+  document.getElementById('add-card-title').textContent = 'Edit Agent';
+  document.getElementById('add-submit-btn').textContent = '💾 Save Changes';
+  document.getElementById('add-result').innerHTML = '';
+}
+
+function cancelEdit() {
+  editingAgentId = null;
+  document.getElementById('edit-banner').style.display = 'none';
+  document.getElementById('add-card-title').textContent = 'Add New Agent';
+  document.getElementById('add-submit-btn').textContent = '✓ Add Agent to Roster';
+  ['add-first','add-last','add-phpid','add-pin','add-phone','add-email','add-upline','add-board','add-states']
+    .forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  const roleSel = document.getElementById('add-role'); if (roleSel) roleSel.value = 'trainee';
 }
 
 // ── BULK UPLOAD ───────────────────────────────────────────────
@@ -645,10 +768,22 @@ function toast(msg) {
 
 // ── INIT ──────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  // Merge any localStorage overrides
+  populateRoleOptions();
+  // Re-apply any saved overrides from a previous roster-admin session on
+  // this browser (edits + new agents added since the last deploy),
+  // merging field-by-field so agentList stays in sync with the live
+  // AGENTS array instead of replacing it wholesale.
   try {
     const overrides = JSON.parse(localStorage.getItem('dba_agent_overrides')||'[]');
-    if (overrides.length > agentList.length) agentList = overrides;
+    overrides.forEach(ov => {
+      const existing = agentList.find(a => a.id === ov.id);
+      if (existing) {
+        Object.assign(existing, ov);
+      } else {
+        agentList.push(ov);
+        if (typeof AGENTS !== 'undefined') AGENTS.push(ov);
+      }
+    });
   } catch(e) {}
   renderRoster();
 });
@@ -736,11 +871,14 @@ async function syncAgentToMonday(agent, action) {
 
 // ── GENERATE AUTH.JS SNIPPET ─────────────────────────────────────
 // Shows the auth.js line for any agent — admin can copy and add to deploy
+function buildAuthSnippet(a) {
+  const level = a.level ?? ROLES[a.role]?.level ?? 20;
+  return `  { id:"${a.id}", phpId:"${a.phpId||''}", name:"${a.name}", pin:"${a.pin}", role:"${a.role}", level:${level}, uplineId:"${a.uplineId||''}", email:"${a.email||''}", phone:"${a.phone||''}", top25BoardId:"${a.top25BoardId||''}" },`;
+}
 function showAuthSnippet(agentId) {
   const a = agentList.find(ag => ag.id === agentId);
   if (!a) return;
-  const snippet = `  { id:"${a.id}", phpId:"${a.phpId||''}", name:"${a.name}", pin:"${a.pin}", role:"${a.role}", uplineId:"${a.uplineId||''}", email:"${a.email||''}", phone:"${a.phone||''}", top25BoardId:"${a.top25BoardId||''}" },`;
-  navigator.clipboard.writeText(snippet);
+  navigator.clipboard.writeText(buildAuthSnippet(a));
   toast('✓ auth.js line copied to clipboard');
 }
 
