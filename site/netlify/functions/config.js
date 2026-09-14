@@ -17,6 +17,7 @@ exports.handler = async (event) => {
     headers: { ...CORS, 'Content-Type': 'application/json', 'Cache-Control': 'max-age=300' },
     body: JSON.stringify({
       googleClientId: process.env.GOOGLE_CLIENT_ID || '',
+      linkedinClientId: process.env.LINKEDIN_CLIENT_ID || '',
     }),
   };
 };
