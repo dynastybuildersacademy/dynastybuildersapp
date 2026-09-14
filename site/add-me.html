@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Let's Connect — Dynasty Builders Academy</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0A1628;--navy-mid:#112040;--navy-light:#1A3158;
+  --gold:#C9A84C;--gold-light:#E8C97A;--gold-pale:#F5E8C0;
+  --cream:#FAF6EE;--success:#27AE60;--warn:#E67E22;--danger:#C0392B;
+  --slate:#6B7C93;--border:rgba(201,168,76,0.22);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--cream);min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(201,168,76,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(201,168,76,.04) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;}
+
+.wrap{position:relative;max-width:520px;margin:0 auto;padding:40px 20px 60px;}
+
+.logo-row{display:flex;align-items:center;gap:12px;margin-bottom:8px;}
+.shield{width:36px;height:42px;background:linear-gradient(160deg,var(--gold) 0%,#7a5c14 100%);clip-path:polygon(50% 0%,100% 18%,100% 65%,50% 100%,0% 65%,0% 18%);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+.logo-row p{font-size:11px;color:var(--slate);text-transform:uppercase;letter-spacing:0.08em;}
+
+.hero{margin:24px 0 30px;}
+.hero h1{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:700;line-height:1.25;margin-bottom:10px;}
+.hero h1 .agent-name{color:var(--gold-light);}
+.hero p{font-size:14.5px;color:var(--slate);line-height:1.6;}
+
+.card{background:var(--navy-mid);border:1px solid var(--border);border-radius:10px;padding:24px 22px;}
+
+.field{margin-bottom:18px;}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media(max-width:480px){.field-row{grid-template-columns:1fr;}}
+label{display:block;font-size:12px;font-weight:600;color:var(--gold-pale);letter-spacing:0.07em;text-transform:uppercase;margin-bottom:7px;}
+input,textarea{
+  width:100%;background:var(--navy);border:1px solid var(--border);
+  color:var(--cream);font-family:'DM Sans',sans-serif;font-size:15px;
+  padding:13px 14px;border-radius:5px;transition:border-color 0.2s;
+}
+input:focus,textarea:focus{outline:none;border-color:var(--gold);}
+textarea{resize:vertical;min-height:70px;}
+
+/* Honeypot — hidden from real visitors, bots often fill every field */
+.hp{position:absolute;left:-9999px;top:-9999px;opacity:0;height:0;overflow:hidden;}
+
+.btn{width:100%;padding:15px 24px;border-radius:5px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:opacity 0.2s;border:none;background:linear-gradient(135deg,var(--gold) 0%,#a07020 100%);color:var(--navy);}
+.btn:hover{opacity:0.9;}
+.btn:disabled{opacity:0.5;cursor:not-allowed;}
+.btn-err{color:var(--danger);font-size:12.5px;margin-top:10px;text-align:center;display:none;}
+
+.foot-note{margin-top:16px;font-size:11px;color:var(--slate);line-height:1.6;text-align:center;}
+
+/* ── THANK YOU ── */
+.thankyou{display:none;text-align:center;padding:20px 4px;}
+.thankyou.active{display:block;}
+.thankyou .check{font-size:56px;margin-bottom:18px;}
+.thankyou h2{font-family:'Cormorant Garamond',serif;font-size:30px;color:var(--gold);margin-bottom:12px;}
+.thankyou p{color:var(--slate);font-size:15px;line-height:1.7;max-width:420px;margin:0 auto;}
+.form-panel{display:block;}
+.form-panel.hidden{display:none;}
+</style>
+<script src="auth.js"></script>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="logo-row">
+    <div class="shield">👑</div>
+    <p>Dynasty Builders Academy</p>
+  </div>
+
+  <div class="hero" id="hero-text">
+    <h1>Let's stay connected<span id="agent-line"></span></h1>
+    <p>Drop your info below and I'll personally reach out — no spam, no obligation, just a quick conversation whenever works for you.</p>
+  </div>
+
+  <div class="card">
+    <div class="form-panel" id="form-panel">
+      <div class="field-row">
+        <div class="field">
+          <label>First Name</label>
+          <input type="text" id="f-first" placeholder="Jane" autocomplete="given-name">
+        </div>
+        <div class="field">
+          <label>Last Name</label>
+          <input type="text" id="f-last" placeholder="Doe" autocomplete="family-name">
+        </div>
+      </div>
+      <div class="field">
+        <label>Phone</label>
+        <input type="tel" id="f-phone" placeholder="(555) 123-4567" autocomplete="tel">
+      </div>
+      <div class="field">
+        <label>Email <span style="text-transform:none;color:var(--slate);font-weight:400;">(optional)</span></label>
+        <input type="email" id="f-email" placeholder="jane@email.com" autocomplete="email">
+      </div>
+      <div class="field">
+        <label>Note <span style="text-transform:none;color:var(--slate);font-weight:400;">(optional)</span></label>
+        <textarea id="f-note" placeholder="How do we know each other? Anything you'd like me to know before we talk."></textarea>
+      </div>
+
+      <!-- Honeypot field — real visitors never see or fill this -->
+      <div class="hp"><label>Leave this empty</label><input type="text" id="f-hp" tabindex="-1" autocomplete="off"></div>
+
+      <button class="btn" id="submit-btn" onclick="submitAddMe()">Send My Info →</button>
+      <div class="btn-err" id="err-msg"></div>
+      <div class="foot-note">Your information goes directly and privately to <span id="foot-agent-name">your Dynasty Builders contact</span>.</div>
+    </div>
+
+    <div class="thankyou" id="thankyou-panel">
+      <div class="check">✅</div>
+      <h2>You're all set!</h2>
+      <p id="thankyou-msg">Thanks for sharing your info — I'll be in touch soon.</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── RESOLVE AGENT FROM LINK ──────────────────────────────────
+const _params  = new URLSearchParams(location.search);
+const _agentId = _params.get('a') || '';
+const _agent   = (_agentId && typeof AGENTS !== 'undefined') ? AGENTS.find(a => a.id === _agentId) : null;
+const _agentName = _agent?.name || '';
+
+// Fallback board — used when the agent has no personal Top 25 board yet,
+// or when the link was shared without a specific agent tag.
+const DEFAULT_BOARD_ID = '8270757684';
+const TARGET_BOARD_ID  = _agent?.top25BoardId || DEFAULT_BOARD_ID;
+
+if (_agentName) {
+  document.getElementById('agent-line').innerHTML = ` with <span class="agent-name">${_agentName}</span>`;
+  document.getElementById('foot-agent-name').textContent = _agentName;
+}
+
+// ── SUBMIT ────────────────────────────────────────────────────
+async function submitAddMe() {
+  const errEl = document.getElementById('err-msg');
+  errEl.style.display = 'none';
+
+  // Spam trap — if the hidden honeypot field got filled, silently "succeed"
+  // without ever writing to Monday, so bots don't know they were blocked.
+  if (document.getElementById('f-hp').value) {
+    showThankYou();
+    return;
+  }
+
+  const first = document.getElementById('f-first').value.trim();
+  const last  = document.getElementById('f-last').value.trim();
+  const phone = document.getElementById('f-phone').value.trim();
+  const email = document.getElementById('f-email').value.trim();
+  const note  = document.getElementById('f-note').value.trim();
+
+  if (!first && !phone && !email) {
+    errEl.textContent = 'Please add at least your name or phone number.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.textContent = 'Sending…';
+
+  const fullName = [first, last].filter(Boolean).join(' ') || phone || 'New Prospect';
+  const today = new Date().toISOString().slice(0,10);
+
+  try {
+    // ── Auto-discover column IDs for THIS specific board and cache per-board ──
+    // Every agent's Top 25 board can be a separate Monday board (often
+    // duplicated from a template), so column IDs vary board to board —
+    // never assume one hardcoded set works everywhere.
+    const cacheKey = `dba_addme_cols_${TARGET_BOARD_ID}`;
+    let colIds = {};
+    try {
+      const saved = localStorage.getItem(cacheKey);
+      if (saved) {
+        colIds = JSON.parse(saved);
+      } else {
+        const boardRes = await mondayQuery(`{ boards(ids: ${TARGET_BOARD_ID}) { columns { id title type } } }`);
+        const cols = boardRes?.data?.boards?.[0]?.columns || [];
+        const find = (...kws) => cols.find(c => kws.some(k => c.title.toLowerCase().includes(k.toLowerCase())))?.id || null;
+        colIds = {
+          phone:  find('phone'),
+          email:  find('email'),
+          notes:  find('note', 'comment', 'good qualities'),
+          source: find('source', 'how'),
+          date:   find('date added', 'date sponsored', 'date'),
+          referredBy: find('referred by', 'referral', 'agent'),
+        };
+        localStorage.setItem(cacheKey, JSON.stringify(colIds));
+      }
+    } catch(e) {
+      console.warn('add-me: column discovery failed:', e.message);
+    }
+
+    const cv = {};
+    if (colIds.phone && phone)  cv[colIds.phone]  = { phone: phone.replace(/\D/g,''), countryShortName: 'US' };
+    if (colIds.email && email)  cv[colIds.email]  = { email, text: email };
+    if (colIds.notes && note)   cv[colIds.notes]  = note.slice(0, 400);
+    if (colIds.source)          cv[colIds.source] = 'QR / Share Link';
+    if (colIds.date)            cv[colIds.date]   = { date: today };
+    if (colIds.referredBy && _agentName) cv[colIds.referredBy] = _agentName;
+
+    const itemName = `${fullName}${phone ? ' \u00b7 ' + phone : ''}`.replace(/"/g,"'");
+    const q = `mutation {
+      create_item(
+        board_id: ${TARGET_BOARD_ID},
+        item_name: "${itemName}",
+        column_values: ${JSON.stringify(JSON.stringify(cv))},
+        create_labels_if_missing: true
+      ) { id }
+    }`;
+    const res = await mondayQuery(q);
+    if (res?.errors?.length) throw new Error(res.errors[0].message);
+  } catch(e) {
+    console.warn('add-me: Monday write failed:', e.message);
+    // Still show a thank-you — don't make a visitor feel like something
+    // broke on their end. Back it up locally so it isn't lost.
+    try {
+      const backup = JSON.parse(localStorage.getItem('dba_addme_backup') || '[]');
+      backup.push({ name: fullName, phone, email, note, agentId: _agentId, agentName: _agentName, boardId: TARGET_BOARD_ID, submittedAt: new Date().toISOString() });
+      localStorage.setItem('dba_addme_backup', JSON.stringify(backup));
+    } catch(e2) {}
+  }
+
+  // Fire automation trigger (non-blocking, matches survey.html's pattern)
+  try {
+    fireTrigger('qr_prospect_lead', {
+      name: fullName, phone, email, note,
+      referredBy: _agentName || _agentId || '',
+      source: 'QR / Share Link',
+    });
+  } catch(e) {}
+
+  showThankYou();
+}
+
+function showThankYou() {
+  document.getElementById('form-panel').classList.add('hidden');
+  document.getElementById('thankyou-panel').classList.add('active');
+  document.getElementById('thankyou-msg').textContent = _agentName
+    ? `Thanks for sharing your info — ${_agentName} will personally reach out soon.`
+    : `Thanks for sharing your info — someone from our team will personally reach out soon.`;
+}
+</script>
+</body>
+</html>

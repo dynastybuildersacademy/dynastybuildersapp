@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dynasty — Top 25 Prospects</title>
 <script src="auth.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
@@ -261,6 +262,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
     <button class="icon-btn" onclick="loadProspects(true)" id="refresh-btn">↻ Refresh</button>
     <button class="icon-btn primary" onclick="openPhotoCapture()" style="gap:6px;">📷 Add from Photo</button>
     <button class="icon-btn" onclick="openContactsPicker()" style="gap:6px;background:rgba(52,152,219,.15);border-color:rgba(52,152,219,.3);color:#5DADE2;">📱 From Contacts</button>
+    <button class="icon-btn" onclick="openShareModal()" id="share-qr-btn" style="gap:6px;background:rgba(155,89,182,.15);border-color:rgba(155,89,182,.3);color:#BB8FCE;">🔗 QR / Share Link</button>
     <label class="icon-btn" style="gap:6px;cursor:pointer;background:rgba(45,202,115,.1);border-color:rgba(45,202,115,.3);color:var(--green);">
       📊 Excel / VCF<input type="file" id="excel-upload" accept=".xlsx,.xls,.csv,.vcf,.vcard" style="display:none" onchange="handleExcelUpload(event)">
     </label>
@@ -1813,8 +1815,58 @@ document.addEventListener('DOMContentLoaded',()=>{
   document.getElementById('log-modal').addEventListener('click',e=>{if(e.target===document.getElementById('log-modal')) closeModal();});
   document.getElementById('board-picker-modal').addEventListener('click',e=>{if(e.target===document.getElementById('board-picker-modal')) closeBoardPicker();});
   loadProspects();
+  // Deep link from the hub's "QR Add-Me Link" tool card
+  if (new URLSearchParams(location.search).get('qr')) {
+    setTimeout(openShareModal, 300);
+  }
 });
 
+
+// ════════════════════════════════════════════════════════════════
+// SHARE / QR "ADD ME" LINK — public, no-login prospect intake
+// ════════════════════════════════════════════════════════════════
+function getShareLink() {
+  const agentId = session?.agentId || '';
+  return `${window.location.origin}/add-me.html?a=${encodeURIComponent(agentId)}`;
+}
+
+function openShareModal() {
+  const link = getShareLink();
+  document.getElementById('share-link-input').value = link;
+  document.getElementById('share-modal').classList.add('open');
+
+  const canvas = document.getElementById('share-qr-canvas');
+  canvas.innerHTML = '';
+  if (typeof QRCode !== 'undefined') {
+    new QRCode(canvas, { text: link, width: 220, height: 220, colorDark: '#0A1628', colorLight: '#ffffff' });
+  } else {
+    canvas.innerHTML = `<div style="padding:40px;color:#0A1628;font-family:'DM Mono',monospace;font-size:11px;text-align:center;">QR library failed to load.<br>Use the link below instead.</div>`;
+  }
+
+  if (navigator.share) document.getElementById('native-share-btn').style.display = 'flex';
+}
+
+function closeShareModal() {
+  document.getElementById('share-modal').classList.remove('open');
+}
+
+function copyShareLink() {
+  const input = document.getElementById('share-link-input');
+  input.select();
+  navigator.clipboard.writeText(input.value).then(() => toast('✓ Link copied')).catch(() => {
+    document.execCommand('copy'); toast('✓ Link copied');
+  });
+}
+
+function nativeShareLink() {
+  const link = getShareLink();
+  const agentName = (typeof AGENTS !== 'undefined' ? AGENTS.find(a=>a.id===session?.agentId)?.name : '') || 'me';
+  navigator.share({
+    title: 'Let\u2019s connect',
+    text: `Add your info here and I'll be in touch — ${agentName}`,
+    url: link,
+  }).catch(() => {});
+}
 
 // ════════════════════════════════════════════════════════════════
 // CONTACTS IMPORT — Universal (type/paste + native picker)
@@ -2490,6 +2542,32 @@ if(!document.getElementById('xlsx-script')) {
   </div>
 </div>
 
+
+<!-- SHARE / QR CODE MODAL -->
+<div class="modal-bg" id="share-modal">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-hdr">
+      <div class="modal-title">🔗 Share Your Add-Me Link</div>
+      <button class="modal-close" onclick="closeShareModal()">×</button>
+    </div>
+    <p style="font-size:12.5px;color:var(--muted);line-height:1.6;margin-bottom:16px;">
+      Share this QR code or link with anyone. When they fill out their info, they're
+      added straight to your Top 25 — no login needed on their end.
+    </p>
+    <div style="display:flex;justify-content:center;background:#fff;border-radius:10px;padding:18px;margin-bottom:16px;">
+      <div id="share-qr-canvas"></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:10px;">
+      <input type="text" id="share-link-input" readonly
+        style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:9px 10px;font-family:'DM Mono',monospace;font-size:11px;color:var(--text);">
+      <button class="btn btn-ghost btn-sm" onclick="copyShareLink()">Copy</button>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeShareModal()" style="flex:1;justify-content:center;">Close</button>
+      <button class="btn btn-accent" id="native-share-btn" onclick="nativeShareLink()" style="flex:1;justify-content:center;display:none;">📤 Share…</button>
+    </div>
+  </div>
+</div>
 
 <!-- CONTACTS PICKER MODAL -->
 <div id="contacts-import-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:400;align-items:flex-end;justify-content:center;">

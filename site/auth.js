@@ -2023,16 +2023,6 @@ const AGENTS = [
     uplineId: "obi001"
   },
   {
-    id: "mag001", name: "Magdalene O.",
-    pin: "1111", role: "trainee", level: 20,
-    phpId: "10200", phone: "",
-    email: "",
-    top25BoardId: "8270052654",
-    licenseStates: ["TX"],
-    enrollmentDate: "2022-06-01",
-    uplineId: "obi001"
-  },
-  {
     id: "chi001", name: "Chidozie N.",
     pin: "1111", role: "trainee", level: 20,
     phpId: "10301", phone: "",
