@@ -152,6 +152,7 @@ tr:hover td{background:rgba(201,168,76,.03);}
     <button class="btn btn-gold" onclick="openAddModal()">+ Add Agent</button>
     <button class="btn btn-blue" onclick="syncAllToMonday()">☁ Sync All</button>
     <button class="btn btn-outline" onclick="loadFromMonday()">↻ Load</button>
+    <button class="btn btn-ghost" onclick="clearAllCache()" title="Clear locally cached data and reload fresh from Monday">🗑 Clear Cache</button>
     <span id="sync-status" style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);align-self:center;min-width:80px;"></span>
     <a href="agents.html" class="btn btn-ghost">Roster →</a>
     <a href="hub.html" class="btn btn-ghost">← Hub</a>
@@ -470,9 +471,46 @@ let mondayItemMap = {};  // record.agentId → Monday item ID
 const STORE_KEY    = 'dba_licensing_tracker';
 const BOARD_KEY    = 'dba_licensing_board_id';
 const BOARD_FALLBACK = '7119617002'; // Dynasty Licensing Tracker board
+const CACHE_META_KEY = 'dba_licensing_cache_meta';
+const CACHE_TTL_MS   = 15 * 60 * 1000; // 15 minutes — matches top25.html's cache window
 
 function getBoardId() {
   return localStorage.getItem(BOARD_KEY) || BOARD_FALLBACK;
+}
+
+// ── CACHE METADATA ────────────────────────────────────────────
+// Tracks when the tracker's data was last written, so the UI can show a
+// cache-age indicator and decide when to quietly refresh from Monday.
+function setCacheMeta() {
+  try { localStorage.setItem(CACHE_META_KEY, JSON.stringify({ cachedAt: Date.now(), count: records.length })); } catch(e) {}
+}
+function getCacheMeta() {
+  try { return JSON.parse(localStorage.getItem(CACHE_META_KEY) || 'null'); } catch(e) { return null; }
+}
+function isCacheStale() {
+  const meta = getCacheMeta();
+  if (!meta) return true;
+  return (Date.now() - (meta.cachedAt || 0)) > CACHE_TTL_MS;
+}
+function cacheAgeLabel(ms) {
+  if (ms < 60000) return 'just now';
+  if (ms < 3600000) return Math.round(ms/60000) + 'm ago';
+  return Math.round(ms/3600000) + 'h ago';
+}
+
+// Wipes every locally cached bit of Licensing Tracker data (records, cache
+// metadata, the board-id override, and any queued-but-unsynced writes) and
+// reloads clean from the roster + Monday. Use this when the board id or
+// column mapping has changed and stale local data is showing misaligned info.
+function clearAllCache() {
+  if (!confirm('This clears all locally cached Licensing Tracker data on this device and reloads fresh from Monday.com. Continue?')) return;
+  [STORE_KEY, CACHE_META_KEY, BOARD_KEY, 'dba_sync_queue'].forEach(k => localStorage.removeItem(k));
+  records = [];
+  mondayItemMap = {};
+  load();
+  renderAll();
+  toast('✓ Cache cleared — reloading from Monday…');
+  loadFromMonday().catch(() => toast('⚠ Reload from Monday failed — check your connection'));
 }
 
 function newRecord(overrides={}) {

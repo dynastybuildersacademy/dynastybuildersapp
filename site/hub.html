@@ -641,26 +641,14 @@ function skipWizard() {
 function openManage() {
   const session = AUTH.getSession();
   const body = document.getElementById('manage-body');
-  const activeIds = getActiveModules(session);
 
-  // My modules section
+  // My modules + pages section
   let html = `<div class="manage-section-title">Your Active Tools</div>
-    <div style="background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:4px 14px;margin-bottom:20px;">
-    ${MODULE_DEFS.map(m=>{
-      const eligible = session.level >= m.minLevel;
-      const isOn = activeIds.includes(m.id);
-      return `<div class="mod-toggle-row">
-        <div>
-          <div class="mod-toggle-label">${m.icon} ${m.name}</div>
-          <div class="mod-toggle-sub">${m.desc}</div>
-        </div>
-        <div class="toggle-switch${eligible?(isOn?' on':''):' locked'}"
-          id="mytog-${m.id}" ${eligible?`onclick="toggleMyModule('${m.id}')"`:''}
-          title="${eligible?'':'Unlock at level '+m.minLevel}">
-          <div class="toggle-knob"></div>
-        </div>
-      </div>`;
-    }).join('')}
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--sub);margin-bottom:10px;line-height:1.6;">
+      Toggle a whole section off, or expand one to hide individual links within it.
+    </div>
+    <div id="my-tools-list" style="background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:4px 14px;margin-bottom:20px;">
+      ${buildMyToolsListHTML(session)}
     </div>`;
 
   // Team section
@@ -680,6 +668,42 @@ function openManage() {
 
   body.innerHTML = html;
   document.getElementById('manage-overlay').classList.add('open');
+}
+
+// Builds the current agent's own module + nested per-link toggle list —
+// same granularity as the Team Members list below, just scoped to self.
+function buildMyToolsListHTML(session) {
+  const activeIds = getActiveModules(session);
+  return MODULE_DEFS.map(m=>{
+    const eligible = session.level >= m.minLevel;
+    const isOn = activeIds.includes(m.id);
+    const pageRows = m.tools.map(tool => {
+      const tOn = isToolVisible(session.agentId, tool.href);
+      const tKey = tool.href.replace(/[^a-zA-Z0-9]/g,'_');
+      return `<div class="page-toggle-row">
+        <div>
+          <div class="page-toggle-label">${tool.icon} ${tool.name}</div>
+          <div class="page-toggle-sub">${tool.sub}</div>
+        </div>
+        <div class="toggle-switch sm ${tOn?'on':''}" id="mypgtog-${tKey}"
+          onclick="event.stopPropagation();toggleMyToolUI('${tool.href}','${tKey}')">
+          <div class="toggle-knob"></div>
+        </div>
+      </div>`;
+    }).join('');
+    return `<div class="mod-toggle-row">
+      <div>
+        <div class="mod-toggle-label">${m.icon} ${m.name}</div>
+        <div class="mod-toggle-sub">${m.desc}</div>
+      </div>
+      <div class="toggle-switch${eligible?(isOn?' on':''):' locked'}"
+        id="mytog-${m.id}" ${eligible?`onclick="toggleMyModule('${m.id}')"`:''}
+        title="${eligible?'':'Unlock at level '+m.minLevel}">
+        <div class="toggle-knob"></div>
+      </div>
+    </div>
+    ${(eligible && isOn) ? `<div class="page-toggle-list">${pageRows}</div>` : ''}`;
+  }).join('');
 }
 
 // Builds one collapsible agent row for the Team Members list, including
@@ -753,10 +777,20 @@ function toggleMyModule(moduleId) {
   const idx = active.indexOf(moduleId);
   if(idx>-1) active.splice(idx,1); else active.push(moduleId);
   saveModulePrefs(session.agentId, active);
-  const tog = document.getElementById(`mytog-${moduleId}`);
-  if(tog) tog.classList.toggle('on');
+  // Rebuild the whole list so the nested page-toggle-list for this module
+  // appears/disappears in sync, then refresh the live hub + hero badges.
+  const listEl = document.getElementById('my-tools-list');
+  if (listEl) listEl.innerHTML = buildMyToolsListHTML(session);
   renderHub(session);
   updateHeroBadges(session, active);
+}
+
+function toggleMyToolUI(href, tKey) {
+  const session = AUTH.getSession();
+  const nowVisible = toggleAgentTool(session.agentId, href);
+  const tog = document.getElementById(`mypgtog-${tKey}`);
+  if (tog) tog.classList.toggle('on', nowVisible);
+  renderHub(session); // reflect the hidden/shown page in the live hub immediately
 }
 
 function toggleAgentModule(agentId, moduleId) {
