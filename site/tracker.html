@@ -138,8 +138,70 @@ input:focus,select:focus{outline:none;border-color:var(--gold);}
     <div class="session-badge" id="session-status">● Session Active</div>
   </div>
 
+  <!-- DAILY / WEEKLY TOGGLE -->
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+    <div style="display:flex;background:rgba(0,0,0,.2);border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+      <button id="mode-daily" onclick="setEntryMode('daily')"
+        style="padding:7px 16px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;
+          border:none;cursor:pointer;background:linear-gradient(135deg,#C9A84C,#E8C97A);color:#0A1628;letter-spacing:.04em;">
+        📅 Daily
+      </button>
+      <button id="mode-weekly" onclick="setEntryMode('weekly')"
+        style="padding:7px 16px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;
+          border:none;cursor:pointer;background:transparent;color:var(--muted);letter-spacing:.04em;">
+        📆 Weekly
+      </button>
+    </div>
+    <div id="mode-label" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);">
+      Logging daily activity
+    </div>
+    <button onclick="switchToAnalysis()" style="margin-left:auto;background:rgba(155,89,182,.1);
+      border:1px solid rgba(155,89,182,.3);border-radius:7px;padding:6px 14px;
+      color:#9B59B6;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;cursor:pointer;">
+      📊 Captain Analysis
+    </button>
+  </div>
+
   <!-- ACTIVITY COUNTERS (calls, contacts, appts, shows, recruits) -->
   <div class="counters" id="counters"></div>
+
+  <!-- SOCIAL MEDIA OUTREACH LOG (collapsible) -->
+  <details id="social-section" style="margin-bottom:14px;">
+    <summary style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;
+      color:var(--gold);letter-spacing:.06em;cursor:pointer;padding:10px 12px;list-style:none;
+      background:var(--navy-mid);border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;gap:8px;">
+      📱 Social Media Outreach <span style="margin-left:auto;font-size:11px;color:var(--muted);font-weight:400;" id="social-count-badge"></span>
+    </summary>
+    <div style="background:var(--navy-mid);border:1px solid var(--border);border-radius:0 0 8px 8px;padding:14px;margin-top:-1px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+        <div>
+          <label style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);display:block;margin-bottom:4px;text-transform:uppercase;">Platform</label>
+          <select id="social-platform" style="width:100%;background:var(--navy);border:1px solid var(--border);color:var(--cream);padding:8px 10px;border-radius:5px;font-family:'DM Mono',monospace;font-size:12px;">
+            <option>LinkedIn</option><option>Instagram</option><option>Facebook</option>
+            <option>TikTok</option><option>Twitter / X</option><option>WhatsApp</option><option>Telegram</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);display:block;margin-bottom:4px;text-transform:uppercase;">Outreach Sent</label>
+          <input type="number" id="social-sent" min="0" placeholder="0" style="width:100%;background:var(--navy);border:1px solid var(--border);color:var(--cream);padding:8px 10px;border-radius:5px;font-family:'DM Mono',monospace;font-size:14px;font-weight:700;outline:none;">
+        </div>
+        <div>
+          <label style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);display:block;margin-bottom:4px;text-transform:uppercase;">Replied</label>
+          <input type="number" id="social-replied" min="0" placeholder="0" style="width:100%;background:var(--navy);border:1px solid var(--border);color:var(--cream);padding:8px 10px;border-radius:5px;font-family:'DM Mono',monospace;font-size:14px;font-weight:700;outline:none;">
+        </div>
+        <div>
+          <label style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);display:block;margin-bottom:4px;text-transform:uppercase;">Agreed to Meet</label>
+          <input type="number" id="social-met" min="0" placeholder="0" style="width:100%;background:var(--navy);border:1px solid var(--border);color:var(--cream);padding:8px 10px;border-radius:5px;font-family:'DM Mono',monospace;font-size:14px;font-weight:700;outline:none;">
+        </div>
+      </div>
+      <input type="text" id="social-notes" placeholder="Notes (e.g. met Vanessa)"
+        style="width:100%;background:var(--navy);border:1px solid var(--border);color:var(--cream);padding:8px 10px;border-radius:5px;font-family:'DM Mono',monospace;font-size:12px;outline:none;margin-bottom:10px;">
+      <button onclick="addSocialEntry()" style="width:100%;background:rgba(93,173,226,.12);border:1px solid rgba(93,173,226,.3);border-radius:7px;padding:9px;color:#5DADE2;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;cursor:pointer;">
+        + Log Outreach
+      </button>
+      <div id="social-entries" style="margin-top:10px;"></div>
+    </div>
+  </details>
 
   <!-- PERIOD TOTALS (loaded from Monday.com) -->
   <div id="period-totals-bar" style="display:none;background:rgba(52,152,219,.06);border:1px solid rgba(52,152,219,.2);border-radius:4px;padding:12px 16px;margin-bottom:14px;">
@@ -462,19 +524,22 @@ async function getColIds() {
 // ── ACTIVITY COUNTERS (calls, contacts, appts, shows, recruits) ──
 const COUNTER_CONFIG = [
   // ── Daily Activity ─────────────────────────────────────────
-  { id:'calls',    label:'Calls Made',      emoji:'📞', goal:20, desc:'Outbound calls dialed',             group:'activity' },
-  { id:'contacts', label:'Contacts',        emoji:'🤝', goal:5,  desc:'Answered / spoke to',               group:'activity' },
-  { id:'appts',    label:'Appts Set',       emoji:'📅', goal:2,  desc:'Confirmed appointments',            group:'activity' },
-  { id:'shows',    label:'Shows',           emoji:'✅', goal:1,  desc:'Appointments attended',             group:'activity' },
-  { id:'recruits', label:'Recruits',        emoji:'👥', goal:2,  desc:'Enrolled prospects',                group:'activity' },
+  { id:'prospects', label:'Prospects',       emoji:'🎯', goal:5,  desc:'New prospects identified',          group:'activity' },
+  { id:'calls',     label:'Dials',           emoji:'📞', goal:50, desc:'Outbound calls dialed',             group:'activity' },
+  { id:'contacts',  label:'Contacts',        emoji:'🤝', goal:10, desc:'Answered / spoke to',               group:'activity' },
+  { id:'appts',     label:'Appts Set',       emoji:'📅', goal:3,  desc:'Confirmed appointments',            group:'activity' },
+  { id:'shows',     label:'Appts Held',      emoji:'✅', goal:2,  desc:'Appointments attended',             group:'activity' },
+  { id:'rec_inv',   label:'Recruit Invites', emoji:'📣', goal:5,  desc:'Recruit interview invitations',     group:'activity' },
+  { id:'recruits',  label:'Recruits',        emoji:'👥', goal:1,  desc:'New agents enrolled',               group:'activity' },
   // ── Interviews & Appointments ──────────────────────────────
-  { id:'ri',       label:'R.I.',            emoji:'🎯', goal:1,  desc:'Recruiting Interview conducted',    group:'appts' },
-  { id:'ft',       label:'F.T. Appts',      emoji:'💼', goal:1,  desc:'Client appt (Field Training)',      group:'appts' },
-  { id:'fs',       label:'F.S. Appts',      emoji:'🚀', goal:1,  desc:'Fast Start appointments',           group:'appts' },
-  // ── Personal Guest System ──────────────────────────────────
-  { id:'gi',       label:'Guests Invited',  emoji:'📨', goal:10, desc:'Personal guests invited to BOM',   group:'guests' },
-  { id:'gc',       label:'Guests Confirmed',emoji:'📲', goal:3,  desc:'Personal guests confirmed',         group:'guests' },
-  { id:'ga',       label:'Guests Attended', emoji:'🏢', goal:1,  desc:'Personal guests who attended',      group:'guests' },
+  { id:'ri',        label:'R.I.',            emoji:'🎯', goal:1,  desc:'Recruiting Interview conducted',    group:'appts' },
+  { id:'ft',        label:'F.T. Appts',      emoji:'💼', goal:1,  desc:'Client appt (Field Training)',      group:'appts' },
+  { id:'fs',        label:'F.S. Appts',      emoji:'🚀', goal:1,  desc:'Fast Start appointments',           group:'appts' },
+  // ── Captain System (BOM Guests) ───────────────────────────
+  { id:'gi',  label:'Captains Put In', emoji:'📨', goal:10, desc:'Guests invited to BOM (total captains)', group:'captains' },
+  { id:'gc',  label:'Capt Accepted',  emoji:'✅', goal:5,  desc:'Guests who confirmed BOM attendance',    group:'captains' },
+  { id:'ga',  label:'Capt Attended',  emoji:'🏢', goal:3,  desc:'Guests who showed up at BOM',            group:'captains' },
+  { id:'gag', label:'Capt → Agent',   emoji:'⚡', goal:1,  desc:'BOM guests who enrolled as agents',     group:'captains' },
 ];
 
 let counts = { calls:0, contacts:0, appts:0, shows:0, recruits:0, ri:0, ft:0, fs:0, gi:0, gc:0, ga:0 };
@@ -512,7 +577,7 @@ function renderCounters() {
   COUNTER_CONFIG.forEach(c => {
     if (c.group !== lastGroup) {
       lastGroup = c.group;
-      const labels = { activity:'Daily Activity', appts:'Interviews & Appointments', guests:'Personal Guest System (BOM)' };
+      const labels = { activity:'Daily Activity', appts:'Interviews & Appointments', captains:'⚓ Captain System (BOM Guests)' };
       rows.push(`<div style="grid-column:1/-1;font-family:\'Barlow Condensed\',sans-serif;font-size:10px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.1em;padding:4px 0 2px;border-bottom:1px solid var(--border);margin-top:4px;">${labels[c.group]||c.group}</div>`);
     }
     rows.push(buildCounter(c));
@@ -997,11 +1062,17 @@ async function saveSession() {
     agentRole:      session.role,
     date,
     week,
-    calls:          counts.calls,
-    contacts:       counts.contacts,
-    appointments:   counts.appts,
-    shows:          counts.shows,
-    recruits:       counts.recruits,
+    prospects:      counts.prospects  || 0,
+    calls:          counts.calls      || 0,
+    contacts:       counts.contacts   || 0,
+    appointments:   counts.appts      || 0,
+    shows:          counts.shows      || 0,
+    recInvites:     counts.rec_inv    || 0,
+    recruits:       counts.recruits   || 0,
+    captainsPutIn:  counts.gi         || 0,
+    captainsAccepted: counts.gc       || 0,
+    captainsAttended: counts.ga       || 0,
+    captainsToAgent:  counts.gag      || 0,
     productionPts:  totalATP,    // ATP in dollars — real production points
     policiesCount:  policies.length,
     policies:       policies.map(p => ({
@@ -1527,6 +1598,258 @@ async function loadApptsFromMonday() {
     toast('⚠ Load failed: ' + e.message);
   }
 }
+
+// ════════════════════════════════════════════════════════════════
+// DAILY / WEEKLY TOGGLE
+// ════════════════════════════════════════════════════════════════
+let entryMode = 'daily';
+function setEntryMode(mode) {
+  entryMode = mode;
+  const daily  = document.getElementById('mode-daily');
+  const weekly = document.getElementById('mode-weekly');
+  const label  = document.getElementById('mode-label');
+  if (daily && weekly) {
+    daily.style.background  = mode==='daily'  ? 'linear-gradient(135deg,#C9A84C,#E8C97A)' : 'transparent';
+    daily.style.color       = mode==='daily'  ? '#0A1628' : 'var(--muted)';
+    weekly.style.background = mode==='weekly' ? 'linear-gradient(135deg,#C9A84C,#E8C97A)' : 'transparent';
+    weekly.style.color      = mode==='weekly' ? '#0A1628' : 'var(--muted)';
+  }
+  if (label) {
+    label.textContent = mode === 'daily'
+      ? 'Logging daily activity'
+      : 'Logging weekly totals — enter cumulative week numbers';
+  }
+  // Update session date label
+  const dateEl = document.getElementById('session-date');
+  if (dateEl) {
+    const now  = new Date();
+    const week = `${now.getFullYear()}-W${String(getISOWeek ? getISOWeek(now) : 0).padStart(2,'0')}`;
+    dateEl.textContent = mode === 'daily'
+      ? now.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'})
+      : `Week of ${week}`;
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+// SOCIAL MEDIA OUTREACH LOG
+// ════════════════════════════════════════════════════════════════
+const SOCIAL_KEY = 'dba_social_log_' + (session?.agentId || 'guest');
+let socialEntries = [];
+
+function loadSocialEntries() {
+  try { socialEntries = JSON.parse(localStorage.getItem(SOCIAL_KEY) || '[]'); } catch(e) {}
+  renderSocialEntries();
+}
+
+function addSocialEntry() {
+  const platform = document.getElementById('social-platform')?.value || '';
+  const sent     = parseInt(document.getElementById('social-sent')?.value) || 0;
+  const replied  = parseInt(document.getElementById('social-replied')?.value) || 0;
+  const met      = parseInt(document.getElementById('social-met')?.value) || 0;
+  const notes    = document.getElementById('social-notes')?.value.trim() || '';
+  if (!sent && !replied && !met) { if (typeof toast==='function') toast('⚠ Enter at least one number'); return; }
+  const entry = {
+    id: Date.now(),
+    date: new Date().toISOString().slice(0,10),
+    platform, sent, replied, met, notes,
+    agentName: session?.name || '',
+  };
+  socialEntries.unshift(entry);
+  if (socialEntries.length > 200) socialEntries = socialEntries.slice(0,200);
+  try { localStorage.setItem(SOCIAL_KEY, JSON.stringify(socialEntries)); } catch(e) {}
+  // Reset
+  ['social-sent','social-replied','social-met','social-notes'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  renderSocialEntries();
+  if (typeof toast==='function') toast('✓ Outreach logged');
+}
+
+function renderSocialEntries() {
+  const el = document.getElementById('social-entries');
+  if (!el) return;
+  const badge = document.getElementById('social-count-badge');
+  const today  = new Date().toISOString().slice(0,10);
+  const todayEntries = socialEntries.filter(e => e.date === today);
+  if (badge) {
+    const totalSent = todayEntries.reduce((s,e) => s+e.sent, 0);
+    badge.textContent = todayEntries.length ? `${totalSent} sent today` : '';
+  }
+  if (!socialEntries.length) { el.innerHTML = '<div style="font-family:\'DM Mono\',monospace;font-size:11px;color:var(--muted);">No outreach logged yet.</div>'; return; }
+  const recent = socialEntries.slice(0, 15);
+  el.innerHTML = `<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12px;min-width:400px;">
+    <thead><tr style="border-bottom:1px solid rgba(255,255,255,.08);">
+      <th style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);padding:5px 6px;text-align:left;">Date</th>
+      <th style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);padding:5px 6px;">Platform</th>
+      <th style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);padding:5px 6px;">Sent</th>
+      <th style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);padding:5px 6px;">Replied</th>
+      <th style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);padding:5px 6px;">Met</th>
+      <th style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);padding:5px 6px;text-align:left;">Notes</th>
+    </tr></thead>
+    <tbody>${recent.map(e => `<tr style="border-bottom:1px solid rgba(255,255,255,.04);">
+      <td style="padding:5px 6px;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);">${e.date}</td>
+      <td style="padding:5px 6px;font-family:'DM Mono',monospace;font-size:11px;">${e.platform}</td>
+      <td style="padding:5px 6px;text-align:center;font-family:'DM Mono',monospace;font-size:12px;font-weight:700;color:#5DADE2;">${e.sent||0}</td>
+      <td style="padding:5px 6px;text-align:center;font-family:'DM Mono',monospace;font-size:12px;color:var(--gold);">${e.replied||0}</td>
+      <td style="padding:5px 6px;text-align:center;font-family:'DM Mono',monospace;font-size:12px;color:var(--green);">${e.met||0}</td>
+      <td style="padding:5px 6px;font-size:11px;color:var(--muted);">${e.notes||''}</td>
+    </tr>`).join('')}</tbody>
+  </table></div>`;
+}
+
+// ════════════════════════════════════════════════════════════════
+// CAPTAIN ANALYSIS — modal / inline view
+// ════════════════════════════════════════════════════════════════
+function switchToAnalysis() {
+  // Find or create the analysis modal
+  let modal = document.getElementById('captain-analysis-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'captain-analysis-modal';
+    modal.style.cssText = 'display:flex;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:600;align-items:flex-end;justify-content:center;';
+    modal.innerHTML = `<div style="background:#0F1E38;border:1px solid rgba(155,89,182,.3);border-radius:16px 16px 0 0;
+      width:100%;max-width:520px;padding:20px;max-height:88vh;overflow-y:auto;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;color:#9B59B6;">⚓ Captain Analysis</div>
+        <button onclick="document.getElementById('captain-analysis-modal').style.display='none'"
+          style="background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;">✕</button>
+      </div>
+      <div id="captain-analysis-content"></div>
+    </div>`;
+    document.body.appendChild(modal);
+  }
+  renderCaptainAnalysis();
+  modal.style.display = 'flex';
+}
+
+function renderCaptainAnalysis() {
+  const el = document.getElementById('captain-analysis-content');
+  if (!el) return;
+
+  // Pull from localStorage session history
+  const LOG_KEY = 'dba_session_log_' + (session?.agentId || 'guest');
+  let logs = [];
+  try { logs = JSON.parse(localStorage.getItem(LOG_KEY) || '[]'); } catch(e) {}
+
+  // Also use current counts
+  const cur = {
+    date:       new Date().toISOString().slice(0,10),
+    calls:      counts?.calls || 0,
+    contacts:   counts?.contacts || 0,
+    appts:      counts?.appts || 0,
+    shows:      counts?.shows || 0,
+    rec_inv:    counts?.rec_inv || 0,
+    recruits:   counts?.recruits || 0,
+    gi:         counts?.gi || 0,   // captains put in
+    gc:         counts?.gc || 0,   // captains accepted
+    ga:         counts?.ga || 0,   // captains attended
+    gag:        counts?.gag || 0,  // captains → agent
+    prospects:  counts?.prospects || 0,
+  };
+
+  // Periods: today / this week / this month
+  const todayStr = new Date().toISOString().slice(0,10);
+  const wkStart  = (() => { const d = new Date(); d.setDate(d.getDate() - d.getDay()); return d.toISOString().slice(0,10); })();
+  const moStart  = new Date().toISOString().slice(0,8) + '01';
+
+  const sum = (entries) => entries.reduce((acc, e) => {
+    ['calls','contacts','appts','shows','rec_inv','recruits','gi','gc','ga','gag','prospects'].forEach(k => {
+      acc[k] = (acc[k]||0) + (e[k]||0);
+    });
+    return acc;
+  }, {});
+
+  const todayLogs  = logs.filter(l => l.date === todayStr);
+  const weekLogs   = logs.filter(l => l.date >= wkStart);
+  const monthLogs  = logs.filter(l => l.date >= moStart);
+
+  // Include current session in today
+  todayLogs.push(cur);
+  weekLogs.push(cur);
+  monthLogs.push(cur);
+
+  function convRow(label, num, denom, color) {
+    const pct = denom ? Math.round(num/denom*100) : 0;
+    const bar = Math.min(pct,100);
+    return `<div style="margin-bottom:8px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;">
+        <span style="font-family:'DM Mono',monospace;font-size:11px;flex:1;">${label}</span>
+        <span style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:900;color:${color};">${pct}%</span>
+        <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);">${num}/${denom}</span>
+      </div>
+      <div style="height:4px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden;">
+        <div style="width:${bar}%;height:100%;background:${color};border-radius:2px;"></div>
+      </div>
+    </div>`;
+  }
+
+  function analysisBlock(title, s) {
+    const callContact = s.calls ? Math.round(s.contacts/s.calls*100) : 0;
+    const contactAppt = s.contacts ? Math.round(s.appts/s.contacts*100) : 0;
+    const apptShow    = s.appts   ? Math.round(s.shows/s.appts*100) : 0;
+    const captAccept  = s.gi      ? Math.round(s.gc/s.gi*100) : 0;
+    const captShow    = s.gc      ? Math.round(s.ga/s.gc*100) : 0;
+    const captAgent   = s.ga      ? Math.round(s.gag/s.ga*100) : 0;
+    const captOverall = s.gi      ? Math.round(s.gag/s.gi*100) : 0;
+
+    return `<div style="background:rgba(0,0,0,.2);border-radius:10px;padding:14px;margin-bottom:12px;">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:900;color:#9B59B6;margin-bottom:12px;text-transform:uppercase;letter-spacing:.08em;">${title}</div>
+
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px;">
+        ${[
+          ['Dials', s.calls||0, '#5DADE2'],
+          ['Contacts', s.contacts||0, '#2DCA73'],
+          ['Appts', s.appts||0, '#C9A84C'],
+          ['Shows', s.shows||0, '#E67E22'],
+        ].map(([l,v,c]) => `<div style="text-align:center;background:rgba(0,0,0,.15);border-radius:7px;padding:8px 4px;">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;color:${c};">${v}</div>
+          <div style="font-family:'DM Mono',monospace;font-size:8px;color:var(--muted);">${l}</div>
+        </div>`).join('')}
+      </div>
+
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">📞 Call Funnel</div>
+      ${convRow('Contact Rate (Contacts/Dials)', s.contacts, s.calls, '#5DADE2')}
+      ${convRow('Set Rate (Appts/Contacts)', s.appts, s.contacts, '#C9A84C')}
+      ${convRow('Show Rate (Shows/Appts Set)', s.shows, s.appts, '#E67E22')}
+
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin:12px 0 8px;">⚓ Captain System</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px;">
+        ${[
+          ['Put In', s.gi||0, '#C39BD3'],
+          ['Accepted', s.gc||0, '#2DCA73'],
+          ['Attended', s.ga||0, '#E8C97A'],
+          ['→ Agent', s.gag||0, '#E67E22'],
+        ].map(([l,v,c]) => `<div style="text-align:center;background:rgba(0,0,0,.15);border-radius:7px;padding:7px 4px;">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;color:${c};">${v}</div>
+          <div style="font-family:'DM Mono',monospace;font-size:8px;color:var(--muted);">${l}</div>
+        </div>`).join('')}
+      </div>
+      ${convRow('Accept Rate (Accepted/Put In)', s.gc, s.gi, '#C39BD3')}
+      ${convRow('Show Rate (Attended/Accepted)', s.ga, s.gc, '#2DCA73')}
+      ${convRow('Conversion (→ Agent/Attended)', s.gag, s.ga, '#E8C97A')}
+      ${convRow('Overall (→ Agent/Put In)', s.gag, s.gi, '#E67E22')}
+    </div>`;
+  }
+
+  const todaySum = sum(todayLogs);
+  const weekSum  = sum(weekLogs);
+  const monthSum = sum(monthLogs);
+
+  el.innerHTML = analysisBlock('Today', todaySum)
+    + analysisBlock('This Week', weekSum)
+    + analysisBlock('This Month', monthSum)
+    + `<div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.25);line-height:1.7;margin-top:4px;">
+        Benchmarks: Contact Rate 15%+ · Set Rate 30%+ · Show Rate 70%+ · Captain Accept 50%+ · Captain Show 70%+
+      </div>`;
+}
+
+// Init social and captain analysis
+document.addEventListener('DOMContentLoaded', function() {
+  loadSocialEntries();
+});
+
+// Save social entries when saving session
+const _origSaveSession = typeof saveSession !== 'undefined' ? saveSession : null;
 </script>
 
 <div id="prospect-modal" style="position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:500;display:none;align-items:center;justify-content:center;padding:20px;">
