@@ -199,13 +199,13 @@ tr:hover td{background:rgba(201,168,76,.03);}
           <div style="font-size:10px;color:var(--gold);margin-top:3px;font-family:'DM Mono',monospace;">↓ Download PDF</div>
         </div>
       </a>
-      <a href="https://www.xcelsolutions.com/insurance-licensing/california" target="_blank"
+      <a href="https://partners.xcelsolutions.com/phpiroezi" target="_blank"
         style="display:flex;align-items:center;gap:12px;background:rgba(52,152,219,.06);border:1px solid rgba(52,152,219,.2);border-radius:4px;padding:14px;text-decoration:none;transition:all .15s;"
         onmouseover="this.style.background='rgba(52,152,219,.12)'" onmouseout="this.style.background='rgba(52,152,219,.06)'">
         <div style="font-size:2rem;flex-shrink:0;">🎓</div>
         <div>
-          <div style="font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:#5DADE2;text-transform:uppercase;letter-spacing:.06em;">XcelSolutions</div>
-          <div style="font-size:11px;color:var(--slate);margin-top:2px;">CA pre-licensing course · State-approved · Online or in-person</div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:#5DADE2;text-transform:uppercase;letter-spacing:.06em;">XCEL Solutions</div>
+          <div style="font-size:11px;color:var(--slate);margin-top:2px;">DBA partner portal · Pre-licensing course · State-approved</div>
           <div style="font-size:10px;color:#5DADE2;margin-top:3px;font-family:'DM Mono',monospace;">↗ External Site</div>
         </div>
       </a>
@@ -1274,8 +1274,13 @@ populateModalDropdowns();
         }
       }, 500);
     }
-  } else if (AUTH.getMondayKey() && records.length === 0) {
-    // First ever load — fetch from Monday
+  } else if (AUTH.getMondayKey()) {
+    // No cache metadata ever recorded on this device = never synced with
+    // Monday yet. Fetch now regardless of records.length — load() always
+    // auto-seeds placeholder rows from the roster first, so records.length
+    // is almost never 0 even on a totally fresh device. Checking records
+    // was the real reason first-time loads silently never pulled from
+    // Monday, leaving only roster placeholders on screen.
     if (syncEl) { syncEl.textContent = '⟳ Loading from Monday…'; syncEl.style.color = 'var(--gold)'; }
     setTimeout(loadFromMonday, 800);
   }

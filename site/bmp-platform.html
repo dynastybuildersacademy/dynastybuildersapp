@@ -632,6 +632,23 @@ select option{background:#1A3158;}
         <button class="btn btn-ghost btn-sm" onclick="fetchPolicies()">↺ Refresh</button>
       </div>
     </div>
+
+    <!-- GEB (Great Equalizer Bonus) + Team Analysis — Marketing Director and above only -->
+    <div class="card hidden" id="gebCard">
+      <div class="card-title">⚡ Great Equalizer Bonus (GEB) — Team Analysis</div>
+      <div class="row3" style="margin-bottom:16px;">
+        <div class="field"><label>Personal Recruits</label><input type="number" id="gebRec" value="0" min="0" onchange="renderGEB()"></div>
+        <div class="field"><label>Personal Submitted Pts</label><input type="number" id="gebPts" value="0" min="0" onchange="renderGEB()"></div>
+        <div class="field"><label>Personal Licensed Agents</label><input type="number" id="gebLic" value="0" min="0" onchange="renderGEB()"></div>
+      </div>
+      <div class="stat-grid">
+        <div class="stat-box"><div class="stat-label">GEB Qualified</div><div class="stat-value big" id="gebPctOut">0%</div></div>
+        <div class="stat-box"><div class="stat-label">Team Agents w/ a Recruit</div><div class="stat-value" id="gebRecruitOut">0</div></div>
+        <div class="stat-box"><div class="stat-label">Team Agents w/ an Application</div><div class="stat-value" id="gebAppOut">0</div></div>
+      </div>
+      <div class="hint" id="gebNextTier" style="margin-top:10px;"></div>
+    </div>
+
     <div class="card">
       <div class="card-title">Policy Breakdown</div>
       <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-bottom:16px;">
@@ -838,6 +855,7 @@ window.addEventListener('DOMContentLoaded',()=>{
   const el=$$('oauthRedirectUri');if(el)el.value=uri;
   handleOAuthCallback();
   setDefaultDates();
+  initGEBVisibility();
 });
 
 function switchAuthTab(tab){
@@ -1483,7 +1501,62 @@ function computeIncome(){
   return rows;
 }
 
-function renderIncome(){incomeRows=computeIncome();renderIncomeStats(incomeRows);renderIncomeTable();}
+function renderIncome(){incomeRows=computeIncome();renderIncomeStats(incomeRows);renderIncomeTable();renderGEB();}
+
+// ── GEB (Great Equalizer Bonus) — Team Analysis ──────────────
+// Visible to Marketing Director and above only. Tiers match the org's
+// promotion/qualification requirements — every threshold (recruits,
+// submitted points, licensed agents) must be met simultaneously for a
+// tier; the highest fully-met tier applies.
+const GEB_TIERS=[
+  {rec:10,  pts:25000,  lic:2,  bonus:0.10},
+  {rec:25,  pts:50000,  lic:4,  bonus:0.15},
+  {rec:50,  pts:100000, lic:6,  bonus:0.25},
+  {rec:100, pts:150000, lic:8,  bonus:0.35},
+  {rec:200, pts:300000, lic:12, bonus:0.45},
+];
+function getGEB(rec,pts,lic){let b=0;GEB_TIERS.forEach(t=>{if(rec>=t.rec&&pts>=t.pts&&lic>=t.lic)b=t.bonus;});return b;}
+function nextGEBTier(rec,pts,lic){return GEB_TIERS.find(t=>!(rec>=t.rec&&pts>=t.pts&&lic>=t.lic))||null;}
+
+function initGEBVisibility(){
+  let session=null;
+  try{session=AUTH.getSession();}catch(e){}
+  const card=$$('gebCard');
+  if(card&&session&&session.level>=60) card.classList.remove('hidden');
+}
+
+function renderGEB(){
+  const rec=parseFloat($$('gebRec')?.value)||0;
+  const pts=parseFloat($$('gebPts')?.value)||0;
+  const lic=parseFloat($$('gebLic')?.value)||0;
+  const bonus=getGEB(rec,pts,lic);
+  if($$('gebPctOut')) $$('gebPctOut').textContent=Math.round(bonus*100)+'%';
+
+  const next=nextGEBTier(rec,pts,lic);
+  if($$('gebNextTier')){
+    $$('gebNextTier').textContent=next
+      ? `Next tier (+${Math.round(next.bonus*100)}%): ${next.rec} recruits · ${next.pts.toLocaleString()} submitted pts · ${next.lic} licensed agents (all three required)`
+      : '✓ Highest GEB tier reached.';
+  }
+
+  // Team Agents w/ an Application — distinct agents appearing in the
+  // currently loaded, filtered production data (incomeRows)
+  if($$('gebAppOut')){
+    const withApp=new Set((incomeRows||[]).map(r=>r.agentName).filter(Boolean));
+    $$('gebAppOut').textContent=withApp.size;
+  }
+
+  // Team Agents w/ a Recruit — how many agents on this MD's team have
+  // personally recruited at least one agent themselves (from the roster)
+  if($$('gebRecruitOut')){
+    let session=null;
+    try{session=AUTH.getSession();}catch(e){}
+    if(session&&typeof getFullDownline==='function'&&typeof getDirectReports==='function'){
+      const downline=getFullDownline(session.agentId).slice(1);
+      $$('gebRecruitOut').textContent=downline.filter(a=>getDirectReports(a.id).length>0).length;
+    }
+  }
+}
 function renderIncomeStats(rows){
   const totalE=rows.reduce((s,r)=>s+r.earnings,0);
   const totalC=[...new Set(rows.map(r=>r.policyNum))].reduce((s,pn)=>{const r=rows.find(x=>x.policyNum===pn);return s+(r?r.commission:0);},0);

@@ -310,6 +310,34 @@ input:focus,select:focus{outline:none;border-color:var(--gold);}
         <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(250,246,238,.4);">Generator 50% · Captain 25% · CFT 25%<br><span style="font-size:9px;opacity:.6;">If CFT blank → Captain earns 50%</span></div>
       </div>
 
+      <!-- GEB (Great Equalizer Bonus) + Team Analysis — Marketing Director and above only -->
+      <div id="geb-panel" style="display:none;background:rgba(155,89,182,.06);border:1px solid rgba(155,89,182,.25);border-radius:10px;padding:16px;margin-bottom:16px;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:900;color:#BB8FCE;letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px;">⚡ Great Equalizer Bonus (GEB) — Team Analysis</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px;">
+          <div><label style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(250,246,238,.5);display:block;margin-bottom:4px;">Personal Recruits</label>
+            <input type="number" id="geb-rec" value="0" min="0" onchange="recalcGEB()" style="width:100%;background:#0A1628;border:1px solid rgba(201,168,76,.2);color:#FAF6EE;font-size:13px;padding:8px 10px;border-radius:5px;outline:none;"></div>
+          <div><label style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(250,246,238,.5);display:block;margin-bottom:4px;">Personal Submitted Pts</label>
+            <input type="number" id="geb-pts" value="0" min="0" onchange="recalcGEB()" style="width:100%;background:#0A1628;border:1px solid rgba(201,168,76,.2);color:#FAF6EE;font-size:13px;padding:8px 10px;border-radius:5px;outline:none;"></div>
+          <div><label style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(250,246,238,.5);display:block;margin-bottom:4px;">Personal Licensed Agents</label>
+            <input type="number" id="geb-lic" value="0" min="0" onchange="recalcGEB()" style="width:100%;background:#0A1628;border:1px solid rgba(201,168,76,.2);color:#FAF6EE;font-size:13px;padding:8px 10px;border-radius:5px;outline:none;"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+          <div style="background:rgba(0,0,0,.2);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:900;color:#BB8FCE;" id="geb-pct">0%</div>
+            <div style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(250,246,238,.4);">GEB Qualified</div>
+          </div>
+          <div style="background:rgba(0,0,0,.2);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:900;color:#5DADE2;" id="geb-agents-recruit">0</div>
+            <div style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(250,246,238,.4);">Team Agents w/ a Recruit</div>
+          </div>
+          <div style="background:rgba(0,0,0,.2);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:900;color:#2DCA73;" id="geb-agents-app">0</div>
+            <div style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(250,246,238,.4);">Team Agents w/ an Application</div>
+          </div>
+        </div>
+        <div id="geb-next-tier" style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(250,246,238,.4);margin-top:10px;"></div>
+      </div>
+
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;">
         <div style="background:rgba(0,0,0,.2);border-radius:10px;padding:12px;text-align:center;">
           <div style="font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:900;color:#2DCA73;" id="ic-total-clients">0</div>
@@ -625,6 +653,7 @@ function renderGuests() {
   // Apply filter (handles rendering + count)
   applyGuestFilter();
   recalcIncome();
+  recalcGEB();
 }
 
 function saveBOM() {
@@ -1210,6 +1239,76 @@ renderGuests();
 // ════════════════════════════════════════════════════════════════
 
 // Call recalcIncome whenever guests change or on page load
+// ── GEB (Great Equalizer Bonus) — Team Analysis ──────────────
+// Tiers match the org's promotion/qualification requirements (same
+// formula used org-wide, e.g. in the quarterly contest tracker):
+// every threshold (recruits, submitted points, licensed agents) must be
+// met simultaneously for a tier; the highest fully-met tier applies.
+const GEB_TIERS = [
+  { rec:10,  pts:25000,  lic:2,  bonus:0.10 },
+  { rec:25,  pts:50000,  lic:4,  bonus:0.15 },
+  { rec:50,  pts:100000, lic:6,  bonus:0.25 },
+  { rec:100, pts:150000, lic:8,  bonus:0.35 },
+  { rec:200, pts:300000, lic:12, bonus:0.45 },
+];
+function getGEB(rec, pts, lic) {
+  let bonus = 0;
+  GEB_TIERS.forEach(t => { if (rec >= t.rec && pts >= t.pts && lic >= t.lic) bonus = t.bonus; });
+  return bonus;
+}
+function nextGEBTier(rec, pts, lic) {
+  return GEB_TIERS.find(t => !(rec >= t.rec && pts >= t.pts && lic >= t.lic)) || null;
+}
+
+// Shows the GEB panel only for Marketing Director and above (level 60+)
+function initGEBPanel() {
+  const panel = document.getElementById('geb-panel');
+  if (panel && session && session.level >= 60) {
+    panel.style.display = 'block';
+    recalcGEB();
+  }
+}
+
+function recalcGEB() {
+  const rec = parseFloat(document.getElementById('geb-rec')?.value) || 0;
+  const pts = parseFloat(document.getElementById('geb-pts')?.value) || 0;
+  const lic = parseFloat(document.getElementById('geb-lic')?.value) || 0;
+  const bonus = getGEB(rec, pts, lic);
+
+  const el = id => document.getElementById(id);
+  if (el('geb-pct')) el('geb-pct').textContent = Math.round(bonus*100) + '%';
+
+  const next = nextGEBTier(rec, pts, lic);
+  if (el('geb-next-tier')) {
+    el('geb-next-tier').textContent = next
+      ? `Next tier (+${Math.round(next.bonus*100)}%): ${next.rec} recruits · ${next.pts.toLocaleString()} submitted pts · ${next.lic} licensed agents (all three required)`
+      : '✓ Highest GEB tier reached.';
+  }
+
+  // Team Agents w/ a Recruit — how many of this MD's downline have
+  // personally recruited at least one agent themselves
+  if (el('geb-agents-recruit') && typeof getFullDownline === 'function' && session) {
+    const downline = getFullDownline(session.agentId).slice(1); // exclude self
+    const withRecruit = downline.filter(a => getDirectReports(a.id).length > 0).length;
+    el('geb-agents-recruit').textContent = withRecruit;
+  }
+
+  // Team Agents w/ an Application — distinct agents on this board who
+  // have personally converted at least one BOM guest into a client
+  if (el('geb-agents-app')) {
+    const clients = (typeof guests !== 'undefined' ? guests : []).filter(g =>
+      g.becameClient || ['Became Client','Follow-Up Converted'].includes(g.status)
+    );
+    const withApp = new Set();
+    clients.forEach(g => {
+      if (g.generator) withApp.add(g.generator.trim());
+      if (g.captain)   withApp.add(g.captain.trim());
+      if (g.cft)       withApp.add(g.cft.trim());
+    });
+    el('geb-agents-app').textContent = withApp.size;
+  }
+}
+
 function recalcIncome() {
   // Income split rules:
   //   Generator:  50% of credit
@@ -1368,7 +1467,7 @@ function switchBOMTab(tab) {
   });
   if (tab === 'guests')     { applyGuestFilter(); }
   if (tab === 'leaderboard') loadLeaderboard();
-  if (tab === 'income')      recalcIncome();
+  if (tab === 'income')      { recalcIncome(); initGEBPanel(); }
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -1464,6 +1563,7 @@ function renderGuestList(list) {
 document.addEventListener('DOMContentLoaded', function() {
   applyGuestFilter();
   recalcIncome();
+  initGEBPanel();
 });
 
 // ── REFRESH GUESTS ────────────────────────────────────────────
