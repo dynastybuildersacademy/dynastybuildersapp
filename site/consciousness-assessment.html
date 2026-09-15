@@ -211,6 +211,39 @@
         <input type="text" id="userName" placeholder="First and last name">
       </div>
       <button class="cta" onclick="beginAssessment()">Begin</button>
+      <div style="margin-top:14px;">
+        <a href="#" onclick="goToBackfill();return false;" style="color:var(--text-muted);font-size:13px;">📋 Apply full analysis to a past result →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- BACKFILL: apply the full analysis to an old/manually-recorded result -->
+  <div class="screen" id="screen-backfill">
+    <div class="intro">
+      <h1>Analyze a Past Result</h1>
+      <p>For results taken before this version existed — enter the person's name and their old section scores, and this runs the same total score, average consciousness level, and life/business analysis on them.</p>
+      <div class="name-field">
+        <label>Person's Name</label>
+        <input type="text" id="bfName" placeholder="First and last name">
+      </div>
+      <div class="name-field">
+        <label>Contracted States score (out of 24)</label>
+        <input type="number" id="bfA" min="0" max="24" placeholder="0–24">
+      </div>
+      <div class="name-field">
+        <label>Courage Threshold score (out of 6)</label>
+        <input type="number" id="bfB" min="0" max="6" placeholder="0–6">
+      </div>
+      <div class="name-field">
+        <label>Expanded States score (out of 21)</label>
+        <input type="number" id="bfC" min="0" max="21" placeholder="0–21">
+      </div>
+      <div class="note">The average consciousness level for a backfilled result is estimated from these three section totals rather than the original 17 individual answers, since the old version didn't record per-question detail. It'll be labeled "estimated" wherever it shows up.</div>
+      <button class="cta" onclick="runBackfillAnalysis()">Run Full Analysis</button>
+      <div id="bfError" style="color:#C0392B;font-size:13px;margin-top:10px;"></div>
+      <div style="margin-top:14px;">
+        <a href="#" onclick="goToIntro();return false;" style="color:var(--text-muted);font-size:13px;">← Back</a>
+      </div>
     </div>
   </div>
 
@@ -255,6 +288,23 @@
         <span class="ts-value" id="scoreAvgLevel"></span>
       </div>
       <div class="sync-note" id="syncNote"></div>
+
+      <div class="practice" id="impactSection">
+        <h3>What This Tends to Look Like</h3>
+        <div class="sub" id="impactRoleNote"></div>
+        <div class="block">
+          <div class="label">Business & Recruiting Results</div>
+          <div class="txt" id="impactBusiness"></div>
+        </div>
+        <div class="block">
+          <div class="label">Relationships</div>
+          <div class="txt" id="impactRelationships"></div>
+        </div>
+        <div class="block">
+          <div class="label">Health & Energy</div>
+          <div class="txt" id="impactHealth"></div>
+        </div>
+      </div>
 
       <div class="practice">
         <h3 id="practiceTitle"></h3>
@@ -369,6 +419,46 @@ const PRACTICES = {
   }
 };
 
+// Ties each of the three baseline tiers to what it typically produces in
+// concrete, observable terms — business results, relationships, and
+// health/energy — not just an abstract inner state.
+const LIFE_IMPACT = {
+  contracted: {
+    tierLabel: "Contracted baseline",
+    business: "This usually shows up as inconsistent activity — prospecting and follow-up happen in bursts tied to mood rather than a steady rhythm. Recruiting conversations get avoided or rushed. Rejection lands harder than it needs to, so the natural response is to do less of the thing that would actually move the needle (calls, invites, BOM guests).",
+    relationships: "Conversations with your spouse, upline, or team can carry an edge of defensiveness or withdrawal. It's easy to interpret neutral feedback as criticism, or to keep people at a slight distance to avoid feeling exposed.",
+    health: "Energy tends to run in a low, tense hum rather than a crash — wired-but-tired, disrupted sleep, or carrying tension in the body without noticing it until it's acute."
+  },
+  turning_point: {
+    tierLabel: "Turning point",
+    business: "Production is real but uneven — you can point to weeks that worked, but they don't compound yet because the follow-through after a setback is inconsistent. You're capable of the hard conversation (the ask, the invite, the correction) but it takes a run-up rather than being automatic.",
+    relationships: "Relationships are generally functional and honest, but there's still some rehearsing before hard conversations, and some situations still get quietly avoided rather than addressed directly.",
+    health: "Energy is more stable than contracted states, but still reactive to outside events — a bad call or a rough week visibly affects sleep, appetite, or mood for a day or two rather than passing through cleanly."
+  },
+  expanded: {
+    tierLabel: "Expanded baseline",
+    business: "Production tends to compound — activity doesn't depend on a good mood, and setbacks (a chargeback, a no-show, a lost recruit) get processed and released quickly instead of derailing the week. This is usually where consistent recruiting and promotion pace actually show up.",
+    relationships: "People generally experience you as steady and easy to bring hard news to. Feedback lands as information rather than a threat, which tends to make your team more forthcoming with you, not less.",
+    health: "Energy is more even across the week — less dependent on external wins to feel good, less depleted by external setbacks."
+  }
+};
+
+// Optional: if the name matches someone in the agent roster, blend in a
+// line tailored to where they sit in the PHP System Flow right now.
+function getRoleNote(name, tierKey){
+  if (!name || typeof AGENTS === 'undefined') return '';
+  const agent = AGENTS.find(a => a.name && a.name.toLowerCase().trim() === name.toLowerCase().trim());
+  if (!agent) return '';
+  const roleLabel = (typeof ROLES !== 'undefined' && ROLES[agent.role]?.label) || agent.role;
+
+  const byRoleTier = {
+    contracted: `As a ${roleLabel}, this baseline often shows up as stalling right at the activity that would create the next promotion — the 10 field training appointments, the next invite round, the next recruiting interview — because each one carries some emotional risk.`,
+    turning_point: `As a ${roleLabel}, this baseline is usually enough to hit minimums but not enough to compound toward the next rank — the qualifying activity happens, but not with the consistency PHP's promotion timelines assume.`,
+    expanded: `As a ${roleLabel}, this baseline is generally what sustained rank advancement looks like from the inside — the required activity (recruiting, FTs, BOM guests) happens as a matter of course rather than something to be pushed through.`
+  };
+  return byRoleTier[tierKey] || '';
+}
+
 let current = -1; // -1 = intro
 let answers = new Array(QUESTIONS.length).fill(null);
 
@@ -427,6 +517,7 @@ function render(){
   document.getElementById('screen-intro').classList.remove('active');
   document.getElementById('screen-question').classList.remove('active');
   document.getElementById('screen-result').classList.remove('active');
+  document.getElementById('screen-backfill').classList.remove('active');
 
   if(current < 0){
     document.getElementById('screen-intro').classList.add('active');
@@ -511,12 +602,39 @@ function nearestHawkinsLevel(value){
   return closest;
 }
 
-function showResult(){
-  document.getElementById('screen-result').classList.add('active');
+// Builds the tag/title/body/tier for a set of section scores. blockKey
+// picking (which uses per-question answers) is skipped when there's no
+// live answers array — e.g. a backfilled historical result — and falls
+// back to a tier-level default practice block instead.
+function classifyResult(sectionA, sectionB, sectionC, hasLiveAnswers){
+  let tag, title, body, blockKey, tierKey;
+  if(sectionA >= 14){
+    tag = "Contracted baseline"; tierKey = 'contracted';
+    title = "Your baseline is still anchored in Tier 1";
+    body = "Most of your energy is going toward managing a difficult inner state. That's not a flaw — it's information about where the actual work is. Start with your single highest-scoring item below; it's your most active edge.";
+    blockKey = hasLiveAnswers ? pickBlockForA() : "shameGuilt";
+  } else if(sectionB < 4){
+    tag = "Turning point"; tierKey = 'turning_point';
+    title = "You're near the Courage threshold";
+    body = "You're not dominated by any one contracted state, but facing things directly isn't fully consistent yet. Consolidating Courage is the highest-leverage work right now.";
+    blockKey = "courage";
+  } else {
+    tag = "Expanded baseline"; tierKey = 'expanded';
+    title = "Your baseline is operating in Tier 3";
+    body = "You're generally working from openness rather than defense. The growth edge now is refinement — the item below is your current weakest link in the expanded states.";
+    blockKey = hasLiveAnswers ? pickBlockForC() : "reason";
+  }
+  return { tag, title, body, blockKey, tierKey };
+}
 
-  const sectionA = answers.slice(0,8).reduce((a,b)=>a+b,0);
-  const sectionB = answers.slice(8,10).reduce((a,b)=>a+b,0);
-  const sectionC = answers.slice(10,17).reduce((a,b)=>a+b,0);
+// Renders a full analysis into the result screen and (unless skipSync)
+// sends it to Monday. Used by both the live quiz and the backfill tool.
+function renderAnalysis(sectionA, sectionB, sectionC, opts){
+  opts = opts || {};
+  const name = (opts.name || '').trim() || 'Unknown';
+  const hasLiveAnswers = !opts.estimated;
+
+  document.getElementById('screen-result').classList.add('active');
 
   document.getElementById('scoreA').textContent = `${sectionA} / 24`;
   document.getElementById('scoreB').textContent = `${sectionB} / 6`;
@@ -525,26 +643,9 @@ function showResult(){
   document.getElementById('barB').style.width = `${(sectionB/6)*100}%`;
   document.getElementById('barC').style.width = `${(sectionC/21)*100}%`;
 
-  let tag, title, body, blockKey;
+  const { tag, title, body, blockKey, tierKey } = classifyResult(sectionA, sectionB, sectionC, hasLiveAnswers);
 
-  if(sectionA >= 14){
-    tag = "Contracted baseline";
-    title = "Your baseline is still anchored in Tier 1";
-    body = "Most of your energy is going toward managing a difficult inner state. That's not a flaw — it's information about where the actual work is. Start with your single highest-scoring item below; it's your most active edge.";
-    blockKey = pickBlockForA();
-  } else if(sectionB < 4){
-    tag = "Turning point";
-    title = "You're near the Courage threshold";
-    body = "You're not dominated by any one contracted state, but facing things directly isn't fully consistent yet. Consolidating Courage is the highest-leverage work right now.";
-    blockKey = "courage";
-  } else {
-    tag = "Expanded baseline";
-    title = "Your baseline is operating in Tier 3";
-    body = "You're generally working from openness rather than defense. The growth edge now is refinement — the item below is your current weakest link in the expanded states.";
-    blockKey = pickBlockForC();
-  }
-
-  document.getElementById('resultTag').textContent = tag;
+  document.getElementById('resultTag').textContent = tag + (opts.estimated ? ' · backfilled' : '');
   document.getElementById('resultTitle').textContent = title;
   document.getElementById('resultBody').textContent = body;
 
@@ -557,14 +658,33 @@ function showResult(){
   const total = sectionA + sectionB + sectionC;
   document.getElementById('scoreTotal').textContent = `${total} / 51`;
 
-  const avgLevel = computeAverageLevel();
+  const avgLevel = opts.avgLevel != null ? opts.avgLevel : computeAverageLevel();
   const nearestName = nearestHawkinsLevel(avgLevel);
-  document.getElementById('scoreAvgLevel').textContent = `${avgLevel} (≈ ${nearestName})`;
+  document.getElementById('scoreAvgLevel').textContent =
+    `${avgLevel} (≈ ${nearestName})${opts.estimated ? ' · estimated' : ''}`;
 
-  syncResultToMonday({
-    name: (document.getElementById('userName')?.value || _loggedInName || '').trim() || 'Unknown',
-    sectionA, sectionB, sectionC, total, tag,
-    avgLevel, nearestLevel: nearestName,
+  // Life & Business Impact
+  const impact = LIFE_IMPACT[tierKey];
+  document.getElementById('impactBusiness').textContent = impact.business;
+  document.getElementById('impactRelationships').textContent = impact.relationships;
+  document.getElementById('impactHealth').textContent = impact.health;
+  const roleNote = getRoleNote(name, tierKey);
+  document.getElementById('impactRoleNote').textContent = roleNote || '';
+
+  if (!opts.skipSync) {
+    syncResultToMonday({
+      name, sectionA, sectionB, sectionC, total, tag,
+      avgLevel, nearestLevel: nearestName, backfilled: !!opts.estimated,
+    });
+  }
+}
+
+function showResult(){
+  const sectionA = answers.slice(0,8).reduce((a,b)=>a+b,0);
+  const sectionB = answers.slice(8,10).reduce((a,b)=>a+b,0);
+  const sectionC = answers.slice(10,17).reduce((a,b)=>a+b,0);
+  renderAnalysis(sectionA, sectionB, sectionC, {
+    name: (document.getElementById('userName')?.value || _loggedInName || '').trim(),
   });
 }
 
@@ -572,6 +692,52 @@ function restart(){
   answers = new Array(QUESTIONS.length).fill(null);
   current = -1;
   render();
+}
+
+// ── BACKFILL: apply full analysis to an old/manually-recorded result ──
+function goToBackfill(){
+  document.getElementById('screen-intro').classList.remove('active');
+  document.getElementById('screen-backfill').classList.add('active');
+}
+function goToIntro(){
+  document.getElementById('screen-backfill').classList.remove('active');
+  document.getElementById('screen-result').classList.remove('active');
+  current = -1;
+  render();
+}
+
+// Approximates the average Hawkins level from section totals alone (no
+// per-question detail available for old results), using each section's
+// mean calibrated value as a stand-in for every point scored in it.
+function estimateAverageLevelFromSections(sectionA, sectionB, sectionC){
+  const aLevels = ["Shame","Guilt","Apathy","Grief","Fear","Desire","Anger","Pride"];
+  const cLevels = ["Neutrality","Willingness","Acceptance","Reason","Love","Joy","Peace"];
+  const avg = (names) => names.reduce((s,n)=>s+HAWKINS_VALUES[n],0) / names.length;
+  const repA = avg(aLevels);
+  const repB = HAWKINS_VALUES.Courage;
+  const repC = avg(cLevels);
+
+  const weightedSum = sectionA*repA + sectionB*repB + sectionC*repC;
+  const totalWeight = sectionA + sectionB + sectionC;
+  if (totalWeight === 0) return HAWKINS_VALUES.Shame;
+  return Math.round(weightedSum / totalWeight);
+}
+
+function runBackfillAnalysis(){
+  const name = document.getElementById('bfName').value.trim();
+  const a = parseInt(document.getElementById('bfA').value, 10);
+  const b = parseInt(document.getElementById('bfB').value, 10);
+  const c = parseInt(document.getElementById('bfC').value, 10);
+  const errEl = document.getElementById('bfError');
+
+  if (!name) { errEl.textContent = 'Enter the person\u2019s name.'; return; }
+  if ([a,b,c].some(v => isNaN(v))) { errEl.textContent = 'Enter all three section scores.'; return; }
+  if (a<0||a>24||b<0||b>6||c<0||c>21) { errEl.textContent = 'Scores are out of range (A: 0–24, B: 0–6, C: 0–21).'; return; }
+  errEl.textContent = '';
+
+  document.getElementById('screen-backfill').classList.remove('active');
+  const avgLevel = estimateAverageLevelFromSections(a, b, c);
+  renderAnalysis(a, b, c, { name, estimated: true, avgLevel });
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -633,6 +799,7 @@ async function syncResultToMonday(result){
         avgLevel:   find('average level', 'avg level', 'consciousness level'),
         nearest:    find('nearest level', 'closest level'),
         result:     find('result', 'baseline', 'tag'),
+        backfilled: find('backfilled', 'source'),
         date:       find('date'),
       };
       localStorage.setItem(cacheKey, JSON.stringify(colIds));
@@ -646,9 +813,10 @@ async function syncResultToMonday(result){
     if (colIds.avgLevel)   cv[colIds.avgLevel]   = result.avgLevel;
     if (colIds.nearest)    cv[colIds.nearest]    = result.nearestLevel;
     if (colIds.result)     cv[colIds.result]     = result.tag;
+    if (colIds.backfilled) cv[colIds.backfilled] = result.backfilled ? 'Backfilled (old version)' : 'Live assessment';
     if (colIds.date)       cv[colIds.date]       = { date: new Date().toISOString().slice(0,10) };
 
-    const itemName = `${result.name} — ${result.total}/51 · Lvl ${result.avgLevel} (${result.tag})`.replace(/"/g,"'");
+    const itemName = `${result.name} — ${result.total}/51 · Lvl ${result.avgLevel} (${result.tag})${result.backfilled ? ' [backfilled]' : ''}`.replace(/"/g,"'");
     const q = `mutation {
       create_item(
         board_id: ${boardId},
