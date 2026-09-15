@@ -670,7 +670,35 @@ function renderWeek(w) {
     <div style="background:rgba(0,0,0,.2);border-radius:10px;padding:12px;margin-top:6px;">
       <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Week ${w.week} KPIs</div>
       <div class="kpi-row">${w.kpis.map(k => `<div class="kpi">✓ ${k}</div>`).join('')}</div>
-    </div>`;
+    </div>
+    <div id="week${w.week}-quiz-slot" style="margin-top:14px;"></div>`;
+
+  // Append the Week N quiz (same inline pattern used in training.html)
+  const quizContainerId = 'week' + w.week;
+  if (typeof QUIZ_MAP !== 'undefined' && QUIZ_MAP[quizContainerId]) {
+    const slot = document.getElementById(quizContainerId + '-quiz-slot');
+    QUIZ_MAP[quizContainerId].forEach(qid => {
+      const quiz = QUIZ_BANK[qid];
+      if (!quiz || !slot) return;
+      const prog = typeof quizLoadProgress === 'function' ? quizLoadProgress() : {};
+      const prior = prog[qid];
+      const quizDiv = document.createElement('div');
+      quizDiv.id = 'quiz-' + qid;
+      quizDiv.innerHTML = prior?.passed
+        ? `<div style="background:rgba(45,202,115,.06);border:1px solid rgba(45,202,115,.2);border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:10px;">
+            <span style="font-size:20px;">✅</span>
+            <div>
+              <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:900;color:#2DCA73;">Quiz Passed — ${prior.pct}%</div>
+              <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(250,246,238,.4);">${quiz.title} · Completed</div>
+            </div>
+            <button onclick="renderQuiz('quiz-${qid}', QUIZ_BANK['${qid}'])" style="margin-left:auto;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:4px 10px;color:var(--muted);font-family:'DM Mono',monospace;font-size:10px;cursor:pointer;">Retake</button>
+          </div>`
+        : `<button onclick="renderQuiz('quiz-${qid}', QUIZ_BANK['${qid}'])" style="width:100%;background:rgba(201,168,76,.08);border:1px dashed rgba(201,168,76,.3);border-radius:10px;padding:12px;color:var(--gold-light);font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;cursor:pointer;letter-spacing:.04em;">
+            🧠 Take the Week ${w.week} Quiz →
+          </button>`;
+      slot.appendChild(quizDiv);
+    });
+  }
 }
 
 function renderPlays() {

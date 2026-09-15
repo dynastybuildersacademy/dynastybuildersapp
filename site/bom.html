@@ -115,6 +115,12 @@ input:focus,select:focus{outline:none;border-color:var(--gold);}
     letter-spacing:.04em;transition:all .2s;">
     💰 Income
   </button>
+  <button id="bom-tab-scripts" onclick="switchBOMTab('scripts')"
+    style="flex:1;padding:11px 4px;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;
+    background:none;border:none;border-bottom:3px solid transparent;color:var(--slate);cursor:pointer;
+    letter-spacing:.04em;transition:all .2s;">
+    📝 Scripts
+  </button>
 </div>
 
 <div class="content">
@@ -240,21 +246,7 @@ input:focus,select:focus{outline:none;border-color:var(--gold);}
       </div>
     </div>
 
-    <!-- Invite Scripts -->
-    <details style="margin-top:10px;">
-      <summary style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;
-        color:var(--gold);letter-spacing:.06em;cursor:pointer;padding:10px 0;list-style:none;">
-        📝 Invite Scripts ›
-      </summary>
-      <div class="card" style="margin-top:8px;">
-        <div style="font-size:12px;font-weight:600;color:var(--gold-light);margin-bottom:6px;">Text Message Invite:</div>
-        <div class="script-box">"Hey [Name], I've been meaning to reach out. I'm doing something in the financial services space and I wanted to invite you to an info session I'm hosting with some colleagues. Zero pressure — just sharing what we do. This [Tuesday 7PM / Saturday 10AM]. Can you make it?"</div>
-        <div style="font-size:12px;font-weight:600;color:var(--gold-light);margin-top:14px;margin-bottom:6px;">Confirmation Call (Day Before):</div>
-        <div class="script-box">"Hey [Name], just confirming for tomorrow! We start at [time] — the session usually wraps in about 90 minutes. You'll be hearing from some top producers in our field. Excited for you to see this. You're still coming?"</div>
-        <div style="font-size:12px;font-weight:600;color:var(--gold-light);margin-top:14px;margin-bottom:6px;">Same-Night Follow-Up:</div>
-        <div class="script-box">"Hey [Name], glad you came tonight! What stood out most to you? [Listen] — Great. I'd love to get you started. When are you free this week to sit down for 20 minutes?"</div>
-      </div>
-    </details>
+    <!-- Invite Scripts moved to their own "📝 Scripts" tab -->
 
   </div><!-- end guests tab -->
 
@@ -395,6 +387,19 @@ input:focus,select:focus{outline:none;border-color:var(--gold);}
       </div>
     </div>
   </div><!-- end income tab -->
+
+  <!-- ── TAB: SCRIPTS ── -->
+  <div id="bom-view-scripts" style="display:none;">
+    <div class="card">
+      <div class="card-title">📝 Invite Scripts</div>
+      <div style="font-size:12px;font-weight:600;color:var(--gold-light);margin-bottom:6px;">Text Message Invite:</div>
+      <div class="script-box">"Hey [Name], I've been meaning to reach out. I'm doing something in the financial services space and I wanted to invite you to an info session I'm hosting with some colleagues. Zero pressure — just sharing what we do. This [Tuesday 7PM / Saturday 10AM]. Can you make it?"</div>
+      <div style="font-size:12px;font-weight:600;color:var(--gold-light);margin-top:14px;margin-bottom:6px;">Confirmation Call (Day Before):</div>
+      <div class="script-box">"Hey [Name], just confirming for tomorrow! We start at [time] — the session usually wraps in about 90 minutes. You'll be hearing from some top producers in our field. Excited for you to see this. You're still coming?"</div>
+      <div style="font-size:12px;font-weight:600;color:var(--gold-light);margin-top:14px;margin-bottom:6px;">Same-Night Follow-Up:</div>
+      <div class="script-box">"Hey [Name], glad you came tonight! What stood out most to you? [Listen] — Great. I'd love to get you started. When are you free this week to sit down for 20 minutes?"</div>
+    </div>
+  </div><!-- end scripts tab -->
 
 <div class="toast" id="toast"></div>
 
@@ -627,6 +632,27 @@ function addGuest() { openGuestModal(null); }
 
 const STATUS_CYCLE = ['Invited','Confirmed','Showed','No-Show'];
 const STATUS_CLS   = { Invited:'sp-invited', Confirmed:'sp-confirmed', Showed:'sp-showed', 'No-Show':'sp-noshow' };
+
+// Sort order for the guest list — best results first, so an agent or
+// director scanning the list sees conversions before no-shows.
+const STATUS_SORT_RANK = {
+  'Became Client':        0,
+  'Follow-Up Converted':  1,
+  'Follow-Up Scheduled':  2,
+  'Showed':               3,
+  'Confirmed':            4,
+  'Invited':              5,
+  'No-Show':              6,
+};
+function sortGuestsByResult(list) {
+  return [...list].sort((a, b) => {
+    const ra = STATUS_SORT_RANK[a.status] ?? 99;
+    const rb = STATUS_SORT_RANK[b.status] ?? 99;
+    if (ra !== rb) return ra - rb;
+    // Same result — most recent first
+    return (b.date || '').localeCompare(a.date || '');
+  });
+}
 
 function cycleStatus(id) {
   const g = guests.find(x=>x.id===id);
@@ -1456,7 +1482,7 @@ function recalcIncome() {
 // BOM TAB SWITCHER
 // ════════════════════════════════════════════════════════════════
 function switchBOMTab(tab) {
-  ['guests','leaderboard','income'].forEach(t => {
+  ['guests','leaderboard','income','scripts'].forEach(t => {
     const view = document.getElementById('bom-view-' + t);
     const btn  = document.getElementById('bom-tab-' + t);
     if (view) view.style.display = t === tab ? 'block' : 'none';
@@ -1526,7 +1552,7 @@ function applyGuestFilter() {
   const countTitle = document.getElementById('guest-count');
   if (countTitle) countTitle.textContent = filtered.length + ' guest' + (filtered.length !== 1 ? 's' : '');
 
-  renderGuestList(filtered);
+  renderGuestList(sortGuestsByResult(filtered));
 }
 
 
