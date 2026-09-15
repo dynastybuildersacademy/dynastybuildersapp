@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DBA — Create Consciousness Assessment Board</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="auth.js"></script>
+<style>
+:root{--navy:#0A1628;--navy-mid:#112040;--gold:#C9A84C;--gold-light:#E8C97A;
+  --cream:#FAF6EE;--success:#27AE60;--danger:#C0392B;--slate:#6B7C93;
+  --warn:#E67E22;--border:rgba(201,168,76,0.22);}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);min-height:100vh;padding:28px 22px;}
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;}
+h1{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:var(--gold);}
+.back{font-size:12px;color:var(--gold);text-decoration:none;border:1px solid var(--border);padding:7px 14px;border-radius:3px;}
+.card{background:var(--navy-mid);border:1px solid var(--border);border-radius:6px;padding:24px;max-width:680px;margin:0 auto;}
+.card-title{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.1em;margin-bottom:16px;}
+p{font-size:13px;color:var(--slate);line-height:1.7;margin-bottom:16px;}
+.col-list{display:flex;flex-direction:column;gap:6px;margin-bottom:20px;}
+.col-row{display:flex;align-items:center;gap:10px;background:var(--navy);border:1px solid var(--border);border-radius:3px;padding:9px 14px;font-size:12px;}
+.col-name{font-family:'DM Mono',monospace;color:var(--gold-light);min-width:140px;}
+.col-type{font-size:11px;color:var(--slate);}
+.btn{display:inline-block;padding:11px 24px;border-radius:3px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:.06em;cursor:pointer;border:none;transition:all .2s;}
+.btn-gold{background:var(--gold);color:var(--navy);}
+.btn-gold:hover{opacity:.87;}
+.btn-gold:disabled{opacity:.45;cursor:not-allowed;}
+.log{background:var(--navy);border:1px solid var(--border);border-radius:3px;padding:14px;font-family:'DM Mono',monospace;font-size:11px;line-height:1.8;margin-top:16px;min-height:80px;white-space:pre-wrap;display:none;}
+.log.show{display:block;}
+.ok{color:var(--success);}
+.err{color:var(--danger);}
+.warn{color:var(--warn);}
+.result-box{background:rgba(39,174,96,.08);border:1px solid rgba(39,174,96,.3);border-radius:4px;padding:16px;margin-top:16px;display:none;}
+.result-box.show{display:block;}
+.bid{font-family:'DM Mono',monospace;font-size:18px;color:var(--success);font-weight:700;}
+.already-box{background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.3);border-radius:4px;padding:16px;margin-bottom:16px;}
+</style>
+</head>
+<body>
+<script>AUTH.require('create-consciousness-board.html');</script>
+
+<div class="header">
+  <h1>🧠 Create Consciousness Assessment Board</h1>
+  <a href="hub.html" class="back">← Hub</a>
+</div>
+
+<div class="card">
+  <div id="already-created" class="already-box" style="display:none;">
+    <div style="font-weight:700;color:var(--gold);margin-bottom:6px;">Board Already Created</div>
+    <div style="font-size:12px;color:var(--slate);">Board ID: <span id="existing-bid" style="font-family:'DM Mono',monospace;color:var(--gold-light);"></span></div>
+    <div style="font-size:12px;color:var(--slate);margin-top:6px;">This device is already pointed at that board. Click below to create a new one instead — but only do that if you actually mean to switch boards.</div>
+  </div>
+
+  <div class="card-title">What This Creates</div>
+  <p>Creates one shared <strong style="color:var(--cream)">DBA — Levels of Consciousness Results</strong> board in Monday.com. Every completed self-assessment — and anything run through the "Apply full analysis to a past result" backfill tool — gets sent here.</p>
+
+  <div class="card-title" style="margin-top:4px;">Columns</div>
+  <div class="col-list">
+    <div class="col-row"><span class="col-name">Person</span><span class="col-type">Text — who took the assessment</span></div>
+    <div class="col-row"><span class="col-name">Contracted</span><span class="col-type">Numbers — Section A score (out of 24)</span></div>
+    <div class="col-row"><span class="col-name">Courage</span><span class="col-type">Numbers — Section B score (out of 6)</span></div>
+    <div class="col-row"><span class="col-name">Expanded</span><span class="col-type">Numbers — Section C score (out of 21)</span></div>
+    <div class="col-row"><span class="col-name">Total Score</span><span class="col-type">Numbers — out of 51</span></div>
+    <div class="col-row"><span class="col-name">Average Level</span><span class="col-type">Numbers — Hawkins scale, 1–1000</span></div>
+    <div class="col-row"><span class="col-name">Nearest Level</span><span class="col-type">Text — closest named Hawkins level</span></div>
+    <div class="col-row"><span class="col-name">Result</span><span class="col-type">Text — baseline tag</span></div>
+    <div class="col-row"><span class="col-name">Backfilled</span><span class="col-type">Text — live assessment or backfilled</span></div>
+    <div class="col-row"><span class="col-name">Date</span><span class="col-type">Date — when it was recorded</span></div>
+  </div>
+
+  <button class="btn btn-gold" id="create-btn" onclick="createBoard()">Create Consciousness Assessment Board →</button>
+
+  <div class="log" id="log"></div>
+
+  <div class="result-box" id="result-box">
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:var(--success);text-transform:uppercase;letter-spacing:.09em;margin-bottom:8px;">✅ Board Created Successfully</div>
+    <div style="font-size:12px;color:var(--slate);margin-bottom:6px;">Board ID saved automatically on this device:</div>
+    <div class="bid" id="result-bid">—</div>
+    <div style="font-size:12px;color:var(--slate);margin-top:10px;">This only points <em>your</em> browser at the new board. To make it the default for everyone, send this ID back so it can be hard-coded into <code style="color:var(--gold-light)">consciousness-assessment.html</code> as <code style="color:var(--gold-light)">DEFAULT_BOARD_ID</code>:</div>
+    <div style="font-family:'DM Mono',monospace;font-size:12px;background:var(--navy);border:1px solid var(--border);padding:10px 14px;border-radius:3px;color:var(--gold-light);margin-top:6px;" id="result-code">—</div>
+    <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;">
+      <a href="consciousness-assessment.html" class="btn btn-gold" style="text-decoration:none;font-size:12px;padding:9px 18px;">Open Self-Assessment →</a>
+      <a href="hub.html" class="btn" style="background:transparent;border:1px solid var(--border);color:var(--slate);text-decoration:none;font-size:12px;padding:9px 18px;">← Hub</a>
+    </div>
+  </div>
+</div>
+
+<script>
+const BOARD_KEY = 'dba_consciousness_board_id';
+
+// Show if already created (on this browser)
+(function checkExisting() {
+  const existing = localStorage.getItem(BOARD_KEY);
+  if (existing) {
+    document.getElementById('already-created').style.display = 'block';
+    document.getElementById('existing-bid').textContent = existing;
+  }
+})();
+
+async function createBoard() {
+  const btn = document.getElementById('create-btn');
+  const log = document.getElementById('log');
+  btn.disabled = true;
+  btn.textContent = 'Creating…';
+  log.className = 'log show';
+  log.textContent = '';
+
+  function write(msg, cls='') {
+    log.innerHTML += `<span class="${cls}">${msg}</span>\n`;
+  }
+
+  try {
+    write('Connecting to Monday.com API…');
+
+    // 1. Create board
+    write('Creating board "DBA — Levels of Consciousness Results"…');
+    const createRes = await mondayQuery(`mutation {
+      create_board(
+        board_name: "DBA — Levels of Consciousness Results",
+        board_kind: public
+      ) { id name }
+    }`);
+    const boardId = createRes?.data?.create_board?.id;
+    if (!boardId) throw new Error('Board creation failed — ' + JSON.stringify(createRes?.errors || createRes));
+    write(`✓ Board created — ID: ${boardId}`, 'ok');
+
+    // 2. Create columns
+    const COLUMNS = [
+      { title:'Person',        type:'text'    },
+      { title:'Contracted',    type:'numbers' },
+      { title:'Courage',       type:'numbers' },
+      { title:'Expanded',      type:'numbers' },
+      { title:'Total Score',   type:'numbers' },
+      { title:'Average Level', type:'numbers' },
+      { title:'Nearest Level', type:'text'    },
+      { title:'Result',        type:'text'    },
+      { title:'Backfilled',    type:'text'    },
+      { title:'Date',          type:'date'    },
+    ];
+
+    for (const col of COLUMNS) {
+      write(`  Adding column: ${col.title}…`);
+      try {
+        const res = await mondayQuery(`mutation {
+          create_column(
+            board_id: ${boardId},
+            title: "${col.title}",
+            column_type: ${col.type}
+          ) { id title }
+        }`);
+        const colId = res?.data?.create_column?.id;
+        write(`    ✓ ${col.title} → ${colId}`, 'ok');
+      } catch(e) {
+        write(`    ⚠ ${col.title} skipped: ${e.message}`, 'warn');
+      }
+    }
+
+    // 3. Save to localStorage (this device only — see result box for the
+    // permanent, everyone-uses-the-same-board fix)
+    localStorage.setItem(BOARD_KEY, boardId);
+    // Clear any stale column-id cache from a previous board on this device
+    Object.keys(localStorage)
+      .filter(k => k.startsWith('dba_consciousness_cols_'))
+      .forEach(k => localStorage.removeItem(k));
+
+    write(`\n✓ Board ID saved to this browser: ${boardId}`, 'ok');
+    write('✓ consciousness-assessment.html will now sync results here', 'ok');
+    write('\n🎉 Consciousness Assessment board is ready.', 'ok');
+    write('\n── MAKE IT THE DEFAULT FOR EVERYONE ───────────────────', 'warn');
+    write('Right now only this browser is pointed at this board.', 'warn');
+    write('Send this board ID back to hard-code it into the source', 'warn');
+    write('as DEFAULT_BOARD_ID, so every device uses it automatically', 'warn');
+    write('with no per-browser setup prompt. Then redeploy the site ZIP.', 'warn');
+
+    document.getElementById('result-bid').textContent = boardId;
+    document.getElementById('result-code').textContent = `DEFAULT_BOARD_ID = "${boardId}"`;
+    document.getElementById('result-box').classList.add('show');
+    document.getElementById('already-created').style.display = 'block';
+    document.getElementById('existing-bid').textContent = boardId;
+
+  } catch(e) {
+    write(`\n✗ Error: ${e.message}`, 'err');
+    btn.disabled = false;
+    btn.textContent = 'Retry →';
+  }
+}
+</script>
+</body>
+</html>

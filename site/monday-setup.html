@@ -413,6 +413,28 @@ const BOARD_DEFS = [
       { title:'Registered',  id_hint:'registered', type:'checkbox', note:'Registered on PHP Bamboo' },
       { title:'Last Updated',id_hint:'updated_at', type:'date',     note:'Auto-updated by platform' },
     ]
+  },
+  {
+    id: '',
+    name: 'Levels of Consciousness Results',
+    icon: '🧠',
+    description: 'Every completed self-assessment (and backfilled historical results) from the Levels of Consciousness tool — section scores, total, average Hawkins level, and life/business tie-in tag.',
+    usedBy: ['consciousness-assessment.html'],
+    dynamicId: true,
+    dynamicIdKey: 'dba_consciousness_board_id',
+    dynamicIdFallback: '',
+    requiredColumns: [
+      { title:'Person',        id_hint:'person',     type:'text',    note:'Who took the assessment' },
+      { title:'Contracted',    id_hint:'contracted', type:'numbers', note:'Section A score, out of 24' },
+      { title:'Courage',       id_hint:'courage',    type:'numbers', note:'Section B score, out of 6' },
+      { title:'Expanded',      id_hint:'expanded',   type:'numbers', note:'Section C score, out of 21' },
+      { title:'Total Score',   id_hint:'total',      type:'numbers', note:'Out of 51' },
+      { title:'Average Level', id_hint:'avg_level',  type:'numbers', note:'Weighted, on the 1-1000 Hawkins scale' },
+      { title:'Nearest Level', id_hint:'nearest',    type:'text',    note:'Closest named Hawkins level' },
+      { title:'Result',        id_hint:'result',     type:'text',    note:'Baseline tag e.g. "Turning point"' },
+      { title:'Backfilled',    id_hint:'backfilled', type:'text',    note:'Live assessment or backfilled (old version)' },
+      { title:'Date',          id_hint:'date',       type:'date',    note:'Date recorded' },
+    ]
   }
 ];
 
@@ -442,6 +464,8 @@ function renderBoards() {
           ? { href: 'licensing.html', label: '📜 Sync from Licensing Tracker to auto-create →' }
           : b.dynamicIdKey === 'dba_bom_attend_board'
           ? { href: 'create-bom-board.html', label: '📅 Create BOM Attendance Board →' }
+          : b.dynamicIdKey === 'dba_consciousness_board_id'
+          ? { href: 'create-consciousness-board.html', label: '🧠 Create Consciousness Assessment Board →' }
           : { href: 'incentive-tracker.html', label: '💾 Save from Incentive Tracker to auto-create →' })
       : null;
 

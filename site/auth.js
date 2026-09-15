@@ -2458,6 +2458,7 @@ const PAGE_ACCESS = {
   "agents.html":                0,   // Agent roster — all agents can view their own profile
   "make-scenario-builder.html": 100,
   "create-bom-board.html":      60,
+  "create-consciousness-board.html": 60,
   // ── Super Admin only (level 999) — enforced by super_admin role ──
   // No pages locked to 999 — super_admin just sees everything
 };

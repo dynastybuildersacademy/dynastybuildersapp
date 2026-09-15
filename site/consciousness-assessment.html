@@ -792,6 +792,7 @@ async function syncResultToMonday(result){
       const cols = res?.data?.boards?.[0]?.columns || [];
       const find = (...kws) => cols.find(c => kws.some(k => c.title.toLowerCase().includes(k.toLowerCase())))?.id || null;
       colIds = {
+        person:     find('person', 'name', 'agent'),
         contracted: find('contracted'),
         courage:    find('courage'),
         expanded:   find('expanded'),
@@ -806,6 +807,7 @@ async function syncResultToMonday(result){
     }
 
     const cv = {};
+    if (colIds.person)     cv[colIds.person]     = result.name;
     if (colIds.contracted) cv[colIds.contracted] = result.sectionA;
     if (colIds.courage)    cv[colIds.courage]    = result.sectionB;
     if (colIds.expanded)   cv[colIds.expanded]   = result.sectionC;
