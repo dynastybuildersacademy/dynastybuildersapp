@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Levels of Consciousness — Self-Assessment</title>
+<script src="auth.js"></script>
 <style>
   :root{
     --bg: #14131A;
@@ -147,6 +148,25 @@
   }
   .bar-fill{ height:100%; border-radius:4px; }
 
+  .total-score{
+    display:flex; align-items:center; justify-content:space-between;
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 18px; margin: 20px 0 4px;
+  }
+  .total-score .ts-label{ font-size: 13.5px; color: var(--text-muted); }
+  .total-score .ts-value{ font-size: 26px; font-weight: 700; color: var(--rise-4); font-variant-numeric: tabular-nums; }
+
+  .name-field{ margin: 18px 0; }
+  .name-field label{ display:block; font-size: 13px; color: var(--text-muted); margin-bottom: 7px; }
+  .name-field input{
+    width:100%; background: var(--bg-card); border: 1px solid var(--border);
+    color: var(--text); font-family: inherit; font-size: 15.5px;
+    padding: 13px 14px; border-radius: 10px;
+  }
+  .name-field input:focus{ outline:none; border-color: var(--rise-4); }
+
+  .sync-note{ font-size: 12px; color: var(--text-muted); margin-top: 14px; text-align:center; }
+
   .practice{
     background: var(--bg-card);
     border: 1px solid var(--border);
@@ -186,7 +206,11 @@
       <p>This is a short self-assessment based on a model of consciousness levels — from contracted states like shame and fear, up through courage, to expanded states like acceptance and love.</p>
       <p>Answer for the last 2–4 weeks, not just today. There's no scoring to perform well on — the point is an honest snapshot of your baseline, and a next step that actually fits where you are.</p>
       <div class="note">17 short statements · roughly 3 minutes</div>
-      <button class="cta" onclick="goTo(0)">Begin</button>
+      <div class="name-field" id="nameField">
+        <label>Your Name</label>
+        <input type="text" id="userName" placeholder="First and last name">
+      </div>
+      <button class="cta" onclick="beginAssessment()">Begin</button>
     </div>
   </div>
 
@@ -221,6 +245,16 @@
           <div class="bar-track"><div class="bar-fill" id="barC" style="background:#D4A339"></div></div>
         </div>
       </div>
+
+      <div class="total-score">
+        <span class="ts-label">Total Score</span>
+        <span class="ts-value" id="scoreTotal"></span>
+      </div>
+      <div class="total-score">
+        <span class="ts-label">Average Consciousness Level<br><span style="font-size:11px;opacity:.7;">Weighted, on the 1–1000 Hawkins scale</span></span>
+        <span class="ts-value" id="scoreAvgLevel"></span>
+      </div>
+      <div class="sync-note" id="syncNote"></div>
 
       <div class="practice">
         <h3 id="practiceTitle"></h3>
@@ -269,6 +303,14 @@ const QUESTIONS = [
   {text:"I feel content and light without needing anything to happen first.", section:"C", level:"Joy"},
   {text:"I feel a settled sense that everything is fundamentally okay.", section:"C", level:"Peace"},
 ];
+
+// Calibrated values from the Power vs Force / Map of Consciousness model —
+// used to compute a single weighted-average level from the 17 answers.
+const HAWKINS_VALUES = {
+  Shame:20, Guilt:30, Apathy:50, Grief:75, Fear:100, Desire:125, Anger:150, Pride:175,
+  Courage:200, Neutrality:250, Willingness:310, Acceptance:350, Reason:400,
+  Love:500, Joy:540, Peace:600,
+};
 
 const PRACTICES = {
   shameGuilt: {
@@ -329,6 +371,36 @@ const PRACTICES = {
 
 let current = -1; // -1 = intro
 let answers = new Array(QUESTIONS.length).fill(null);
+
+// ── PERSON'S NAME ──────────────────────────────────────────────
+// Auto-fill and lock the name field when the person is logged in, so the
+// Monday record is tied to a real, unambiguous agent identity. Otherwise
+// let them type it (e.g. a candidate taking this before an account exists).
+let _loggedInName = '';
+(function initName(){
+  try {
+    const session = typeof AUTH !== 'undefined' ? AUTH.getSession() : null;
+    const agent = session && typeof AGENTS !== 'undefined' ? AGENTS.find(a=>a.id===session.agentId) : null;
+    if (agent && agent.name) {
+      _loggedInName = agent.name;
+      const input = document.getElementById('userName');
+      const field = document.getElementById('nameField');
+      if (input) { input.value = agent.name; input.disabled = true; }
+      if (field) field.style.opacity = '0.75';
+    }
+  } catch(e) {}
+})();
+
+function beginAssessment(){
+  const nameInput = document.getElementById('userName');
+  const name = (nameInput?.value || '').trim();
+  if (!name) {
+    nameInput.focus();
+    nameInput.style.borderColor = '#C0392B';
+    return;
+  }
+  goTo(0);
+}
 
 function updateHorizon(){
   const total = QUESTIONS.length;
@@ -415,6 +487,30 @@ function pickBlockForC(){
   return "reason"; // Love/Joy/Peace weakest -> refine toward those
 }
 
+// Weighted average across all 17 answers, using each question's Hawkins
+// calibration value as the level and the person's 0-3 response as weight.
+// Returns a number on the same 1-1000 scale as the original model.
+function computeAverageLevel(){
+  let weightedSum = 0, totalWeight = 0;
+  QUESTIONS.forEach((q, i) => {
+    const w = answers[i] || 0;
+    const v = HAWKINS_VALUES[q.level] || 0;
+    weightedSum += w * v;
+    totalWeight += w;
+  });
+  if (totalWeight === 0) return HAWKINS_VALUES.Shame; // all "rarely/never" -> floor of the scale
+  return Math.round(weightedSum / totalWeight);
+}
+
+function nearestHawkinsLevel(value){
+  let closest = 'Shame', minDiff = Infinity;
+  Object.entries(HAWKINS_VALUES).forEach(([name, v]) => {
+    const diff = Math.abs(v - value);
+    if (diff < minDiff) { minDiff = diff; closest = name; }
+  });
+  return closest;
+}
+
 function showResult(){
   document.getElementById('screen-result').classList.add('active');
 
@@ -457,12 +553,127 @@ function showResult(){
   document.getElementById('practiceSub').textContent = p.sub;
   document.getElementById('dailyTxt').textContent = p.daily;
   document.getElementById('weeklyTxt').textContent = p.weekly;
+
+  const total = sectionA + sectionB + sectionC;
+  document.getElementById('scoreTotal').textContent = `${total} / 51`;
+
+  const avgLevel = computeAverageLevel();
+  const nearestName = nearestHawkinsLevel(avgLevel);
+  document.getElementById('scoreAvgLevel').textContent = `${avgLevel} (≈ ${nearestName})`;
+
+  syncResultToMonday({
+    name: (document.getElementById('userName')?.value || _loggedInName || '').trim() || 'Unknown',
+    sectionA, sectionB, sectionC, total, tag,
+    avgLevel, nearestLevel: nearestName,
+  });
 }
 
 function restart(){
   answers = new Array(QUESTIONS.length).fill(null);
   current = -1;
   render();
+}
+
+// ════════════════════════════════════════════════════════════════
+// SYNC TO MONDAY.COM
+// ════════════════════════════════════════════════════════════════
+const BOARD_KEY = 'dba_consciousness_board_id';
+const COL_CACHE_PREFIX = 'dba_consciousness_cols_';
+
+function getBoardId(){ return localStorage.getItem(BOARD_KEY) || ''; }
+
+// The first time anyone syncs on a given browser and no board is
+// configured, ask once (a Director+/admin setting this up) and remember it.
+// Everyone else just quietly gets a "saved locally" note until it's set.
+function ensureBoardId(){
+  let id = getBoardId();
+  if (id) return id;
+  id = (prompt('Enter the Monday.com board ID to send Levels of Consciousness results to:') || '').trim();
+  if (id && /^\d+$/.test(id)) {
+    localStorage.setItem(BOARD_KEY, id);
+    return id;
+  }
+  return '';
+}
+
+async function syncResultToMonday(result){
+  const noteEl = document.getElementById('syncNote');
+  const setNote = (txt) => { if (noteEl) noteEl.textContent = txt; };
+
+  if (typeof mondayQuery !== 'function' || (typeof AUTH !== 'undefined' && !AUTH.getMondayKey())) {
+    saveLocalBackup(result);
+    setNote('Results saved on this device only (no Monday connection).');
+    return;
+  }
+
+  const boardId = ensureBoardId();
+  if (!boardId) {
+    saveLocalBackup(result);
+    setNote('Results saved on this device only — no team board configured yet.');
+    return;
+  }
+
+  try {
+    // Auto-discover column IDs for this board once and cache them —
+    // every board's column IDs can differ, so never hardcode them.
+    const cacheKey = COL_CACHE_PREFIX + boardId;
+    let colIds = {};
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) {
+      colIds = JSON.parse(cached);
+    } else {
+      const res = await mondayQuery(`{ boards(ids: ${boardId}) { columns { id title } } }`);
+      const cols = res?.data?.boards?.[0]?.columns || [];
+      const find = (...kws) => cols.find(c => kws.some(k => c.title.toLowerCase().includes(k.toLowerCase())))?.id || null;
+      colIds = {
+        contracted: find('contracted'),
+        courage:    find('courage'),
+        expanded:   find('expanded'),
+        total:      find('total score', 'total'),
+        avgLevel:   find('average level', 'avg level', 'consciousness level'),
+        nearest:    find('nearest level', 'closest level'),
+        result:     find('result', 'baseline', 'tag'),
+        date:       find('date'),
+      };
+      localStorage.setItem(cacheKey, JSON.stringify(colIds));
+    }
+
+    const cv = {};
+    if (colIds.contracted) cv[colIds.contracted] = result.sectionA;
+    if (colIds.courage)    cv[colIds.courage]    = result.sectionB;
+    if (colIds.expanded)   cv[colIds.expanded]   = result.sectionC;
+    if (colIds.total)      cv[colIds.total]      = result.total;
+    if (colIds.avgLevel)   cv[colIds.avgLevel]   = result.avgLevel;
+    if (colIds.nearest)    cv[colIds.nearest]    = result.nearestLevel;
+    if (colIds.result)     cv[colIds.result]     = result.tag;
+    if (colIds.date)       cv[colIds.date]       = { date: new Date().toISOString().slice(0,10) };
+
+    const itemName = `${result.name} — ${result.total}/51 · Lvl ${result.avgLevel} (${result.tag})`.replace(/"/g,"'");
+    const q = `mutation {
+      create_item(
+        board_id: ${boardId},
+        item_name: "${itemName}",
+        column_values: ${JSON.stringify(JSON.stringify(cv))},
+        create_labels_if_missing: true
+      ) { id }
+    }`;
+    const res2 = await mondayQuery(q);
+    if (res2?.errors?.length) throw new Error(res2.errors[0].message);
+    setNote('✓ Results sent to the team dashboard.');
+  } catch(e) {
+    console.warn('Consciousness assessment: Monday sync failed:', e.message);
+    saveLocalBackup(result);
+    setNote('⚠ Could not reach Monday — results saved on this device instead.');
+  }
+}
+
+function saveLocalBackup(result){
+  try {
+    const key = 'dba_consciousness_backup';
+    const backup = JSON.parse(localStorage.getItem(key) || '[]');
+    backup.push({ ...result, savedAt: new Date().toISOString() });
+    localStorage.setItem(key, JSON.stringify(backup));
+  } catch(e) {}
 }
 
 render();
