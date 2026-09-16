@@ -304,6 +304,26 @@ body{background:var(--navy);color:var(--text);font-family:'Barlow',sans-serif;mi
   </div>
 
   <div class="card">
+    <div class="card-title">The Market Opportunity (Use in Every RI)</div>
+    <div style="font-size:13px;line-height:1.8;color:var(--muted);margin-bottom:10px;">
+      We're shifting our language to serve families across all 4 generations — Gen Z, Millennial, Gen X, and Baby Boomer — so we capture everyone who needs our services.
+    </div>
+    <div class="script-box">"America has 340 million people, millions of underinsured families, over 11,000 people turning 65 every day, and an aging advisor workforce of only 250,000 active licensed agents. The challenge isn't finding clients. The challenge is finding enough trained financial professionals to serve them."</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📚 Recommended Reading</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:10px;">One-page report due before class on each. Email to your MD.</div>
+    <ul style="font-size:13px;line-height:2.1;margin-left:16px;">
+      <li><strong style="color:var(--text);">The Four Year Career</strong> — Richard Bliss Brooke <span style="color:var(--muted);">(Prospecting)</span></li>
+      <li><strong style="color:var(--text);">Go Pro</strong> — Eric Worre <span style="color:var(--muted);">(Calls & Scripts)</span></li>
+      <li><strong style="color:var(--text);">How I Raised Myself from Failure to Success in Selling</strong> — Frank Bettger <span style="color:var(--muted);">(Recruiting)</span></li>
+      <li><strong style="color:var(--text);">Unshakeable</strong> — Tony Robbins <span style="color:var(--muted);">(Client Presentation)</span></li>
+      <li><strong style="color:var(--text);">The Guru Gap</strong> — David McKnight <span style="color:var(--muted);">(Life Insurance & Annuities)</span></li>
+    </ul>
+  </div>
+
+  <div class="card">
     <div class="card-title">Graduation Requirements</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
       <div style="background:rgba(45,202,115,.06);border:1px solid rgba(45,202,115,.2);border-radius:8px;padding:10px;">
@@ -840,6 +860,9 @@ const SCRIPTS = [
       { title: 'Is this sales?', body: 'Do you like sales? Yes: Great, what is better for you later today or tomorrow? No: Great, what is better for you later today or tomorrow?' },
       { title: 'I need to think about it', body: 'I understand — what specifically would you like to think about? Maybe I can answer that right now.' },
       { title: 'I need to talk to my spouse', body: 'Of course. If your spouse were here right now and liked what you liked, would you be ready to move forward today?' },
+      { title: 'I have a friend who tried it and it didn\'t work out', body: 'That\'s normal. You wouldn\'t quit school because your friend dropped out, would you? The same goes for business. Do you know anybody who tried to make it in real estate, or to become a doctor or lawyer, and quit? That doesn\'t mean real estate or school doesn\'t work, does it? So, what\'s better for you, today or tomorrow?' },
+      { title: 'Is this like [ABC Company]?', body: 'Do you like [ABC Company]? If yes: "We have some similarities. What\'s better for you, today or tomorrow?" If no: "Great. What\'s better for you, today or tomorrow?"' },
+      { title: 'What do you do? (name-drop opener)', body: 'Have you heard of companies such as Foresters, Fidelity, or National Life? [If yes:] We do marketing for those companies as well as many others, but we\'re very picky about who we work with. What\'s better for you, today or tomorrow?' },
     ]
   },
   {
@@ -849,6 +872,112 @@ const SCRIPTS = [
       { title: "5 Power Tie-Down Examples", body: "Wouldn't it be good for all of us to have life insurance? | Couldn't everyone use an extra $1,000 a month? | Shouldn't we control our own promotions? | Things are going up in price, right? | Won't everyone need life insurance one day? | Aren't we tired of working for someone else?" },
       { title: "Pre-Close Small Yeses", body: "If you could get the same coverage but pay less, you'd be open, right? | Having a plan is important to you, isn't it? | You would want to retire sooner if you could, right? | Increasing your income is important to you, right?" },
       { title: "The Final Close", body: "I don't see a reason we shouldn't work together, do you?" },
+    ]
+  },
+  {
+    category: '🎯 In-Person Prospecting — The 4 Questions',
+    color: '#5DADE2',
+    scripts: [
+      {
+        title: 'The 4 Questions',
+        body: `1. "What do you do for work?"
+2. "How long have you been doing that?"
+3. "Is that what you see yourself doing for the next 10 to 15 years?"
+4. "So you do keep your business options open, right?"
+
+CLOSING — Leverage someone else:
+"I work with a company... let me have my colleague reach out."
+
+CLOSING — As yourself:
+"I'd love to share more. What does your schedule look like?"`
+      },
+      {
+        title: "Do's and Don'ts of Prospecting",
+        body: `DO: Represent yourself professionally · Give everyone a chance · Follow up · Respect decisions · Track prospects and results.
+
+DON'T: Pressure people · Mislead or overpromise · Disrespect other companies · Represent the brand poorly.
+
+"We're looking for people who are looking for us."`
+      }
+    ]
+  },
+  {
+    category: '🗣️ FORM — Talking to Strangers',
+    color: '#2DCA73',
+    scripts: [
+      {
+        title: 'The FORM Framework',
+        body: `Use FORM at BOM events, field training, client meetings, and everyday prospecting conversations. It gives you a natural way to connect and build rapport without being pushy.
+
+F — Family: Ask about their family, kids, spouse, where they're from.
+O — Occupation: What do they do? How long? Do they enjoy it?
+R — Recreation: What do they do for fun? Hobbies? Passions?
+M — Message: Transition to sharing the opportunity or value.`
+      }
+    ]
+  },
+  {
+    category: '💼 LinkedIn Prospecting Scripts',
+    color: '#0A66C2',
+    scripts: [
+      { title: 'Introduction Message', body: `"Hi [Name], I came across your profile and was impressed by your background in [field]. I'm always looking to connect with driven professionals. Would love to connect!"` },
+      { title: 'Follow-Up Message', body: `"Thanks for connecting! I work in financial services and help people build businesses. Would you be open to a quick chat to see if there's any synergy?"` },
+      { title: 'Video Follow-Up', body: `"Hey [Name], I wanted to send a quick video to put a face to the name. I'd love to share what I do — are you free for 15 minutes this week?"` },
+    ]
+  },
+  {
+    category: '🤝 3 Good Qualities Script',
+    color: '#9B59B6',
+    scripts: [
+      {
+        title: 'Referral-Based Warm Intro',
+        body: `"Hello, you don't know me, but I was given your name and number by [Referrer]. Do you know [Referrer]? [Yes.] Great — [Referrer] had a lot of good things to say about you. They told me you're: 1) Ambitious, 2) Hard working, 3) That you have a great sense of humor. Is that all true or just a myth?"
+[Pause for their reply, then:]
+"So what kind of work do you do now? How long have you been doing that? Is that something you see yourself doing for the next 10 to 20 years? So, do you keep your business options open?"
+
+TRANSITION TO INVITATION:
+"Based on our conversation, here's what I'd like to do: I'd like to get together with you for about 20–30 minutes to tell you more about our company, you can tell me more about yourself, and if it makes sense and there's a fit, maybe we can possibly do something together. What does your schedule look like either later today or tomorrow?"
+
+If inviting to a BOM: let them know they'll get a confirmation call from the office before the event.`
+      }
+    ]
+  },
+  {
+    category: '💰 Free, Future, Present Close',
+    color: '#C9A84C',
+    scripts: [
+      {
+        title: 'The 3-Part Close',
+        body: `FREE — After asking "Can you see yourself doing this part time?" — if they say yes, that means if it was free they'd do it. The only real objection left is money.
+
+FUTURE — In the future, they'll need to get licensed: pass a background check, pay for the state test and fees. That's not right now — that's in the future.
+
+PRESENT — When they get started TODAY, the platform fee is due now. A simple close anyone can do with zero sales experience.`
+      }
+    ]
+  },
+  {
+    category: '💡 Client Presentation Frameworks',
+    color: '#E67E22',
+    scripts: [
+      {
+        title: '3 Ways Money Grows',
+        body: `VARIABLE (Stock Market): Can lose all or a portion — 20% up years, -38% down years are both real. High risk, high potential.
+
+FIXED (Bank/CD): Safe, but low: typically 0-1% growth.
+
+INDEXED (IUL): Safe like fixed, tracks market upside (like the S&P) without the downside — 0% floor, capped growth (e.g. 8-9% in a good year, 0% in a down year, principal protected).`
+      },
+      {
+        title: '5 Homes of Money',
+        body: `Where's your client's money living, and how well is it working for them? Score each on Liquidity, Safety of Principal, Tax Deduction, Tax Advantage, and Growth:
+
+Banks — decent liquidity/safety, weak growth
+Stock Market — strong growth, weak safety
+Qualified Plans (401k/IRA) — tax deduction now, taxed later, no liquidity
+Real Estate — solid but illiquid
+Life Insurance — safety + tax advantage + liquidity + growth, the highest overall score in this framework`
+      }
     ]
   },
   {
