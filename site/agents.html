@@ -138,6 +138,7 @@ pre{background:var(--navy);border:1px solid var(--border);border-radius:3px;padd
             <th>Name</th><th>Agent ID</th><th>Role / Level</th>
             <th>PHP ID</th><th>Phone</th><th>Email</th>
             <th>Upline</th><th>Licensed</th><th>Enrolled</th>
+            <th>PHP System Flow Progress</th>
             <th>Monday</th><th style="text-align:center;">Actions</th>
           </tr></thead>
           <tbody id="roster-body"></tbody>
@@ -333,6 +334,55 @@ const isAdmin = session && session.level >= 60;
 // ── LOCAL EDITABLE ROSTER ─────────────────────────────────────
 // We keep a mutable copy so edits are reflected immediately in the UI
 let rosterData = AGENTS.map(a => ({...a}));
+
+// ── FAST START SCHOOL STATUS ─────────────────────────────────
+// Reads the same store the Promotions page's CSV/paste importer writes
+// to (dba_promo_stats), so importing there immediately shows up here.
+const FAST_START_STEPS = [
+  { code:'spouse',  label:'Meet Spouse' },
+  { code:'plan',    label:'Business Plan' },
+  { code:'top25',   label:'Top 25' },
+  { code:'ft3',     label:'3 FT & 3 Guests' },
+  { code:'finance', label:'Financial Analysis' },
+  { code:'life',    label:'Life Class' },
+  { code:'event',   label:'Big Event' },
+  { code:'sprint',  label:'Sprint Award' },
+];
+function getFastStartStatus(agentId) {
+  let stats = {};
+  try { stats = JSON.parse(localStorage.getItem('dba_promo_stats') || '{}'); } catch(e) {}
+  const done = (stats[agentId]?.fastStartDone || '').split(';').map(s=>s.trim()).filter(Boolean);
+  const missing = FAST_START_STEPS.filter(s => !done.includes(s.code));
+  return { done, missing, graduated: missing.length === 0 && done.length > 0 };
+}
+
+// ── PHP SYSTEM FLOW STAGE — road to Marketing Director ($50K+ earner) ──
+const SYSTEM_FLOW_STAGES = [
+  { n:1, name:'New Associate' },
+  { n:2, name:'Graduate Fast Start School' },
+  { n:3, name:"President's Club" },
+  { n:4, name:'Develop Direct FAs' },
+  { n:5, name:'Marketing Director' },
+];
+const SYSTEM_FLOW_STAGE_BY_ROLE = { associate:2, field_associate:3, director:4, producing_md:5, marketing_director:5 };
+function getSystemFlowStage(agent) {
+  const fs = getFastStartStatus(agent.id);
+  let stageIndex;
+  if (agent.role === 'trainee') stageIndex = fs.graduated ? 2 : 1;
+  else stageIndex = SYSTEM_FLOW_STAGE_BY_ROLE[agent.role] || null;
+
+  const isMD = ['producing_md','marketing_director'].includes(agent.role);
+  const beyondMD = stageIndex === null;
+  if (beyondMD) stageIndex = 5;
+
+  return {
+    stageIndex,
+    stageName: beyondMD ? 'Marketing Director+ ($50K+ earner)' : SYSTEM_FLOW_STAGES[stageIndex-1].name,
+    isMD: isMD || beyondMD,
+    beyondMD,
+    pct: Math.round((stageIndex/5)*100),
+  };
+}
 let mondayItemMap = {}; // agentId → Monday item ID (discovered on sync)
 
 // ── TABS ──────────────────────────────────────────────────────
@@ -356,6 +406,19 @@ function renderRoster(filter='') {
   document.getElementById('roster-body').innerHTML = rows.map(a => {
     const upline = rosterData.find(u=>u.id===a.uplineId);
     const isSynced = mondayItemMap[a.id];
+    const fs = getFastStartStatus(a.id);
+    const flow = getSystemFlowStage(a);
+    const fsDetail = fs.done.length === 0
+      ? `Fast Start: not started`
+      : fs.graduated
+      ? `Fast Start: ✅ graduated`
+      : `Fast Start: ${fs.done.length}/8 — missing ${fs.missing.map(s=>s.label).join(', ')}`;
+    const flowCell = `
+      <div style="font-size:11px;font-weight:700;color:${flow.isMD ? 'var(--success,#27AE60)' : 'var(--gold)'};">${flow.isMD ? '🎖️' : '📈'} Stage ${flow.stageIndex}/5 — ${flow.stageName}</div>
+      <div style="background:rgba(255,255,255,.08);border-radius:3px;height:4px;margin:4px 0 3px;overflow:hidden;">
+        <div style="height:100%;width:${flow.pct}%;background:${flow.isMD?'var(--success,#27AE60)':'var(--gold)'};"></div>
+      </div>
+      <div style="font-size:10px;color:var(--slate);">${flow.stageIndex<=2 ? fsDetail : ''}</div>`;
     return `<tr id="arow-${a.id}">
       <td><div class="agent-name">${a.name}</div></td>
       <td><div class="mono">${a.id}</div></td>
@@ -366,6 +429,7 @@ function renderRoster(filter='') {
       <td style="font-size:12px;color:var(--slate);">${upline?.name||'—'}</td>
       <td style="font-size:12px;">${(a.licenseStates||[]).join(', ')||'—'}</td>
       <td class="mono">${a.enrollmentDate||'—'}</td>
+      <td style="min-width:180px;">${flowCell}</td>
       <td><span class="sync-status ${isSynced?'ss-synced':'ss-new'}">${isSynced?'✓ Synced':'Not synced'}</span></td>
       <td style="text-align:center;white-space:nowrap;">
         <button class="btn btn-sm btn-outline" onclick="openEditModal('${a.id}')" style="margin-right:4px;">✏️ Edit</button>

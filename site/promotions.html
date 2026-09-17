@@ -144,12 +144,19 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);m
   <div class="page-sub">Agents actively working toward their next level. Import stats below, or connect Monday.com for live tracking.</div>
 
   <div class="my-card" style="margin-bottom:20px;">
-    <div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--gold);margin-bottom:4px;">📥 Import Promotion Stats</div>
+    <div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--gold);margin-bottom:4px;">📥 Import Data — Dashboard, Clients & Agents</div>
     <div style="font-size:12px;color:var(--slate);margin-bottom:14px;line-height:1.6;">
-      One row per agent: <code style="background:rgba(201,168,76,.1);padding:1px 5px;border-radius:3px;">agentId, recruits, pts, apps, subPts, paidPts, licensed</code> —
-      agentId is the login ID from Roster Admin (e.g. <code style="background:rgba(201,168,76,.1);padding:1px 5px;border-radius:3px;">obi001</code>). Leave a column blank if you don't have that number yet. First row can be a header — it's detected automatically.
+      One row per agent updates all three views at once from the same numbers — there's no separate importer for each:
+      <br>• <strong style="color:var(--cream);">Agent</strong> — recruits, points, Fast Start steps, licensed count on that agent's own card below
+      <br>• <strong style="color:var(--cream);">Clients</strong> — <code style="background:rgba(201,168,76,.1);padding:1px 5px;border-radius:3px;">subPts</code> / <code style="background:rgba(201,168,76,.1);padding:1px 5px;border-radius:3px;">paidPts</code> are client-production points (submitted and paid), feeding the June MD Promo requirements
+      <br>• <strong style="color:var(--cream);">Dashboard</strong> — the June MD Promo campaign card totals are computed live from this same imported data
+      <br><br>
+      Format: <code style="background:rgba(201,168,76,.1);padding:1px 5px;border-radius:3px;">agentId, recruits, pts, apps, subPts, paidPts, licensed, fastStartDone</code> —
+      agentId is the login ID from Roster Admin (e.g. <code style="background:rgba(201,168,76,.1);padding:1px 5px;border-radius:3px;">obi001</code>). Leave a column blank if you don't have that number yet.
+      <strong style="color:var(--cream);">fastStartDone</strong> lists completed Fast Start School steps separated by <code style="background:rgba(201,168,76,.1);padding:1px 5px;border-radius:3px;">;</code> (not commas) using these codes:
+      <code style="background:rgba(201,168,76,.1);padding:1px 5px;border-radius:3px;">spouse, plan, top25, ft3, finance, life, event, sprint</code>. First row can be a header — it's detected automatically.
     </div>
-    <textarea id="import-text" placeholder="agentId, recruits, pts, apps, subPts, paidPts, licensed&#10;prochi1109, 4, 12000, 3, 12000, 8000, 1" style="width:100%;min-height:90px;background:var(--navy);border:1px solid var(--border);border-radius:4px;padding:10px 12px;color:var(--cream);font-family:'DM Mono',monospace;font-size:12px;resize:vertical;margin-bottom:10px;"></textarea>
+    <textarea id="import-text" placeholder="agentId, recruits, pts, apps, subPts, paidPts, licensed, fastStartDone&#10;prochi1109, 4, 12000, 3, 12000, 8000, 1, spouse;top25;life" style="width:100%;min-height:90px;background:var(--navy);border:1px solid var(--border);border-radius:4px;padding:10px 12px;color:var(--cream);font-family:'DM Mono',monospace;font-size:12px;resize:vertical;margin-bottom:10px;"></textarea>
     <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
       <button onclick="importPromoText()" style="background:var(--gold);color:var(--navy);border:none;border-radius:4px;padding:9px 16px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;cursor:pointer;">Import Pasted Text</button>
       <label style="background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:4px;padding:9px 16px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;cursor:pointer;color:var(--cream);">
@@ -215,7 +222,54 @@ function savePromoStats(stats) {
 }
 
 // ── IMPORT: PASTE OR CSV ──────────────────────────────────────
-const PROMO_FIELDS = ['agentId','recruits','pts','apps','subPts','paidPts','licensed'];
+const PROMO_FIELDS = ['agentId','recruits','pts','apps','subPts','paidPts','licensed','fastStartDone'];
+
+// The 8-item Fast Start School qualification checklist (matches Training →
+// Fast Track → "Fast Start School Qualification — Week 1 Checklist").
+// A CSV/pasted "fastStartDone" cell lists completed codes separated by ; — e.g. "spouse;plan;top25"
+const FAST_START_STEPS = [
+  { code:'spouse',  label:'Meet Spouse' },
+  { code:'plan',    label:'Business Plan' },
+  { code:'top25',   label:'Top 25' },
+  { code:'ft3',     label:'3 FT & 3 Guests' },
+  { code:'finance', label:'Financial Analysis' },
+  { code:'life',    label:'Life Class' },
+  { code:'event',   label:'Big Event' },
+  { code:'sprint',  label:'Sprint Award' },
+];
+function fastStartStatus(agentId) {
+  const done = (PROMO_STATS[agentId]?.fastStartDone || '').split(';').map(s=>s.trim()).filter(Boolean);
+  const missing = FAST_START_STEPS.filter(s => !done.includes(s.code));
+  return { done, missing, graduated: missing.length === 0 && done.length > 0 };
+}
+
+// ── PHP SYSTEM FLOW STAGE — road to Marketing Director ($50K+ earner) ──
+const SYSTEM_FLOW_STAGES = [
+  { n:1, name:'New Associate' },
+  { n:2, name:'Graduate Fast Start School' },
+  { n:3, name:"President's Club" },
+  { n:4, name:'Develop Direct FAs' },
+  { n:5, name:'Marketing Director' },
+];
+const SYSTEM_FLOW_STAGE_BY_ROLE = { associate:2, field_associate:3, director:4, producing_md:5, marketing_director:5 };
+function getSystemFlowStage(agent) {
+  const fs = fastStartStatus(agent.id);
+  let stageIndex;
+  if (agent.role === 'trainee') stageIndex = fs.graduated ? 2 : 1;
+  else stageIndex = SYSTEM_FLOW_STAGE_BY_ROLE[agent.role] || null;
+
+  const isMD = ['producing_md','marketing_director'].includes(agent.role);
+  const beyondMD = stageIndex === null;
+  if (beyondMD) stageIndex = 5;
+
+  return {
+    stageIndex,
+    stageName: beyondMD ? 'Marketing Director+ ($50K+ earner)' : SYSTEM_FLOW_STAGES[stageIndex-1].name,
+    isMD: isMD || beyondMD,
+    beyondMD,
+    pct: Math.round((stageIndex/5)*100),
+  };
+}
 
 function parsePromoRows(raw) {
   const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
@@ -232,7 +286,8 @@ function parsePromoRows(raw) {
     const row = { agentId: cells[0] };
     PROMO_FIELDS.slice(1).forEach((field, i) => {
       const val = cells[i+1];
-      if (val !== undefined && val !== '') row[field] = Number(val.replace(/[^0-9.\-]/g,'')) || 0;
+      if (val === undefined || val === '') return;
+      row[field] = field === 'fastStartDone' ? val.replace(/[|,]/g, ';') : (Number(val.replace(/[^0-9.\-]/g,'')) || 0);
     });
     rows.push(row);
   });
@@ -277,7 +332,7 @@ function importPromoCSV(event) {
 
 function downloadPromoTemplate() {
   const header = PROMO_FIELDS.join(',');
-  const example = 'obi001,4,12000,3,12000,8000,1';
+  const example = 'obi001,4,12000,3,12000,8000,1,spouse;top25;life';
   const csv = header + '\n' + example;
   const blob = new Blob([csv], { type:'text/csv' });
   const a = document.createElement('a');
@@ -508,7 +563,12 @@ document.getElementById('flow-container').innerHTML = PHP_SYSTEM_FLOW.map((step,
 
 // ── TEAM PROGRESS ─────────────────────────────────────────────
 function renderTeamProgress() {
-  const visible = session.level >= 60 ? AGENTS : [myAgent, ...getDirectReports(session.agentId)].filter(Boolean);
+  // Team Progress only ever shows your own downline — never the whole
+  // org, regardless of level. Uses the full recursive downline (not just
+  // direct reports) so an MD sees their entire team, not just Directors.
+  const visible = typeof getFullDownline === 'function'
+    ? getFullDownline(session.agentId).filter(Boolean)
+    : [myAgent, ...getDirectReports(session.agentId)].filter(Boolean);
   const teamHtml = visible.map(ag => {
     const req = PHP_PROMO_REQS[ag.role];
     if (!req || !req.personal) return '';
@@ -518,11 +578,18 @@ function renderTeamProgress() {
     const rDone = (s.recruits||0) >= p.recruits;
     const ready = rDone;
     const upline = ag.uplineId ? getAgentById(ag.uplineId) : null;
+    const fs = fastStartStatus(ag.id);
+    const fsLine = fs.done.length === 0
+      ? `<div class="ac-upline" style="color:var(--warn);">⏳ Fast Start School: not started</div>`
+      : fs.graduated
+      ? `<div class="ac-upline" style="color:var(--success);">✅ Fast Start School: graduated</div>`
+      : `<div class="ac-upline" style="color:var(--warn);">⏳ Fast Start School: ${fs.done.length}/8 — missing ${fs.missing.map(s=>s.label).join(', ')}</div>`;
     return `<div class="agent-card ${ready?'ready':''}">
       <div class="ac-name">${ag.name}</div>
       <div class="ac-path">${getRoleLabel(ag.role)} → ${req.next}</div>
       <div class="rr-head"><span>Recruits</span><span class="rr-val">${s.recruits||0} / ${p.recruits} ${rDone?'✅':''}</span></div>
       <div class="prog-bar" style="margin-bottom:8px;"><div class="prog-fill ${rDone?'pf-done':'pf-prog'}" style="width:${rPct}%"></div></div>
+      ${fsLine}
       ${upline ? `<div class="ac-upline">Upline: ${upline.name} · ${getRoleLabel(upline.role)}</div>` : ''}
     </div>`;
   }).filter(Boolean).join('');

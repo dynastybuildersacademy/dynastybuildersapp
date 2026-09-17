@@ -162,7 +162,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
           <thead>
             <tr>
               <th>Name</th><th>ID</th><th>PIN</th><th>Role</th>
-              <th>Phone</th><th>Email</th><th>Top 25 Board</th><th>Actions</th>
+              <th>Phone</th><th>Email</th><th>Top 25 Board</th><th>PHP System Flow Progress</th><th>Actions</th>
             </tr>
           </thead>
           <tbody id="roster-tbody"></tbody>
@@ -280,6 +280,58 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 // ── STATE ─────────────────────────────────────────────────────
 let agentList = typeof AGENTS !== 'undefined' ? [...AGENTS] : [];
 
+// ── FAST START SCHOOL STATUS ─────────────────────────────────
+// Reads the same store the Promotions page's CSV/paste importer writes
+// to (dba_promo_stats), so importing there immediately shows up here.
+const FAST_START_STEPS = [
+  { code:'spouse',  label:'Meet Spouse' },
+  { code:'plan',    label:'Business Plan' },
+  { code:'top25',   label:'Top 25' },
+  { code:'ft3',     label:'3 FT & 3 Guests' },
+  { code:'finance', label:'Financial Analysis' },
+  { code:'life',    label:'Life Class' },
+  { code:'event',   label:'Big Event' },
+  { code:'sprint',  label:'Sprint Award' },
+];
+function getFastStartStatus(agentId) {
+  let stats = {};
+  try { stats = JSON.parse(localStorage.getItem('dba_promo_stats') || '{}'); } catch(e) {}
+  const done = (stats[agentId]?.fastStartDone || '').split(';').map(s=>s.trim()).filter(Boolean);
+  const missing = FAST_START_STEPS.filter(s => !done.includes(s.code));
+  return { done, missing, graduated: missing.length === 0 && done.length > 0 };
+}
+
+// ── PHP SYSTEM FLOW STAGE — road to Marketing Director ($50K+ earner) ──
+// 5 stages, matching the roadmap used in Training and the Promotions page:
+// New Associate → Graduate Fast Start School → President's Club →
+// Develop Direct FAs → Marketing Director Promotion.
+const SYSTEM_FLOW_STAGES = [
+  { n:1, name:'New Associate' },
+  { n:2, name:'Graduate Fast Start School' },
+  { n:3, name:"President's Club" },
+  { n:4, name:'Develop Direct FAs' },
+  { n:5, name:'Marketing Director' },
+];
+const SYSTEM_FLOW_STAGE_BY_ROLE = { associate:2, field_associate:3, director:4, producing_md:5, marketing_director:5 };
+function getSystemFlowStage(agent) {
+  const fs = getFastStartStatus(agent.id);
+  let stageIndex;
+  if (agent.role === 'trainee') stageIndex = fs.graduated ? 2 : 1;
+  else stageIndex = SYSTEM_FLOW_STAGE_BY_ROLE[agent.role] || null;
+
+  const isMD = ['producing_md','marketing_director'].includes(agent.role);
+  const beyondMD = stageIndex === null; // senior_md and above — already past the core flow
+  if (beyondMD) stageIndex = 5;
+
+  return {
+    stageIndex,
+    stageName: beyondMD ? 'Marketing Director+ ($50K+ earner)' : SYSTEM_FLOW_STAGES[stageIndex-1].name,
+    isMD: isMD || beyondMD,
+    beyondMD,
+    pct: Math.round((stageIndex/5)*100),
+  };
+}
+
 // ── TAB ───────────────────────────────────────────────────────
 function switchTab(name, el) {
   document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
@@ -355,7 +407,21 @@ function renderRoster() {
 
   document.getElementById('roster-count').textContent = `${filtered.length} of ${agentList.length}`;
 
-  document.getElementById('roster-tbody').innerHTML = filtered.map(a => `
+  document.getElementById('roster-tbody').innerHTML = filtered.map(a => {
+    const fs = getFastStartStatus(a.id);
+    const flow = getSystemFlowStage(a);
+    const fsDetail = fs.done.length === 0
+      ? `Fast Start: not started`
+      : fs.graduated
+      ? `Fast Start: ✅ graduated`
+      : `Fast Start: ${fs.done.length}/8 — missing ${fs.missing.map(s=>s.label).join(', ')}`;
+    const flowCell = `
+      <div style="font-size:11px;font-weight:700;color:${flow.isMD ? '#27AE60' : '#C9A84C'};">${flow.isMD ? '🎖️' : '📈'} Stage ${flow.stageIndex}/5 — ${flow.stageName}</div>
+      <div style="background:rgba(255,255,255,.08);border-radius:3px;height:4px;margin:4px 0 3px;overflow:hidden;">
+        <div style="height:100%;width:${flow.pct}%;background:${flow.isMD?'#27AE60':'#C9A84C'};"></div>
+      </div>
+      <div style="font-size:10px;color:var(--muted);" title="${fs.missing.map(s=>s.label).join(', ')}">${flow.stageIndex<=2 ? fsDetail : ''}</div>`;
+    return `
     <tr>
       <td><strong>${a.name}</strong></td>
       <td><span style="font-family:'DM Mono',monospace;font-size:10px;">${a.id}</span></td>
@@ -366,10 +432,12 @@ function renderRoster() {
       <td>${a.top25BoardId
         ? `<span class="board-badge">${a.top25BoardId}</span>`
         : `<span class="no-board">No board</span>`}</td>
+      <td style="min-width:180px;">${flowCell}</td>
       <td>
         <button class="btn btn-ghost" style="padding:4px 10px;font-size:11px;" onclick="editAgent('${a.id}')">✏ Edit</button>
       </td>
-    </tr>`).join('');
+    </tr>`;
+  }).join('');
 }
 
 // ── BOARD TABLE ───────────────────────────────────────────────
