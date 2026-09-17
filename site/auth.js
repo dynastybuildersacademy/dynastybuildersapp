@@ -734,7 +734,7 @@ const AGENTS = [
   },
   {
     id: "marleo994", name: "Mark Ponce De Leon",
-    pin: "1111", role: "trainee", level: 20,
+    pin: "1111", role: "associate", level: 30,
     phpId: "1364994", phone: "5623505181",
     email: "markjpdl@hotmail.com",
     top25BoardId: "",
@@ -744,7 +744,7 @@ const AGENTS = [
   },
   {
     id: "steben289", name: "Stephan Bennett",
-    pin: "1111", role: "trainee", level: 20,
+    pin: "1111", role: "field associate", level: 50,
     phpId: "1364289", phone: "4065798030",
     email: "insurewithbennett@gmail.com",
     top25BoardId: "18410267607",
@@ -754,7 +754,7 @@ const AGENTS = [
   },
   {
     id: "titikh526", name: "Titilope Ikhile",
-    pin: "1111", role: "trainee", level: 20,
+    pin: "1111", role: "associate", level: 30,
     phpId: "1363526", phone: "9252340575",
     email: "titilope@gmail.com",
     top25BoardId: "18417763345",
@@ -814,7 +814,7 @@ const AGENTS = [
   },
   {
     id: "nenuko241", name: "Nene Uko",
-    pin: "1111", role: "trainee", level: 20,
+    pin: "1111", role: "field associate", level: 40,
     phpId: "1357241", phone: "3102201299",
     email: "neneukocoach@gmail.com",
     top25BoardId: "",
@@ -844,7 +844,7 @@ const AGENTS = [
   },
   {
     id: "steudo121", name: "Stella Udoh",
-    pin: "1111", role: "trainee", level: 20,
+    pin: "1111", role: "associate", level: 30,
     phpId: "1355121", phone: "4244503394",
     email: "perfection4stella@gmail.com",
     top25BoardId: "18426825795",
@@ -884,7 +884,7 @@ const AGENTS = [
   },
   {
     id: "jacaba757", name: "Jacinta Abanobi",
-    pin: "1111", role: "trainee", level: 20,
+    pin: "1111", role: "director", level: 50,
     phpId: "1353757", phone: "5625896701",
     email: "zaramekpere048@gmail.com",
     top25BoardId: "",
@@ -894,7 +894,7 @@ const AGENTS = [
   },
   {
     id: "cosaba718", name: "Cosmas Abanobi",
-    pin: "1111", role: "trainee", level: 20,
+    pin: "1111", role: "director", level: 50,
     phpId: "1353718", phone: "5622664286",
     email: "cosmasabanobi046@gmail.com",
     top25BoardId: "9933217087",
