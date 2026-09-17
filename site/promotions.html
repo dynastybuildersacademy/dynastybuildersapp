@@ -141,7 +141,26 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);m
 <!-- TAB 4: TEAM PROGRESS -->
 <div class="panel" id="panel-team">
   <div class="page-title">Team Promotion Progress</div>
-  <div class="page-sub">Agents actively working toward their next level. Connect Monday.com for live tracking.</div>
+  <div class="page-sub">Agents actively working toward their next level. Import stats below, or connect Monday.com for live tracking.</div>
+
+  <div class="my-card" style="margin-bottom:20px;">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--gold);margin-bottom:4px;">📥 Import Promotion Stats</div>
+    <div style="font-size:12px;color:var(--slate);margin-bottom:14px;line-height:1.6;">
+      One row per agent: <code style="background:rgba(201,168,76,.1);padding:1px 5px;border-radius:3px;">agentId, recruits, pts, apps, subPts, paidPts, licensed</code> —
+      agentId is the login ID from Roster Admin (e.g. <code style="background:rgba(201,168,76,.1);padding:1px 5px;border-radius:3px;">obi001</code>). Leave a column blank if you don't have that number yet. First row can be a header — it's detected automatically.
+    </div>
+    <textarea id="import-text" placeholder="agentId, recruits, pts, apps, subPts, paidPts, licensed&#10;prochi1109, 4, 12000, 3, 12000, 8000, 1" style="width:100%;min-height:90px;background:var(--navy);border:1px solid var(--border);border-radius:4px;padding:10px 12px;color:var(--cream);font-family:'DM Mono',monospace;font-size:12px;resize:vertical;margin-bottom:10px;"></textarea>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+      <button onclick="importPromoText()" style="background:var(--gold);color:var(--navy);border:none;border-radius:4px;padding:9px 16px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;cursor:pointer;">Import Pasted Text</button>
+      <label style="background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:4px;padding:9px 16px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;cursor:pointer;color:var(--cream);">
+        📁 Import CSV File
+        <input type="file" accept=".csv,text/csv" onchange="importPromoCSV(event)" style="display:none;">
+      </label>
+      <button onclick="downloadPromoTemplate()" style="background:none;border:1px solid var(--border);border-radius:4px;padding:9px 16px;font-family:'Barlow Condensed',sans-serif;font-size:12px;color:var(--slate);cursor:pointer;">↓ Download CSV Template</button>
+      <span id="import-status" style="font-size:12px;color:var(--success);"></span>
+    </div>
+  </div>
+
   <div class="team-grid" id="team-grid"></div>
 </div>
 
@@ -181,7 +200,134 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);m
 <script>
 const session  = AUTH.getSession();
 const myAgent  = AUTH.getAgent();
-const myStats  = DEMO_STATS[session.agentId] || {};
+
+// ── PERSISTENT PROMOTION STATS ──────────────────────────────────
+// Replaces what used to be a hardcoded, undefined DEMO_STATS/JUNE_MD_PROMO
+// reference (the page silently crashed before — My Path, System Flow, and
+// Team Progress never actually rendered). Real values now live here,
+// populated via the Import panel (paste or CSV) on the Team Progress tab.
+const PROMO_STATS_KEY = 'dba_promo_stats';
+function loadPromoStats() {
+  try { return JSON.parse(localStorage.getItem(PROMO_STATS_KEY) || '{}'); } catch(e) { return {}; }
+}
+function savePromoStats(stats) {
+  try { localStorage.setItem(PROMO_STATS_KEY, JSON.stringify(stats)); } catch(e) {}
+}
+
+// ── IMPORT: PASTE OR CSV ──────────────────────────────────────
+const PROMO_FIELDS = ['agentId','recruits','pts','apps','subPts','paidPts','licensed'];
+
+function parsePromoRows(raw) {
+  const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
+  if (!lines.length) return [];
+  // Detect and skip a header row (first cell isn't a real agent id in the roster)
+  const firstCells = lines[0].split(',').map(c => c.trim());
+  const looksLikeHeader = !getAgentById(firstCells[0]);
+  const dataLines = looksLikeHeader ? lines.slice(1) : lines;
+
+  const rows = [];
+  dataLines.forEach(line => {
+    const cells = line.split(',').map(c => c.trim());
+    if (!cells[0]) return;
+    const row = { agentId: cells[0] };
+    PROMO_FIELDS.slice(1).forEach((field, i) => {
+      const val = cells[i+1];
+      if (val !== undefined && val !== '') row[field] = Number(val.replace(/[^0-9.\-]/g,'')) || 0;
+    });
+    rows.push(row);
+  });
+  return rows;
+}
+
+function applyPromoImport(rows) {
+  let matched = 0, unmatched = [];
+  rows.forEach(row => {
+    const agent = getAgentById(row.agentId);
+    if (!agent) { unmatched.push(row.agentId); return; }
+    PROMO_STATS[row.agentId] = { ...PROMO_STATS[row.agentId], ...row };
+    delete PROMO_STATS[row.agentId].agentId;
+    matched++;
+  });
+  savePromoStats(PROMO_STATS);
+
+  const statusEl = document.getElementById('import-status');
+  if (statusEl) {
+    statusEl.style.color = unmatched.length ? 'var(--warn)' : 'var(--success)';
+    statusEl.textContent = unmatched.length
+      ? `✓ ${matched} imported · ⚠ ${unmatched.length} unmatched agent ID${unmatched.length===1?'':'s'}: ${unmatched.slice(0,5).join(', ')}${unmatched.length>5?'…':''}`
+      : `✓ ${matched} agent${matched===1?'':'s'} imported successfully`;
+  }
+  renderTeamProgress(); // re-render with the new numbers
+}
+
+function importPromoText() {
+  const raw = document.getElementById('import-text').value;
+  if (!raw.trim()) { document.getElementById('import-status').textContent = '⚠ Paste some rows first'; return; }
+  applyPromoImport(parsePromoRows(raw));
+}
+
+function importPromoCSV(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => applyPromoImport(parsePromoRows(e.target.result));
+  reader.readAsText(file);
+  event.target.value = ''; // allow re-selecting the same file later
+}
+
+function downloadPromoTemplate() {
+  const header = PROMO_FIELDS.join(',');
+  const example = 'obi001,4,12000,3,12000,8000,1';
+  const csv = header + '\n' + example;
+  const blob = new Blob([csv], { type:'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'promo-stats-template.csv';
+  a.click();
+}
+
+let PROMO_STATS = loadPromoStats();
+const myStats  = PROMO_STATS[session.agentId] || {};
+
+// ── PHP SYSTEM FLOW — matches the roadmap already used in Training ──
+const PHP_SYSTEM_FLOW = [
+  { week:'WEEK 1',      stage:'New Associate',        milestone:'Qualify for Fast Start School',
+    tasks:['Meet Spouse','Business Plan','Top 25','3 FT & 3 Guests','Financial Analysis','Life Class','Big Event','Sprint Award'] },
+  { week:'MONTH 1',     stage:'Graduate Fast Start School', milestone:'Get a promotion',
+    tasks:['Life License','Complete 10 FT','3+3 Associate','10+10 Field Associate','25+25 Director (15/15/15k)'] },
+  { week:'MONTH 1 ON',  stage:"Qualify for President's Club", milestone:'Become a certified trainer',
+    tasks:['10 rec. (average)','25 rec. (above average)','50 rec. (competitor)','100 rec. (record breaker)'] },
+  { week:'MONTH 3–6',   stage:'Develop Direct FAs',    milestone:'Get coached to become MD',
+    tasks:['$50,000 income+','90-day run to MD','Graduate PHP University'] },
+  { week:'MONTH 6–12',  stage:'Marketing Director Promotion', milestone:'Develop other MDs',
+    tasks:['3 direct FAs','15 licensed agents','50 rec. & 100K points in 90 days'] },
+];
+
+// ── PROMOTION REQUIREMENTS PER ROLE ──────────────────────────────
+// Anchored to the same PHP System Flow criteria used above and in
+// Training. Roles beyond Marketing Director don't have published
+// numeric thresholds in our materials, so those are marked ongoing
+// rather than guessed at.
+const PHP_PROMO_REQS = {
+  trainee:          { next:'Associate',                     personal:{ recruits:3 },  team:{ notes:'3+3 — 3 personal, 3 team recruits' }, timeframe:'Target: Month 1', notes:'Complete Fast Start School requirements' },
+  associate:        { next:'Field Associate',                personal:{ recruits:10 }, team:{ notes:'10+10 — 10 personal, 10 team recruits' }, timeframe:'Target: Month 1–3', notes:'Keep production active alongside recruiting' },
+  field_associate:  { next:'Director',                       personal:{ recruits:25 }, team:{ notes:'25+25 — 25 personal, 25 team recruits, 15/15/15K' }, timeframe:'Target: Month 3–6', notes:'15 licensed, 15 producing, 15K team points' },
+  director:         { next:'Producing Marketing Director',   personal:{ recruits:50, points:100000 }, team:{ notes:"President's Club pace: 50 rec. = competitor tier" }, timeframe:'Ongoing', notes:'$50,000+ income target, 90-day run to MD' },
+  producing_md:     { next:'Marketing Director',             personal:{ recruits:50, points:100000 }, team:{ notes:'3 direct FAs, 15 licensed agents' }, timeframe:'Month 6–12', notes:'50 recruits & 100K points in 90 days' },
+  marketing_director:{ next:'Senior Marketing Director',     personal:{ recruits:100, points:150000 }, team:{ notes:'Develop other MDs' }, timeframe:'Ongoing', notes:'Sustained MD-level team production' },
+  senior_md:        { next:'Executive Marketing Director',   personal:{ recruits:200, points:300000 }, team:{ notes:'Multiple producing MDs in downline' }, timeframe:'Ongoing', notes:'Contact your upline for current EMD criteria' },
+};
+
+// ── JUNE 2026 MD PROMOTION CAMPAIGN ──────────────────────────────
+// Targets are the org's published numbers; per-agent progress comes
+// from the same PROMO_STATS store, filled in via the Import panel.
+const JUNE_MD_PROMO = {
+  deadline:        '2026-06-30',
+  paidPtsDeadline: '2026-07-15',
+  asOf:            new Date().toISOString().slice(0,10),
+  targets: { recruits:25, apps:25, subPts:25000, paidPts:25000 },
+  stats: PROMO_STATS,
+};
 
 // ── JUNE 2026 MD PROMOTION CAMPAIGN CARD ────────────────────────
 (function renderJuneMdCard() {
@@ -190,7 +336,7 @@ const myStats  = DEMO_STATS[session.agentId] || {};
   const campaign = JUNE_MD_PROMO;
   const mine = campaign.stats[session.agentId];
 
-  const today = new Date('2026-06-17'); // data as-of date
+  const today = new Date();
   const deadline1 = new Date(campaign.deadline);
   const deadline2 = new Date(campaign.paidPtsDeadline);
   const daysLeft1 = Math.max(0, Math.round((deadline1 - today) / 86400000));
@@ -361,25 +507,28 @@ document.getElementById('flow-container').innerHTML = PHP_SYSTEM_FLOW.map((step,
 }).join('');
 
 // ── TEAM PROGRESS ─────────────────────────────────────────────
-const visible = session.level >= 60 ? AGENTS : [myAgent, ...getDirectReports(session.agentId)].filter(Boolean);
-const teamHtml = visible.map(ag => {
-  const req = PHP_PROMO_REQS[ag.role];
-  if (!req || !req.personal) return '';
-  const s = DEMO_STATS[ag.id] || {};
-  const p = req.personal;
-  const rPct = Math.min(100, Math.round(((s.recruits||0)/p.recruits)*100));
-  const rDone = (s.recruits||0) >= p.recruits;
-  const ready = rDone;
-  const upline = ag.uplineId ? getAgentById(ag.uplineId) : null;
-  return `<div class="agent-card ${ready?'ready':''}">
-    <div class="ac-name">${ag.name}</div>
-    <div class="ac-path">${getRoleLabel(ag.role)} → ${req.next}</div>
-    <div class="rr-head"><span>Recruits</span><span class="rr-val">${s.recruits||0} / ${p.recruits} ${rDone?'✅':''}</span></div>
-    <div class="prog-bar" style="margin-bottom:8px;"><div class="prog-fill ${rDone?'pf-done':'pf-prog'}" style="width:${rPct}%"></div></div>
-    ${upline ? `<div class="ac-upline">Upline: ${upline.name} · ${getRoleLabel(upline.role)}</div>` : ''}
-  </div>`;
-}).filter(Boolean).join('');
-document.getElementById('team-grid').innerHTML = teamHtml || '<div style="color:var(--slate);padding:20px;">No agents to display at your level.</div>';
+function renderTeamProgress() {
+  const visible = session.level >= 60 ? AGENTS : [myAgent, ...getDirectReports(session.agentId)].filter(Boolean);
+  const teamHtml = visible.map(ag => {
+    const req = PHP_PROMO_REQS[ag.role];
+    if (!req || !req.personal) return '';
+    const s = PROMO_STATS[ag.id] || {};
+    const p = req.personal;
+    const rPct = Math.min(100, Math.round(((s.recruits||0)/p.recruits)*100));
+    const rDone = (s.recruits||0) >= p.recruits;
+    const ready = rDone;
+    const upline = ag.uplineId ? getAgentById(ag.uplineId) : null;
+    return `<div class="agent-card ${ready?'ready':''}">
+      <div class="ac-name">${ag.name}</div>
+      <div class="ac-path">${getRoleLabel(ag.role)} → ${req.next}</div>
+      <div class="rr-head"><span>Recruits</span><span class="rr-val">${s.recruits||0} / ${p.recruits} ${rDone?'✅':''}</span></div>
+      <div class="prog-bar" style="margin-bottom:8px;"><div class="prog-fill ${rDone?'pf-done':'pf-prog'}" style="width:${rPct}%"></div></div>
+      ${upline ? `<div class="ac-upline">Upline: ${upline.name} · ${getRoleLabel(upline.role)}</div>` : ''}
+    </div>`;
+  }).filter(Boolean).join('');
+  document.getElementById('team-grid').innerHTML = teamHtml || '<div style="color:var(--slate);padding:20px;">No agents to display at your level.</div>';
+}
+renderTeamProgress();
 </script>
 </body>
 </html>

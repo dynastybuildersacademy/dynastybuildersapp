@@ -2413,6 +2413,7 @@ const PAGE_ACCESS = {
   // ── All agents (level 0) ──────────────────────────────────
   "hub.html":                   0,
   "tracker.html":               0,
+  "calendar.html":              0,
   "portal.html":                0,
   "survey.html":                0,
   "leaderboard.html":           0,

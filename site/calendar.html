@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DBA — Calendar</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="auth.js"></script>
+<style>
+:root{--navy:#0A1628;--navy-mid:#112040;--navy-light:#1A3158;--gold:#C9A84C;--gold-light:#E8C97A;
+  --cream:#FAF6EE;--success:#27AE60;--danger:#C0392B;--warn:#E67E22;--slate:#6B7C93;
+  --border:rgba(201,168,76,0.22);}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);min-height:100vh;padding-bottom:40px;}
+.header{background:rgba(10,22,40,0.97);border-bottom:1px solid var(--border);padding:14px 20px;
+  display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;flex-wrap:wrap;gap:10px;}
+.header h1{font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:800;color:var(--gold);}
+.header-links{display:flex;gap:8px;flex-wrap:wrap;}
+.back-btn{font-size:12px;color:var(--gold);text-decoration:none;border:1px solid var(--border);padding:6px 12px;border-radius:3px;}
+.wrap{max-width:1100px;margin:0 auto;padding:20px;display:grid;grid-template-columns:1fr 300px;gap:20px;}
+@media(max-width:860px){.wrap{grid-template-columns:1fr;}}
+
+.card{background:var(--navy-mid);border:1px solid var(--border);border-radius:8px;padding:18px;margin-bottom:16px;}
+
+/* ── CALENDAR NAV ── */
+.cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.cal-nav-title{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:var(--cream);}
+.cal-nav-btns{display:flex;gap:6px;}
+.nav-btn{background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--cream);
+  border-radius:4px;padding:7px 12px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;cursor:pointer;}
+.nav-btn:hover{border-color:var(--gold);}
+.nav-btn.today{color:var(--gold);}
+
+/* ── GRID ── */
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+.cal-dow{font-family:'DM Mono',monospace;font-size:9px;color:var(--slate);text-transform:uppercase;
+  letter-spacing:.08em;text-align:center;padding:6px 0;}
+.cal-day{background:var(--navy);border:1px solid var(--border);border-radius:5px;min-height:88px;
+  padding:6px;cursor:pointer;transition:border-color .15s;display:flex;flex-direction:column;gap:3px;}
+.cal-day:hover{border-color:var(--gold);}
+.cal-day.other-month{opacity:.32;}
+.cal-day.today{border-color:var(--gold);background:rgba(201,168,76,.08);}
+.cal-day.selected{border-color:var(--gold-light);box-shadow:0 0 0 1px var(--gold-light) inset;}
+.cal-day-num{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:var(--cream);
+  display:flex;align-items:center;justify-content:space-between;}
+.activity-dot{width:6px;height:6px;border-radius:50%;background:var(--success);flex-shrink:0;}
+.cal-chip{font-size:9px;font-family:'DM Mono',monospace;padding:1px 5px;border-radius:3px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#0A1628;font-weight:700;}
+.cal-more{font-size:9px;color:var(--slate);font-family:'DM Mono',monospace;}
+
+/* ── DAY DETAIL ── */
+.day-detail-title{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;color:var(--gold);margin-bottom:4px;}
+.day-detail-sub{font-size:11px;color:var(--slate);margin-bottom:14px;}
+.appt-row{background:var(--navy);border:1px solid var(--border);border-radius:6px;padding:10px 12px;margin-bottom:8px;
+  display:flex;align-items:center;gap:10px;cursor:pointer;}
+.appt-row:hover{border-color:var(--gold);}
+.appt-type-badge{font-size:9px;font-family:'DM Mono',monospace;font-weight:700;padding:2px 7px;border-radius:3px;color:#0A1628;flex-shrink:0;}
+.appt-row-name{font-size:13px;font-weight:700;flex:1;}
+.appt-row-time{font-size:11px;color:var(--slate);font-family:'DM Mono',monospace;}
+.appt-row-status{font-size:10px;color:var(--slate);}
+
+.btn{display:inline-block;padding:9px 16px;border-radius:4px;font-family:'Barlow Condensed',sans-serif;
+  font-size:13px;font-weight:700;cursor:pointer;border:none;text-align:center;}
+.btn-gold{background:var(--gold);color:var(--navy);}
+.btn-ghost{background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--cream);}
+.btn-danger{background:rgba(192,57,43,.15);border:1px solid rgba(192,57,43,.4);color:#E8A0A0;}
+.btn-block{width:100%;}
+
+/* ── SIDEBAR ── */
+.sidebar-title{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:var(--gold);
+  text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;}
+.stat-mini{display:flex;justify-content:space-between;font-size:12px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.05);}
+.stat-mini:last-child{border:none;}
+
+/* ── MODAL ── */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:300;align-items:center;justify-content:center;padding:16px;}
+.modal-bg.open{display:flex;}
+.modal{background:var(--navy-mid);border:1px solid var(--border);border-radius:10px;padding:22px;max-width:440px;width:100%;max-height:90vh;overflow-y:auto;}
+.modal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+.modal-title{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:800;color:var(--gold);}
+.modal-close{background:none;border:none;color:var(--slate);font-size:20px;cursor:pointer;}
+.field{margin-bottom:12px;}
+.field label{display:block;font-size:10px;color:var(--slate);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px;}
+.field input,.field select,.field textarea{width:100%;background:#132240;border:1px solid rgba(255,255,255,.12);
+  color:var(--cream);border-radius:6px;padding:9px 11px;font-family:'Barlow',sans-serif;font-size:13px;outline:none;}
+.field textarea{min-height:60px;resize:vertical;}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.modal-footer{display:flex;gap:8px;margin-top:16px;}
+.sync-note{font-size:10px;color:var(--slate);margin-top:10px;text-align:center;}
+</style>
+</head>
+<body>
+<script>AUTH.require('calendar.html');</script>
+
+<div class="header">
+  <h1>📅 Calendar</h1>
+  <div class="header-links">
+    <a href="tracker.html" class="back-btn">📞 Activity Log</a>
+    <a href="hub.html" class="back-btn">← Hub</a>
+  </div>
+</div>
+
+<div class="wrap">
+  <div>
+    <div class="card">
+      <div class="cal-nav">
+        <div class="cal-nav-title" id="cal-month-label"></div>
+        <div class="cal-nav-btns">
+          <button class="nav-btn" onclick="shiftMonth(-1)">‹ Prev</button>
+          <button class="nav-btn today" onclick="goToday()">Today</button>
+          <button class="nav-btn" onclick="shiftMonth(1)">Next ›</button>
+        </div>
+      </div>
+      <div class="cal-grid" id="cal-dow-row"></div>
+      <div class="cal-grid" id="cal-grid" style="margin-top:4px;"></div>
+    </div>
+
+    <div class="card" id="day-detail-card">
+      <div class="day-detail-title" id="day-detail-title">Select a day</div>
+      <div class="day-detail-sub" id="day-detail-sub"></div>
+      <div id="day-detail-list"></div>
+      <button class="btn btn-gold btn-block" onclick="openApptModal()">+ Add Appointment</button>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="sidebar-title">This Month</div>
+      <div class="stat-mini"><span>Total Appointments</span><span id="stat-total">0</span></div>
+      <div class="stat-mini"><span>Showed</span><span id="stat-showed">0</span></div>
+      <div class="stat-mini"><span>No-Shows</span><span id="stat-noshow">0</span></div>
+      <div class="stat-mini"><span>Recruited</span><span id="stat-recruited">0</span></div>
+      <div class="stat-mini"><span>Days w/ Activity Logged</span><span id="stat-activity-days">0</span></div>
+    </div>
+    <div class="card">
+      <div class="sidebar-title">Today</div>
+      <div id="today-list" style="font-size:12px;color:var(--slate);">Loading…</div>
+    </div>
+    <div class="card">
+      <div class="sidebar-title">Legend</div>
+      <div style="display:flex;flex-direction:column;gap:6px;font-size:11px;" id="legend"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD/EDIT APPOINTMENT MODAL -->
+<div class="modal-bg" id="appt-modal">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title" id="modal-title">📅 Add Appointment</div>
+      <button class="modal-close" onclick="closeApptModal()">×</button>
+    </div>
+    <input type="hidden" id="appt-edit-id">
+    <div class="field"><label>Name / Contact</label><input type="text" id="appt-name" placeholder="Who is this with?"></div>
+    <div class="field-row">
+      <div class="field"><label>Date</label><input type="date" id="appt-date"></div>
+      <div class="field"><label>Time</label><input type="time" id="appt-time"></div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Type</label>
+        <select id="appt-type">
+          <option value="RI">🎯 Recruiting Interview (RI)</option>
+          <option value="FT">💼 Field Training Appt (FT)</option>
+          <option value="FS">🚀 Fast Start Appt (FS)</option>
+          <option value="Client">👤 Client Appointment</option>
+          <option value="BOM Guest">🏢 BOM Guest</option>
+          <option value="Other">📌 Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Status</label>
+        <select id="appt-status">
+          <option value="Scheduled">📅 Scheduled</option>
+          <option value="Showed">✅ Showed</option>
+          <option value="No-Show">❌ No-Show</option>
+          <option value="Rescheduled">🔄 Rescheduled</option>
+          <option value="Cancelled">🚫 Cancelled</option>
+          <option value="Recruited">🎉 Recruited!</option>
+        </select>
+      </div>
+    </div>
+    <div class="field"><label>Phone</label><input type="tel" id="appt-phone" placeholder="(555) 123-4567"></div>
+    <div class="field"><label>Notes</label><textarea id="appt-notes" placeholder="Anything to remember for this one"></textarea></div>
+    <div class="modal-footer">
+      <button class="btn btn-danger" id="delete-btn" style="display:none;" onclick="deleteApptFromModal()">Delete</button>
+      <button class="btn btn-ghost" style="flex:1;" onclick="closeApptModal()">Cancel</button>
+      <button class="btn btn-gold" style="flex:1;" onclick="saveApptFromModal()">Save</button>
+    </div>
+    <div class="sync-note" id="modal-sync-note"></div>
+  </div>
+</div>
+
+<div id="toast-el" style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--gold);
+  color:var(--navy);padding:10px 18px;border-radius:6px;font-family:'Barlow Condensed',sans-serif;font-weight:700;
+  font-size:13px;opacity:0;pointer-events:none;transition:opacity .3s;z-index:400;"></div>
+
+<script>
+const session = AUTH.getSession();
+const agentId = session.agentId;
+
+// ── SAME DATA MODEL AS tracker.html'S APPOINTMENTS ──────────────
+// This page reads and writes the exact same store, so anything
+// scheduled here shows up in the Activity Log's Appointments view
+// and vice versa — one shared calendar, not a second disconnected one.
+const APPT_KEY        = `dba_appts_${agentId}`;
+const APPT_BOARD_KEY  = 'dba_appt_board_id';
+const APPT_BOARD_ID   = localStorage.getItem(APPT_BOARD_KEY) || '18411252612';
+
+let appointments = [];
+try { appointments = JSON.parse(localStorage.getItem(APPT_KEY) || '[]'); } catch(e) {}
+function saveAppts() {
+  try { localStorage.setItem(APPT_KEY, JSON.stringify(appointments)); } catch(e) {}
+}
+
+const TYPE_COLOR = { RI:'#C9A84C', FT:'#2ECC71', FS:'#3498DB', Client:'#9B59B6', 'BOM Guest':'#E67E22', Other:'#95a5a6' };
+
+function toast(msg) {
+  const t = document.getElementById('toast-el');
+  t.textContent = msg;
+  t.style.opacity = '1';
+  setTimeout(() => t.style.opacity = '0', 2200);
+}
+
+// ── CALENDAR STATE ────────────────────────────────────────────
+let viewYear, viewMonth; // 0-indexed month
+let selectedDate = new Date().toISOString().slice(0,10);
+(function initView(){
+  const now = new Date();
+  viewYear = now.getFullYear();
+  viewMonth = now.getMonth();
+})();
+
+function fmtDate(y,m,d){ return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; }
+
+// Daily activity check — reuses tracker.html's own per-day cache
+// (dba_tracker_<agentId>_<date>) so a green dot means real logged
+// activity that day, not a second data source to keep in sync.
+function hasLoggedActivity(dateStr) {
+  try {
+    const raw = localStorage.getItem(`dba_tracker_${agentId}_${dateStr}`);
+    if (!raw) return false;
+    const d = JSON.parse(raw);
+    const c = d.counts || {};
+    return Object.values(c).some(v => (v||0) > 0);
+  } catch(e) { return false; }
+}
+
+function renderDow() {
+  const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  document.getElementById('cal-dow-row').innerHTML = days.map(d => `<div class="cal-dow">${d}</div>`).join('');
+}
+
+function renderCalendar() {
+  const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('cal-month-label').textContent = `${monthNames[viewMonth]} ${viewYear}`;
+
+  const firstOfMonth = new Date(viewYear, viewMonth, 1);
+  const startOffset = firstOfMonth.getDay(); // 0=Sun
+  const daysInMonth = new Date(viewYear, viewMonth+1, 0).getDate();
+  const daysInPrevMonth = new Date(viewYear, viewMonth, 0).getDate();
+  const todayStr = new Date().toISOString().slice(0,10);
+
+  const cells = [];
+  // Leading days from previous month
+  for (let i = startOffset - 1; i >= 0; i--) {
+    cells.push({ day: daysInPrevMonth - i, otherMonth: true, dateStr: null });
+  }
+  // This month
+  for (let d = 1; d <= daysInMonth; d++) {
+    cells.push({ day: d, otherMonth: false, dateStr: fmtDate(viewYear, viewMonth, d) });
+  }
+  // Trailing days to complete the grid (multiple of 7)
+  let next = 1;
+  while (cells.length % 7 !== 0) { cells.push({ day: next++, otherMonth: true, dateStr: null }); }
+
+  document.getElementById('cal-grid').innerHTML = cells.map(c => {
+    if (!c.dateStr) {
+      return `<div class="cal-day other-month"><div class="cal-day-num">${c.day}</div></div>`;
+    }
+    const dayAppts = appointments.filter(a => a.date === c.dateStr);
+    const isToday = c.dateStr === todayStr;
+    const isSelected = c.dateStr === selectedDate;
+    const activity = hasLoggedActivity(c.dateStr);
+    const chips = dayAppts.slice(0,2).map(a =>
+      `<div class="cal-chip" style="background:${TYPE_COLOR[a.type]||'#95a5a6'}">${a.name}</div>`
+    ).join('');
+    const more = dayAppts.length > 2 ? `<div class="cal-more">+${dayAppts.length-2} more</div>` : '';
+    return `<div class="cal-day ${isToday?'today':''} ${isSelected?'selected':''}" onclick="selectDay('${c.dateStr}')">
+      <div class="cal-day-num">${c.day}${activity ? '<span class="activity-dot" title="Activity logged"></span>' : ''}</div>
+      ${chips}${more}
+    </div>`;
+  }).join('');
+
+  renderDayDetail();
+  renderMonthStats();
+  renderTodayList();
+  renderLegend();
+}
+
+function selectDay(dateStr) {
+  selectedDate = dateStr;
+  renderCalendar();
+}
+
+function renderDayDetail() {
+  const d = new Date(selectedDate + 'T00:00:00');
+  document.getElementById('day-detail-title').textContent = d.toLocaleDateString('en-US',{weekday:'long', month:'long', day:'numeric'});
+  const dayAppts = appointments.filter(a => a.date === selectedDate).sort((a,b) => (a.time||'').localeCompare(b.time||''));
+  document.getElementById('day-detail-sub').textContent = dayAppts.length
+    ? `${dayAppts.length} appointment${dayAppts.length===1?'':'s'}${hasLoggedActivity(selectedDate) ? ' · activity logged this day' : ''}`
+    : (hasLoggedActivity(selectedDate) ? 'No appointments · activity logged this day' : 'Nothing scheduled yet');
+
+  document.getElementById('day-detail-list').innerHTML = dayAppts.map(a => `
+    <div class="appt-row" onclick="openApptModal('${a.id}')">
+      <span class="appt-type-badge" style="background:${TYPE_COLOR[a.type]||'#95a5a6'}">${a.type}</span>
+      <span class="appt-row-name">${a.name}</span>
+      <span class="appt-row-time">${a.time || ''}</span>
+      <span class="appt-row-status">${a.status}</span>
+    </div>`).join('');
+}
+
+function renderMonthStats() {
+  const inMonth = appointments.filter(a => a.date && a.date.startsWith(`${viewYear}-${String(viewMonth+1).padStart(2,'0')}`));
+  document.getElementById('stat-total').textContent = inMonth.length;
+  document.getElementById('stat-showed').textContent = inMonth.filter(a=>a.status==='Showed').length;
+  document.getElementById('stat-noshow').textContent = inMonth.filter(a=>a.status==='No-Show').length;
+  document.getElementById('stat-recruited').textContent = inMonth.filter(a=>a.status==='Recruited').length;
+
+  const daysInMonth = new Date(viewYear, viewMonth+1, 0).getDate();
+  let activeDays = 0;
+  for (let d=1; d<=daysInMonth; d++) { if (hasLoggedActivity(fmtDate(viewYear, viewMonth, d))) activeDays++; }
+  document.getElementById('stat-activity-days').textContent = activeDays;
+}
+
+function renderTodayList() {
+  const todayStr = new Date().toISOString().slice(0,10);
+  const list = appointments.filter(a => a.date === todayStr).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
+  const el = document.getElementById('today-list');
+  if (!list.length) { el.innerHTML = 'Nothing scheduled for today.'; return; }
+  el.innerHTML = list.map(a => `
+    <div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer;" onclick="selectDay('${a.date}');openApptModal('${a.id}')">
+      <span class="appt-type-badge" style="background:${TYPE_COLOR[a.type]||'#95a5a6'};font-size:8px;">${a.type}</span>
+      <span style="flex:1;color:var(--cream);">${a.name}</span>
+      <span style="font-family:'DM Mono',monospace;color:var(--slate);">${a.time||''}</span>
+    </div>`).join('');
+}
+
+function renderLegend() {
+  document.getElementById('legend').innerHTML = Object.entries(TYPE_COLOR).map(([type,color]) =>
+    `<div style="display:flex;align-items:center;gap:6px;"><span style="width:10px;height:10px;border-radius:2px;background:${color};display:inline-block;"></span>${type}</div>`
+  ).join('') + `<div style="display:flex;align-items:center;gap:6px;margin-top:4px;"><span class="activity-dot"></span>Activity logged that day</div>`;
+}
+
+function shiftMonth(delta) {
+  viewMonth += delta;
+  if (viewMonth < 0) { viewMonth = 11; viewYear--; }
+  if (viewMonth > 11) { viewMonth = 0; viewYear++; }
+  renderCalendar();
+}
+function goToday() {
+  const now = new Date();
+  viewYear = now.getFullYear();
+  viewMonth = now.getMonth();
+  selectedDate = now.toISOString().slice(0,10);
+  renderCalendar();
+}
+
+// ── MODAL ─────────────────────────────────────────────────────
+function openApptModal(editId) {
+  document.getElementById('appt-modal').classList.add('open');
+  document.getElementById('modal-sync-note').textContent = '';
+  const deleteBtn = document.getElementById('delete-btn');
+
+  if (editId) {
+    const appt = appointments.find(a => a.id === editId);
+    if (!appt) return;
+    document.getElementById('modal-title').textContent = '✏️ Edit Appointment';
+    document.getElementById('appt-edit-id').value = editId;
+    document.getElementById('appt-name').value   = appt.name || '';
+    document.getElementById('appt-date').value   = appt.date || selectedDate;
+    document.getElementById('appt-time').value   = appt.time || '';
+    document.getElementById('appt-type').value   = appt.type || 'RI';
+    document.getElementById('appt-status').value = appt.status || 'Scheduled';
+    document.getElementById('appt-phone').value  = appt.phone || '';
+    document.getElementById('appt-notes').value  = appt.notes || '';
+    deleteBtn.style.display = 'block';
+  } else {
+    document.getElementById('modal-title').textContent = '📅 Add Appointment';
+    document.getElementById('appt-edit-id').value = '';
+    document.getElementById('appt-name').value   = '';
+    document.getElementById('appt-date').value   = selectedDate;
+    document.getElementById('appt-time').value   = '';
+    document.getElementById('appt-type').value   = 'RI';
+    document.getElementById('appt-status').value = 'Scheduled';
+    document.getElementById('appt-phone').value  = '';
+    document.getElementById('appt-notes').value  = '';
+    deleteBtn.style.display = 'none';
+  }
+}
+function closeApptModal() {
+  document.getElementById('appt-modal').classList.remove('open');
+}
+
+function saveApptFromModal() {
+  const name = document.getElementById('appt-name').value.trim();
+  if (!name) { toast('⚠ Name is required'); return; }
+
+  const editId = document.getElementById('appt-edit-id').value;
+  const appt = {
+    id:     editId || `appt_${Date.now()}`,
+    name,
+    date:   document.getElementById('appt-date').value,
+    time:   document.getElementById('appt-time').value,
+    type:   document.getElementById('appt-type').value,
+    status: document.getElementById('appt-status').value,
+    phone:  document.getElementById('appt-phone').value.trim(),
+    notes:  document.getElementById('appt-notes').value.trim(),
+    agentId, agentName: session?.name || '',
+    savedAt: new Date().toISOString(),
+  };
+  if (editId) {
+    const prior = appointments.find(a => a.id === editId);
+    if (prior?.mondayId) appt.mondayId = prior.mondayId;
+    const idx = appointments.findIndex(a => a.id === editId);
+    if (idx >= 0) appointments[idx] = appt; else appointments.push(appt);
+  } else {
+    appointments.push(appt);
+  }
+  saveAppts();
+  selectedDate = appt.date || selectedDate;
+  closeApptModal();
+  renderCalendar();
+  toast(`✓ ${name} saved`);
+
+  if (typeof AUTH.getMondayKey === 'function' && AUTH.getMondayKey()) syncSingleApptToMonday(appt);
+}
+
+function deleteApptFromModal() {
+  const editId = document.getElementById('appt-edit-id').value;
+  if (!editId) return;
+  if (!confirm('Delete this appointment?')) return;
+  appointments = appointments.filter(a => a.id !== editId);
+  saveAppts();
+  closeApptModal();
+  renderCalendar();
+  toast('✓ Appointment deleted');
+}
+
+// ── MONDAY SYNC — same board + column-discovery logic as tracker.html,
+// so an appointment saved here is indistinguishable from one saved there.
+async function syncSingleApptToMonday(appt) {
+  try {
+    const boardId = APPT_BOARD_ID;
+    const colRes = await mondayQuery(`{boards(ids:${boardId}){columns{id title type}}}`);
+    const cols = colRes?.data?.boards?.[0]?.columns || [];
+    const col = (...kws) => cols.find(c => kws.some(k=>(c.title||'').toLowerCase().includes(k)))?.id || null;
+
+    const cv = {};
+    const nameCol   = col('name','contact','prospect','client');
+    const dateCol   = col('date','appt date','appointment date','scheduled');
+    const statusCol = col('status');
+    const typeCol   = col('type','appt type','category');
+    const phoneCol  = col('phone','mobile');
+    const notesCol  = col('notes','note','comment');
+    const agentCol  = col('agent','agent name','advisor');
+
+    if (nameCol)   cv[nameCol]   = appt.name || '';
+    if (dateCol)   cv[dateCol]   = { date: appt.date || '' };
+    if (statusCol) cv[statusCol] = { label: appt.status };
+    if (typeCol)   cv[typeCol]   = { label: appt.type };
+    if (phoneCol)  cv[phoneCol]  = { phone: (appt.phone||'').replace(/\D/g,''), countryShortName:'US' };
+    if (notesCol)  cv[notesCol]  = appt.notes || '';
+    if (agentCol)  cv[agentCol]  = appt.agentName || '';
+
+    const cvStr = JSON.stringify(JSON.stringify(cv));
+    const itemName = `${appt.name} — ${appt.type} — ${appt.date||'TBD'}`.replace(/"/g,"'");
+
+    if (appt.mondayId) {
+      await mondayQuery(`mutation { change_multiple_column_values(board_id:${boardId}, item_id:${appt.mondayId}, column_values: ${cvStr}) { id } }`);
+    } else {
+      const res = await mondayQuery(`mutation { create_item(board_id:${boardId}, item_name:"${itemName}", column_values: ${cvStr}, create_labels_if_missing:true) { id } }`);
+      const newId = res?.data?.create_item?.id;
+      if (newId) {
+        const idx = appointments.findIndex(a => a.id === appt.id);
+        if (idx >= 0) { appointments[idx].mondayId = newId; saveAppts(); }
+      }
+    }
+    document.getElementById('modal-sync-note').textContent = '✓ Synced to Monday.com';
+  } catch(e) {
+    console.warn('Calendar: Monday sync failed:', e.message);
+  }
+}
+
+// ── INIT ──────────────────────────────────────────────────────
+renderDow();
+renderCalendar();
+document.getElementById('appt-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('appt-modal')) closeApptModal();
+});
+</script>
+</body>
+</html>
