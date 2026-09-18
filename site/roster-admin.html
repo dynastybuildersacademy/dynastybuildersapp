@@ -136,7 +136,10 @@ AUTH.require('roster-admin.html');
   <!-- ── ROSTER TAB ── -->
   <div class="tab-pane active" id="pane-roster">
     <div class="card">
-      <div class="card-title">Agent Roster <span id="roster-count" style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;margin-left:8px;"></span></div>
+      <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;">
+        <span>Agent Roster <span id="roster-count" style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;margin-left:8px;"></span></span>
+        <button class="btn btn-ghost" style="padding:5px 10px;font-size:11px;" onclick="clearLocalOverrides()" title="Clears cached local edits on this browser and reloads fresh from source">🗑 Clear Local Overrides</button>
+      </div>
       <!-- PIN LOOKUP TOOL -->
       <div style="background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.2);border-radius:10px;
         padding:14px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
@@ -935,6 +938,16 @@ async function syncFromMonday() {
 }
 
 // ── PERSIST ───────────────────────────────────────────────────
+// Wipes locally cached edits on this browser (dba_agent_overrides) and
+// reloads straight from the current source data — use this whenever the
+// roster shows stale info (e.g. after a role/rank correction was made in
+// the source file but this browser still has an old cached override).
+function clearLocalOverrides() {
+  if (!confirm('This clears all locally cached roster edits on this browser and reloads fresh from source. Continue?')) return;
+  localStorage.removeItem('dba_agent_overrides');
+  location.reload();
+}
+
 function saveToLocalStorage() {
   try {
     // Merge rather than replace — agentList can be a scoped subset (an MD or
