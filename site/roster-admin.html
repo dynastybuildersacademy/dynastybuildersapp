@@ -130,6 +130,7 @@ AUTH.require('roster-admin.html');
     <button class="tab" onclick="switchTab('upload',this)">📤 Bulk Upload</button>
     <button class="tab" onclick="switchTab('boards',this)">📋 Board Assignments</button>
     <button class="tab" onclick="switchTab('mdteams',this)">👔 MD Team Assignment</button>
+    <button class="tab" id="tab-btn-adminaccess" onclick="switchTab('adminaccess',this)" style="display:none;">🔐 Admin Access</button>
   </div>
 
   <!-- ── ROSTER TAB ── -->
@@ -285,13 +286,43 @@ AUTH.require('roster-admin.html');
       </div>
     </div>
   </div>
+
+  <!-- ── ADMIN ACCESS TAB (Super User only) ── -->
+  <div class="tab-pane" id="pane-adminaccess">
+    <div class="card">
+      <div class="card-title">🔐 Assign Admin Status &amp; Privileges</div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.7;">
+        Admin status is separate from an agent's PHP rank — it only controls internal tool access, and never changes their real title.
+        <strong style="color:var(--text);">Admin</strong> gets the BMP Platform but not the roster; can also be assigned other baseshops to help manage.
+        <strong style="color:var(--text);">Super Admin</strong> gets every tool except the API keys, and is scoped to their own downline only.
+        Only the Super User account can make changes on this tab.
+      </p>
+      <div class="search-bar">
+        <span class="si">🔍</span>
+        <input type="text" id="adminaccess-search" placeholder="Search agents…" oninput="renderAdminAccessTable()">
+      </div>
+      <div class="agent-table-wrap">
+        <table class="agent-table">
+          <thead><tr><th>Agent</th><th>PHP Rank</th><th>Admin Tier</th><th>Assigned Baseshops (Admin only)</th><th>Save</th></tr></thead>
+          <tbody id="adminaccess-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
 // ── STATE ─────────────────────────────────────────────────────
-let agentList = typeof AGENTS !== 'undefined' ? [...AGENTS] : [];
+// Roster Admin is scoped to what the logged-in agent can manage — see
+// getManageableAgents() in auth.js. Super User sees everyone; Super Admin
+// (Marketing Director+) sees only their own downline; Admin sees their own
+// downline plus any baseshops explicitly assigned to them.
+const _viewerAgent = typeof AGENTS !== 'undefined' ? getAgentById(AUTH.getSession()?.agentId) : null;
+let agentList = (_viewerAgent && typeof getManageableAgents === 'function')
+  ? getManageableAgents(_viewerAgent)
+  : (typeof AGENTS !== 'undefined' ? [...AGENTS] : []);
 
 // ── FAST START SCHOOL STATUS ─────────────────────────────────
 // Reads the same store the Promotions page's CSV/paste importer writes
@@ -354,6 +385,7 @@ function switchTab(name, el) {
   if (name === 'roster') renderRoster();
   if (name === 'boards') renderBoardTable();
   if (name === 'mdteams') renderMDTeamTable();
+  if (name === 'adminaccess') renderAdminAccessTable();
 }
 
 // ── ROLE DISPLAY ──────────────────────────────────────────────
@@ -535,6 +567,90 @@ function saveMDTeam(agentId) {
     toast(val ? `✓ MD team set for ${agent.name}` : `✓ MD team reset to Auto for ${agent.name}`);
     saveToLocalStorage();
   }
+}
+
+// ── ADMIN ACCESS (Super User only) ──────────────────────────────
+function renderAdminAccessTable() {
+  const q = (document.getElementById('adminaccess-search')?.value||'').toLowerCase();
+  // This tab always works from the full roster, never the viewer-scoped
+  // agentList — assigning access is itself a Super-User-only action, and
+  // scoping this list would make it impossible to grant someone access to
+  // a baseshop they can't already see.
+  const all = typeof AGENTS !== 'undefined' ? AGENTS : agentList;
+  const filtered = all.filter(a => !q || a.name.toLowerCase().includes(q) || a.id.includes(q));
+  const mds = getAllMDs(); // agents eligible to "own" a baseshop, for the assignment picklist
+
+  document.getElementById('adminaccess-tbody').innerHTML = filtered.map(a => {
+    const tierOptions = ['', 'admin', 'super_admin'].map(t =>
+      `<option value="${t}" ${((a.adminTier||'')===t)?'selected':''}>${t===''?'— Auto (from rank) —':(t==='admin'?'Admin':'Super Admin')}</option>`
+    ).join('');
+    const isAdminTier = a.adminTier === 'admin';
+    const baseshopOptions = mds.filter(m=>m.id!==a.id).map(m =>
+      `<option value="${m.id}" ${(a.assignedBaseshops||[]).includes(m.id)?'selected':''}>${m.name}</option>`
+    ).join('');
+    return `
+    <tr>
+      <td><strong>${a.name}</strong></td>
+      <td>${ROLES[a.role]?.label || a.role}</td>
+      <td>
+        <select id="tier-input-${a.id}" onchange="toggleBaseshopVisibility('${a.id}')"
+          style="width:150px;background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:5px 9px;color:var(--text);font-family:'DM Mono',monospace;font-size:11px;outline:none;">
+          ${tierOptions}
+        </select>
+      </td>
+      <td>
+        <select id="baseshops-input-${a.id}" multiple size="3" style="width:220px;display:${isAdminTier?'block':'none'};background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:5px 9px;color:var(--text);font-family:'DM Mono',monospace;font-size:11px;outline:none;">
+          ${baseshopOptions}
+        </select>
+        <span id="baseshops-na-${a.id}" style="display:${isAdminTier?'none':'inline'};font-size:11px;color:var(--muted);">— only applies to Admin tier —</span>
+      </td>
+      <td>
+        <button class="btn btn-ghost" style="padding:5px 10px;font-size:11px;" onclick="saveAdminAccess('${a.id}')">Save</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function toggleBaseshopVisibility(agentId) {
+  const tier = document.getElementById('tier-input-'+agentId).value;
+  document.getElementById('baseshops-input-'+agentId).style.display = tier === 'admin' ? 'block' : 'none';
+  document.getElementById('baseshops-na-'+agentId).style.display = tier === 'admin' ? 'none' : 'inline';
+}
+
+function saveAdminAccess(agentId) {
+  if (typeof AUTH === 'undefined' || getAdminTier(AUTH.getSession()) !== 'super_user') {
+    toast('⚠ Only the Super User account can assign admin access');
+    return;
+  }
+  const tierSelect = document.getElementById('tier-input-'+agentId);
+  const baseshopsSelect = document.getElementById('baseshops-input-'+agentId);
+  const tier = tierSelect.value || null;
+
+  // Work against the full roster here too, for the same reason as above.
+  const all = typeof AGENTS !== 'undefined' ? AGENTS : agentList;
+  const agent = all.find(a => a.id === agentId);
+  if (!agent) return;
+
+  if (tier) agent.adminTier = tier; else delete agent.adminTier;
+  if (tier === 'admin') {
+    agent.assignedBaseshops = [...baseshopsSelect.selectedOptions].map(o => o.value);
+  } else {
+    delete agent.assignedBaseshops;
+  }
+
+  tierSelect.style.borderColor = 'var(--green)';
+  setTimeout(() => tierSelect.style.borderColor = '', 1500);
+  toast(tier ? `✓ ${agent.name} set to ${tier==='admin'?'Admin':'Super Admin'}` : `✓ Admin status removed for ${agent.name}`);
+
+  // Persist directly against the full override store — bypasses the
+  // viewer-scoped agentList entirely, which is correct: this tab is only
+  // ever shown to the Super User, whose scope is already everyone.
+  try {
+    const existing = JSON.parse(localStorage.getItem('dba_agent_overrides') || '[]');
+    const merged = new Map(existing.map(a => [a.id, a]));
+    merged.set(agent.id, agent);
+    localStorage.setItem('dba_agent_overrides', JSON.stringify([...merged.values()]));
+  } catch(e) {}
 }
 
 // ── ADD AGENT ─────────────────────────────────────────────────
@@ -821,7 +937,14 @@ async function syncFromMonday() {
 // ── PERSIST ───────────────────────────────────────────────────
 function saveToLocalStorage() {
   try {
-    localStorage.setItem('dba_agent_overrides', JSON.stringify(agentList));
+    // Merge rather than replace — agentList can be a scoped subset (an MD or
+    // Admin only sees their own downline/assigned baseshops), so writing it
+    // wholesale would silently erase stored overrides for every agent
+    // outside that viewer's current scope.
+    const existing = JSON.parse(localStorage.getItem('dba_agent_overrides') || '[]');
+    const merged = new Map(existing.map(a => [a.id, a]));
+    agentList.forEach(a => merged.set(a.id, a));
+    localStorage.setItem('dba_agent_overrides', JSON.stringify([...merged.values()]));
   } catch(e) {}
 }
 
@@ -857,16 +980,28 @@ document.addEventListener('DOMContentLoaded', () => {
   try {
     const overrides = JSON.parse(localStorage.getItem('dba_agent_overrides')||'[]');
     overrides.forEach(ov => {
-      const existing = agentList.find(a => a.id === ov.id);
-      if (existing) {
-        Object.assign(existing, ov);
-      } else {
-        agentList.push(ov);
-        if (typeof AGENTS !== 'undefined') AGENTS.push(ov);
+      // Always update the global AGENTS record if it exists, or add a
+      // brand-new agent there, regardless of the current viewer's scope.
+      let globalAgent = typeof AGENTS !== 'undefined' ? AGENTS.find(a => a.id === ov.id) : null;
+      if (globalAgent) {
+        Object.assign(globalAgent, ov);
+      } else if (typeof AGENTS !== 'undefined') {
+        AGENTS.push(ov);
+        globalAgent = ov;
       }
+      // Only reflect it in this viewer's own (possibly scoped) agentList
+      // if it's already visible to them — never leak an out-of-scope
+      // agent in just because an override exists for them.
+      const existing = agentList.find(a => a.id === ov.id);
+      if (existing) Object.assign(existing, ov);
     });
   } catch(e) {}
   renderRoster();
+  // Admin Access tab is only ever visible to the Super User account.
+  if (getAdminTier(AUTH.getSession()) === 'super_user') {
+    const tabBtn = document.getElementById('tab-btn-adminaccess');
+    if (tabBtn) tabBtn.style.display = 'inline-block';
+  }
 });
 
 // ── SYNC AGENT TO MONDAY ROSTER ──────────────────────────────────

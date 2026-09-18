@@ -66,9 +66,11 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);m
 <div class="wrap">
   <div class="card">
     <div class="card-title">Select an Agent From Your Downline</div>
+    <input type="text" id="agent-search" placeholder="🔍 Search by name…" oninput="filterAgentPicker(this.value)"
+      style="width:100%;background:#132240;border:1px solid rgba(255,255,255,.12);color:var(--cream);border-radius:6px;padding:9px 11px;font-size:13px;margin-bottom:8px;">
     <select id="agent-picker" onchange="selectAgent(this.value)" style="width:100%;background:#132240;border:1px solid rgba(255,255,255,.12);color:var(--cream);border-radius:6px;padding:10px 12px;font-size:13px;">
-      <option value="">— Choose an agent —</option>
     </select>
+    <div id="agent-search-count" style="font-size:11px;color:var(--slate);margin-top:6px;"></div>
   </div>
 
   <div id="agent-panel" style="display:none;">
@@ -175,20 +177,34 @@ let currentAgent = null;
 
 // ── INIT: populate downline picker ──────────────────────────────
 (function init() {
-  downline = typeof getFullDownline === 'function' ? getFullDownline(session.agentId).slice(1) : [];
-  const picker = document.getElementById('agent-picker');
-  downline
-    .sort((a,b) => a.name.localeCompare(b.name))
-    .forEach(a => {
-      const opt = document.createElement('option');
-      opt.value = a.id;
-      opt.textContent = `${a.name} — ${ROLES[a.role]?.label || a.role}`;
-      picker.appendChild(opt);
-    });
+  const viewerAgent = typeof getAgentById === 'function' ? getAgentById(session.agentId) : null;
+  downline = (viewerAgent && typeof getManageableAgents === 'function')
+    ? getManageableAgents(viewerAgent).filter(a => a.id !== session.agentId)
+    : (typeof getFullDownline === 'function' ? getFullDownline(session.agentId).slice(1) : []);
+  downline.sort((a,b) => a.name.localeCompare(b.name));
+  renderAgentPicker(downline);
   if (!downline.length) {
     document.querySelector('.wrap').innerHTML = '<div class="card"><div class="empty-state">No agents in your downline yet. Mentor Mode only shows agents beneath you in the org chart.</div></div>';
   }
 })();
+
+function renderAgentPicker(list) {
+  const picker = document.getElementById('agent-picker');
+  const keepSelected = picker.value;
+  picker.innerHTML = '<option value="">— Choose an agent —</option>' + list.map(a =>
+    `<option value="${a.id}">${a.name} — ${ROLES[a.role]?.label || a.role}</option>`
+  ).join('');
+  // Keep the current selection active if it's still in the filtered list
+  if (list.some(a => a.id === keepSelected)) picker.value = keepSelected;
+}
+
+function filterAgentPicker(query) {
+  const q = query.trim().toLowerCase();
+  const filtered = q ? downline.filter(a => a.name.toLowerCase().includes(q)) : downline;
+  renderAgentPicker(filtered);
+  const countEl = document.getElementById('agent-search-count');
+  countEl.textContent = q ? `${filtered.length} match${filtered.length===1?'':'es'} for "${query.trim()}"` : '';
+}
 
 function initials(name) { return name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase(); }
 

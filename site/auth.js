@@ -2685,6 +2685,46 @@ function getEffectiveLevel(agent) {
   const tier = getAdminTier(agent);
   return tier ? Math.max(phpLevel, ADMIN_TIER_ACCESS_LEVEL[tier] || 0) : phpLevel;
 }
+
+// ── SCOPED ROSTER ACCESS ─────────────────────────────────────────
+// Who a given agent can VIEW OR EDIT in Roster Admin / Team Progress /
+// Mentor Mode — this is deliberately separate from getEffectiveLevel,
+// which only controls whether a page opens at all.
+//   super_user   — every agent in the org.
+//   super_admin  — (Marketing Director and above) their own recursive
+//                   downline only. Being a high rank does NOT unlock the
+//                   whole roster — only your own team.
+//   admin        — their own recursive downline (they're a normal agent
+//                   on one baseshop) PLUS the full downline of any MD
+//                   listed in their agent.assignedBaseshops (an array of
+//                   agent IDs), for admins who help run more than one team.
+//   everyone else — just themselves.
+function getManageableAgents(viewerAgent) {
+  if (!viewerAgent) return [];
+  const tier = getAdminTier(viewerAgent);
+
+  if (tier === 'super_user') return AGENTS.slice();
+
+  const own = typeof getFullDownline === 'function' ? getFullDownline(viewerAgent.id) : [viewerAgent];
+
+  if (tier === 'super_admin') return own;
+
+  if (tier === 'admin') {
+    const seen = new Map(own.map(a => [a.id, a]));
+    (viewerAgent.assignedBaseshops || []).forEach(mdId => {
+      const md = getAgentById(mdId);
+      if (!md) return;
+      getFullDownline(mdId).forEach(a => seen.set(a.id, a));
+    });
+    return [...seen.values()];
+  }
+
+  return [viewerAgent];
+}
+function canManageAgent(viewerAgent, targetAgentId) {
+  return getManageableAgents(viewerAgent).some(a => a.id === targetAgentId);
+}
+
 function getDirectReports(id)  { return AGENTS.filter(a => a.uplineId === id); }
 
 // Returns the Marketing Director "team" an agent belongs to for reporting/

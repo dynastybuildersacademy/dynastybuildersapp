@@ -691,12 +691,13 @@ document.getElementById('flow-container').innerHTML = PHP_SYSTEM_FLOW.map((step,
 
 // ── TEAM PROGRESS ─────────────────────────────────────────────
 function renderTeamProgress() {
-  // Team Progress only ever shows your own downline — never the whole
-  // org, regardless of level. Uses the full recursive downline (not just
-  // direct reports) so an MD sees their entire team, not just Directors.
-  const visible = typeof getFullDownline === 'function'
-    ? getFullDownline(session.agentId).filter(Boolean)
-    : [myAgent, ...getDirectReports(session.agentId)].filter(Boolean);
+  // Team Progress shows exactly what this viewer can manage — see
+  // getManageableAgents() in auth.js: Super User sees everyone, Super Admin
+  // (MD+) sees their own downline only, Admin sees their own downline plus
+  // any baseshops explicitly assigned to them.
+  const visible = typeof getManageableAgents === 'function'
+    ? getManageableAgents(myAgent).filter(a => a.id !== session.agentId)
+    : (typeof getFullDownline === 'function' ? getFullDownline(session.agentId).filter(Boolean) : []);
   const teamHtml = visible.map(ag => {
     const req = PHP_PROMO_REQS[ag.role];
     if (!req || !req.personal) return '';
