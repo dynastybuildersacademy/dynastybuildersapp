@@ -144,17 +144,25 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);m
   <div class="page-sub">Agents actively working toward their next level. Import stats below, or connect Monday.com for live tracking.</div>
 
   <div class="my-card" style="margin-bottom:20px;">
-    <div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--gold);margin-bottom:4px;">📥 Import Data — Dashboard, Clients & Agents</div>
-    <div style="font-size:12px;color:var(--slate);margin-bottom:14px;line-height:1.6;">
-      One row per agent updates all three views at once from the same numbers — there's no separate importer for each:
-      <br>• <strong style="color:var(--cream);">Agent</strong> — recruits, points, Fast Start steps, licensed count on that agent's own card below
-      <br>• <strong style="color:var(--cream);">Clients</strong> — <code style="background:rgba(201,168,76,.1);padding:1px 5px;border-radius:3px;">subPts</code> / <code style="background:rgba(201,168,76,.1);padding:1px 5px;border-radius:3px;">paidPts</code> are client-production points (submitted and paid), feeding the June MD Promo requirements
-      <br>• <strong style="color:var(--cream);">Dashboard</strong> — the June MD Promo campaign card totals are computed live from this same imported data
-      <br><br>
-      Format: <code style="background:rgba(201,168,76,.1);padding:1px 5px;border-radius:3px;">agentId, recruits, pts, apps, subPts, paidPts, licensed, fastStartDone</code> —
+    <div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--gold);margin-bottom:4px;">📊 Dashboard Settings</div>
+    <div style="font-size:12px;color:var(--slate);margin-bottom:10px;line-height:1.6;">
+      Configures the June MD Promo campaign card above — one <code style="background:rgba(201,168,76,.1);padding:1px 5px;border-radius:3px;">key: value</code> per line. Any line you leave out keeps its current value.
+    </div>
+    <textarea id="import-dashboard" placeholder="deadline: 2026-06-30&#10;paidPtsDeadline: 2026-07-15&#10;targetRecruits: 25&#10;targetApps: 25&#10;targetSubPts: 25000&#10;targetPaidPts: 25000" style="width:100%;min-height:70px;background:var(--navy);border:1px solid var(--border);border-radius:4px;padding:10px 12px;color:var(--cream);font-family:'DM Mono',monospace;font-size:12px;resize:vertical;margin-bottom:10px;"></textarea>
+    <div style="display:flex;gap:10px;align-items:center;">
+      <button onclick="importDashboardSettings()" style="background:var(--gold);color:var(--navy);border:none;border-radius:4px;padding:9px 16px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;cursor:pointer;">Save Dashboard Settings</button>
+      <span id="dashboard-import-status" style="font-size:12px;color:var(--success);"></span>
+    </div>
+  </div>
+
+  <div class="my-card" style="margin-bottom:20px;">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--gold);margin-bottom:4px;">👤 Agent Info</div>
+    <div style="font-size:12px;color:var(--slate);margin-bottom:10px;line-height:1.6;">
+      One row per agent: <code style="background:rgba(201,168,76,.1);padding:1px 5px;border-radius:3px;">agentId, recruits, pts, apps, subPts, paidPts, licensed, fastStartDone</code> —
       agentId is the login ID from Roster Admin (e.g. <code style="background:rgba(201,168,76,.1);padding:1px 5px;border-radius:3px;">obi001</code>). Leave a column blank if you don't have that number yet.
-      <strong style="color:var(--cream);">fastStartDone</strong> lists completed Fast Start School steps separated by <code style="background:rgba(201,168,76,.1);padding:1px 5px;border-radius:3px;">;</code> (not commas) using these codes:
+      <strong style="color:var(--cream);">fastStartDone</strong> lists completed Fast Start School steps separated by <code style="background:rgba(201,168,76,.1);padding:1px 5px;border-radius:3px;">;</code> (not commas):
       <code style="background:rgba(201,168,76,.1);padding:1px 5px;border-radius:3px;">spouse, plan, top25, ft3, finance, life, event, sprint</code>. First row can be a header — it's detected automatically.
+      <br><span style="color:var(--slate);">Note: subPts/paidPts entered here are overwritten by Client Info totals below, once a client record exists for that agent.</span>
     </div>
     <textarea id="import-text" placeholder="agentId, recruits, pts, apps, subPts, paidPts, licensed, fastStartDone&#10;prochi1109, 4, 12000, 3, 12000, 8000, 1, spouse;top25;life" style="width:100%;min-height:90px;background:var(--navy);border:1px solid var(--border);border-radius:4px;padding:10px 12px;color:var(--cream);font-family:'DM Mono',monospace;font-size:12px;resize:vertical;margin-bottom:10px;"></textarea>
     <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
@@ -165,6 +173,23 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);m
       </label>
       <button onclick="downloadPromoTemplate()" style="background:none;border:1px solid var(--border);border-radius:4px;padding:9px 16px;font-family:'Barlow Condensed',sans-serif;font-size:12px;color:var(--slate);cursor:pointer;">↓ Download CSV Template</button>
       <span id="import-status" style="font-size:12px;color:var(--success);"></span>
+    </div>
+  </div>
+
+  <div class="my-card" style="margin-bottom:20px;">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--gold);margin-bottom:4px;">💰 Client Info</div>
+    <div style="font-size:12px;color:var(--slate);margin-bottom:10px;line-height:1.6;">
+      One row per client policy: <code style="background:rgba(201,168,76,.1);padding:1px 5px;border-radius:3px;">agentId, clientName, submittedPts, paidPts, status</code> — status is optional (e.g. Submitted, Paid, Pending).
+      Each agent's subPts/paidPts totals on their card are the sum of their client rows here, so you get both the roll-up number and an auditable list of what it's made of.
+    </div>
+    <textarea id="import-clients" placeholder="agentId, clientName, submittedPts, paidPts, status&#10;prochi1109, Jane Doe, 5000, 5000, Paid&#10;prochi1109, Sam Lee, 3000, 0, Submitted" style="width:100%;min-height:80px;background:var(--navy);border:1px solid var(--border);border-radius:4px;padding:10px 12px;color:var(--cream);font-family:'DM Mono',monospace;font-size:12px;resize:vertical;margin-bottom:10px;"></textarea>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+      <button onclick="importClientText()" style="background:var(--gold);color:var(--navy);border:none;border-radius:4px;padding:9px 16px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;cursor:pointer;">Import Pasted Text</button>
+      <label style="background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:4px;padding:9px 16px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;cursor:pointer;color:var(--cream);">
+        📁 Import CSV File
+        <input type="file" accept=".csv,text/csv" onchange="importClientCSV(event)" style="display:none;">
+      </label>
+      <span id="client-import-status" style="font-size:12px;color:var(--success);"></span>
     </div>
   </div>
 
@@ -376,13 +401,116 @@ const PHP_PROMO_REQS = {
 // ── JUNE 2026 MD PROMOTION CAMPAIGN ──────────────────────────────
 // Targets are the org's published numbers; per-agent progress comes
 // from the same PROMO_STATS store, filled in via the Import panel.
+// Dashboard Settings (below) can override any of these without touching code.
+const DASHBOARD_SETTINGS_KEY = 'dba_promo_dashboard_settings';
+function loadDashboardSettings() {
+  try { return JSON.parse(localStorage.getItem(DASHBOARD_SETTINGS_KEY) || '{}'); } catch(e) { return {}; }
+}
+function saveDashboardSettings(s) {
+  try { localStorage.setItem(DASHBOARD_SETTINGS_KEY, JSON.stringify(s)); } catch(e) {}
+}
+const _dashSettings = loadDashboardSettings();
 const JUNE_MD_PROMO = {
-  deadline:        '2026-06-30',
-  paidPtsDeadline: '2026-07-15',
+  deadline:        _dashSettings.deadline        || '2026-06-30',
+  paidPtsDeadline: _dashSettings.paidPtsDeadline || '2026-07-15',
   asOf:            new Date().toISOString().slice(0,10),
-  targets: { recruits:25, apps:25, subPts:25000, paidPts:25000 },
+  targets: {
+    recruits: _dashSettings.targetRecruits || 25,
+    apps:     _dashSettings.targetApps     || 25,
+    subPts:   _dashSettings.targetSubPts   || 25000,
+    paidPts:  _dashSettings.targetPaidPts  || 25000,
+  },
   stats: PROMO_STATS,
 };
+
+function importDashboardSettings() {
+  const raw = document.getElementById('import-dashboard').value;
+  const statusEl = document.getElementById('dashboard-import-status');
+  if (!raw.trim()) { statusEl.textContent = '⚠ Enter at least one setting'; statusEl.style.color = 'var(--warn)'; return; }
+
+  const settings = loadDashboardSettings();
+  const KEY_MAP = { deadline:'deadline', paidptsdeadline:'paidPtsDeadline', targetrecruits:'targetRecruits',
+    targetapps:'targetApps', targetsubpts:'targetSubPts', targetpaidpts:'targetPaidPts' };
+  let count = 0;
+  raw.split('\n').forEach(line => {
+    const m = line.match(/^\s*([a-zA-Z]+)\s*:\s*(.+?)\s*$/);
+    if (!m) return;
+    const key = KEY_MAP[m[1].toLowerCase()];
+    if (!key) return;
+    settings[key] = key.startsWith('target') ? (Number(m[2].replace(/[^0-9.\-]/g,'')) || 0) : m[2];
+    count++;
+  });
+  saveDashboardSettings(settings);
+  statusEl.style.color = 'var(--success)';
+  statusEl.textContent = `✓ ${count} setting${count===1?'':'s'} saved — refresh to see them on the campaign card`;
+}
+
+// ── CLIENT INFO — individual client/policy records per agent ────
+// Each agent's subPts/paidPts totals (used on their card and in the
+// dashboard) are the sum of their rows here once any exist, so the
+// roll-up number always has an auditable list behind it.
+const CLIENT_RECORDS_KEY = 'dba_client_records';
+let CLIENT_RECORDS = [];
+try { CLIENT_RECORDS = JSON.parse(localStorage.getItem(CLIENT_RECORDS_KEY) || '[]'); } catch(e) {}
+function saveClientRecords() {
+  try { localStorage.setItem(CLIENT_RECORDS_KEY, JSON.stringify(CLIENT_RECORDS)); } catch(e) {}
+}
+// Recomputes subPts/paidPts on PROMO_STATS from CLIENT_RECORDS for every
+// agent that has at least one client row, then persists the roll-up.
+function recomputeClientTotals() {
+  const byAgent = {};
+  CLIENT_RECORDS.forEach(r => {
+    byAgent[r.agentId] = byAgent[r.agentId] || { subPts:0, paidPts:0 };
+    byAgent[r.agentId].subPts  += r.submittedPts || 0;
+    byAgent[r.agentId].paidPts += r.paidPts || 0;
+  });
+  Object.entries(byAgent).forEach(([agentId, totals]) => {
+    PROMO_STATS[agentId] = { ...PROMO_STATS[agentId], subPts: totals.subPts, paidPts: totals.paidPts };
+  });
+  savePromoStats(PROMO_STATS);
+}
+
+function parseClientRows(raw) {
+  const lines = raw.split('\n').map(l=>l.trim()).filter(Boolean);
+  if (!lines.length) return [];
+  const firstCells = lines[0].split(',').map(c=>c.trim());
+  const looksLikeHeader = !getAgentById(firstCells[0]);
+  const dataLines = looksLikeHeader ? lines.slice(1) : lines;
+  return dataLines.map(line => {
+    const c = line.split(',').map(x=>x.trim());
+    return { agentId:c[0], clientName:c[1]||'', submittedPts:Number((c[2]||'0').replace(/[^0-9.\-]/g,''))||0,
+      paidPts:Number((c[3]||'0').replace(/[^0-9.\-]/g,''))||0, status:c[4]||'' };
+  }).filter(r => r.agentId);
+}
+function applyClientImport(rows) {
+  let matched = 0, unmatched = [];
+  rows.forEach(row => {
+    if (!getAgentById(row.agentId)) { unmatched.push(row.agentId); return; }
+    CLIENT_RECORDS.push({ ...row, id:`client_${Date.now()}_${matched}`, importedAt:new Date().toISOString() });
+    matched++;
+  });
+  saveClientRecords();
+  recomputeClientTotals();
+  const statusEl = document.getElementById('client-import-status');
+  statusEl.style.color = unmatched.length ? 'var(--warn)' : 'var(--success)';
+  statusEl.textContent = unmatched.length
+    ? `✓ ${matched} client${matched===1?'':'s'} imported · ⚠ ${unmatched.length} unmatched agent ID${unmatched.length===1?'':'s'}: ${unmatched.slice(0,5).join(', ')}`
+    : `✓ ${matched} client record${matched===1?'':'s'} imported`;
+  renderTeamProgress();
+}
+function importClientText() {
+  const raw = document.getElementById('import-clients').value;
+  if (!raw.trim()) { document.getElementById('client-import-status').textContent = '⚠ Paste some rows first'; return; }
+  applyClientImport(parseClientRows(raw));
+}
+function importClientCSV(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => applyClientImport(parseClientRows(e.target.result));
+  reader.readAsText(file);
+  event.target.value = '';
+}
 
 // ── JUNE 2026 MD PROMOTION CAMPAIGN CARD ────────────────────────
 (function renderJuneMdCard() {

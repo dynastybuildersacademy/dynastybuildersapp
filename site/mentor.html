@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DBA — Mentor Mode</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="auth.js"></script>
+<style>
+:root{--navy:#0A1628;--navy-mid:#112040;--gold:#C9A84C;--gold-light:#E8C97A;
+  --cream:#FAF6EE;--success:#27AE60;--danger:#C0392B;--warn:#E67E22;--slate:#6B7C93;
+  --border:rgba(201,168,76,0.22);}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);min-height:100vh;padding-bottom:40px;}
+.header{background:rgba(10,22,40,0.97);border-bottom:1px solid var(--border);padding:14px 20px;
+  display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;flex-wrap:wrap;gap:10px;}
+.header h1{font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:800;color:var(--gold);}
+.back-btn{font-size:12px;color:var(--gold);text-decoration:none;border:1px solid var(--border);padding:6px 12px;border-radius:3px;}
+.wrap{max-width:920px;margin:0 auto;padding:20px;}
+.card{background:var(--navy-mid);border:1px solid var(--border);border-radius:8px;padding:18px;margin-bottom:16px;}
+.card-title{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px;}
+.field{margin-bottom:12px;}
+.field label{display:block;font-size:10px;color:var(--slate);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px;}
+.field input,.field select,.field textarea{width:100%;background:#132240;border:1px solid rgba(255,255,255,.12);
+  color:var(--cream);border-radius:6px;padding:9px 11px;font-family:'Barlow',sans-serif;font-size:13px;outline:none;}
+.field textarea{min-height:60px;resize:vertical;}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.field-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+@media(max-width:600px){.field-row3{grid-template-columns:1fr;}}
+.btn{display:inline-block;padding:9px 16px;border-radius:4px;font-family:'Barlow Condensed',sans-serif;
+  font-size:13px;font-weight:700;cursor:pointer;border:none;text-align:center;}
+.btn-gold{background:var(--gold);color:var(--navy);}
+.btn-ghost{background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--cream);}
+.btn-block{width:100%;justify-content:center;}
+.empty-state{color:var(--slate);text-align:center;padding:40px 20px;font-size:13px;}
+.agent-hdr{display:flex;align-items:center;gap:14px;margin-bottom:6px;}
+.agent-avatar{width:48px;height:48px;border-radius:50%;background:rgba(201,168,76,.15);color:var(--gold);
+  display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:16px;flex-shrink:0;}
+.agent-name{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;color:var(--cream);}
+.agent-role{font-size:12px;color:var(--slate);}
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px;}
+.stat-box{background:var(--navy);border:1px solid var(--border);border-radius:6px;padding:12px;text-align:center;}
+.stat-val{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;color:var(--gold-light);}
+.stat-label{font-size:9px;color:var(--slate);text-transform:uppercase;letter-spacing:.06em;margin-top:3px;}
+.flow-bar{background:rgba(255,255,255,.08);border-radius:4px;height:6px;overflow:hidden;margin:8px 0;}
+.flow-fill{height:100%;background:var(--gold);}
+.appt-row{background:var(--navy);border:1px solid var(--border);border-radius:6px;padding:9px 12px;margin-bottom:6px;font-size:12px;display:flex;justify-content:space-between;gap:8px;}
+.tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;}
+.tab-btn{background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--slate);border-radius:4px;
+  padding:8px 14px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;cursor:pointer;}
+.tab-btn.active{background:rgba(201,168,76,.12);color:var(--gold);border-color:var(--gold);}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+.note{font-size:11px;color:var(--slate);margin-top:8px;line-height:1.6;}
+.sync-note{font-size:11px;margin-top:8px;text-align:center;}
+</style>
+</head>
+<body>
+<script>AUTH.require('mentor.html');</script>
+
+<div class="header">
+  <h1>🧑‍🏫 Mentor Mode</h1>
+  <a href="hub.html" class="back-btn">← Hub</a>
+</div>
+
+<div class="wrap">
+  <div class="card">
+    <div class="card-title">Select an Agent From Your Downline</div>
+    <select id="agent-picker" onchange="selectAgent(this.value)" style="width:100%;background:#132240;border:1px solid rgba(255,255,255,.12);color:var(--cream);border-radius:6px;padding:10px 12px;font-size:13px;">
+      <option value="">— Choose an agent —</option>
+    </select>
+  </div>
+
+  <div id="agent-panel" style="display:none;">
+    <div class="card">
+      <div class="agent-hdr">
+        <div class="agent-avatar" id="agent-avatar"></div>
+        <div>
+          <div class="agent-name" id="agent-name"></div>
+          <div class="agent-role" id="agent-role"></div>
+        </div>
+      </div>
+      <div id="agent-flow"></div>
+      <div class="stat-grid" id="agent-stats"></div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" id="tabbtn-top25" onclick="showTab('top25')">📝 Add to Top 25</button>
+      <button class="tab-btn" id="tabbtn-appt" onclick="showTab('appt')">📅 Add Appointment</button>
+      <button class="tab-btn" id="tabbtn-activity" onclick="showTab('activity')">📞 Log Activity</button>
+    </div>
+
+    <!-- ADD TO TOP 25 -->
+    <div class="tab-panel active" id="tab-top25">
+      <div class="card">
+        <div class="card-title">Add a Prospect to Their Top 25</div>
+        <div class="field-row">
+          <div class="field"><label>First Name</label><input type="text" id="t25-first"></div>
+          <div class="field"><label>Last Name</label><input type="text" id="t25-last"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Phone</label><input type="tel" id="t25-phone"></div>
+          <div class="field"><label>Occupation</label><input type="text" id="t25-occ"></div>
+        </div>
+        <div class="field"><label>Notes</label><textarea id="t25-notes" placeholder="How do they know each other, good qualities, etc."></textarea></div>
+        <button class="btn btn-gold btn-block" onclick="submitTop25()">+ Add to Their Top 25</button>
+        <div class="sync-note" id="t25-status"></div>
+        <div class="note">Writes directly to their personal Top 25 board on Monday.com — they'll see it next time they open Top 25.</div>
+      </div>
+    </div>
+
+    <!-- ADD APPOINTMENT -->
+    <div class="tab-panel" id="tab-appt">
+      <div class="card">
+        <div class="card-title">Schedule an Appointment For Them</div>
+        <div class="field"><label>Name / Contact</label><input type="text" id="ap-name"></div>
+        <div class="field-row">
+          <div class="field"><label>Date</label><input type="date" id="ap-date"></div>
+          <div class="field"><label>Time</label><input type="time" id="ap-time"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Type</label>
+            <select id="ap-type">
+              <option value="RI">🎯 Recruiting Interview (RI)</option>
+              <option value="FT">💼 Field Training Appt (FT)</option>
+              <option value="FS">🚀 Fast Start Appt (FS)</option>
+              <option value="Client">👤 Client Appointment</option>
+              <option value="BOM Guest">🏢 BOM Guest</option>
+              <option value="Other">📌 Other</option>
+            </select>
+          </div>
+          <div class="field"><label>Phone</label><input type="tel" id="ap-phone"></div>
+        </div>
+        <div class="field"><label>Notes</label><textarea id="ap-notes"></textarea></div>
+        <button class="btn btn-gold btn-block" onclick="submitAppointment()">+ Add Appointment</button>
+        <div class="sync-note" id="appt-status"></div>
+        <div class="note">Synced to the shared Call Production Log board on Monday.com, tagged with their name. It'll show up when they use "Load from Monday" in their own Activity Log or Calendar — it won't appear instantly on their device, since that lives in their own browser.</div>
+      </div>
+      <div class="card" id="upcoming-appts-card" style="display:none;">
+        <div class="card-title">Their Upcoming Appointments (from Monday)</div>
+        <div id="upcoming-appts-list"></div>
+      </div>
+    </div>
+
+    <!-- LOG ACTIVITY -->
+    <div class="tab-panel" id="tab-activity">
+      <div class="card">
+        <div class="card-title">Log a Session On Their Behalf</div>
+        <div class="field-row3">
+          <div class="field"><label>Prospects</label><input type="number" id="ac-prospects" value="0" min="0"></div>
+          <div class="field"><label>Calls</label><input type="number" id="ac-calls" value="0" min="0"></div>
+          <div class="field"><label>Invites</label><input type="number" id="ac-invites" value="0" min="0"></div>
+        </div>
+        <div class="field-row3">
+          <div class="field"><label>RI Appts</label><input type="number" id="ac-ri" value="0" min="0"></div>
+          <div class="field"><label>FT Appts</label><input type="number" id="ac-ft" value="0" min="0"></div>
+          <div class="field"><label>FS Appts</label><input type="number" id="ac-fs" value="0" min="0"></div>
+        </div>
+        <div class="field-row"><div class="field"><label>Recruits</label><input type="number" id="ac-recruits" value="0" min="0"></div>
+          <div class="field"><label>Notes</label><input type="text" id="ac-notes" placeholder="Optional context"></div></div>
+        <button class="btn btn-gold btn-block" onclick="submitActivity()">+ Log This Session</button>
+        <div class="sync-note" id="activity-status"></div>
+        <div class="note">Creates a record on the shared Call Production Log board tagged "logged by mentor." This does <strong>not</strong> edit their live counters in their own Activity Log app — those live only on their own device — but it does give leadership a real, reportable record of the session.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const session = AUTH.getSession();
+const DEFAULT_TOP25_BOARD = '8270757684';
+const CALL_LOG_BOARD = '18411252612';
+let downline = [];
+let currentAgent = null;
+
+// ── INIT: populate downline picker ──────────────────────────────
+(function init() {
+  downline = typeof getFullDownline === 'function' ? getFullDownline(session.agentId).slice(1) : [];
+  const picker = document.getElementById('agent-picker');
+  downline
+    .sort((a,b) => a.name.localeCompare(b.name))
+    .forEach(a => {
+      const opt = document.createElement('option');
+      opt.value = a.id;
+      opt.textContent = `${a.name} — ${ROLES[a.role]?.label || a.role}`;
+      picker.appendChild(opt);
+    });
+  if (!downline.length) {
+    document.querySelector('.wrap').innerHTML = '<div class="card"><div class="empty-state">No agents in your downline yet. Mentor Mode only shows agents beneath you in the org chart.</div></div>';
+  }
+})();
+
+function initials(name) { return name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase(); }
+
+// ── FAST START + SYSTEM FLOW (same logic as Promotions/Roster) ──
+const FAST_START_STEPS = [
+  { code:'spouse',  label:'Meet Spouse' }, { code:'plan', label:'Business Plan' },
+  { code:'top25',   label:'Top 25' }, { code:'ft3', label:'3 FT & 3 Guests' },
+  { code:'finance', label:'Financial Analysis' }, { code:'life', label:'Life Class' },
+  { code:'event',   label:'Big Event' }, { code:'sprint', label:'Sprint Award' },
+];
+function getFastStartStatus(agentId) {
+  let stats = {};
+  try { stats = JSON.parse(localStorage.getItem('dba_promo_stats') || '{}'); } catch(e) {}
+  const done = (stats[agentId]?.fastStartDone || '').split(';').map(s=>s.trim()).filter(Boolean);
+  const missing = FAST_START_STEPS.filter(s => !done.includes(s.code));
+  return { done, missing, graduated: missing.length === 0 && done.length > 0 };
+}
+const SYSTEM_FLOW_STAGES = [
+  { n:1, name:'New Associate' }, { n:2, name:'Graduate Fast Start School' },
+  { n:3, name:"President's Club" }, { n:4, name:'Develop Direct FAs' }, { n:5, name:'Marketing Director' },
+];
+const SYSTEM_FLOW_STAGE_BY_ROLE = { associate:2, field_associate:3, director:4, producing_md:5, marketing_director:5 };
+function getSystemFlowStage(agent) {
+  const fs = getFastStartStatus(agent.id);
+  let stageIndex;
+  if (agent.role === 'trainee') stageIndex = fs.graduated ? 2 : 1;
+  else stageIndex = SYSTEM_FLOW_STAGE_BY_ROLE[agent.role] || null;
+  const isMD = ['producing_md','marketing_director'].includes(agent.role);
+  const beyondMD = stageIndex === null;
+  if (beyondMD) stageIndex = 5;
+  return { stageIndex, stageName: beyondMD ? 'Marketing Director+ ($50K+ earner)' : SYSTEM_FLOW_STAGES[stageIndex-1].name, isMD: isMD||beyondMD, pct: Math.round((stageIndex/5)*100) };
+}
+function getPromoStats(agentId) {
+  let stats = {};
+  try { stats = JSON.parse(localStorage.getItem('dba_promo_stats') || '{}'); } catch(e) {}
+  return stats[agentId] || {};
+}
+
+// ── SELECT AGENT ──────────────────────────────────────────────
+function selectAgent(agentId) {
+  if (!agentId) { document.getElementById('agent-panel').style.display = 'none'; return; }
+  currentAgent = downline.find(a => a.id === agentId);
+  if (!currentAgent) return;
+
+  document.getElementById('agent-panel').style.display = 'block';
+  document.getElementById('agent-avatar').textContent = initials(currentAgent.name);
+  document.getElementById('agent-name').textContent = currentAgent.name;
+  document.getElementById('agent-role').textContent = `${ROLES[currentAgent.role]?.label || currentAgent.role} · ${currentAgent.phone || 'no phone on file'}`;
+
+  const flow = getSystemFlowStage(currentAgent);
+  const fs = getFastStartStatus(currentAgent.id);
+  document.getElementById('agent-flow').innerHTML = `
+    <div style="font-size:12px;font-weight:700;color:${flow.isMD?'var(--success)':'var(--gold)'};margin-top:10px;">
+      ${flow.isMD?'🎖️':'📈'} Stage ${flow.stageIndex}/5 — ${flow.stageName}
+    </div>
+    <div class="flow-bar"><div class="flow-fill" style="width:${flow.pct}%;background:${flow.isMD?'var(--success)':'var(--gold)'};"></div></div>
+    ${flow.stageIndex<=2 ? `<div class="note" style="margin-top:0;">${fs.graduated?'✅ Fast Start School graduated':(fs.done.length? `Fast Start: ${fs.done.length}/8 — missing ${fs.missing.map(s=>s.label).join(', ')}` : 'Fast Start School: not started')}</div>` : ''}
+  `;
+
+  const stats = getPromoStats(currentAgent.id);
+  document.getElementById('agent-stats').innerHTML = `
+    <div class="stat-box"><div class="stat-val">${stats.recruits||0}</div><div class="stat-label">Recruits</div></div>
+    <div class="stat-box"><div class="stat-val">${(stats.subPts||0).toLocaleString()}</div><div class="stat-label">Submitted Pts</div></div>
+    <div class="stat-box"><div class="stat-val">${(stats.paidPts||0).toLocaleString()}</div><div class="stat-label">Paid Pts</div></div>
+  `;
+
+  document.getElementById('t25-status').textContent = '';
+  document.getElementById('appt-status').textContent = '';
+  document.getElementById('activity-status').textContent = '';
+  loadUpcomingAppts();
+}
+
+function showTab(name) {
+  ['top25','appt','activity'].forEach(t => {
+    document.getElementById('tab-'+t).classList.toggle('active', t===name);
+    document.getElementById('tabbtn-'+t).classList.toggle('active', t===name);
+  });
+}
+
+// ── ADD TO TOP 25 ─────────────────────────────────────────────
+async function submitTop25() {
+  const first = document.getElementById('t25-first').value.trim();
+  const last  = document.getElementById('t25-last').value.trim();
+  const statusEl = document.getElementById('t25-status');
+  if (!first) { statusEl.textContent = '⚠ First name is required'; statusEl.style.color = 'var(--danger)'; return; }
+
+  const boardId = currentAgent.top25BoardId || DEFAULT_TOP25_BOARD;
+  const phone = document.getElementById('t25-phone').value.trim();
+  const occ   = document.getElementById('t25-occ').value.trim();
+  const notes = document.getElementById('t25-notes').value.trim();
+  statusEl.style.color = 'var(--gold)';
+  statusEl.textContent = 'Adding…';
+
+  try {
+    const cacheKey = `dba_addme_cols_${boardId}`;
+    let colIds = {};
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) colIds = JSON.parse(cached);
+    else {
+      const res = await mondayQuery(`{ boards(ids: ${boardId}) { columns { id title } } }`);
+      const cols = res?.data?.boards?.[0]?.columns || [];
+      const find = (...kws) => cols.find(c => kws.some(k => c.title.toLowerCase().includes(k)))?.id || null;
+      colIds = { phone: find('phone'), notes: find('note','comment','good qualities'), source: find('source','how') };
+      localStorage.setItem(cacheKey, JSON.stringify(colIds));
+    }
+    const cv = {};
+    if (colIds.phone && phone) cv[colIds.phone] = { phone: phone.replace(/\D/g,''), countryShortName:'US' };
+    if (colIds.notes) cv[colIds.notes] = [occ, notes].filter(Boolean).join(' — ') || `Added by mentor ${session.name}`;
+    if (colIds.source) cv[colIds.source] = `Mentor: ${session.name}`;
+
+    const itemName = `${first} ${last}`.trim().replace(/"/g,"'");
+    const q = `mutation { create_item(board_id: ${boardId}, item_name: "${itemName}", column_values: ${JSON.stringify(JSON.stringify(cv))}, create_labels_if_missing: true) { id } }`;
+    const res = await mondayQuery(q);
+    if (res?.errors?.length) throw new Error(res.errors[0].message);
+    statusEl.style.color = 'var(--success)';
+    statusEl.textContent = `✓ ${itemName} added to ${currentAgent.name}'s Top 25`;
+    ['t25-first','t25-last','t25-phone','t25-occ','t25-notes'].forEach(id => document.getElementById(id).value = '');
+  } catch(e) {
+    statusEl.style.color = 'var(--danger)';
+    statusEl.textContent = '⚠ Could not reach Monday — try again';
+    console.warn('Mentor top25 add failed:', e.message);
+  }
+}
+
+// ── ADD APPOINTMENT ───────────────────────────────────────────
+async function submitAppointment() {
+  const name = document.getElementById('ap-name').value.trim();
+  const statusEl = document.getElementById('appt-status');
+  if (!name) { statusEl.textContent = '⚠ Name is required'; statusEl.style.color = 'var(--danger)'; return; }
+
+  const appt = {
+    name,
+    date: document.getElementById('ap-date').value,
+    time: document.getElementById('ap-time').value,
+    type: document.getElementById('ap-type').value,
+    status: 'Scheduled',
+    phone: document.getElementById('ap-phone').value.trim(),
+    notes: (document.getElementById('ap-notes').value.trim() + ` [Logged by mentor ${session.name}]`).trim(),
+    agentId: currentAgent.id, agentName: currentAgent.name,
+  };
+  statusEl.style.color = 'var(--gold)'; statusEl.textContent = 'Saving…';
+
+  try {
+    const colRes = await mondayQuery(`{boards(ids:${CALL_LOG_BOARD}){columns{id title}}}`);
+    const cols = colRes?.data?.boards?.[0]?.columns || [];
+    const col = (...kws) => cols.find(c => kws.some(k=>(c.title||'').toLowerCase().includes(k)))?.id || null;
+    const cv = {};
+    const dateCol = col('date','appt date','appointment date'); const statusCol = col('status');
+    const typeCol = col('type','appt type'); const phoneCol = col('phone'); const notesCol = col('notes','note');
+    const agentCol = col('agent','agent name');
+    if (dateCol) cv[dateCol] = { date: appt.date || '' };
+    if (statusCol) cv[statusCol] = { label: appt.status };
+    if (typeCol) cv[typeCol] = { label: appt.type };
+    if (phoneCol && appt.phone) cv[phoneCol] = { phone: appt.phone.replace(/\D/g,''), countryShortName:'US' };
+    if (notesCol) cv[notesCol] = appt.notes;
+    if (agentCol) cv[agentCol] = appt.agentName;
+
+    const itemName = `${appt.name} — ${appt.type} — ${appt.date||'TBD'} (${appt.agentName})`.replace(/"/g,"'");
+    const res = await mondayQuery(`mutation { create_item(board_id:${CALL_LOG_BOARD}, item_name:"${itemName}", column_values: ${JSON.stringify(JSON.stringify(cv))}, create_labels_if_missing:true) { id } }`);
+    if (res?.errors?.length) throw new Error(res.errors[0].message);
+    statusEl.style.color = 'var(--success)';
+    statusEl.textContent = `✓ Appointment added for ${currentAgent.name}`;
+    ['ap-name','ap-date','ap-time','ap-phone','ap-notes'].forEach(id => document.getElementById(id).value = '');
+    loadUpcomingAppts();
+  } catch(e) {
+    statusEl.style.color = 'var(--danger)';
+    statusEl.textContent = '⚠ Could not reach Monday — try again';
+    console.warn('Mentor appt add failed:', e.message);
+  }
+}
+
+async function loadUpcomingAppts() {
+  const card = document.getElementById('upcoming-appts-card');
+  const list = document.getElementById('upcoming-appts-list');
+  card.style.display = 'none';
+  if (!AUTH.getMondayKey()) return;
+  try {
+    const res = await mondayQuery(`{ boards(ids:${CALL_LOG_BOARD}) { items_page(limit:200) { items { id name } } } }`);
+    const items = res?.data?.boards?.[0]?.items_page?.items || [];
+    const matches = items.filter(i => i.name.includes(`(${currentAgent.name})`)).slice(0,8);
+    if (!matches.length) return;
+    card.style.display = 'block';
+    list.innerHTML = matches.map(i => `<div class="appt-row">${i.name}</div>`).join('');
+  } catch(e) { /* fail quietly — this is a nice-to-have preview */ }
+}
+
+// ── LOG ACTIVITY SESSION ──────────────────────────────────────
+async function submitActivity() {
+  const statusEl = document.getElementById('activity-status');
+  const vals = {
+    prospects: +document.getElementById('ac-prospects').value || 0,
+    calls:     +document.getElementById('ac-calls').value || 0,
+    invites:   +document.getElementById('ac-invites').value || 0,
+    ri:        +document.getElementById('ac-ri').value || 0,
+    ft:        +document.getElementById('ac-ft').value || 0,
+    fs:        +document.getElementById('ac-fs').value || 0,
+    recruits:  +document.getElementById('ac-recruits').value || 0,
+  };
+  const notes = document.getElementById('ac-notes').value.trim();
+  const total = Object.values(vals).reduce((a,b)=>a+b,0);
+  if (total === 0) { statusEl.textContent = '⚠ Enter at least one number'; statusEl.style.color = 'var(--danger)'; return; }
+
+  statusEl.style.color = 'var(--gold)'; statusEl.textContent = 'Saving…';
+  try {
+    const colRes = await mondayQuery(`{boards(ids:${CALL_LOG_BOARD}){columns{id title}}}`);
+    const cols = colRes?.data?.boards?.[0]?.columns || [];
+    const col = (...kws) => cols.find(c => kws.some(k=>(c.title||'').toLowerCase().includes(k)))?.id || null;
+    const cv = {};
+    const dateCol = col('date'); const notesCol = col('notes','note'); const agentCol = col('agent','agent name');
+    if (dateCol) cv[dateCol] = { date: new Date().toISOString().slice(0,10) };
+    if (agentCol) cv[agentCol] = currentAgent.name;
+    if (notesCol) cv[notesCol] = `Prospects:${vals.prospects} Calls:${vals.calls} Invites:${vals.invites} RI:${vals.ri} FT:${vals.ft} FS:${vals.fs} Recruits:${vals.recruits}${notes?' — '+notes:''} [Logged by mentor ${session.name}]`;
+
+    const itemName = `${currentAgent.name} — mentor session — ${new Date().toISOString().slice(0,10)}`.replace(/"/g,"'");
+    const res = await mondayQuery(`mutation { create_item(board_id:${CALL_LOG_BOARD}, item_name:"${itemName}", column_values: ${JSON.stringify(JSON.stringify(cv))}, create_labels_if_missing:true) { id } }`);
+    if (res?.errors?.length) throw new Error(res.errors[0].message);
+    statusEl.style.color = 'var(--success)';
+    statusEl.textContent = `✓ Session logged for ${currentAgent.name}`;
+    ['ac-prospects','ac-calls','ac-invites','ac-ri','ac-ft','ac-fs','ac-recruits'].forEach(id => document.getElementById(id).value = '0');
+    document.getElementById('ac-notes').value = '';
+  } catch(e) {
+    statusEl.style.color = 'var(--danger)';
+    statusEl.textContent = '⚠ Could not reach Monday — try again';
+    console.warn('Mentor activity log failed:', e.message);
+  }
+}
+</script>
+</body>
+</html>

@@ -329,7 +329,10 @@ pre{background:var(--navy);border:1px solid var(--border);border-radius:3px;padd
 <script>
 AUTH.require('agents.html');
 const session = AUTH.getSession();
-const isAdmin = session && session.level >= 60;
+// Admin tier is excluded from the full roster/analytics view here, even
+// though their effective level clears 60 — Admins get BMP Platform access
+// instead. Super Admin and Super User see the full view as before.
+const isAdmin = session && session.level >= 60 && getAdminTier(session) !== 'admin';
 
 // ── LOCAL EDITABLE ROSTER ─────────────────────────────────────
 // We keep a mutable copy so edits are reflected immediately in the UI

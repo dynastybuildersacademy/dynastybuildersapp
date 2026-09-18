@@ -97,7 +97,7 @@ AUTH.require('monday-setup.html');</script>
   <div class="page-sub">This tool verifies all 12 Monday.com boards, creates missing columns, and confirms the DBA platform can read and write data correctly. Run once after initial setup, or any time a board is recreated.</div>
 
   <!-- API KEY -->
-  <div class="api-card">
+  <div class="api-card" id="monday-key-card">
     <div style="font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:var(--gold);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:12px;">Monday.com API Key</div>
     <div class="api-row">
       <input type="password" id="api-key-input" placeholder="eyJhbGciOiJIUzI1NiJ9...">
@@ -108,7 +108,7 @@ AUTH.require('monday-setup.html');</script>
   </div>
 
   <!-- ANTHROPIC API KEY -->
-  <div class="api-card" style="margin-top:14px;">
+  <div class="api-card" id="anthropic-key-card" style="margin-top:14px;">
     <div style="font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:var(--gold);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;">Anthropic API Key</div>
     <div style="font-size:11px;color:var(--slate);margin-bottom:12px;">Required for AI features — Marketing Hub content generation, AI Role-Play coach, and the Agency OS assistant. Get your key at <a href="https://console.anthropic.com" target="_blank" style="color:var(--gold);">console.anthropic.com</a></div>
     <div class="api-row">
@@ -513,7 +513,15 @@ function toggleBoard(id) {
 }
 
 // ── API CONNECTION ────────────────────────────────────────────
-async function connectAPI() {
+// isAutoCheck=true means we're just re-verifying an already-saved key on
+// page load — not an explicit change — so the Super User restriction only
+// applies when someone is actually trying to set/replace the key.
+async function connectAPI(isAutoCheck) {
+  const session = AUTH.getSession();
+  if (!isAutoCheck && getAdminTier(session) !== 'super_user') {
+    alert('Only the Super User account can change the Monday.com API key.');
+    return;
+  }
   const key = document.getElementById('api-key-input').value.trim();
   if (!key) { alert('Enter your Monday.com API key'); return; }
   mondayKey = key;
@@ -853,6 +861,11 @@ function toggleAnthropicVis() {
 }
 
 function saveAnthropicKeyUI() {
+  const session = AUTH.getSession();
+  if (getAdminTier(session) !== 'super_user') {
+    alert('Only the Super User account can change the Anthropic API key.');
+    return;
+  }
   const key = document.getElementById('anthropic-key-input').value.trim();
   if (!key) {
     document.getElementById('anthropic-status').className = 'status-pill pill-error';
@@ -871,13 +884,27 @@ document.addEventListener('DOMContentLoaded', () => {
   renderBoards();
   if (mondayKey) {
     document.getElementById('api-key-input').value = mondayKey;
-    connectAPI();
+    connectAPI(true);
   }
   const anthropicKey = AUTH.getAnthropicKey();
   if (anthropicKey) {
     document.getElementById('anthropic-key-input').value = anthropicKey;
     document.getElementById('anthropic-status').className = 'status-pill pill-ok';
     document.getElementById('anthropic-status').textContent = '✓ Saved — AI features are enabled';
+  }
+
+  // Lock both key cards for anyone who isn't the Super User — they can see
+  // whether a key is set, but can't view/change the value itself.
+  const session = AUTH.getSession();
+  if (getAdminTier(session) !== 'super_user') {
+    ['api-key-input','anthropic-key-input'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) { el.disabled = true; el.placeholder = '🔒 Super User only'; el.value = ''; }
+    });
+    ['monday-key-card','anthropic-key-card'].forEach(id => {
+      const card = document.getElementById(id);
+      if (card) card.querySelectorAll('button').forEach(b => b.disabled = true);
+    });
   }
 });
 </script>

@@ -197,14 +197,16 @@ const MONDAY_ORG_KEY = 'eyJhbGciOiJIUzI1NiJ9.eyJ0aWQiOjY1Nzg0OTc3NSwiYWFpIjoxMSw
 const AGENTS = [
   {
     id: "deigar526", name: "Deisy Garcia",
-    pin: "5261", role: "admin", level: 100,
+    pin: "5261", role: "trainee", level: 20,
+    adminTier: "admin", // Admin for the team — not based on PHP rank
     phpId: "1417894", phone: "2133175067",
     email: "deisygarcia1713@gmail.com",
     uplineId: "obi001"
   },
   {
     id: "obi001", name: "Obi Iroezi",
-    pin: "1111", role: "admin", level: 100,
+    pin: "1111", role: "senior_md", level: 65,
+    adminTier: "super_user", // Only account that can change API keys
     phpId: "10146", phone: "3109956507",
     email: "obi@yourdynastybuilder.com",
     top25BoardId: "18419015866",
@@ -214,7 +216,7 @@ const AGENTS = [
   },
   {
     id: "jen001", name: "Jen Iroezi",
-    pin: "1111", role: "agency_builder", level: 100,
+    pin: "1111", role: "senior_md", level: 65,
     phpId: "10147", phone: "3109956508",
     email: "jen@yourdynastybuilder.com",
     top25BoardId: "8052087599",
@@ -734,7 +736,7 @@ const AGENTS = [
   },
   {
     id: "marleo994", name: "Mark Ponce De Leon",
-    pin: "1111", role: "associate", level: 30,
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1364994", phone: "5623505181",
     email: "markjpdl@hotmail.com",
     top25BoardId: "",
@@ -744,7 +746,7 @@ const AGENTS = [
   },
   {
     id: "steben289", name: "Stephan Bennett",
-    pin: "1111", role: "field associate", level: 50,
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1364289", phone: "4065798030",
     email: "insurewithbennett@gmail.com",
     top25BoardId: "18410267607",
@@ -754,7 +756,7 @@ const AGENTS = [
   },
   {
     id: "titikh526", name: "Titilope Ikhile",
-    pin: "1111", role: "associate", level: 30,
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1363526", phone: "9252340575",
     email: "titilope@gmail.com",
     top25BoardId: "18417763345",
@@ -814,7 +816,7 @@ const AGENTS = [
   },
   {
     id: "nenuko241", name: "Nene Uko",
-    pin: "1111", role: "field associate", level: 40,
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1357241", phone: "3102201299",
     email: "neneukocoach@gmail.com",
     top25BoardId: "",
@@ -844,7 +846,7 @@ const AGENTS = [
   },
   {
     id: "steudo121", name: "Stella Udoh",
-    pin: "1111", role: "associate", level: 30,
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1355121", phone: "4244503394",
     email: "perfection4stella@gmail.com",
     top25BoardId: "18426825795",
@@ -884,7 +886,7 @@ const AGENTS = [
   },
   {
     id: "jacaba757", name: "Jacinta Abanobi",
-    pin: "1111", role: "director", level: 50,
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1353757", phone: "5625896701",
     email: "zaramekpere048@gmail.com",
     top25BoardId: "",
@@ -894,7 +896,7 @@ const AGENTS = [
   },
   {
     id: "cosaba718", name: "Cosmas Abanobi",
-    pin: "1111", role: "director", level: 50,
+    pin: "1111", role: "trainee", level: 20,
     phpId: "1353718", phone: "5622664286",
     email: "cosmasabanobi046@gmail.com",
     top25BoardId: "9933217087",
@@ -2145,6 +2147,7 @@ const AGENTS = [
   {
     id: "rosanu417", name: "Rose Anuarita",
     pin: "1111", role: "trainee", level: 20,
+    adminTier: "admin", // Admin for the team — not based on PHP rank
     phpId: "", phone: "",
     email: "",
     top25BoardId: "18417943185",
@@ -2286,7 +2289,7 @@ const AGENTS = [
     uplineId: ""
   },
   {
-    id: "pauuvi582", name: "Paulina Uvidia",
+    id: "pauuvi582", name: "Michi Uvidia",
     pin: "1111", role: "trainee", level: 20,
     phpId: "1418582", phone: "3238095958",
     email: "puvidia@gmail.com",
@@ -2457,8 +2460,10 @@ const PAGE_ACCESS = {
   "monday-setup.html":          60,  // Board Setup — open to MDs
   "monday-test.html":           60,  // Test Tool — open to MDs
   "agents.html":                0,   // Agent roster — all agents can view their own profile
+  "roster-admin.html":          60,  // Full roster management — MD+/Super Admin only (Admin tier excluded, see in-page check)
   "make-scenario-builder.html": 100,
   "create-bom-board.html":      60,
+  "mentor.html":                60,
   "create-consciousness-board.html": 60,
   // ── Super Admin only (level 999) — enforced by super_admin role ──
   // No pages locked to 999 — super_admin just sees everything
@@ -2560,7 +2565,8 @@ const AUTH = {
       agentId:       agent.id,
       name:          agent.name,
       role:          agent.role,
-      level:         ROLES[agent.role]?.level || 0,
+      level:         getEffectiveLevel(agent),
+      adminTier:     getAdminTier(agent),
       phpId:         agent.phpId,
       phone:         agent.phone,
       email:         agent.email,
@@ -2648,6 +2654,37 @@ const AUTH = {
 
 // ── 7. HELPER FUNCTIONS ───────────────────────────────────────
 function getAgentById(id)      { return AGENTS.find(a => a.id === id) || null; }
+
+// ── ADMIN TIER — separate from PHP promotion rank ───────────────
+// PHP rank (role/level, e.g. Director, Senior Marketing Director) always
+// reflects someone's real title and drives commission/promotion tracking.
+// adminTier is a distinct, optional layer controlling internal tool access:
+//   'admin'       — Directors by default, or an explicit override (e.g.
+//                    a Trainee named the team's admin) — BMP Platform, but
+//                    NOT analytics/roster tools.
+//   'super_admin' — Marketing Director and above by default — every tool,
+//                    except changing API keys.
+//   'super_user'  — Obi Iroezi only — everything, including API keys.
+// An explicit agent.adminTier always wins; otherwise it's derived from role.
+function getAdminTier(agent) {
+  if (!agent) return null;
+  if (agent.adminTier) return agent.adminTier;
+  const lvl = ROLES[agent.role]?.level || 0;
+  if (lvl >= (ROLES.marketing_director?.level || 60)) return 'super_admin';
+  if (agent.role === 'director') return 'admin';
+  return null;
+}
+
+// Effective access level for gating pages/tools that check session.level —
+// keeps existing level-based gates working correctly even though an
+// admin's PHP rank level (their real title) may be much lower than the
+// access their admin tier grants. Real PHP rank is never changed by this.
+const ADMIN_TIER_ACCESS_LEVEL = { admin: 70, super_admin: 95, super_user: 999 };
+function getEffectiveLevel(agent) {
+  const phpLevel = ROLES[agent?.role]?.level || 0;
+  const tier = getAdminTier(agent);
+  return tier ? Math.max(phpLevel, ADMIN_TIER_ACCESS_LEVEL[tier] || 0) : phpLevel;
+}
 function getDirectReports(id)  { return AGENTS.filter(a => a.uplineId === id); }
 
 // Returns the Marketing Director "team" an agent belongs to for reporting/

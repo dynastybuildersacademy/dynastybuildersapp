@@ -97,7 +97,20 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 </style>
 </head>
 <body>
-<script>AUTH.require('roster-admin.html');</script>
+<script>
+AUTH.require('roster-admin.html');
+// Admin tier is explicitly excluded from full roster access, even though
+// their effective level would otherwise pass the 60+ check above —
+// Admins get BMP Platform, not analytics/roster tools. Super Admin and
+// Super User are unaffected.
+(function enforceAdminTierExclusion(){
+  const s = AUTH.getSession();
+  if (s && getAdminTier(s) === 'admin') {
+    alert('Roster management is available to Super Admins and Marketing Directors and above. Admin accounts have access to the BMP Platform instead.');
+    window.location.href = 'bmp-platform.html';
+  }
+})();
+</script>
 
 <div class="topbar">
   <div class="brand">
