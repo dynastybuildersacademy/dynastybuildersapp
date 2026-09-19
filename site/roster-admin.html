@@ -131,6 +131,7 @@ AUTH.require('roster-admin.html');
     <button class="tab" onclick="switchTab('boards',this)">📋 Board Assignments</button>
     <button class="tab" onclick="switchTab('mdteams',this)">👔 MD Team Assignment</button>
     <button class="tab" id="tab-btn-adminaccess" onclick="switchTab('adminaccess',this)" style="display:none;">🔐 Admin Access</button>
+    <button class="tab" onclick="switchTab('genealogy',this)">🌳 Downline Tree</button>
   </div>
 
   <!-- ── ROSTER TAB ── -->
@@ -178,7 +179,7 @@ AUTH.require('roster-admin.html');
         <table class="agent-table">
           <thead>
             <tr>
-              <th>Name</th><th>ID</th><th>PIN</th><th>Role</th>
+              <th>Name</th><th>ID</th><th>PIN</th><th>Role</th><th>Admin Tier</th>
               <th>Phone</th><th>Email</th><th>Top 25 Board</th><th>PHP System Flow Progress</th><th>Actions</th>
             </tr>
           </thead>
@@ -312,6 +313,41 @@ AUTH.require('roster-admin.html');
       </div>
     </div>
   </div>
+
+  <!-- ── DOWNLINE TREE (GENEALOGY) TAB ── -->
+  <div class="tab-pane" id="pane-genealogy">
+    <div class="card">
+      <div class="card-title">🌳 Downline Tree</div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.7;">
+        Drawn top-down: each agent's downline branches beneath them. <span style="color:#2DCA73;">●</span> Licensed ·
+        <span style="color:#E67E22;">●</span> Not licensed. Pick any agent as the root to see just their family tree, or leave it on
+        "Whole org" to see every top-level branch at once. Click <strong style="color:var(--text);">✏️ Upline</strong> on any agent to move them to a different sponsor.
+      </p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
+        <select id="gene-root" onchange="renderGenealogy()" style="flex:1;min-width:200px;background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:8px 12px;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;">
+          <option value="">Whole org (every root-level agent)</option>
+        </select>
+        <div class="search-bar" style="flex:1;min-width:200px;">
+          <span class="si">🔍</span>
+          <input type="text" id="gene-search" placeholder="Highlight a name…" oninput="renderGenealogy()">
+        </div>
+      </div>
+      <div id="gene-tree" style="max-height:600px;overflow-y:auto;background:var(--s1);border:1px solid var(--border);border-radius:8px;padding:10px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- UPLINE EDIT MODAL -->
+<div id="gene-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:400;align-items:center;justify-content:center;padding:16px;">
+  <div style="background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:22px;max-width:400px;width:100%;">
+    <div class="card-title" id="gene-edit-name">Editing agent</div>
+    <label style="display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px;">New Upline Sponsor</label>
+    <select id="gene-upline-select" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:9px 11px;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;margin-bottom:16px;"></select>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-ghost" style="flex:1;" onclick="document.getElementById('gene-modal').style.display='none';">Cancel</button>
+      <button class="btn btn-gold" style="flex:1;" onclick="saveGenealogyEdit()">Save</button>
+    </div>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -389,6 +425,7 @@ function switchTab(name, el) {
   if (name === 'boards') renderBoardTable();
   if (name === 'mdteams') renderMDTeamTable();
   if (name === 'adminaccess') renderAdminAccessTable();
+  if (name === 'genealogy') renderGenealogy();
 }
 
 // ── ROLE DISPLAY ──────────────────────────────────────────────
@@ -469,12 +506,17 @@ function renderRoster() {
         <div style="height:100%;width:${flow.pct}%;background:${flow.isMD?'#27AE60':'#C9A84C'};"></div>
       </div>
       <div style="font-size:10px;color:var(--muted);" title="${fs.missing.map(s=>s.label).join(', ')}">${flow.stageIndex<=2 ? fsDetail : ''}</div>`;
+    const tier = getAdminTier(a);
+    const tierBadge = tier
+      ? `<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:${tier==='super_user'?'rgba(232,201,122,.18)':tier==='super_admin'?'rgba(201,168,76,.15)':'rgba(93,173,226,.15)'};color:${tier==='super_user'?'#E8C97A':tier==='super_admin'?'#C9A84C':'#5DADE2'};">${tier==='super_user'?'👑 Super User':tier==='super_admin'?'🎖️ Super Admin':'🔐 Admin'}</span>`
+      : `<span style="font-size:11px;color:var(--muted);">—</span>`;
     return `
     <tr>
       <td><strong>${a.name}</strong></td>
       <td><span style="font-family:'DM Mono',monospace;font-size:10px;">${a.id}</span></td>
       <td><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--gold);">${a.pin||'—'}</span></td>
       <td>${rolePill(a.role)}</td>
+      <td>${tierBadge}</td>
       <td style="font-family:'DM Mono',monospace;font-size:11px;">${a.phone||'—'}</td>
       <td style="font-family:'DM Mono',monospace;font-size:11px;">${a.email||'—'}</td>
       <td>${a.top25BoardId
@@ -483,9 +525,24 @@ function renderRoster() {
       <td style="min-width:180px;">${flowCell}</td>
       <td>
         <button class="btn btn-ghost" style="padding:4px 10px;font-size:11px;" onclick="editAgent('${a.id}')">✏ Edit</button>
+        <button class="btn btn-ghost" style="padding:4px 10px;font-size:11px;" onclick="viewDownlineFor('${a.id}')" title="View this agent's downline tree">🌳</button>
       </td>
     </tr>`;
   }).join('');
+}
+
+// Jumps to the Downline Tree tab, rooted at a specific agent — the "family
+// tree for each agent" entry point from the main roster table.
+function viewDownlineFor(agentId) {
+  const tabBtn = [...document.querySelectorAll('.tab')].find(t => t.getAttribute('onclick')?.includes("'genealogy'"));
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('pane-genealogy').classList.add('active');
+  if (tabBtn) tabBtn.classList.add('active');
+  renderGenealogy(); // ensures the root <select> is populated before we set its value
+  const rootSel = document.getElementById('gene-root');
+  if (rootSel) rootSel.value = agentId;
+  renderGenealogy();
 }
 
 // ── BOARD TABLE ───────────────────────────────────────────────
@@ -1123,14 +1180,19 @@ function renderGenealogy() {
   const tree = document.getElementById('gene-tree');
   if (!tree) return;
 
-  // Populate root selector
+  // Populate root selector — every agent is a valid root, since any agent
+  // can be the starting point for "their" downline tree, not just agents
+  // with no upline of their own.
   const rootSel = document.getElementById('gene-root');
   if (rootSel && rootSel.options.length <= 1) {
-    agentList.filter(a => !a.uplineId).forEach(a => {
-      const opt = document.createElement('option');
-      opt.value = a.id; opt.textContent = a.name;
-      rootSel.appendChild(opt);
-    });
+    agentList
+      .slice()
+      .sort((a,b) => a.name.localeCompare(b.name))
+      .forEach(a => {
+        const opt = document.createElement('option');
+        opt.value = a.id; opt.textContent = a.name;
+        rootSel.appendChild(opt);
+      });
   }
 
   // Build children map
@@ -1145,9 +1207,14 @@ function renderGenealogy() {
     const children = childMap[agent.id] || [];
     const matchesSearch = !q || agent.name.toLowerCase().includes(q) || agent.id.includes(q);
     const indent = depth * 18;
-    const roleColors = { trainee:'#6B7C93', director:'#5DADE2', marketing_director:'#E8C97A',
-      agency_build:'#2DCA73', rmd:'#9B59B6', admin:'#E67E22' };
-    const roleColor = roleColors[agent.role] || '#6B7C93';
+    const roleColor = ROLES[agent.role]?.color || '#6B7C93';
+    const isLicensed = (agent.licenseStates || []).length > 0;
+    const licenseBadge = isLicensed
+      ? `<span style="color:#2DCA73;" title="Licensed: ${(agent.licenseStates||[]).join(', ')}">● Licensed</span>`
+      : `<span style="color:#E67E22;" title="Not licensed">● Not licensed</span>`;
+    const noSponsorFlag = (!agent.uplineId && agent.id !== 'obi001' && agent.id !== 'dba000')
+      ? `<span style="color:#E74C3C;font-weight:700;" title="No upline sponsor on file">⚠ No sponsor</span>`
+      : '';
 
     const uplineName = agent.uplineId
       ? (agentList.find(a => a.id === agent.uplineId)?.name || agent.uplineId)
@@ -1162,9 +1229,10 @@ function renderGenealogy() {
         <div style="flex:1;min-width:0;">
           <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;
             white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${agent.name}</div>
-          <div style="font-size:10px;color:${roleColor};">${agent.role||'trainee'}
+          <div style="font-size:10px;color:${roleColor};">${ROLES[agent.role]?.label || agent.role || 'Trainee'}
             ${agent.phpId ? ' · PHP: '+agent.phpId : ''}
             <span style="color:#6B7C93;"> · Upline: ${uplineName}</span>
+            &nbsp;·&nbsp;${licenseBadge}${noSponsorFlag ? ' · '+noSponsorFlag : ''}
           </div>
         </div>
         <span style="font-family:'DM Mono',monospace;font-size:10px;color:#6B7C93;flex-shrink:0;">${children.length > 0 ? children.length+'↓' : ''}</span>
@@ -1215,15 +1283,20 @@ function saveGenealogyEdit() {
   const agent = agentList.find(a => a.id === geneEditAgentId);
   if (!agent) return;
   const newUpline = document.getElementById('gene-upline-select').value;
-  agent.uplineId = newUpline || null;
-  try { localStorage.setItem('dba_agent_roster', JSON.stringify(agentList)); } catch(e) {}
+  agent.uplineId = newUpline || '';
+  // Keep the global AGENTS record in sync too, in case agentList is a
+  // viewer-scoped subset (see getManageableAgents in auth.js).
+  const globalAgent = typeof AGENTS !== 'undefined' ? AGENTS.find(a => a.id === agent.id) : null;
+  if (globalAgent) globalAgent.uplineId = agent.uplineId;
+
+  saveToLocalStorage(); // uses the same merge-safe dba_agent_overrides store as the rest of this page
   document.getElementById('gene-modal').style.display = 'none';
   renderGenealogy();
   renderRoster();
-  if (AUTH.getMondayKey()) {
+  if (AUTH.getMondayKey() && typeof syncAgentToMonday === 'function') {
     syncAgentToMonday(agent, 'update');
   }
-  if (typeof toast === 'function') toast(`✓ ${agent.name} upline updated`);
+  if (typeof toast === 'function') toast(`✓ ${agent.name}'s upline updated`);
 }
 </script>
 </body>
