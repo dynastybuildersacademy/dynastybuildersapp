@@ -49,6 +49,24 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);m
 .rp-card-title{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:0.09em;margin-bottom:14px;}
 .field-label{font-size:11px;color:rgba(250,246,238,0.6);font-weight:600;letter-spacing:0.09em;text-transform:uppercase;display:block;margin-bottom:6px;}
 select,input{width:100%;background:var(--navy);border:1px solid var(--border);color:var(--cream);font-family:'Barlow',sans-serif;font-size:13px;padding:10px 12px;border-radius:3px;margin-bottom:12px;}
+textarea{width:100%;background:var(--navy);border:1px solid var(--border);color:var(--cream);font-family:'Barlow',sans-serif;font-size:13px;padding:10px 12px;border-radius:3px;margin-bottom:12px;min-height:64px;resize:vertical;}
+.ws-step{background:var(--navy-mid);border:1px solid var(--border);border-radius:6px;padding:20px;margin-bottom:16px;}
+.ws-step-num{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:rgba(201,168,76,.15);color:var(--gold);font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:13px;margin-right:10px;}
+.ws-step-title{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:800;color:var(--cream);display:inline;}
+.ws-principle{font-size:11px;color:var(--gold);font-style:italic;margin:4px 0 14px 36px;}
+.ws-grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.ws-grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+@media(max-width:640px){.ws-grid2,.ws-grid3{grid-template-columns:1fr;}}
+.ws-mini-label{font-size:10px;color:var(--slate);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:4px;}
+.ws-day-card{background:var(--navy);border:1px solid var(--border);border-radius:5px;padding:12px;margin-bottom:8px;}
+.ws-day-name{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;color:var(--gold);margin-bottom:8px;}
+.ws-declaration{background:rgba(201,168,76,.06);border:1px dashed rgba(201,168,76,.35);border-radius:6px;padding:18px;font-family:'Cormorant Garamond',serif;font-size:16px;line-height:1.9;color:var(--cream);}
+.ws-obstacle-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+@media(max-width:640px){.ws-obstacle-row{grid-template-columns:1fr;}}
+.ws-rating-row{display:flex;gap:14px;flex-wrap:wrap;align-items:center;}
+.ws-rating{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.ws-rating input{width:56px;text-align:center;margin-bottom:0;}
+.ws-rating label{font-size:9px;color:var(--slate);text-transform:uppercase;}
 select:focus,input:focus{outline:none;border-color:var(--gold);}
 select option{background:var(--navy-mid);}
 .btn-gold{background:linear-gradient(135deg,var(--gold) 0%,#9a7018 100%);color:var(--navy);border:none;padding:11px 22px;border-radius:3px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;letter-spacing:0.06em;cursor:pointer;transition:opacity 0.2s;}
@@ -101,6 +119,7 @@ select option{background:var(--navy-mid);}
   <div class="tab" onclick="switchTab('mindset',this)">🧠 Mindset</div>
   <div class="tab" onclick="switchTab('consciousness',this)">⬆ Power vs Force</div>
   <div class="tab" onclick="switchTab('roleplay',this)">🎭 AI Role-Play</div>
+  <div class="tab" onclick="switchTab('weeklystrategy',this)">🎯 Weekly Strategy</div>
   <div class="tab" onclick="switchTab('bookclub',this)">📚 Book Club</div>
   <div class="tab" onclick="switchTab('teambuilder',this)">🏗 Team Builder</div>
 </div>
@@ -410,6 +429,273 @@ select option{background:var(--navy-mid);}
     <button class="btn-gold" style="margin-top:14px;" onclick="startRP()">Try Again →</button>
   </div>
 </div>
+<div class="panel" id="panel-weeklystrategy">
+  <div class="page-title">🎯 Weekly Strategies Workshop</div>
+  <div class="page-sub">Think • Believe • Plan • Act — inspired by the success principles taught by Napoleon Hill. Fill this out at the start of every week.</div>
+
+  <div class="rp-card" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+    <div style="flex:1;min-width:180px;">
+      <label class="field-label">Week Of</label>
+      <input type="date" id="ws-week-of" onchange="loadWeeklyStrategy()">
+    </div>
+    <div style="flex:1;min-width:180px;">
+      <label class="field-label">Load a Past Week</label>
+      <select id="ws-week-picker" onchange="document.getElementById('ws-week-of').value=this.value;loadWeeklyStrategy();">
+        <option value="">— This week —</option>
+      </select>
+    </div>
+    <button class="btn-gold" onclick="printWeeklyStrategy()" style="align-self:flex-end;">🖨 Print</button>
+  </div>
+
+  <!-- STEP 1 -->
+  <div class="ws-step">
+    <span class="ws-step-num">1</span><span class="ws-step-title">Assess Your Current State</span>
+    <div class="ws-principle">Principle: Accurate Thinking — before deciding where you're going, get clear about where you are.</div>
+    <div class="ws-grid3">
+      <div><label class="ws-mini-label">Prospects</label><input class="ws-field" type="number" id="ws-last-prospects" min="0"></div>
+      <div><label class="ws-mini-label">Calls</label><input class="ws-field" type="number" id="ws-last-calls" min="0"></div>
+      <div><label class="ws-mini-label">Appointments</label><input class="ws-field" type="number" id="ws-last-appointments" min="0"></div>
+      <div><label class="ws-mini-label">Guests</label><input class="ws-field" type="number" id="ws-last-guests" min="0"></div>
+      <div><label class="ws-mini-label">Recruits</label><input class="ws-field" type="number" id="ws-last-recruits" min="0"></div>
+      <div><label class="ws-mini-label">Families Served</label><input class="ws-field" type="number" id="ws-last-families" min="0"></div>
+      <div><label class="ws-mini-label">Applications</label><input class="ws-field" type="number" id="ws-last-applications" min="0"></div>
+      <div><label class="ws-mini-label">Submitted Points</label><input class="ws-field" type="number" id="ws-last-subpts" min="0"></div>
+      <div><label class="ws-mini-label">Paid Points</label><input class="ws-field" type="number" id="ws-last-paidpts" min="0"></div>
+      <div><label class="ws-mini-label">Licensing Activity</label><input class="ws-field" type="text" id="ws-last-licensing"></div>
+      <div><label class="ws-mini-label">Follow-Ups Completed</label><input class="ws-field" type="number" id="ws-last-followups" min="0"></div>
+    </div>
+
+    <div style="margin-top:6px;font-family:'Cormorant Garamond',serif;font-size:16px;color:var(--gold-light);margin-bottom:10px;">
+      What are my current results telling me about the way I have been thinking and operating? Your results are feedback — don't judge yourself, study the numbers.
+    </div>
+    <div class="ws-grid2">
+      <div><label class="ws-mini-label">Where did I win?</label><textarea class="ws-field" id="ws-win"></textarea></div>
+      <div><label class="ws-mini-label">Where did I fall short?</label><textarea class="ws-field" id="ws-shortfall"></textarea></div>
+      <div><label class="ws-mini-label">What activity produced my best results?</label><textarea class="ws-field" id="ws-bestactivity"></textarea></div>
+      <div><label class="ws-mini-label">What activity did I avoid?</label><textarea class="ws-field" id="ws-avoidedactivity"></textarea></div>
+      <div><label class="ws-mini-label">Where was I consistent?</label><textarea class="ws-field" id="ws-consistency"></textarea></div>
+      <div><label class="ws-mini-label">Where did I let fear, procrastination, distraction or doubt control my activity?</label><textarea class="ws-field" id="ws-feardoubt"></textarea></div>
+    </div>
+
+    <label class="field-label" style="margin-top:8px;">Determine Your Current "Frequency" — circle the state that best describes last week</label>
+    <div class="ws-grid2">
+      <label style="display:flex;align-items:center;gap:8px;background:rgba(231,76,60,.08);border:1px solid rgba(231,76,60,.25);border-radius:5px;padding:10px 12px;cursor:pointer;">
+        <input class="ws-field" type="radio" name="ws-frequency" id="ws-frequency-fear" value="fear" style="width:auto;margin:0;">
+        <span style="font-size:12.5px;color:#E8A0A0;">Fear → Doubt → Hesitation → Inconsistent Action</span>
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;background:rgba(45,202,115,.08);border:1px solid rgba(45,202,115,.25);border-radius:5px;padding:10px 12px;cursor:pointer;">
+        <input class="ws-field" type="radio" name="ws-frequency" id="ws-frequency-faith" value="faith" style="width:auto;margin:0;">
+        <span style="font-size:12.5px;color:#7FE0A8;">Faith → Expectation → Decision → Persistent Action</span>
+      </label>
+    </div>
+    <div style="margin-top:8px;"><label class="ws-mini-label">Did my activities match the person who already believes the goal is possible?</label><textarea class="ws-field" id="ws-frequency-match"></textarea></div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="ws-step">
+    <span class="ws-step-num">2</span><span class="ws-step-title">Create a Definite Weekly Aim</span>
+    <div class="ws-principle">Napoleon Hill Principle: Definiteness of Purpose — a vague goal creates vague activity.</div>
+    <div class="ws-grid2">
+      <div><label class="ws-mini-label">By this date, I will accomplish:</label><input class="ws-field" type="date" id="ws-goal-date"></div>
+      <div><label class="ws-mini-label">My Definite Weekly Goal (make it measurable — e.g. 3 recruits, 5,000 personal points, 100 calls)</label><input class="ws-field" type="text" id="ws-goal-text"></div>
+    </div>
+    <label class="ws-mini-label">Why must I accomplish this?</label>
+    <textarea class="ws-field" id="ws-goal-why" style="min-height:80px;"></textarea>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="ws-step">
+    <span class="ws-step-num">3</span><span class="ws-step-title">Visualize the Result</span>
+    <div class="ws-principle">Principles: Imagination + Autosuggestion + Faith. Close your eyes and mentally travel to the end of the week — the goal is already accomplished.</div>
+    <label class="ws-mini-label">"At the end of this week, I see myself…" — the scoreboard, the people you helped, the conversations, the celebration, the confidence, who you had to become</label>
+    <textarea class="ws-field" id="ws-vision" style="min-height:110px;"></textarea>
+  </div>
+
+  <!-- STEP 3B -->
+  <div class="ws-step">
+    <span class="ws-step-num">3B</span><span class="ws-step-title">Dream Life Image / Vision Board</span>
+    <div class="ws-principle">Principle: Imagination + Faith + Autosuggestion — "Whatever the mind can clearly conceive and believe, it can achieve."</div>
+    <div style="font-size:12.5px;color:var(--slate);margin-bottom:14px;line-height:1.6;">
+      Take 2–5 minutes and answer these honestly. Your answers become the prompt for a Dream Life Image or Vision Board — a visual reminder of who you're becoming and what you're building.
+    </div>
+
+    <div class="ws-grid2">
+      <div><label class="ws-mini-label">My name</label><input class="ws-field" type="text" id="ws-dream-name"></div>
+      <div><label class="ws-mini-label">My main goal right now</label><input class="ws-field" type="text" id="ws-dream-maingoal"></div>
+      <div><label class="ws-mini-label">My 12-month vision</label><input class="ws-field" type="text" id="ws-dream-12mo"></div>
+      <div><label class="ws-mini-label">I want to feel</label><input class="ws-field" type="text" id="ws-dream-feel" placeholder="Confident, peaceful, abundant, focused…"></div>
+      <div><label class="ws-mini-label">I see myself living in / enjoying</label><input class="ws-field" type="text" id="ws-dream-living"></div>
+      <div><label class="ws-mini-label">I see my family experiencing</label><input class="ws-field" type="text" id="ws-dream-family"></div>
+      <div style="grid-column:1/-1;"><label class="ws-mini-label">I see my business/career becoming</label><input class="ws-field" type="text" id="ws-dream-career"></div>
+    </div>
+
+    <label class="field-label">Important Things to Include in My Image/Vision Board</label>
+    <div class="ws-grid2">
+      <input class="ws-field" type="text" id="ws-dream-include-1" placeholder="1. e.g. dream home">
+      <input class="ws-field" type="text" id="ws-dream-include-2" placeholder="2. e.g. thriving business">
+      <input class="ws-field" type="text" id="ws-dream-include-3" placeholder="3. e.g. family joy">
+      <input class="ws-field" type="text" id="ws-dream-include-4" placeholder="4. e.g. financial freedom">
+    </div>
+    <label class="ws-mini-label">Scripture / affirmation / quote I want included</label>
+    <input class="ws-field" type="text" id="ws-dream-affirmation" style="margin-bottom:14px;">
+
+    <button class="btn-gold" onclick="generateVisionPrompt()">✨ Generate My Vision Board Prompt</button>
+    <div id="ws-vision-prompt-box" style="display:none;margin-top:14px;">
+      <label class="field-label">Your Image-Generation Prompt</label>
+      <textarea id="ws-vision-prompt-text" readonly style="min-height:130px;font-family:'DM Mono',monospace;font-size:12px;"></textarea>
+      <button class="btn-gold" onclick="copyVisionPrompt()">📋 Copy Prompt</button>
+      <div style="font-size:11px;color:var(--slate);margin-top:8px;line-height:1.6;">
+        Paste this into your image generator of choice (ChatGPT, Midjourney, Canva AI, DALL·E, etc.) to create your Dream Life Image or Vision Board.
+      </div>
+    </div>
+
+    <div style="background:rgba(201,168,76,.06);border-left:3px solid var(--gold);border-radius:4px;padding:12px 16px;margin-top:16px;font-size:12.5px;color:var(--slate);font-style:italic;line-height:1.7;">
+      "Napoleon Hill taught that the mind works best when it has a clear picture of what it wants. Today, we are not just writing goals — we are seeing them. Your dream life image or vision board will help you connect emotionally with your future, strengthen your belief, and remind you daily of what you are building."
+    </div>
+
+    <div style="margin-top:14px;">
+      <label class="field-label">Homework — This Week</label>
+      <ul style="font-size:12.5px;color:var(--slate);line-height:2;margin-left:18px;">
+        <li>Save your dream life image or vision board on your phone</li>
+        <li>Look at it every morning and every night</li>
+        <li>Read your goal aloud</li>
+        <li>Visualize it as already done</li>
+        <li>Let your daily activities reflect the vision you now see clearly</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- STEP 4 -->
+  <div class="ws-step">
+    <span class="ws-step-num">4</span><span class="ws-step-title">Turn the Vision Into an Organized Plan</span>
+    <div class="ws-principle">Napoleon Hill Principle: Organized Planning — faith should produce action. Work backward from the result using proven activities.</div>
+    <div class="ws-grid3">
+      <div><label class="ws-mini-label">Prospects</label><input class="ws-field" type="number" id="ws-plan-prospects" min="0"></div>
+      <div><label class="ws-mini-label">Calls</label><input class="ws-field" type="number" id="ws-plan-calls" min="0"></div>
+      <div><label class="ws-mini-label">Appointments</label><input class="ws-field" type="number" id="ws-plan-appointments" min="0"></div>
+      <div><label class="ws-mini-label">Guests</label><input class="ws-field" type="number" id="ws-plan-guests" min="0"></div>
+      <div><label class="ws-mini-label">Recruiting Interviews</label><input class="ws-field" type="number" id="ws-plan-ri" min="0"></div>
+      <div><label class="ws-mini-label">Financial Appointments</label><input class="ws-field" type="number" id="ws-plan-financial" min="0"></div>
+      <div><label class="ws-mini-label">Follow-Ups</label><input class="ws-field" type="number" id="ws-plan-followups" min="0"></div>
+      <div><label class="ws-mini-label">Families Served</label><input class="ws-field" type="number" id="ws-plan-families" min="0"></div>
+      <div><label class="ws-mini-label">Points Target</label><input class="ws-field" type="number" id="ws-plan-points" min="0"></div>
+      <div><label class="ws-mini-label">Licensing Activity</label><input class="ws-field" type="text" id="ws-plan-licensing"></div>
+    </div>
+  </div>
+
+  <!-- STEP 5 -->
+  <div class="ws-step">
+    <span class="ws-step-num">5</span><span class="ws-step-title">Break the Week Into Daily Action</span>
+    <div class="ws-principle">Principle: Decision + Persistence — decide before the week begins, don't wake up each morning deciding what to do.</div>
+    <div id="ws-days-container"></div>
+  </div>
+
+  <!-- STEP 6 -->
+  <div class="ws-step">
+    <span class="ws-step-num">6</span><span class="ws-step-title">Identify Your Inspired Action</span>
+    <div class="ws-principle">"If I genuinely believed my goal was already possible, what action would I take today?"</div>
+    <div class="ws-grid2">
+      <div><label class="ws-mini-label">Who do I need to call?</label><input class="ws-field" type="text" id="ws-inspired-call"></div>
+      <div><label class="ws-mini-label">Who do I need to follow up with?</label><input class="ws-field" type="text" id="ws-inspired-followup"></div>
+      <div><label class="ws-mini-label">What conversation have I been avoiding?</label><input class="ws-field" type="text" id="ws-inspired-avoiding"></div>
+      <div><label class="ws-mini-label">What opportunity is already in front of me?</label><input class="ws-field" type="text" id="ws-inspired-opportunity"></div>
+    </div>
+    <label class="ws-mini-label">What action would demonstrate faith rather than fear?</label>
+    <textarea class="ws-field" id="ws-inspired-faithaction"></textarea>
+    <div class="ws-grid2" style="margin-top:6px;">
+      <div><label class="ws-mini-label">MY NEXT ACTION</label><input class="ws-field" type="text" id="ws-next-action"></div>
+      <div><label class="ws-mini-label">I will complete it by</label><input class="ws-field" type="date" id="ws-next-action-date"></div>
+    </div>
+  </div>
+
+  <!-- STEP 7 -->
+  <div class="ws-step">
+    <span class="ws-step-num">7</span><span class="ws-step-title">Build Faith Through Autosuggestion</span>
+    <div class="ws-principle">Napoleon Hill Principle: Autosuggestion — read this every morning and evening.</div>
+    <div class="ws-declaration">
+      My goal this week is <strong id="ws-decl-goal">___________________</strong>.<br><br>
+      I believe this goal is achievable. I see myself accomplishing it. I know the activities required to produce the result.<br><br>
+      I will take disciplined, persistent and inspired action every day. I refuse to allow temporary setbacks, rejection, fear or doubt to determine my future.<br><br>
+      I will continue learning, adjusting and moving forward until the goal is accomplished.
+    </div>
+  </div>
+
+  <!-- STEP 8 -->
+  <div class="ws-step">
+    <span class="ws-step-num">8</span><span class="ws-step-title">Use the Mastermind</span>
+    <div class="ws-principle">Napoleon Hill Principle: The Mastermind — success grows faster when people combine knowledge, encouragement, accountability and experience. Don't isolate yourself.</div>
+    <div class="ws-grid2">
+      <div><label class="ws-mini-label">My mentor</label><input class="ws-field" type="text" id="ws-mm-mentor"></div>
+      <div><label class="ws-mini-label">My accountability partner</label><input class="ws-field" type="text" id="ws-mm-accountability"></div>
+      <div><label class="ws-mini-label">Someone I should work with this week</label><input class="ws-field" type="text" id="ws-mm-workwith"></div>
+      <div><label class="ws-mini-label">Someone I should learn from</label><input class="ws-field" type="text" id="ws-mm-learnfrom"></div>
+      <div><label class="ws-mini-label">Someone I can help this week</label><input class="ws-field" type="text" id="ws-mm-help"></div>
+    </div>
+  </div>
+
+  <!-- STEP 9 -->
+  <div class="ws-step">
+    <span class="ws-step-num">9</span><span class="ws-step-title">Expect Obstacles Before They Arrive</span>
+    <div class="ws-principle">Principle: Persistence — "Temporary defeat will cause me to adjust my plan, not abandon my goal."</div>
+    <div class="ws-obstacle-row"><input class="ws-field" type="text" id="ws-obstacle-1" placeholder="Obstacle 1"><input class="ws-field" type="text" id="ws-obstacle-response-1" placeholder="My response"></div>
+    <div class="ws-obstacle-row"><input class="ws-field" type="text" id="ws-obstacle-2" placeholder="Obstacle 2"><input class="ws-field" type="text" id="ws-obstacle-response-2" placeholder="My response"></div>
+    <div class="ws-obstacle-row"><input class="ws-field" type="text" id="ws-obstacle-3" placeholder="Obstacle 3"><input class="ws-field" type="text" id="ws-obstacle-response-3" placeholder="My response"></div>
+  </div>
+
+  <!-- STEP 10 -->
+  <div class="ws-step">
+    <span class="ws-step-num">10</span><span class="ws-step-title">The Daily 5-Minute Reset</span>
+    <div class="ws-principle">Do every morning. Do not wait until you "feel ready" — action creates momentum.</div>
+    <div class="ws-grid3" style="grid-template-columns:repeat(5,1fr);">
+      <div style="text-align:center;padding:10px;background:var(--navy);border-radius:5px;"><div style="font-size:20px;">📖</div><div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;color:var(--gold);margin-top:4px;">READ</div><div style="font-size:10.5px;color:var(--slate);margin-top:2px;">Your definite weekly goal</div></div>
+      <div style="text-align:center;padding:10px;background:var(--navy);border-radius:5px;"><div style="font-size:20px;">👁</div><div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;color:var(--gold);margin-top:4px;">SEE</div><div style="font-size:10.5px;color:var(--slate);margin-top:2px;">Visualize accomplishing it</div></div>
+      <div style="text-align:center;padding:10px;background:var(--navy);border-radius:5px;"><div style="font-size:20px;">❤️</div><div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;color:var(--gold);margin-top:4px;">BELIEVE</div><div style="font-size:10.5px;color:var(--slate);margin-top:2px;">Connect with why it matters</div></div>
+      <div style="text-align:center;padding:10px;background:var(--navy);border-radius:5px;"><div style="font-size:20px;">🗺</div><div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;color:var(--gold);margin-top:4px;">PLAN</div><div style="font-size:10.5px;color:var(--slate);margin-top:2px;">Today's highest-value activities</div></div>
+      <div style="text-align:center;padding:10px;background:var(--navy);border-radius:5px;"><div style="font-size:20px;">⚡</div><div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;color:var(--gold);margin-top:4px;">ACT</div><div style="font-size:10.5px;color:var(--slate);margin-top:2px;">Take the first action immediately</div></div>
+    </div>
+  </div>
+
+  <!-- END-OF-DAY SCORECARD -->
+  <div class="ws-step">
+    <span class="ws-step-num">✓</span><span class="ws-step-title">End-of-Day Scorecard</span>
+    <div class="ws-principle">Fill this out each evening this week.</div>
+    <div class="ws-grid2">
+      <div><label class="ws-mini-label">What did I commit to today?</label><textarea class="ws-field" id="ws-eod-committed"></textarea></div>
+      <div><label class="ws-mini-label">What did I actually complete?</label><textarea class="ws-field" id="ws-eod-completed"></textarea></div>
+      <div><label class="ws-mini-label">What result did today's activity produce?</label><textarea class="ws-field" id="ws-eod-result"></textarea></div>
+      <div><label class="ws-mini-label">What did I learn? What must I improve tomorrow?</label><textarea class="ws-field" id="ws-eod-learned"></textarea></div>
+    </div>
+    <label class="field-label">Rate Yourself</label>
+    <div class="ws-rating-row">
+      <div class="ws-rating"><input class="ws-field" type="number" min="0" max="10" id="ws-rate-clarity"><label>Clarity</label></div>
+      <div class="ws-rating"><input class="ws-field" type="number" min="0" max="10" id="ws-rate-faith"><label>Faith</label></div>
+      <div class="ws-rating"><input class="ws-field" type="number" min="0" max="10" id="ws-rate-focus"><label>Focus</label></div>
+      <div class="ws-rating"><input class="ws-field" type="number" min="0" max="10" id="ws-rate-activity"><label>Activity</label></div>
+      <div class="ws-rating"><input class="ws-field" type="number" min="0" max="10" id="ws-rate-persistence"><label>Persistence</label></div>
+    </div>
+  </div>
+
+  <!-- FINAL COMMITMENT -->
+  <div class="ws-step">
+    <span class="ws-step-num">🏁</span><span class="ws-step-title">Final Commitment</span>
+    <label class="ws-mini-label">This week I am committed to:</label>
+    <textarea class="ws-field" id="ws-commitment"></textarea>
+    <label class="ws-mini-label">The person I must become this week is:</label>
+    <textarea class="ws-field" id="ws-become"></textarea>
+    <label class="ws-mini-label">The action I will take immediately after this workshop is:</label>
+    <textarea class="ws-field" id="ws-immediate-action"></textarea>
+
+    <div class="ws-declaration" style="margin-top:14px;">
+      I have a definite goal. I have a definite plan. I can see the result before it happens.<br>
+      My faith determines how I approach the opportunity. My activity demonstrates what I believe.<br>
+      I will take inspired, disciplined and persistent action. I will review my results, adjust my plan and continue moving forward.<br><br>
+      <strong style="color:var(--gold);">SEE IT. BELIEVE IT. PLAN IT. WORK IT. ACHIEVE IT.</strong>
+    </div>
+  </div>
+
+  <button class="btn-gold" style="width:100%;font-size:15px;padding:14px;" onclick="saveWeeklyStrategy()">💾 Save This Week's Strategy</button>
+  <div id="ws-save-status" style="text-align:center;font-size:12px;color:var(--slate);margin-top:8px;"></div>
+</div>
 
 </div><!-- /content -->
 
@@ -422,6 +708,7 @@ function switchTab(id, el) {
   document.getElementById('panel-'+id).classList.add('active');
   el.classList.add('active');
   if (id === 'bookclub') renderBookClub();
+  if (id === 'weeklystrategy') initWeeklyStrategy();
 }
 
 function buildModules(containerId, modules) {
@@ -1232,6 +1519,156 @@ function setCurrentBook(idx) {
   localStorage.setItem('dba_current_book_idx', idx);
   renderBookClub();
   toast('✓ Book Club updated to: ' + BOOK_CATALOG[idx].title);
+}
+
+// ════════════════════════════════════════════════════════════════
+// WEEKLY STRATEGIES WORKSHOP
+// ════════════════════════════════════════════════════════════════
+const WS_DAYS = ['mon','tue','wed','thu','fri','sat','sun'];
+const WS_DAY_LABELS = { mon:'Monday', tue:'Tuesday', wed:'Wednesday', thu:'Thursday', fri:'Friday', sat:'Saturday', sun:'Sunday' };
+let wsDaysRendered = false;
+
+function initWeeklyStrategy() {
+  if (!wsDaysRendered) {
+    renderWeeklyStrategyDays();
+    wsDaysRendered = true;
+  }
+  // Default "Week Of" to the most recent Monday, if not already set
+  const weekOfEl = document.getElementById('ws-week-of');
+  if (weekOfEl && !weekOfEl.value) {
+    const d = new Date();
+    const day = d.getDay();
+    const diffToMonday = (day === 0 ? -6 : 1) - day;
+    d.setDate(d.getDate() + diffToMonday);
+    weekOfEl.value = d.toISOString().slice(0,10);
+  }
+  populateWeekPicker();
+  loadWeeklyStrategy();
+  // Keep the printed/read declaration in sync with the goal field live
+  const goalInput = document.getElementById('ws-goal-text');
+  if (goalInput && !goalInput.dataset.wsWired) {
+    goalInput.addEventListener('input', () => {
+      document.getElementById('ws-decl-goal').textContent = goalInput.value.trim() || '___________________';
+    });
+    goalInput.dataset.wsWired = '1';
+  }
+}
+
+function renderWeeklyStrategyDays() {
+  const el = document.getElementById('ws-days-container');
+  if (!el) return;
+  el.innerHTML = WS_DAYS.map(d => {
+    if (d === 'sun') {
+      return `<div class="ws-day-card">
+        <div class="ws-day-name">Sunday</div>
+        <label class="ws-mini-label">Review • Reflect • Reset • Recommit</label>
+        <textarea class="ws-field" id="ws-day-sun-note" placeholder="Notes for your weekly review"></textarea>
+      </div>`;
+    }
+    return `<div class="ws-day-card">
+      <div class="ws-day-name">${WS_DAY_LABELS[d]}</div>
+      <div style="font-size:10px;color:var(--slate);margin-bottom:6px;">My three most important actions:</div>
+      <input class="ws-field" type="text" id="ws-day-${d}-1" placeholder="1.">
+      <input class="ws-field" type="text" id="ws-day-${d}-2" placeholder="2.">
+      <input class="ws-field" type="text" id="ws-day-${d}-3" placeholder="3." style="margin-bottom:0;">
+    </div>`;
+  }).join('');
+}
+
+function wsStorageKey(weekOf) {
+  return `dba_weekly_strategy_${session.agentId}_${weekOf}`;
+}
+function wsIndexKey() {
+  return `dba_weekly_strategy_index_${session.agentId}`;
+}
+
+function saveWeeklyStrategy() {
+  const weekOf = document.getElementById('ws-week-of').value;
+  if (!weekOf) { document.getElementById('ws-save-status').textContent = '⚠ Pick a "Week Of" date first'; return; }
+
+  const data = {};
+  document.querySelectorAll('.ws-field').forEach(field => {
+    if (field.type === 'radio') {
+      if (field.checked) data[field.name] = field.value;
+    } else {
+      data[field.id] = field.value;
+    }
+  });
+
+  try {
+    localStorage.setItem(wsStorageKey(weekOf), JSON.stringify(data));
+    const index = JSON.parse(localStorage.getItem(wsIndexKey()) || '[]');
+    if (!index.includes(weekOf)) { index.push(weekOf); index.sort().reverse(); localStorage.setItem(wsIndexKey(), JSON.stringify(index)); }
+    document.getElementById('ws-save-status').textContent = `✓ Saved — Week of ${weekOf}`;
+    populateWeekPicker();
+  } catch(e) {
+    document.getElementById('ws-save-status').textContent = '⚠ Could not save — storage may be full';
+  }
+}
+
+function loadWeeklyStrategy() {
+  const weekOf = document.getElementById('ws-week-of').value;
+  if (!weekOf) return;
+  let data = {};
+  try { data = JSON.parse(localStorage.getItem(wsStorageKey(weekOf)) || '{}'); } catch(e) {}
+
+  document.querySelectorAll('.ws-field').forEach(field => {
+    if (field.type === 'radio') {
+      field.checked = (data[field.name] === field.value);
+    } else {
+      field.value = data[field.id] || '';
+    }
+  });
+  const goalInput = document.getElementById('ws-goal-text');
+  document.getElementById('ws-decl-goal').textContent = (goalInput.value || '').trim() || '___________________';
+  document.getElementById('ws-save-status').textContent = Object.keys(data).length ? `Loaded — Week of ${weekOf}` : 'New week — nothing saved yet';
+}
+
+function populateWeekPicker() {
+  const picker = document.getElementById('ws-week-picker');
+  if (!picker) return;
+  let index = [];
+  try { index = JSON.parse(localStorage.getItem(wsIndexKey()) || '[]'); } catch(e) {}
+  const current = picker.value;
+  picker.innerHTML = '<option value="">— This week —</option>' + index.map(w => `<option value="${w}">Week of ${w}</option>`).join('');
+  if (index.includes(current)) picker.value = current;
+}
+
+function printWeeklyStrategy() {
+  window.print();
+}
+
+function generateVisionPrompt() {
+  const val = id => (document.getElementById(id)?.value || '').trim();
+  const name = val('ws-dream-name') || (session?.name || 'this agent');
+  const goals = [
+    val('ws-dream-maingoal'), val('ws-dream-12mo'), val('ws-dream-living'),
+    val('ws-dream-family'), val('ws-dream-career'),
+    val('ws-dream-include-1'), val('ws-dream-include-2'), val('ws-dream-include-3'), val('ws-dream-include-4'),
+  ].filter(Boolean);
+  const feel = val('ws-dream-feel');
+  const affirmation = val('ws-dream-affirmation');
+
+  if (!goals.length) {
+    document.getElementById('ws-save-status').textContent = '⚠ Fill in at least one field above first';
+    return;
+  }
+
+  let prompt = `Create a motivational dream life vision board for ${name}. Show the lifestyle and future they are believing for. Include ${goals.join(', ')}.`;
+  if (feel) prompt += ` Show them feeling ${feel}.`;
+  if (affirmation) prompt += ` Add the affirmation: "${affirmation}".`;
+  prompt += ` Make it inspiring, elegant, and success-driven — powerful, hopeful, faith-filled, and visually inspiring.`;
+
+  document.getElementById('ws-vision-prompt-text').value = prompt;
+  document.getElementById('ws-vision-prompt-box').style.display = 'block';
+}
+
+function copyVisionPrompt() {
+  const box = document.getElementById('ws-vision-prompt-text');
+  box.select();
+  navigator.clipboard.writeText(box.value).then(() => toast('✓ Prompt copied')).catch(() => {
+    document.execCommand('copy'); toast('✓ Prompt copied');
+  });
 }
 
 function renderBookClub() {
