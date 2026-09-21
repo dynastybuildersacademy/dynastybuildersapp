@@ -282,6 +282,7 @@ select option{background:var(--navy-mid);}
     <div class="ws-grid2">
       <div><label class="ws-mini-label">My name</label><input class="ws-field" type="text" id="ws-dream-name"></div>
       <div><label class="ws-mini-label">My main goal right now</label><input class="ws-field" type="text" id="ws-dream-maingoal"></div>
+      <div><label class="ws-mini-label">My WHY — why do I want this life?</label><input class="ws-field" type="text" id="ws-dream-why" placeholder="Who is this for? What does it make possible?"></div>
       <div><label class="ws-mini-label">My 12-month vision</label><input class="ws-field" type="text" id="ws-dream-12mo"></div>
       <div><label class="ws-mini-label">I want to feel</label><input class="ws-field" type="text" id="ws-dream-feel" placeholder="Confident, peaceful, abundant, focused…"></div>
       <div><label class="ws-mini-label">I see myself living in / enjoying</label><input class="ws-field" type="text" id="ws-dream-living"></div>
@@ -888,6 +889,7 @@ function generateVisionPrompt() {
     val('ws-dream-include-1'), val('ws-dream-include-2'), val('ws-dream-include-3'), val('ws-dream-include-4'),
   ].filter(Boolean);
   const feel = val('ws-dream-feel');
+  const why = val('ws-dream-why');
   const affirmation = val('ws-dream-affirmation');
 
   if (!goals.length) {
@@ -896,6 +898,7 @@ function generateVisionPrompt() {
   }
 
   let prompt = `Create a motivational dream life vision board for ${name}. Show the lifestyle and future they are believing for. Include ${goals.join(', ')}.`;
+  if (why) prompt += ` This matters to them because: ${why}.`;
   if (feel) prompt += ` Show them feeling ${feel}.`;
   if (affirmation) prompt += ` Add the affirmation: "${affirmation}".`;
   prompt += ` Make it inspiring, elegant, and success-driven — powerful, hopeful, faith-filled, and visually inspiring.`;
