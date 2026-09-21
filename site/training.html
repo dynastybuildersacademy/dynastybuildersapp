@@ -130,6 +130,8 @@ select option{background:var(--navy-mid);}
   <a href="hub.html" class="back-btn">← Hub</a>
 </div>
 <div class="tab-bar">
+  <div class="tab" onclick="switchTab('bookclub',this)">📚 Book Club</div>
+  <div class="tab" onclick="switchTab('weeklystrategy',this)">🎯 Weekly Strategy</div>
   <div class="tab active" onclick="switchTab('fasttrack',this)">🚀 Fast Track</div>
   <div class="tab" onclick="window.location.href='academy.html'" style="background:rgba(201,168,76,.1);border-bottom:2px solid var(--gold);">🏛️ Academy</div>
   <div class="tab" onclick="switchTab('sales',this)">💰 Sales Mastery</div>
@@ -139,8 +141,6 @@ select option{background:var(--navy-mid);}
   <div class="tab" onclick="switchTab('mindset',this)">🧠 Mindset</div>
   <div class="tab" onclick="switchTab('consciousness',this)">⬆ Power vs Force</div>
   <div class="tab" onclick="switchTab('roleplay',this)">🎭 AI Role-Play</div>
-  <div class="tab" onclick="switchTab('weeklystrategy',this)">🎯 Weekly Strategy</div>
-  <div class="tab" onclick="switchTab('bookclub',this)">📚 Book Club</div>
   <div class="tab" onclick="switchTab('teambuilder',this)">🏗 Team Builder</div>
 </div>
 <div class="content">
@@ -527,40 +527,84 @@ select option{background:var(--navy-mid);}
 
   <!-- STEP 1B -->
   <div class="ws-step">
-    <span class="ws-step-num">1B</span><span class="ws-step-title">Dynasty Builders — Monthly &amp; 90-Day Goal Pace</span>
+    <span class="ws-step-num">1B</span><span class="ws-step-title" id="ws-goal-title">Monthly &amp; 90-Day Goal Pace</span>
     <div class="ws-principle">Know the target, know today's date, and the daily number does the rest of the thinking for you.</div>
 
-    <div class="ws-grid2">
-      <div>
-        <label class="field-label">Company Target</label>
-        <div class="ws-goal-row"><span>Recruits</span><input class="ws-field" type="number" id="ws-goal-target-recruits" min="0"></div>
-        <div class="ws-goal-row"><span>Submitted Points</span><input class="ws-field" type="number" id="ws-goal-target-subpts" min="0"></div>
-        <div class="ws-goal-row"><span>Paid Points</span><input class="ws-field" type="number" id="ws-goal-target-paidpts" min="0"></div>
-        <div class="ws-goal-row"><span>Licensed Agents</span><input class="ws-field" type="number" id="ws-goal-target-licensed" min="0"></div>
-        <div class="ws-goal-row"><span>First Checks</span><input class="ws-field" type="number" id="ws-goal-target-firstchecks" min="0"></div>
+    <div id="ws-team-view-card" style="display:none;background:rgba(93,173,226,.06);border:1px solid rgba(93,173,226,.25);border-radius:8px;padding:14px 16px;margin-bottom:16px;">
+      <label class="field-label">View a Team Member's Weekly Strategy</label>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <select id="ws-team-picker" style="flex:1;min-width:200px;">
+          <option value="">— Select someone in your downline —</option>
+        </select>
+        <button class="btn-gold" onclick="loadTeamMemberStrategy()">Load</button>
       </div>
-      <div>
-        <label class="field-label">Where We Are Right Now</label>
-        <div class="ws-goal-row"><span>Recruits</span><input class="ws-field" type="number" id="ws-goal-current-recruits" min="0" oninput="renderGoalPace()"></div>
-        <div class="ws-goal-row"><span>Submitted Points</span><input class="ws-field" type="number" id="ws-goal-current-subpts" min="0" oninput="renderGoalPace()"></div>
-        <div class="ws-goal-row"><span>Paid Points</span><input class="ws-field" type="number" id="ws-goal-current-paidpts" min="0" oninput="renderGoalPace()"></div>
-        <div class="ws-goal-row"><span>Licensed Agents</span><input class="ws-field" type="number" id="ws-goal-current-licensed" min="0" oninput="renderGoalPace()"></div>
-        <div class="ws-goal-row"><span>First Checks</span><input class="ws-field" type="number" id="ws-goal-current-firstchecks" min="0" oninput="renderGoalPace()"></div>
-      </div>
+      <div id="ws-team-view-results" style="margin-top:12px;"></div>
     </div>
-    <div style="font-size:11px;color:var(--slate);margin:-4px 0 16px;">These numbers are company-wide, not personal — update them whenever leadership shares fresh totals. They're saved on this device, separate from your weekly answers above.</div>
 
     <div class="ws-goal-period-tabs">
       <button class="ws-period-tab active" id="ws-period-tab-month" onclick="switchGoalPeriod('month')">📅 This Month</button>
       <button class="ws-period-tab" id="ws-period-tab-90day" onclick="switchGoalPeriod('90day')">🗓 90-Day Run</button>
     </div>
 
-    <div id="ws-goal-90day-startwrap" style="display:none;margin-bottom:10px;">
-      <label class="ws-mini-label">90-Day Run Started</label>
-      <input class="ws-field" type="date" id="ws-goal-90day-start" oninput="renderGoalPace()" style="max-width:220px;">
+    <!-- MONTH INPUTS -->
+    <div id="ws-goal-inputs-month">
+      <div class="ws-grid2">
+        <div>
+          <label class="field-label">Target — This Month</label>
+          <div class="ws-goal-row"><span>Recruits</span><input class="ws-field" type="number" id="ws-goal-target-month-recruits" min="0" oninput="renderGoalPace()"></div>
+          <div class="ws-goal-row"><span>Submitted Points</span><input class="ws-field" type="number" id="ws-goal-target-month-subpts" min="0" oninput="renderGoalPace()"></div>
+          <div class="ws-goal-row"><span>Paid Points</span><input class="ws-field" type="number" id="ws-goal-target-month-paidpts" min="0" oninput="renderGoalPace()"></div>
+          <div class="ws-goal-row"><span>Licensed Agents</span><input class="ws-field" type="number" id="ws-goal-target-month-licensed" min="0" oninput="renderGoalPace()"></div>
+          <div class="ws-goal-row"><span>First Checks</span><input class="ws-field" type="number" id="ws-goal-target-month-firstchecks" min="0" oninput="renderGoalPace()"></div>
+        </div>
+        <div>
+          <label class="field-label">Where We Are Right Now</label>
+          <div class="ws-goal-row"><span>Recruits</span><input class="ws-field" type="number" id="ws-goal-current-month-recruits" min="0" oninput="renderGoalPace()"></div>
+          <div class="ws-goal-row"><span>Submitted Points</span><input class="ws-field" type="number" id="ws-goal-current-month-subpts" min="0" oninput="renderGoalPace()"></div>
+          <div class="ws-goal-row"><span>Paid Points</span><input class="ws-field" type="number" id="ws-goal-current-month-paidpts" min="0" oninput="renderGoalPace()"></div>
+          <div class="ws-goal-row"><span>Licensed Agents</span><input class="ws-field" type="number" id="ws-goal-current-month-licensed" min="0" oninput="renderGoalPace()"></div>
+          <div class="ws-goal-row"><span>First Checks</span><input class="ws-field" type="number" id="ws-goal-current-month-firstchecks" min="0" oninput="renderGoalPace()"></div>
+        </div>
+      </div>
     </div>
 
+    <!-- 90-DAY INPUTS -->
+    <div id="ws-goal-inputs-90day" style="display:none;">
+      <label class="ws-mini-label">90-Day Run Started</label>
+      <input class="ws-field" type="date" id="ws-goal-90day-start" oninput="renderGoalPace()" style="max-width:220px;margin-bottom:14px;">
+      <div class="ws-grid2">
+        <div>
+          <label class="field-label">Target — 90-Day Run</label>
+          <div class="ws-goal-row"><span>Recruits</span><input class="ws-field" type="number" id="ws-goal-target-90day-recruits" min="0" oninput="renderGoalPace()"></div>
+          <div class="ws-goal-row"><span>Submitted Points</span><input class="ws-field" type="number" id="ws-goal-target-90day-subpts" min="0" oninput="renderGoalPace()"></div>
+          <div class="ws-goal-row"><span>Paid Points</span><input class="ws-field" type="number" id="ws-goal-target-90day-paidpts" min="0" oninput="renderGoalPace()"></div>
+          <div class="ws-goal-row"><span>Licensed Agents</span><input class="ws-field" type="number" id="ws-goal-target-90day-licensed" min="0" oninput="renderGoalPace()"></div>
+          <div class="ws-goal-row"><span>First Checks</span><input class="ws-field" type="number" id="ws-goal-target-90day-firstchecks" min="0" oninput="renderGoalPace()"></div>
+        </div>
+        <div>
+          <label class="field-label" style="display:inline;">Where We Are Right Now</label>
+          <a href="#" onclick="autofill90DayFromWeeks();return false;" style="font-size:11px;color:var(--gold);margin-left:8px;">🔄 Auto-fill from my saved weeks</a>
+          <div class="ws-goal-row"><span>Recruits</span><input class="ws-field" type="number" id="ws-goal-current-90day-recruits" min="0" oninput="renderGoalPace()"></div>
+          <div class="ws-goal-row"><span>Submitted Points</span><input class="ws-field" type="number" id="ws-goal-current-90day-subpts" min="0" oninput="renderGoalPace()"></div>
+          <div class="ws-goal-row"><span>Paid Points</span><input class="ws-field" type="number" id="ws-goal-current-90day-paidpts" min="0" oninput="renderGoalPace()"></div>
+          <div class="ws-goal-row"><span>Licensed Agents</span><input class="ws-field" type="number" id="ws-goal-current-90day-licensed" min="0" oninput="renderGoalPace()"></div>
+          <div class="ws-goal-row"><span>First Checks</span><input class="ws-field" type="number" id="ws-goal-current-90day-firstchecks" min="0" oninput="renderGoalPace()"></div>
+          <div id="ws-90day-autofill-status" style="font-size:10.5px;color:var(--slate);margin-top:4px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="font-size:11px;color:var(--slate);margin:2px 0 16px;">These numbers are saved on this device, separate from your weekly answers above. The Month and 90-Day targets are tracked independently — update either whenever leadership shares fresh totals.</div>
+
     <div id="ws-goal-pace-grid" class="ws-compare-grid"></div>
+
+    <div class="ws-compare-card" style="margin-top:14px;">
+      <div class="ws-compare-title">📞 This Week's Activity Number — to Stay on Pace</div>
+      <div style="font-size:11.5px;color:var(--slate);margin-bottom:12px;line-height:1.6;">
+        Working backward from the recruit pace above, using the same funnel from Step 4 (roughly 10 prospects → 6–7 calls/conversations → 4 appointments per recruit). These numbers also fill in your Organized Plan in Step 4 automatically.
+      </div>
+      <div id="ws-weekly-activity-grid" class="ws-compare-grid" style="grid-template-columns:repeat(3,1fr);"></div>
+    </div>
   </div>
 
   <!-- STEP 2 -->
@@ -731,21 +775,9 @@ select option{background:var(--navy-mid);}
   <!-- END-OF-DAY SCORECARD -->
   <div class="ws-step">
     <span class="ws-step-num">✓</span><span class="ws-step-title">End-of-Day Scorecard</span>
-    <div class="ws-principle">Fill this out each evening this week.</div>
-    <div class="ws-grid2">
-      <div><label class="ws-mini-label">What did I commit to today?</label><textarea class="ws-field" id="ws-eod-committed"></textarea></div>
-      <div><label class="ws-mini-label">What did I actually complete?</label><textarea class="ws-field" id="ws-eod-completed"></textarea></div>
-      <div><label class="ws-mini-label">What result did today's activity produce?</label><textarea class="ws-field" id="ws-eod-result"></textarea></div>
-      <div><label class="ws-mini-label">What did I learn? What must I improve tomorrow?</label><textarea class="ws-field" id="ws-eod-learned"></textarea></div>
-    </div>
-    <label class="field-label">Rate Yourself</label>
-    <div class="ws-rating-row">
-      <div class="ws-rating"><input class="ws-field" type="number" min="0" max="10" id="ws-rate-clarity"><label>Clarity</label></div>
-      <div class="ws-rating"><input class="ws-field" type="number" min="0" max="10" id="ws-rate-faith"><label>Faith</label></div>
-      <div class="ws-rating"><input class="ws-field" type="number" min="0" max="10" id="ws-rate-focus"><label>Focus</label></div>
-      <div class="ws-rating"><input class="ws-field" type="number" min="0" max="10" id="ws-rate-activity"><label>Activity</label></div>
-      <div class="ws-rating"><input class="ws-field" type="number" min="0" max="10" id="ws-rate-persistence"><label>Persistence</label></div>
-    </div>
+    <div class="ws-principle">Fill this out each evening this week — one tab per day.</div>
+    <div class="ws-goal-period-tabs" id="ws-eod-day-tabs"></div>
+    <div id="ws-eod-day-panels"></div>
   </div>
 
   <!-- FINAL COMMITMENT -->
@@ -1621,6 +1653,7 @@ let wsDaysRendered = false;
 function initWeeklyStrategy() {
   if (!wsDaysRendered) {
     renderWeeklyStrategyDays();
+    renderEodDayTabs();
     wsDaysRendered = true;
   }
   // Default "Week Of" to the most recent Monday, if not already set
@@ -1665,9 +1698,46 @@ function renderWeeklyStrategyDays() {
   }).join('');
 }
 
+function renderEodDayTabs() {
+  const tabsEl = document.getElementById('ws-eod-day-tabs');
+  const panelsEl = document.getElementById('ws-eod-day-panels');
+  if (!tabsEl || !panelsEl) return;
+
+  tabsEl.innerHTML = WS_DAYS.map((d, i) =>
+    `<button class="ws-period-tab ${i===0?'active':''}" id="ws-eod-tab-${d}" onclick="switchEodDay('${d}')">${WS_DAY_LABELS[d]}</button>`
+  ).join('');
+
+  panelsEl.innerHTML = WS_DAYS.map((d, i) => `
+    <div class="ws-eod-panel" id="ws-eod-panel-${d}" style="display:${i===0?'block':'none'};">
+      <div class="ws-grid2">
+        <div><label class="ws-mini-label">What did I commit to today?</label><textarea class="ws-field" id="ws-eod-${d}-committed"></textarea></div>
+        <div><label class="ws-mini-label">What did I actually complete?</label><textarea class="ws-field" id="ws-eod-${d}-completed"></textarea></div>
+        <div><label class="ws-mini-label">What result did today's activity produce?</label><textarea class="ws-field" id="ws-eod-${d}-result"></textarea></div>
+        <div><label class="ws-mini-label">What did I learn? What must I improve tomorrow?</label><textarea class="ws-field" id="ws-eod-${d}-learned"></textarea></div>
+      </div>
+      <label class="field-label">Rate Yourself</label>
+      <div class="ws-rating-row">
+        <div class="ws-rating"><input class="ws-field" type="number" min="0" max="10" id="ws-rate-${d}-clarity"><label>Clarity</label></div>
+        <div class="ws-rating"><input class="ws-field" type="number" min="0" max="10" id="ws-rate-${d}-faith"><label>Faith</label></div>
+        <div class="ws-rating"><input class="ws-field" type="number" min="0" max="10" id="ws-rate-${d}-focus"><label>Focus</label></div>
+        <div class="ws-rating"><input class="ws-field" type="number" min="0" max="10" id="ws-rate-${d}-activity"><label>Activity</label></div>
+        <div class="ws-rating"><input class="ws-field" type="number" min="0" max="10" id="ws-rate-${d}-persistence"><label>Persistence</label></div>
+      </div>
+    </div>`).join('');
+}
+
+function switchEodDay(day) {
+  WS_DAYS.forEach(d => {
+    document.getElementById('ws-eod-tab-' + d)?.classList.toggle('active', d === day);
+    const panel = document.getElementById('ws-eod-panel-' + d);
+    if (panel) panel.style.display = d === day ? 'block' : 'none';
+  });
+}
+
 // ── COMPANY GOAL PACE (Monthly & 90-Day) ─────────────────────
 // Company-wide, not personal — persisted separately from the week-by-week
-// answers above so switching "Week Of" doesn't touch it.
+// answers above so switching "Week Of" doesn't touch it. Month and 90-Day
+// each keep their own independent target/current numbers.
 const WS_COMPANY_GOAL_KEY = 'dba_company_goal_state';
 const WS_GOAL_METRICS = {
   recruits:    { label: 'Recruits',        defaultTarget: 50,     defaultCurrent: 11 },
@@ -1678,22 +1748,30 @@ const WS_GOAL_METRICS = {
 };
 let wsGoalPeriod = 'month';
 
+function setWsGoalTitle() {
+  const titleEl = document.getElementById('ws-goal-title');
+  if (!titleEl) return;
+  const name = (typeof currentIdentity === 'function' ? currentIdentity().name : (session?.name || '')) || 'My';
+  titleEl.textContent = `${name}'s Monthly & 90-Day Goal Pace`;
+}
+
 function initCompanyGoalPace() {
   let saved = {};
   try { saved = JSON.parse(localStorage.getItem(WS_COMPANY_GOAL_KEY) || '{}'); } catch(e) {}
 
-  Object.entries(WS_GOAL_METRICS).forEach(([key, m]) => {
-    const targetEl = document.getElementById('ws-goal-target-' + key);
-    const currentEl = document.getElementById('ws-goal-current-' + key);
-    if (targetEl && !targetEl.dataset.wsGoalWired) {
-      targetEl.value = saved['target-' + key] ?? m.defaultTarget;
-      targetEl.addEventListener('input', saveCompanyGoalInputs);
-      targetEl.dataset.wsGoalWired = '1';
-    }
-    if (currentEl && !currentEl.dataset.wsGoalWired) {
-      currentEl.value = saved['current-' + key] ?? m.defaultCurrent;
-      currentEl.dataset.wsGoalWired = '1';
-    }
+  ['month','90day'].forEach(period => {
+    Object.entries(WS_GOAL_METRICS).forEach(([key, m]) => {
+      const targetEl = document.getElementById(`ws-goal-target-${period}-${key}`);
+      const currentEl = document.getElementById(`ws-goal-current-${period}-${key}`);
+      if (targetEl && !targetEl.dataset.wsGoalWired) {
+        targetEl.value = saved[`target-${period}-${key}`] ?? m.defaultTarget;
+        targetEl.dataset.wsGoalWired = '1';
+      }
+      if (currentEl && !currentEl.dataset.wsGoalWired) {
+        currentEl.value = saved[`current-${period}-${key}`] ?? m.defaultCurrent;
+        currentEl.dataset.wsGoalWired = '1';
+      }
+    });
   });
 
   const startEl = document.getElementById('ws-goal-90day-start');
@@ -1701,14 +1779,18 @@ function initCompanyGoalPace() {
     startEl.value = saved['90day-start'] || new Date().toISOString().slice(0,10);
   }
 
+  setWsGoalTitle();
+  initTeamGoalView();
   renderGoalPace();
 }
 
 function saveCompanyGoalInputs() {
   const data = {};
-  Object.keys(WS_GOAL_METRICS).forEach(key => {
-    data['target-' + key] = document.getElementById('ws-goal-target-' + key)?.value || '';
-    data['current-' + key] = document.getElementById('ws-goal-current-' + key)?.value || '';
+  ['month','90day'].forEach(period => {
+    Object.keys(WS_GOAL_METRICS).forEach(key => {
+      data[`target-${period}-${key}`] = document.getElementById(`ws-goal-target-${period}-${key}`)?.value || '';
+      data[`current-${period}-${key}`] = document.getElementById(`ws-goal-current-${period}-${key}`)?.value || '';
+    });
   });
   data['90day-start'] = document.getElementById('ws-goal-90day-start')?.value || '';
   try { localStorage.setItem(WS_COMPANY_GOAL_KEY, JSON.stringify(data)); } catch(e) {}
@@ -1718,7 +1800,47 @@ function switchGoalPeriod(period) {
   wsGoalPeriod = period;
   document.getElementById('ws-period-tab-month').classList.toggle('active', period === 'month');
   document.getElementById('ws-period-tab-90day').classList.toggle('active', period === '90day');
-  document.getElementById('ws-goal-90day-startwrap').style.display = period === '90day' ? 'block' : 'none';
+  document.getElementById('ws-goal-inputs-month').style.display = period === 'month' ? 'block' : 'none';
+  document.getElementById('ws-goal-inputs-90day').style.display = period === '90day' ? 'block' : 'none';
+  renderGoalPace();
+}
+
+// Sums this agent's own saved weekly numbers (Step 1) that fall inside the
+// 90-day window and drops the totals straight into "Where We Are Right
+// Now" — an update instead of retyping it by hand every time. First
+// Checks isn't asked in Step 1, so that one field is left for manual entry.
+function autofill90DayFromWeeks() {
+  const startDate = document.getElementById('ws-goal-90day-start')?.value;
+  const statusEl = document.getElementById('ws-90day-autofill-status');
+  if (!startDate) { if (statusEl) statusEl.textContent = '⚠ Set a start date first'; return; }
+
+  const end = new Date(startDate + 'T00:00:00'); end.setDate(end.getDate() + 90);
+  const endDate = end.toISOString().slice(0,10);
+
+  let index = [];
+  try { index = JSON.parse(localStorage.getItem(wsIndexKey()) || '[]'); } catch(e) {}
+  const weeksInRange = index.filter(w => w >= startDate && w <= endDate);
+
+  const totals = { recruits: 0, subpts: 0, paidpts: 0, licensed: 0 };
+  weeksInRange.forEach(w => {
+    let data = {};
+    try { data = JSON.parse(localStorage.getItem(wsStorageKey(w)) || '{}'); } catch(e) {}
+    totals.recruits += Number(data['ws-last-recruits']) || 0;
+    totals.subpts   += Number(data['ws-last-subpts']) || 0;
+    totals.paidpts  += Number(data['ws-last-paidpts']) || 0;
+    totals.licensed += Number(data['ws-last-licensing']) || 0;
+  });
+
+  document.getElementById('ws-goal-current-90day-recruits').value = totals.recruits;
+  document.getElementById('ws-goal-current-90day-subpts').value = totals.subpts;
+  document.getElementById('ws-goal-current-90day-paidpts').value = totals.paidpts;
+  document.getElementById('ws-goal-current-90day-licensed').value = totals.licensed;
+
+  if (statusEl) {
+    statusEl.textContent = weeksInRange.length
+      ? `✓ Filled from ${weeksInRange.length} saved week${weeksInRange.length===1?'':'s'} (${startDate} to today) — First Checks still needs to be entered by hand`
+      : '⚠ No saved weeks fall in this 90-day window yet';
+  }
   renderGoalPace();
 }
 
@@ -1759,10 +1881,12 @@ function renderGoalPace() {
     endDate = end.toISOString().slice(0,10);
   }
 
+  let recruitDailyPace = 0;
   grid.innerHTML = Object.entries(WS_GOAL_METRICS).map(([key, m]) => {
-    const target = Number(document.getElementById('ws-goal-target-' + key)?.value) || 0;
-    const current = Number(document.getElementById('ws-goal-current-' + key)?.value) || 0;
+    const target = Number(document.getElementById(`ws-goal-target-${wsGoalPeriod}-${key}`)?.value) || 0;
+    const current = Number(document.getElementById(`ws-goal-current-${wsGoalPeriod}-${key}`)?.value) || 0;
     const p = computeGoalPace(target, current, startDate, endDate);
+    if (key === 'recruits') recruitDailyPace = p.dailyPaceNeeded;
     const color = p.onTrack ? '#2DCA73' : '#E67E22';
     return `<div class="ws-compare-item">
       <div class="wc-label">${m.label}</div>
@@ -1774,6 +1898,97 @@ function renderGoalPace() {
       </div>
     </div>`;
   }).join('');
+
+  renderWeeklyActivityFromGoal(recruitDailyPace);
+}
+
+// Funnel ratios from the Step 4 example: 30 prospects -> 20 conversations
+// -> 12 appointments -> 6 presentations -> 3 recruits. Expressed per recruit:
+const FUNNEL_PER_RECRUIT = { prospects: 10, calls: 20/3, appointments: 4 };
+
+function renderWeeklyActivityFromGoal(recruitDailyPace) {
+  const el = document.getElementById('ws-weekly-activity-grid');
+  if (!el) return;
+  const weeklyRecruitsNeeded = recruitDailyPace * 7;
+  const weeklyProspects = weeklyRecruitsNeeded * FUNNEL_PER_RECRUIT.prospects;
+  const weeklyCalls = weeklyRecruitsNeeded * FUNNEL_PER_RECRUIT.calls;
+  const weeklyAppointments = weeklyRecruitsNeeded * FUNNEL_PER_RECRUIT.appointments;
+  const rows = [
+    { label: 'Prospects', value: weeklyProspects },
+    { label: 'Calls / Conversations', value: weeklyCalls },
+    { label: 'Appointments', value: weeklyAppointments },
+  ];
+  el.innerHTML = rows.map(r => `
+    <div class="ws-compare-item">
+      <div class="wc-label">${r.label}</div>
+      <div class="wc-actual" style="color:var(--gold);">${fmtNum(r.value)}</div>
+      <div class="wc-pace">this week</div>
+    </div>`).join('');
+
+  // Feed these straight into the Organized Plan (Step 4) — still editable
+  // by hand afterward, this is just a starting point instead of a blank field.
+  const planProspects = document.getElementById('ws-plan-prospects');
+  const planCalls = document.getElementById('ws-plan-calls');
+  const planAppointments = document.getElementById('ws-plan-appointments');
+  if (planProspects) planProspects.value = Math.round(weeklyProspects);
+  if (planCalls) planCalls.value = Math.round(weeklyCalls);
+  if (planAppointments) planAppointments.value = Math.round(weeklyAppointments);
+}
+
+// ── MD/DIRECTOR+: VIEW A TEAM MEMBER'S WEEKLY STRATEGY ──────────
+// Weekly Strategy answers live only in each agent's own browser, so the
+// only way to see someone else's is through what they've synced to
+// Monday.com via syncWeeklyStrategyToMonday(). This reads that board back,
+// filtered to the selected person, rather than pretending to reach into
+// their local storage (which this session has no way to do).
+function initTeamGoalView() {
+  const card = document.getElementById('ws-team-view-card');
+  if (!card || !session) return; // team view only makes sense for a logged-in MD, not a public guest
+  const isMdPlus = (session.level || 0) >= 40; // Director and above
+  if (!isMdPlus) return;
+  card.style.display = 'block';
+
+  const picker = document.getElementById('ws-team-picker');
+  if (picker.dataset.wired) return;
+  picker.dataset.wired = '1';
+  const viewerAgent = typeof getAgentById === 'function' ? getAgentById(session.agentId) : null;
+  const team = (viewerAgent && typeof getManageableAgents === 'function')
+    ? getManageableAgents(viewerAgent).filter(a => a.id !== session.agentId)
+    : [];
+  team.sort((a,b) => a.name.localeCompare(b.name)).forEach(a => {
+    const opt = document.createElement('option');
+    opt.value = a.name; // Monday items are tagged by name, not agentId
+    opt.textContent = a.name;
+    picker.appendChild(opt);
+  });
+}
+
+async function loadTeamMemberStrategy() {
+  const name = document.getElementById('ws-team-picker').value;
+  const resultsEl = document.getElementById('ws-team-view-results');
+  if (!name) { resultsEl.innerHTML = '<div style="font-size:12px;color:var(--slate);">Pick someone first.</div>'; return; }
+  if (typeof AUTH === 'undefined' || !AUTH.getMondayKey?.()) {
+    resultsEl.innerHTML = '<div style="font-size:12px;color:var(--warn);">Monday isn\'t connected, so there\'s no shared record to read yet.</div>';
+    return;
+  }
+  const boardId = localStorage.getItem(WS_MONDAY_BOARD_KEY);
+  if (!boardId) {
+    resultsEl.innerHTML = '<div style="font-size:12px;color:var(--warn);">No Weekly Strategy board is set up yet — nothing has been synced centrally for anyone.</div>';
+    return;
+  }
+  resultsEl.innerHTML = '<div style="font-size:12px;color:var(--slate);">Loading…</div>';
+  try {
+    const res = await mondayQuery(`{ boards(ids:${boardId}) { items_page(limit:200) { items { id name column_values { text } } } } }`);
+    const items = res?.data?.boards?.[0]?.items_page?.items || [];
+    const matches = items.filter(i => i.name.startsWith(name + ' —')).slice(0, 8);
+    if (!matches.length) {
+      resultsEl.innerHTML = `<div style="font-size:12px;color:var(--slate);">Nothing synced for ${name} yet.</div>`;
+      return;
+    }
+    resultsEl.innerHTML = matches.map(i => `<div class="appt-row" style="background:var(--navy);border:1px solid var(--border);border-radius:6px;padding:9px 12px;margin-bottom:6px;font-size:12px;">${i.name}</div>`).join('');
+  } catch(e) {
+    resultsEl.innerHTML = '<div style="font-size:12px;color:var(--danger);">Could not reach Monday — try again.</div>';
+  }
 }
 
 function wsStorageKey(weekOf) {
@@ -2330,6 +2545,22 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('quiz-progress-panel').style.display = 'block';
     if (typeof ALL_QUIZ_IDS !== 'undefined' && typeof quizRenderProgressTable === 'function') {
       quizRenderProgressTable('quiz-progress-table', ALL_QUIZ_IDS);
+    }
+  }
+
+  // Deep link support — e.g. training.html?tab=weeklystrategy from the Hub
+  const params = new URLSearchParams(window.location.search);
+  const requestedTab = params.get('tab');
+  if (requestedTab) {
+    const tabEl = [...document.querySelectorAll('.tab')].find(t => t.getAttribute('onclick')?.includes(`'${requestedTab}'`));
+    const paneEl = document.getElementById('panel-' + requestedTab);
+    if (tabEl && paneEl) {
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      paneEl.classList.add('active');
+      tabEl.classList.add('active');
+      if (requestedTab === 'bookclub') renderBookClub();
+      if (requestedTab === 'weeklystrategy') initWeeklyStrategy();
     }
   }
 });

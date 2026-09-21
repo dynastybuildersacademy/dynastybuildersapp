@@ -203,7 +203,6 @@ const AGENTS = [
   { id:"dba000", phpId:"", name:"DBA Super Admin", pin:"1111", role:"super_admin", level:100, uplineId:"", email:"admin@yourdynastybuilder.com", phone:"", enrollmentDate:"2022-01-01" },
   { id:"bli001", phpId:"82854", name:"Blessing Ikejemba", pin:"1111", role:"executive_md", level:70, uplineId:"obi001", email:"", phone:"", enrollmentDate:"2024-01-01" },
   { id:"emo001", phpId:"", name:"Emeka Okereke", pin:"1111", role:"trainee", level:20, uplineId:"obi001", email:"", phone:"", enrollmentDate:"2025-01-01" },
-  { id:"fri001", phpId:"", name:"Francis Ikeotuonye", pin:"1111", role:"trainee", level:20, uplineId:"obi001", email:"", phone:"", enrollmentDate:"2025-01-01" },
   { id:"alecas487", phpId:"", name:"Alex Castro", pin:"1111", role:"trainee", level:20, uplineId:"bli001", email:"alex@authorityfactory88.com", phone:"7142091524", licenseStates:["CA"], enrollmentDate:"2024-06-05" },
   { id:"joymoj126", phpId:"1412126", name:"Joy Mojokwu", pin:"1111", role:"trainee", level:20, uplineId:"", email:"mokogwuj@gmail.com", phone:"9096822392", enrollmentDate:"2026-06-07" },
   { id:"franwa448", phpId:"1412126", name:"Francis Nwadiba", pin:"1111", role:"trainee", level:20, uplineId:"ireibe452", email:"mokogwuj@gmail.com", phone:"9096822392", enrollmentDate:"2026-06-06" },
