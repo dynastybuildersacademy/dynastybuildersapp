@@ -132,6 +132,7 @@ select option{background:var(--navy-mid);}
 <div class="tab-bar">
   <div class="tab" onclick="switchTab('bookclub',this)">📚 Book Club</div>
   <div class="tab" onclick="switchTab('weeklystrategy',this)">🎯 Weekly Strategy</div>
+  <div class="tab" onclick="switchTab('perfectweek',this)">🌟 Perfect Week</div>
   <div class="tab active" onclick="switchTab('fasttrack',this)">🚀 Fast Track</div>
   <div class="tab" onclick="window.location.href='academy.html'" style="background:rgba(201,168,76,.1);border-bottom:2px solid var(--gold);">🏛️ Academy</div>
   <div class="tab" onclick="switchTab('sales',this)">💰 Sales Mastery</div>
@@ -196,6 +197,44 @@ select option{background:var(--navy-mid);}
   <div class="rp-card" style="margin-bottom:20px;">
     <div class="rp-card-title">📖 Daily Success Affirmation</div>
     <p style="font-size:13px;line-height:1.8;color:rgba(20,16,8,.9);">I think big because my future is bigger than my fears. I believe in my abilities, act with confidence, eliminate excuses, take immediate action, serve people with excellence, and continually improve. I surround myself with winners, think like a leader, and pursue my goals with faith and persistence. Every day, I become a better version of myself, creating value for others and achieving the life God has called me to live.</p>
+  </div>
+
+  <div class="rp-card" style="margin-bottom:20px;">
+    <div class="rp-card-title">🪄 The Magic Wand Exercise — Brian Tracy</div>
+    <p style="font-size:13px;line-height:1.8;color:rgba(20,16,8,.9);margin-bottom:10px;">Imagine you could wave a magic wand and make your life perfect in every key area. If your life was completely ideal 5 years from now, what would it look like? Write it as if you're describing a movie of your future life — absolute clarity, no hedging.</p>
+
+    <label class="field-label">1. Career and Business</label>
+    <div style="font-size:11px;color:var(--slate);margin:-6px 0 6px;">What would you be doing? How much would you be earning? What level of success would you have attained?</div>
+    <textarea class="mw-field" id="mw-career" style="min-height:70px;"></textarea>
+
+    <label class="field-label">2. Family and Relationships</label>
+    <div style="font-size:11px;color:var(--slate);margin:-6px 0 6px;">What kind of lifestyle do you want to create for yourself and the people closest to you? Who would be there with you?</div>
+    <textarea class="mw-field" id="mw-family" style="min-height:70px;"></textarea>
+
+    <label class="field-label">3. Health and Fitness</label>
+    <div style="font-size:11px;color:var(--slate);margin:-6px 0 6px;">How would your health be different if it was perfect in every way?</div>
+    <textarea class="mw-field" id="mw-health" style="min-height:70px;"></textarea>
+
+    <label class="field-label">4. Financial Net Worth</label>
+    <div style="font-size:11px;color:var(--slate);margin:-6px 0 6px;">How much money do you want to save and accumulate over your lifetime?</div>
+    <textarea class="mw-field" id="mw-networth" style="min-height:70px;"></textarea>
+
+    <label class="field-label">5. Lifestyle and Time Use</label>
+    <div style="font-size:11px;color:var(--slate);margin:-6px 0 6px;">How would you spend an ideal day, week, or year? Where would you live?</div>
+    <textarea class="mw-field" id="mw-lifestyle" style="min-height:70px;"></textarea>
+
+    <label class="field-label" style="margin-top:6px;">Present-Tense Goals</label>
+    <div style="font-size:11px;color:var(--slate);margin:-6px 0 8px;">Write your top goals daily in the present tense, starting with "I" — e.g. "I earn $10,000/month by December 2027" or "I am at my ideal weight."</div>
+    <input class="mw-field" type="text" id="mw-goal-1" placeholder="I ...">
+    <input class="mw-field" type="text" id="mw-goal-2" placeholder="I ...">
+    <input class="mw-field" type="text" id="mw-goal-3" placeholder="I ...">
+
+    <label class="field-label" style="margin-top:6px;">Reverse Engineering</label>
+    <div style="font-size:11px;color:var(--slate);margin:-6px 0 6px;">Work backward from your ideal life to today, then take action on at least one thing immediately. What's the very next action you can take right now?</div>
+    <textarea class="mw-field" id="mw-nextaction" style="min-height:60px;"></textarea>
+
+    <button class="btn-gold" style="width:100%;margin-top:6px;" onclick="saveMagicWand()">💾 Save My Magic Wand Vision</button>
+    <div id="mw-save-status" style="text-align:center;font-size:12px;color:var(--slate);margin-top:8px;"></div>
   </div>
   <div id="mindset-modules"></div>
 </div>
@@ -828,6 +867,120 @@ select option{background:var(--navy-mid);}
   <div id="ws-save-status" style="text-align:center;font-size:12px;color:var(--slate);margin-top:8px;"></div>
 </div>
 
+<div class="panel" id="panel-perfectweek">
+  <div class="page-title">🌟 Design Your Perfect Week</div>
+  <div class="page-sub">A week is either building toward the life you actually want, or it's just busy. This ties your weekly numbers to your why — and to the specific activity that compounds into a $1,000,000/year baseshop.</div>
+
+  <!-- FOUR LEVELS OF YOUR WHY -->
+  <div class="ws-step">
+    <span class="ws-step-num">1</span><span class="ws-step-title">The Four Levels of Your Why</span>
+    <div class="ws-principle">Everybody has a why. The challenge is that most people never graduate from their initial why.</div>
+    <p style="font-size:12.5px;color:var(--slate);line-height:1.7;margin-bottom:14px;">This mirrors Maslow's Hierarchy of Needs: if you're struggling to survive, you're not thinking about purpose. Once your core needs are met, you naturally move up toward belonging, esteem, and growth. Be honest about where you actually are right now — not where you think you should be.</p>
+
+    <label class="field-label">04 — Survival</label>
+    <div style="font-size:11px;color:var(--slate);margin:-6px 0 6px;">Fear of not having enough. Needing this income just to get by. Where does this show up for you, if anywhere?</div>
+    <textarea class="pw-field" id="pw-why-survival" style="min-height:60px;"></textarea>
+
+    <label class="field-label">03 — Status</label>
+    <div style="font-size:11px;color:var(--slate);margin:-6px 0 6px;">How you're seen. The car, the title, the image. Where does this show up for you?</div>
+    <textarea class="pw-field" id="pw-why-status" style="min-height:60px;"></textarea>
+
+    <label class="field-label">02 — Freedom</label>
+    <div style="font-size:11px;color:var(--slate);margin:-6px 0 6px;">Time. Flexibility. Not answering to anyone. What would freedom actually look like for you?</div>
+    <textarea class="pw-field" id="pw-why-freedom" style="min-height:60px;"></textarea>
+
+    <label class="field-label">01 — Purpose</label>
+    <div style="font-size:11px;color:var(--slate);margin:-6px 0 6px;">Legacy. Impact. Becoming who you're capable of becoming. What's your purpose?</div>
+    <textarea class="pw-field" id="pw-why-purpose" style="min-height:60px;"></textarea>
+
+    <div class="ws-grid2" style="margin-top:6px;">
+      <div>
+        <label class="field-label">My primary why right now is</label>
+        <select class="pw-field" id="pw-why-primary">
+          <option value="">— Select —</option>
+          <option value="survival">Survival</option>
+          <option value="status">Status</option>
+          <option value="freedom">Freedom</option>
+          <option value="purpose">Purpose</option>
+        </select>
+      </div>
+      <div>
+        <label class="field-label">The level I want to graduate to</label>
+        <select class="pw-field" id="pw-why-graduate">
+          <option value="">— Select —</option>
+          <option value="survival">Survival</option>
+          <option value="status">Status</option>
+          <option value="freedom">Freedom</option>
+          <option value="purpose">Purpose</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- THE PERFECT WEEK FORMULA -->
+  <div class="ws-step">
+    <span class="ws-step-num">2</span><span class="ws-step-title">The Perfect Week Formula</span>
+    <div class="ws-principle">These exact numbers, hit consistently, compound to real annual paid points across your baseshop — the activity is the same either way, the base numbers scale with your rank.</div>
+
+    <div class="ws-goal-period-tabs">
+      <button class="ws-period-tab active" id="pw-tier-tab-nonmd" onclick="switchPerfectWeekTier('nonmd')">Non-MD</button>
+      <button class="ws-period-tab" id="pw-tier-tab-md" onclick="switchPerfectWeekTier('md')">Marketing Director+</button>
+    </div>
+
+    <div class="ws-compare-card">
+      <div class="ws-compare-title">🙋 Personal — Every Week (Both Tiers)</div>
+      <div class="ws-compare-grid">
+        <div class="ws-compare-item"><div class="wc-label">Prospects</div><div class="wc-actual" style="color:var(--gold);">25+</div></div>
+        <div class="ws-compare-item"><div class="wc-label">Calls</div><div class="wc-actual" style="color:var(--gold);">250+</div></div>
+        <div class="ws-compare-item"><div class="wc-label">Recruiting Interviews</div><div class="wc-actual" style="color:var(--gold);">10+</div></div>
+        <div class="ws-compare-item"><div class="wc-label">Client Appointments</div><div class="wc-actual" style="color:var(--gold);">6+</div></div>
+        <div class="ws-compare-item"><div class="wc-label">Fast Start Appointments</div><div class="wc-actual" style="color:var(--gold);">4+</div></div>
+      </div>
+      <div style="font-size:11px;color:var(--slate);margin-top:10px;">This top-of-funnel activity is identical for everyone — what changes by tier below is the production it's expected to produce.</div>
+    </div>
+
+    <div class="ws-compare-card" style="margin-top:14px;" id="pw-tier-personal-card">
+      <div class="ws-compare-title" id="pw-tier-personal-title">🙋 Personal Production — Non-MD</div>
+      <div class="ws-compare-grid" id="pw-tier-personal-grid"></div>
+    </div>
+
+    <div class="ws-compare-card" style="margin-top:14px;" id="pw-tier-base-card">
+      <div class="ws-compare-title" id="pw-tier-base-title">🏢 Base (Team) — Non-MD</div>
+      <div class="ws-compare-grid" id="pw-tier-base-grid"></div>
+      <div style="font-size:11px;color:var(--slate);margin-top:10px;" id="pw-tier-annual-note"></div>
+    </div>
+  </div>
+
+  <!-- THIS WEEK VS THE STANDARD -->
+  <div class="ws-step">
+    <span class="ws-step-num">3</span><span class="ws-step-title">This Week vs. The Perfect Week Standard</span>
+    <div class="ws-principle">Not company-wide, not aspirational — this is the fixed personal bar from the formula above, for whichever tier you selected.</div>
+    <a href="#" onclick="autofillPerfectWeekFromTracker();return false;" style="font-size:11px;color:var(--gold);">📞 Auto-fill from my Activity Tracker (this week)</a>
+    <div id="pw-autofill-status" style="font-size:10.5px;color:var(--slate);margin:4px 0 12px;"></div>
+    <div class="ws-grid3">
+      <div><label class="ws-mini-label">Prospects</label><input class="pw-field" type="number" id="pw-actual-prospects" min="0" oninput="renderPerfectWeekCompare()"></div>
+      <div><label class="ws-mini-label">Calls</label><input class="pw-field" type="number" id="pw-actual-calls" min="0" oninput="renderPerfectWeekCompare()"></div>
+      <div><label class="ws-mini-label">Recruiting Interviews</label><input class="pw-field" type="number" id="pw-actual-ri" min="0" oninput="renderPerfectWeekCompare()"></div>
+      <div><label class="ws-mini-label">Client Appointments</label><input class="pw-field" type="number" id="pw-actual-appts" min="0" oninput="renderPerfectWeekCompare()"></div>
+      <div><label class="ws-mini-label">Fast Start Appointments</label><input class="pw-field" type="number" id="pw-actual-fs" min="0" oninput="renderPerfectWeekCompare()"></div>
+      <div><label class="ws-mini-label">Personal Recruits</label><input class="pw-field" type="number" id="pw-actual-recruits" min="0" oninput="renderPerfectWeekCompare()"></div>
+      <div><label class="ws-mini-label">Personal Submitted Pts</label><input class="pw-field" type="number" id="pw-actual-subpts" min="0" oninput="renderPerfectWeekCompare()"></div>
+      <div><label class="ws-mini-label">Personal Paid Pts</label><input class="pw-field" type="number" id="pw-actual-paidpts" min="0" oninput="renderPerfectWeekCompare()"></div>
+    </div>
+    <div id="pw-compare-grid" class="ws-compare-grid" style="margin-top:14px;"></div>
+  </div>
+
+  <!-- DESIGN THE SCHEDULE -->
+  <div class="ws-step">
+    <span class="ws-step-num">4</span><span class="ws-step-title">Design Your Perfect Week Schedule</span>
+    <div class="ws-principle">Block the time before the week starts. Don't wake up each day deciding when to prospect.</div>
+    <div id="pw-days-container"></div>
+  </div>
+
+  <button class="btn-gold" style="width:100%;font-size:15px;padding:14px;" onclick="savePerfectWeek()">💾 Save My Perfect Week</button>
+  <div id="pw-save-status" style="text-align:center;font-size:12px;color:var(--slate);margin-top:8px;"></div>
+</div>
+
 </div><!-- /content -->
 
 <script>
@@ -836,6 +989,218 @@ const session = AUTH.getSession();
 // Was called from several places but never actually defined — those calls
 // were silently throwing (or, in one spot, defensively skipped with a
 // typeof check because whoever wrote it already suspected as much).
+// ── MAGIC WAND EXERCISE (Brian Tracy) ────────────────────────────
+// A 5-year life vision, not a weekly answer — persists indefinitely per
+// agent rather than resetting like the Weekly Strategy's week-by-week data.
+const MAGIC_WAND_KEY = `dba_magic_wand_${session.agentId}`;
+function collectMagicWandFields() {
+  const data = {};
+  document.querySelectorAll('.mw-field').forEach(f => { data[f.id] = f.value; });
+  return data;
+}
+function loadMagicWand() {
+  let data = {};
+  try { data = JSON.parse(localStorage.getItem(MAGIC_WAND_KEY) || '{}'); } catch(e) {}
+  document.querySelectorAll('.mw-field').forEach(f => { f.value = data[f.id] || ''; });
+}
+function saveMagicWand() {
+  try {
+    localStorage.setItem(MAGIC_WAND_KEY, JSON.stringify(collectMagicWandFields()));
+    document.getElementById('mw-save-status').textContent = '✓ Saved';
+  } catch(e) {
+    document.getElementById('mw-save-status').textContent = '⚠ Could not save — storage may be full';
+  }
+}
+function autosaveMagicWand() {
+  try {
+    localStorage.setItem(MAGIC_WAND_KEY, JSON.stringify(collectMagicWandFields()));
+    const statusEl = document.getElementById('mw-save-status');
+    if (statusEl) statusEl.textContent = `💾 Autosaved — ${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`;
+  } catch(e) {}
+}
+loadMagicWand();
+setInterval(autosaveMagicWand, 120000); // every 2 minutes, same cadence as Weekly Strategy
+
+// ── PERFECT WEEK DESIGNER ─────────────────────────────────────
+// Shared top-of-funnel activity target (same for every rank), plus
+// the two production tiers you defined — non-MD and Marketing
+// Director and above. This is a fixed standard, not something an
+// agent edits, so unlike Weekly Strategy's company goals these
+// numbers are hardcoded rather than stored per-agent.
+const PW_SHARED_TARGETS = { prospects:25, calls:250, ri:10, appts:6, fs:4 };
+const PW_TIER_TARGETS = {
+  nonmd: {
+    label: 'Non-MD',
+    personal: { recruits:1, subpts:5000, paidpts:3500 },
+    base: { recruits:8, subpts:12142, paidpts:8500 },
+  },
+  md: {
+    label: 'Marketing Director+',
+    personal: { recruits:1, subpts:7142, paidpts:5000 },
+    base: { recruits:10, subpts:28571, paidpts:20000 },
+  },
+};
+let pwTier = 'nonmd';
+
+const PW_KEY = `dba_perfect_week_${session.agentId}`;
+
+function initPerfectWeek() {
+  // Default the tier to whatever this agent actually is, but they can
+  // still flip the tab manually to see the other one.
+  const isMdPlus = (session.level || 0) >= 60;
+  pwTier = isMdPlus ? 'md' : 'nonmd';
+  document.getElementById('pw-tier-tab-nonmd').classList.toggle('active', pwTier === 'nonmd');
+  document.getElementById('pw-tier-tab-md').classList.toggle('active', pwTier === 'md');
+  renderPerfectWeekTierCards();
+
+  if (!pwDaysRendered) {
+    renderPerfectWeekDays();
+    pwDaysRendered = true;
+  }
+  loadPerfectWeek();
+  renderPerfectWeekCompare();
+  startPerfectWeekAutosave();
+}
+
+function switchPerfectWeekTier(tier) {
+  pwTier = tier;
+  document.getElementById('pw-tier-tab-nonmd').classList.toggle('active', tier === 'nonmd');
+  document.getElementById('pw-tier-tab-md').classList.toggle('active', tier === 'md');
+  renderPerfectWeekTierCards();
+  renderPerfectWeekCompare();
+}
+
+function renderPerfectWeekTierCards() {
+  const t = PW_TIER_TARGETS[pwTier];
+  document.getElementById('pw-tier-personal-title').textContent = `🙋 Personal Production — ${t.label}`;
+  document.getElementById('pw-tier-base-title').textContent = `🏢 Base (Team) — ${t.label}`;
+
+  document.getElementById('pw-tier-personal-grid').innerHTML = `
+    <div class="ws-compare-item"><div class="wc-label">Personal Recruits</div><div class="wc-actual" style="color:var(--gold);">${t.personal.recruits}+</div></div>
+    <div class="ws-compare-item"><div class="wc-label">Personal Submitted Pts</div><div class="wc-actual" style="color:var(--gold);">${t.personal.subpts.toLocaleString()}</div></div>
+    <div class="ws-compare-item"><div class="wc-label">Personal Paid Pts</div><div class="wc-actual" style="color:var(--gold);">${t.personal.paidpts.toLocaleString()}</div></div>
+  `;
+  document.getElementById('pw-tier-base-grid').innerHTML = `
+    <div class="ws-compare-item"><div class="wc-label">Base Recruits</div><div class="wc-actual" style="color:var(--gold-light);">${t.base.recruits}+</div></div>
+    <div class="ws-compare-item"><div class="wc-label">Base Submitted Pts</div><div class="wc-actual" style="color:var(--gold-light);">${t.base.subpts.toLocaleString()}</div></div>
+    <div class="ws-compare-item"><div class="wc-label">Base Paid Pts</div><div class="wc-actual" style="color:var(--gold-light);">${t.base.paidpts.toLocaleString()}</div></div>
+  `;
+  const annual = t.base.paidpts * 52;
+  document.getElementById('pw-tier-annual-note').textContent =
+    `${t.base.paidpts.toLocaleString()} base paid points × 52 weeks ≈ $${annual.toLocaleString()}/year in your baseshop at this tier.`;
+}
+
+function renderPerfectWeekCompare() {
+  const t = PW_TIER_TARGETS[pwTier];
+  const targets = {
+    prospects: PW_SHARED_TARGETS.prospects, calls: PW_SHARED_TARGETS.calls, ri: PW_SHARED_TARGETS.ri,
+    appts: PW_SHARED_TARGETS.appts, fs: PW_SHARED_TARGETS.fs,
+    recruits: t.personal.recruits, subpts: t.personal.subpts, paidpts: t.personal.paidpts,
+  };
+  const labels = { prospects:'Prospects', calls:'Calls', ri:'Recruiting Interviews', appts:'Client Appointments',
+    fs:'Fast Start Appts', recruits:'Personal Recruits', subpts:'Submitted Pts', paidpts:'Paid Pts' };
+
+  const grid = document.getElementById('pw-compare-grid');
+  if (!grid) return;
+  grid.innerHTML = Object.entries(targets).map(([key, target]) => {
+    const actual = Number(document.getElementById('pw-actual-' + key)?.value) || 0;
+    const hit = actual >= target;
+    const color = hit ? '#2DCA73' : '#E67E22';
+    return `<div class="ws-compare-item">
+      <div class="wc-label">${labels[key]}</div>
+      <div class="wc-actual" style="color:${color};">${actual} / ${target.toLocaleString()}</div>
+      <div class="wc-pace">${hit ? '✓ standard met' : `${target-actual} short`}</div>
+    </div>`;
+  }).join('');
+  savePerfectWeek();
+}
+
+function autofillPerfectWeekFromTracker() {
+  const statusEl = document.getElementById('pw-autofill-status');
+  const now = new Date();
+  const day = now.getDay();
+  const monday = new Date(now);
+  monday.setDate(now.getDate() + ((day === 0 ? -6 : 1) - day));
+
+  const totals = { prospects:0, calls:0, ri:0, appts:0, fs:0, recruits:0 };
+  let daysFound = 0;
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday); d.setDate(d.getDate() + i);
+    const dateStr = d.toISOString().slice(0,10);
+    let raw = null;
+    try { raw = JSON.parse(localStorage.getItem(`dba_tracker_${session.agentId}_${dateStr}`) || 'null'); } catch(e) {}
+    if (!raw || !raw.counts) continue;
+    daysFound++;
+    const c = raw.counts;
+    totals.prospects += c.prospects || 0;
+    totals.calls     += c.calls || 0;
+    totals.ri         += c.ri || 0;
+    totals.appts      += c.pers_ga || 0; // closest available proxy for client appointments
+    totals.fs          += c.fs || 0;
+    totals.recruits     += c.recruits || 0;
+  }
+  document.getElementById('pw-actual-prospects').value = totals.prospects;
+  document.getElementById('pw-actual-calls').value = totals.calls;
+  document.getElementById('pw-actual-ri').value = totals.ri;
+  document.getElementById('pw-actual-appts').value = totals.appts;
+  document.getElementById('pw-actual-fs').value = totals.fs;
+  document.getElementById('pw-actual-recruits').value = totals.recruits;
+  renderPerfectWeekCompare();
+
+  if (statusEl) {
+    statusEl.textContent = daysFound
+      ? `✓ Filled from ${daysFound} logged day${daysFound===1?'':'s'} this week — Submitted/Paid Points still need to be entered by hand`
+      : '⚠ No logged Activity Tracker days found for this week';
+  }
+}
+
+const PW_DAYS = ['mon','tue','wed','thu','fri','sat','sun'];
+const PW_DAY_LABELS = { mon:'Monday', tue:'Tuesday', wed:'Wednesday', thu:'Thursday', fri:'Friday', sat:'Saturday', sun:'Sunday' };
+let pwDaysRendered = false;
+function renderPerfectWeekDays() {
+  const el = document.getElementById('pw-days-container');
+  if (!el) return;
+  el.innerHTML = PW_DAYS.map(d => `<div class="ws-day-card">
+      <div class="ws-day-name">${PW_DAY_LABELS[d]}</div>
+      <div style="font-size:10px;color:var(--slate);margin-bottom:6px;">Time-block: when will you prospect, call, and run appointments today?</div>
+      <input class="pw-field" type="text" id="pw-day-${d}-1" placeholder="Morning block — e.g. 8-10am calls">
+      <input class="pw-field" type="text" id="pw-day-${d}-2" placeholder="Afternoon block">
+      <input class="pw-field" type="text" id="pw-day-${d}-3" placeholder="Evening block" style="margin-bottom:0;">
+    </div>`).join('');
+}
+
+function collectPerfectWeekFields() {
+  const data = { tier: pwTier };
+  document.querySelectorAll('.pw-field').forEach(f => { data[f.id] = f.value; });
+  return data;
+}
+function loadPerfectWeek() {
+  let data = {};
+  try { data = JSON.parse(localStorage.getItem(PW_KEY) || '{}'); } catch(e) {}
+  document.querySelectorAll('.pw-field').forEach(f => { f.value = data[f.id] || ''; });
+}
+function savePerfectWeek() {
+  try {
+    localStorage.setItem(PW_KEY, JSON.stringify(collectPerfectWeekFields()));
+    const statusEl = document.getElementById('pw-save-status');
+    if (statusEl) statusEl.textContent = '✓ Saved';
+  } catch(e) {
+    const statusEl = document.getElementById('pw-save-status');
+    if (statusEl) statusEl.textContent = '⚠ Could not save — storage may be full';
+  }
+}
+let pwAutosaveTimer = null;
+function startPerfectWeekAutosave() {
+  if (pwAutosaveTimer) return;
+  pwAutosaveTimer = setInterval(() => {
+    try {
+      localStorage.setItem(PW_KEY, JSON.stringify(collectPerfectWeekFields()));
+      const statusEl = document.getElementById('pw-save-status');
+      if (statusEl) statusEl.textContent = `💾 Autosaved — ${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`;
+    } catch(e) {}
+  }, 120000);
+}
+
 function toast(msg) {
   let el = document.getElementById('dba-toast');
   if (!el) {
@@ -857,6 +1222,7 @@ function switchTab(id, el) {
   el.classList.add('active');
   if (id === 'bookclub') renderBookClub();
   if (id === 'weeklystrategy') initWeeklyStrategy();
+  if (id === 'perfectweek') initPerfectWeek();
 }
 
 // Power vs Force no longer has its own tab in the bar — it's reached from
@@ -1713,6 +2079,7 @@ function initWeeklyStrategy() {
     goalInput.dataset.wsWired = '1';
   }
   initCompanyGoalPace();
+  startWeeklyStrategyAutosave();
 }
 function renderWeeklyStrategyDays() {
   const el = document.getElementById('ws-days-container');
@@ -2173,10 +2540,9 @@ function autofillStep1FromTracker() {
   }
 }
 
-function saveWeeklyStrategy() {
-  const weekOf = document.getElementById('ws-week-of').value;
-  if (!weekOf) { document.getElementById('ws-save-status').textContent = '⚠ Pick a "Week Of" date first'; return; }
-
+// Shared by both the autosave timer and the explicit Save button, so the
+// two never drift out of sync on what counts as "this week's data."
+function collectWeeklyStrategyFields() {
   const data = {};
   document.querySelectorAll('.ws-field').forEach(field => {
     if (field.type === 'radio') {
@@ -2185,6 +2551,38 @@ function saveWeeklyStrategy() {
       data[field.id] = field.value;
     }
   });
+  return data;
+}
+
+// Runs every 2 minutes while this tab is open — cache only, no Monday
+// sync. Silent by design (a small timestamp note instead of the full
+// status message) so it never feels like it's interrupting typing.
+function autosaveWeeklyStrategyCache() {
+  const weekOf = document.getElementById('ws-week-of')?.value;
+  if (!weekOf) return; // nothing to key the save to yet
+  const data = collectWeeklyStrategyFields();
+  try {
+    localStorage.setItem(wsStorageKey(weekOf), JSON.stringify(data));
+    const index = JSON.parse(localStorage.getItem(wsIndexKey()) || '[]');
+    if (!index.includes(weekOf)) { index.push(weekOf); index.sort().reverse(); localStorage.setItem(wsIndexKey(), JSON.stringify(index)); }
+    const statusEl = document.getElementById('ws-save-status');
+    if (statusEl) statusEl.textContent = `💾 Autosaved to this device — ${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`;
+  } catch(e) { /* storage full or unavailable — the next explicit Save will report it */ }
+}
+let wsAutosaveTimer = null;
+function startWeeklyStrategyAutosave() {
+  if (wsAutosaveTimer) return; // only one timer per page load
+  wsAutosaveTimer = setInterval(autosaveWeeklyStrategyCache, 120000); // 2 minutes
+}
+
+// The explicit "Save This Week's Strategy" button — this is the one that
+// also pushes to Monday.com. Autosave above only ever touches the local
+// cache; Monday only ever hears about it here, at a deliberate save point.
+function saveWeeklyStrategy() {
+  const weekOf = document.getElementById('ws-week-of').value;
+  if (!weekOf) { document.getElementById('ws-save-status').textContent = '⚠ Pick a "Week Of" date first'; return; }
+
+  const data = collectWeeklyStrategyFields();
 
   try {
     localStorage.setItem(wsStorageKey(weekOf), JSON.stringify(data));
