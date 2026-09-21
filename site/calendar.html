@@ -7,12 +7,12 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="auth.js"></script>
 <style>
-:root{--navy:#0A1628;--navy-mid:#112040;--navy-light:#1A3158;--gold:#C9A84C;--gold-light:#E8C97A;
-  --cream:#FAF6EE;--success:#27AE60;--danger:#C0392B;--warn:#E67E22;--slate:#6B7C93;
+:root{--navy:#F5F1E8;--navy-mid:#FFFFFF;--navy-light:#ECE6D6;--gold:#C9A84C;--gold-light:#E8C97A;
+  --cream:#1E1A10;--success:#27AE60;--danger:#C0392B;--warn:#E67E22;--slate:#6B7C93;
   --border:rgba(201,168,76,0.22);}
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);min-height:100vh;padding-bottom:40px;}
-.header{background:rgba(10,22,40,0.97);border-bottom:1px solid var(--border);padding:14px 20px;
+.header{background:rgba(245,241,232,0.97);border-bottom:1px solid var(--border);padding:14px 20px;
   display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;flex-wrap:wrap;gap:10px;}
 .header h1{font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:800;color:var(--gold);}
 .header-links{display:flex;gap:8px;flex-wrap:wrap;}
@@ -26,7 +26,7 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);m
 .cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
 .cal-nav-title{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:var(--cream);}
 .cal-nav-btns{display:flex;gap:6px;}
-.nav-btn{background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--cream);
+.nav-btn{background:rgba(10,10,10,.06);border:1px solid var(--border);color:var(--cream);
   border-radius:4px;padding:7px 12px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;cursor:pointer;}
 .nav-btn:hover{border-color:var(--gold);}
 .nav-btn.today{color:var(--gold);}
@@ -45,7 +45,7 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);m
   display:flex;align-items:center;justify-content:space-between;}
 .activity-dot{width:6px;height:6px;border-radius:50%;background:var(--success);flex-shrink:0;}
 .cal-chip{font-size:9px;font-family:'DM Mono',monospace;padding:1px 5px;border-radius:3px;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#0A1628;font-weight:700;}
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#F5F1E8;font-weight:700;}
 .cal-more{font-size:9px;color:var(--slate);font-family:'DM Mono',monospace;}
 
 /* ── DAY DETAIL ── */
@@ -54,7 +54,7 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);m
 .appt-row{background:var(--navy);border:1px solid var(--border);border-radius:6px;padding:10px 12px;margin-bottom:8px;
   display:flex;align-items:center;gap:10px;cursor:pointer;}
 .appt-row:hover{border-color:var(--gold);}
-.appt-type-badge{font-size:9px;font-family:'DM Mono',monospace;font-weight:700;padding:2px 7px;border-radius:3px;color:#0A1628;flex-shrink:0;}
+.appt-type-badge{font-size:9px;font-family:'DM Mono',monospace;font-weight:700;padding:2px 7px;border-radius:3px;color:#F5F1E8;flex-shrink:0;}
 .appt-row-name{font-size:13px;font-weight:700;flex:1;}
 .appt-row-time{font-size:11px;color:var(--slate);font-family:'DM Mono',monospace;}
 .appt-row-status{font-size:10px;color:var(--slate);}
@@ -62,14 +62,14 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);m
 .btn{display:inline-block;padding:9px 16px;border-radius:4px;font-family:'Barlow Condensed',sans-serif;
   font-size:13px;font-weight:700;cursor:pointer;border:none;text-align:center;}
 .btn-gold{background:var(--gold);color:var(--navy);}
-.btn-ghost{background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--cream);}
+.btn-ghost{background:rgba(10,10,10,.06);border:1px solid var(--border);color:var(--cream);}
 .btn-danger{background:rgba(192,57,43,.15);border:1px solid rgba(192,57,43,.4);color:#E8A0A0;}
 .btn-block{width:100%;}
 
 /* ── SIDEBAR ── */
 .sidebar-title{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:var(--gold);
   text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;}
-.stat-mini{display:flex;justify-content:space-between;font-size:12px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.05);}
+.stat-mini{display:flex;justify-content:space-between;font-size:12px;padding:6px 0;border-bottom:1px solid rgba(10,10,10,.05);}
 .stat-mini:last-child{border:none;}
 
 /* ── MODAL ── */
@@ -81,7 +81,7 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);m
 .modal-close{background:none;border:none;color:var(--slate);font-size:20px;cursor:pointer;}
 .field{margin-bottom:12px;}
 .field label{display:block;font-size:10px;color:var(--slate);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px;}
-.field input,.field select,.field textarea{width:100%;background:#132240;border:1px solid rgba(255,255,255,.12);
+.field input,.field select,.field textarea{width:100%;background:#FFFFFF;border:1px solid rgba(10,10,10,.12);
   color:var(--cream);border-radius:6px;padding:9px 11px;font-family:'Barlow',sans-serif;font-size:13px;outline:none;}
 .field textarea{min-height:60px;resize:vertical;}
 .field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
@@ -339,7 +339,7 @@ function renderTodayList() {
   const el = document.getElementById('today-list');
   if (!list.length) { el.innerHTML = 'Nothing scheduled for today.'; return; }
   el.innerHTML = list.map(a => `
-    <div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer;" onclick="selectDay('${a.date}');openApptModal('${a.id}')">
+    <div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(10,10,10,.05);cursor:pointer;" onclick="selectDay('${a.date}');openApptModal('${a.id}')">
       <span class="appt-type-badge" style="background:${TYPE_COLOR[a.type]||'#95a5a6'};font-size:8px;">${a.type}</span>
       <span style="flex:1;color:var(--cream);">${a.name}</span>
       <span style="font-family:'DM Mono',monospace;color:var(--slate);">${a.time||''}</span>

@@ -6,10 +6,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700&family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="auth.js"></script>
 <style>
-:root{--navy:#0A1628;--navy-mid:#112040;--navy-light:#1A3158;--gold:#C9A84C;--gold-light:#E8C97A;--cream:#FAF6EE;--success:#27AE60;--warn:#E67E22;--danger:#C0392B;--slate:#6B7C93;--border:rgba(201,168,76,0.22);}
+:root{--navy:#F5F1E8;--navy-mid:#FFFFFF;--navy-light:#ECE6D6;--gold:#C9A84C;--gold-light:#E8C97A;--cream:#1E1A10;--success:#27AE60;--warn:#E67E22;--danger:#C0392B;--slate:#6B7C93;--border:rgba(201,168,76,0.22);}
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);min-height:100vh;}
-.header{background:rgba(10,22,40,0.97);border-bottom:1px solid var(--border);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.header{background:rgba(245,241,232,0.97);border-bottom:1px solid var(--border);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
 .header-left{display:flex;align-items:center;gap:12px;}
 .shield{width:30px;height:34px;background:linear-gradient(160deg,var(--gold) 0%,#7a5c14 100%);clip-path:polygon(50% 0%,100% 18%,100% 65%,50% 100%,0% 65%,0% 18%);display:flex;align-items:center;justify-content:center;font-size:12px;}
 .header h1{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--gold);}
@@ -96,7 +96,7 @@ input:focus,select:focus{outline:none;border-color:var(--gold);}
 </div>
 <!-- ══ TABS (sticky under header) ══ -->
 <div style="position:sticky;top:56px;z-index:90;background:var(--navy-mid);
-  border-bottom:2px solid rgba(255,255,255,.08);display:flex;gap:0;">
+  border-bottom:2px solid rgba(10,10,10,.08);display:flex;gap:0;">
   <button id="bom-tab-guests" onclick="switchBOMTab('guests')"
     style="flex:1;padding:11px 4px;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;
     background:none;border:none;border-bottom:3px solid var(--gold);color:var(--gold-light);cursor:pointer;
@@ -193,7 +193,7 @@ input:focus,select:focus{outline:none;border-color:var(--gold);}
         style="flex:1;min-width:150px;font-size:12px;padding:7px 10px;background:var(--navy);
           border:1px solid var(--border);color:var(--cream);border-radius:4px;outline:none;">
       <button onclick="document.getElementById('agent-filter').value='';applyGuestFilter();"
-        style="background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:6px;
+        style="background:rgba(10,10,10,.06);border:1px solid var(--border);border-radius:6px;
           padding:6px 12px;color:var(--muted);font-family:'DM Mono',monospace;font-size:10px;cursor:pointer;white-space:nowrap;">
         ✕ Clear
       </button>
@@ -299,90 +299,90 @@ input:focus,select:focus{outline:none;border-color:var(--gold);}
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
         <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;
           color:#2DCA73;letter-spacing:.06em;text-transform:uppercase;">💰 BOM Income Calculator</div>
-        <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(250,246,238,.4);">Generator 50% · Captain 25% · CFT 25%<br><span style="font-size:9px;opacity:.6;">If CFT blank → Captain earns 50%</span></div>
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(20,16,8,.4);">Generator 50% · Captain 25% · CFT 25%<br><span style="font-size:9px;opacity:.6;">If CFT blank → Captain earns 50%</span></div>
       </div>
 
       <!-- GEB (Great Equalizer Bonus) + Team Analysis — Marketing Director and above only -->
       <div id="geb-panel" style="display:none;background:rgba(155,89,182,.06);border:1px solid rgba(155,89,182,.25);border-radius:10px;padding:16px;margin-bottom:16px;">
         <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:900;color:#BB8FCE;letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px;">⚡ Great Equalizer Bonus (GEB) — Team Analysis</div>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px;">
-          <div><label style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(250,246,238,.5);display:block;margin-bottom:4px;">Personal Recruits</label>
-            <input type="number" id="geb-rec" value="0" min="0" onchange="recalcGEB()" style="width:100%;background:#0A1628;border:1px solid rgba(201,168,76,.2);color:#FAF6EE;font-size:13px;padding:8px 10px;border-radius:5px;outline:none;"></div>
-          <div><label style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(250,246,238,.5);display:block;margin-bottom:4px;">Personal Submitted Pts</label>
-            <input type="number" id="geb-pts" value="0" min="0" onchange="recalcGEB()" style="width:100%;background:#0A1628;border:1px solid rgba(201,168,76,.2);color:#FAF6EE;font-size:13px;padding:8px 10px;border-radius:5px;outline:none;"></div>
-          <div><label style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(250,246,238,.5);display:block;margin-bottom:4px;">Personal Licensed Agents</label>
-            <input type="number" id="geb-lic" value="0" min="0" onchange="recalcGEB()" style="width:100%;background:#0A1628;border:1px solid rgba(201,168,76,.2);color:#FAF6EE;font-size:13px;padding:8px 10px;border-radius:5px;outline:none;"></div>
+          <div><label style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(20,16,8,.5);display:block;margin-bottom:4px;">Personal Recruits</label>
+            <input type="number" id="geb-rec" value="0" min="0" onchange="recalcGEB()" style="width:100%;background:#F5F1E8;border:1px solid rgba(201,168,76,.2);color:#1E1A10;font-size:13px;padding:8px 10px;border-radius:5px;outline:none;"></div>
+          <div><label style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(20,16,8,.5);display:block;margin-bottom:4px;">Personal Submitted Pts</label>
+            <input type="number" id="geb-pts" value="0" min="0" onchange="recalcGEB()" style="width:100%;background:#F5F1E8;border:1px solid rgba(201,168,76,.2);color:#1E1A10;font-size:13px;padding:8px 10px;border-radius:5px;outline:none;"></div>
+          <div><label style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(20,16,8,.5);display:block;margin-bottom:4px;">Personal Licensed Agents</label>
+            <input type="number" id="geb-lic" value="0" min="0" onchange="recalcGEB()" style="width:100%;background:#F5F1E8;border:1px solid rgba(201,168,76,.2);color:#1E1A10;font-size:13px;padding:8px 10px;border-radius:5px;outline:none;"></div>
         </div>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
           <div style="background:rgba(0,0,0,.2);border-radius:10px;padding:12px;text-align:center;">
             <div style="font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:900;color:#BB8FCE;" id="geb-pct">0%</div>
-            <div style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(250,246,238,.4);">GEB Qualified</div>
+            <div style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(20,16,8,.4);">GEB Qualified</div>
           </div>
           <div style="background:rgba(0,0,0,.2);border-radius:10px;padding:12px;text-align:center;">
             <div style="font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:900;color:#5DADE2;" id="geb-agents-recruit">0</div>
-            <div style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(250,246,238,.4);">Team Agents w/ a Recruit</div>
+            <div style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(20,16,8,.4);">Team Agents w/ a Recruit</div>
           </div>
           <div style="background:rgba(0,0,0,.2);border-radius:10px;padding:12px;text-align:center;">
             <div style="font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:900;color:#2DCA73;" id="geb-agents-app">0</div>
-            <div style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(250,246,238,.4);">Team Agents w/ an Application</div>
+            <div style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(20,16,8,.4);">Team Agents w/ an Application</div>
           </div>
         </div>
-        <div id="geb-next-tier" style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(250,246,238,.4);margin-top:10px;"></div>
+        <div id="geb-next-tier" style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(20,16,8,.4);margin-top:10px;"></div>
       </div>
 
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;">
         <div style="background:rgba(0,0,0,.2);border-radius:10px;padding:12px;text-align:center;">
           <div style="font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:900;color:#2DCA73;" id="ic-total-clients">0</div>
-          <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(250,246,238,.4);">Clients</div>
+          <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(20,16,8,.4);">Clients</div>
         </div>
         <div style="background:rgba(0,0,0,.2);border-radius:10px;padding:12px;text-align:center;">
           <div style="font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:900;color:#E8C97A;" id="ic-total-premium">$0</div>
-          <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(250,246,238,.4);">Total Premium</div>
+          <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(20,16,8,.4);">Total Premium</div>
         </div>
         <div style="background:rgba(0,0,0,.2);border-radius:10px;padding:12px;text-align:center;">
           <div style="font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:900;color:#9B59B6;" id="ic-same-day">0</div>
-          <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(250,246,238,.4);">Same Day</div>
+          <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(20,16,8,.4);">Same Day</div>
         </div>
       </div>
 
       <div style="margin-bottom:14px;">
-        <label style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(250,246,238,.5);display:block;margin-bottom:5px;">Commission Rate (%) — applies to all agents</label>
+        <label style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(20,16,8,.5);display:block;margin-bottom:5px;">Commission Rate (%) — applies to all agents</label>
         <input type="number" id="ic-captain-rate" value="75" min="0" max="100" step="0.5" onchange="recalcIncome()"
-          style="width:100%;background:#0A1628;border:1px solid rgba(201,168,76,.2);color:#FAF6EE;font-size:14px;padding:9px 12px;border-radius:6px;outline:none;">
-        <div style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(250,246,238,.3);margin-top:5px;">
+          style="width:100%;background:#F5F1E8;border:1px solid rgba(201,168,76,.2);color:#1E1A10;font-size:14px;padding:9px 12px;border-radius:6px;outline:none;">
+        <div style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(20,16,8,.3);margin-top:5px;">
           Generator earns rate × 50% of premium · Captain earns rate × 25% · CFT earns rate × 25%
         </div>
       </div>
 
-      <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(250,246,238,.5);text-transform:uppercase;letter-spacing:.09em;margin-bottom:8px;">⚓ Captain Earnings (25% · 50% if no CFT)</div>
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(20,16,8,.5);text-transform:uppercase;letter-spacing:.09em;margin-bottom:8px;">⚓ Captain Earnings (25% · 50% if no CFT)</div>
       <div id="ic-captain-table" style="margin-bottom:14px;"></div>
 
-      <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(250,246,238,.5);text-transform:uppercase;letter-spacing:.09em;margin-bottom:8px;">⚡ Generator Earnings (50%)</div>
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(20,16,8,.5);text-transform:uppercase;letter-spacing:.09em;margin-bottom:8px;">⚡ Generator Earnings (50%)</div>
       <div id="ic-generator-table" style="margin-bottom:14px;"></div>
 
-      <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(250,246,238,.5);text-transform:uppercase;letter-spacing:.09em;margin-bottom:8px;">🎯 CFT Earnings (25%)</div>
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(20,16,8,.5);text-transform:uppercase;letter-spacing:.09em;margin-bottom:8px;">🎯 CFT Earnings (25%)</div>
       <div id="ic-cft-table" style="margin-bottom:14px;"></div>
 
-      <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(250,246,238,.5);text-transform:uppercase;letter-spacing:.09em;margin-bottom:8px;">📋 Client Detail</div>
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(20,16,8,.5);text-transform:uppercase;letter-spacing:.09em;margin-bottom:8px;">📋 Client Detail</div>
       <div style="overflow-x:auto;">
         <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:480px;">
           <thead>
-            <tr style="border-bottom:1px solid rgba(255,255,255,.1);">
-              <th style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(250,246,238,.4);padding:6px 8px;text-align:left;">Client</th>
-              <th style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(250,246,238,.4);padding:6px 8px;">Type</th>
-              <th style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(250,246,238,.4);padding:6px 8px;">Captain</th>
-              <th style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(250,246,238,.4);padding:6px 8px;">Generator</th>
-              <th style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(250,246,238,.4);padding:6px 8px;">CFT</th>
-              <th style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(250,246,238,.4);padding:6px 8px;text-align:right;">Premium</th>
-              <th style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(250,246,238,.4);padding:6px 8px;text-align:right;color:#E8C97A;">Capt</th>
-              <th style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(250,246,238,.4);padding:6px 8px;text-align:right;color:#2DCA73;">Gen</th>
-              <th style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(250,246,238,.4);padding:6px 8px;text-align:right;color:#9B59B6;">CFT</th>
+            <tr style="border-bottom:1px solid rgba(10,10,10,.1);">
+              <th style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(20,16,8,.4);padding:6px 8px;text-align:left;">Client</th>
+              <th style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(20,16,8,.4);padding:6px 8px;">Type</th>
+              <th style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(20,16,8,.4);padding:6px 8px;">Captain</th>
+              <th style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(20,16,8,.4);padding:6px 8px;">Generator</th>
+              <th style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(20,16,8,.4);padding:6px 8px;">CFT</th>
+              <th style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(20,16,8,.4);padding:6px 8px;text-align:right;">Premium</th>
+              <th style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(20,16,8,.4);padding:6px 8px;text-align:right;color:#E8C97A;">Capt</th>
+              <th style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(20,16,8,.4);padding:6px 8px;text-align:right;color:#2DCA73;">Gen</th>
+              <th style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(20,16,8,.4);padding:6px 8px;text-align:right;color:#9B59B6;">CFT</th>
             </tr>
           </thead>
           <tbody id="ic-detail-tbody"></tbody>
         </table>
       </div>
-      <div style="margin-top:12px;font-family:'DM Mono',monospace;font-size:9px;color:rgba(250,246,238,.3);line-height:1.7;">
+      <div style="margin-top:12px;font-family:'DM Mono',monospace;font-size:9px;color:rgba(20,16,8,.3);line-height:1.7;">
         ⚠ Estimates only. Captain earns 60% · Generator earns 40% of commission × annual premium.
       </div>
     </div>
@@ -448,7 +448,7 @@ function updateStatus() {
 }
 
 // ── GUEST MODAL SYSTEM ───────────────────────────────────────
-function openGuestModal(guestId) {
+function openGuestModal(guestId, prefill) {
   const g = guestId ? guests.find(x => x.id === guestId) : null;
   const agentName = (AUTH.getSession()?.name) || '';
 
@@ -459,14 +459,14 @@ function openGuestModal(guestId) {
   };
 
   setField('gm-id',            guestId || '');
-  setField('gm-name',          g?.name      || '');
-  setField('gm-phone',         g?.phone     || '');
-  setField('gm-email',         g?.email     || '');
+  setField('gm-name',          g?.name      || prefill?.name  || '');
+  setField('gm-phone',         g?.phone     || prefill?.phone || '');
+  setField('gm-email',         g?.email     || prefill?.email || '');
   setField('gm-date',          g?.date      || new Date().toISOString().slice(0,10));
   setField('gm-captain',       g?.captain   || agentName);
   setField('gm-generator',     g?.generator || '');
   setField('gm-cft',           g?.cft       || '');
-  setField('gm-notes',         g?.notes     || '');
+  setField('gm-notes',         g?.notes     || prefill?.notes || '');
   setField('gm-status',        g?.status    || 'Invited');
   setField('gm-policy-amount', g?.policyAmount  || '');
   setField('gm-annual-premium',g?.annualPremium || '');
@@ -474,7 +474,7 @@ function openGuestModal(guestId) {
   setField('gm-client-date',   g?.clientDate || '');
 
   const titleEl = document.getElementById('gm-title');
-  if (titleEl) titleEl.textContent = g ? 'Edit Guest — ' + g.name : 'Add Guest';
+  if (titleEl) titleEl.textContent = g ? 'Edit Guest — ' + g.name : (prefill ? 'Add Guest — from Top 25' : 'Add Guest');
   document.getElementById('guest-modal').classList.add('open');
 }
 
@@ -1122,9 +1122,9 @@ function renderLeaderboard(guestRows, metric, dayFilter) {
   const STATUS_ICON  = { 'showed':'✅','confirmed':'📅','invited':'📨','no-show':'❌','no show':'❌' };
 
   function statusPill(s) {
-    if(!s) return '<span style="color:rgba(255,255,255,.25);font-size:10px;">—</span>';
+    if(!s) return '<span style="color:rgba(10,10,10,.25);font-size:10px;">—</span>';
     const lo = s.toLowerCase();
-    const col = STATUS_COLOR[lo] || 'rgba(255,255,255,.35)';
+    const col = STATUS_COLOR[lo] || 'rgba(10,10,10,.35)';
     const ico = STATUS_ICON[lo]  || '•';
     return `<span style="font-family:DM Mono,monospace;font-size:10px;padding:2px 8px;border-radius:10px;background:${col}18;border:1px solid ${col}44;color:${col};">${ico} ${s}</span>`;
   }
@@ -1161,7 +1161,7 @@ function renderLeaderboard(guestRows, metric, dayFilter) {
   const maxVal = Math.max(...captainRows.map(r=>r[metricKey]),1);
 
   const th = (t,center) => `<th style="font-size:10px;color:var(--slate);padding:6px 10px;
-    text-align:${center?'center':'left'};border-bottom:1px solid rgba(255,255,255,.08);
+    text-align:${center?'center':'left'};border-bottom:1px solid rgba(10,10,10,.08);
     font-family:'Barlow Condensed',sans-serif;font-weight:700;text-transform:uppercase;
     letter-spacing:.09em;white-space:nowrap;">${t}</th>`;
 
@@ -1193,7 +1193,7 @@ function renderLeaderboard(guestRows, metric, dayFilter) {
           const rkColor = rank===1?'var(--gold)':rank===2?'#C0C0C0':rank===3?'#CD7F32':'var(--slate)';
           const pct = Math.round((r[metricKey]/maxVal)*100);
           const isMe = session && r.captain.toLowerCase().includes((session.name||'').split(' ')[0].toLowerCase());
-          return `<tr style="border-bottom:1px solid rgba(255,255,255,.04);${isMe?'background:rgba(201,168,76,.05);':''}">
+          return `<tr style="border-bottom:1px solid rgba(10,10,10,.04);${isMe?'background:rgba(201,168,76,.05);':''}">
             <td style="padding:8px 10px;font-family:'DM Mono',monospace;font-size:12px;color:${rkColor};font-weight:700;">${rank}</td>
             <td style="padding:8px 10px;font-size:13px;font-weight:700;">${r.captain}${isMe?' <span style="font-size:9px;color:var(--gold);">(you)</span>':''}</td>
             <td style="padding:8px 10px;text-align:center;font-family:'DM Mono',monospace;font-size:13px;">${r.invited}</td>
@@ -1203,7 +1203,7 @@ function renderLeaderboard(guestRows, metric, dayFilter) {
             <td style="padding:8px 10px;text-align:center;font-size:12px;color:var(--slate);">${r.sat}</td>
             <td style="padding:8px 10px;min-width:100px;">
               <div style="display:flex;align-items:center;gap:6px;">
-                <div style="flex:1;height:5px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;">
+                <div style="flex:1;height:5px;background:rgba(10,10,10,.08);border-radius:3px;overflow:hidden;">
                   <div style="width:${pct}%;height:100%;background:${rkColor};border-radius:3px;transition:width .3s;"></div>
                 </div>
                 <span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--gold-light);font-weight:700;min-width:18px;text-align:right;">${r[metricKey]}</span>
@@ -1230,7 +1230,7 @@ function renderLeaderboard(guestRows, metric, dayFilter) {
         ${guestRows.map((g,i)=>{
           const lo = (g.status||'').toLowerCase();
           const rowBg = lo==='showed'?'rgba(45,202,115,.04)':lo==='no-show'||lo==='no show'?'rgba(231,76,60,.04)':'';
-          return `<tr style="border-bottom:1px solid rgba(255,255,255,.04);${rowBg?'background:'+rowBg+';':''}">
+          return `<tr style="border-bottom:1px solid rgba(10,10,10,.04);${rowBg?'background:'+rowBg+';':''}">
             <td style="padding:7px 10px;font-family:'DM Mono',monospace;font-size:11px;color:var(--slate);">${i+1}</td>
             <td style="padding:7px 10px;">
               <div style="font-size:13px;font-weight:700;color:var(--cream);">${g.guestName||'—'}</div>
@@ -1240,12 +1240,12 @@ function renderLeaderboard(guestRows, metric, dayFilter) {
             <td style="padding:7px 10px;">
               ${g.captain
                 ? `<div style="font-size:12px;font-weight:600;color:var(--cream);">⚓ ${g.captain}</div>`
-                : '<span style="color:rgba(255,255,255,.25);font-size:11px;">—</span>'}
+                : '<span style="color:rgba(10,10,10,.25);font-size:11px;">—</span>'}
             </td>
             <td style="padding:7px 10px;">
               ${g.generator
                 ? `<div style="font-size:12px;color:var(--gold-light);">⚡ ${g.generator}</div>`
-                : '<span style="color:rgba(255,255,255,.25);font-size:11px;">—</span>'}
+                : '<span style="color:rgba(10,10,10,.25);font-size:11px;">—</span>'}
             </td>
             <td style="padding:7px 10px;text-align:center;font-family:'DM Mono',monospace;font-size:11px;color:var(--slate);">${g.date||'—'}</td>
             <td style="padding:7px 10px;text-align:center;font-size:11px;color:var(--slate);">${g.day||'—'}</td>
@@ -1358,7 +1358,7 @@ function recalcIncome() {
   if (el('ic-same-day'))      el('ic-same-day').textContent = sameDayCount;
 
   if (!clients.length) {
-    const emptyMsg = '<div style="font-family:DM Mono,monospace;font-size:11px;color:rgba(250,246,238,.35);padding:10px 0;">' +
+    const emptyMsg = '<div style="font-family:DM Mono,monospace;font-size:11px;color:rgba(20,16,8,.35);padding:10px 0;">' +
       'No converted clients yet. Mark a guest as "Became Client" and enter the policy amount.</div>';
     ['ic-captain-table','ic-generator-table','ic-cft-table','ic-detail-tbody'].forEach(id => {
       const t = el(id); if (t) t.innerHTML = emptyMsg;
@@ -1424,23 +1424,23 @@ function recalcIncome() {
 
   function agentTable(map, color) {
     const rows = Object.values(map).sort((a,b) => b.earned - a.earned);
-    if (!rows.length) return '<div style="font-family:DM Mono,monospace;font-size:11px;color:rgba(250,246,238,.35);padding:8px 0;">No data</div>';
+    if (!rows.length) return '<div style="font-family:DM Mono,monospace;font-size:11px;color:rgba(20,16,8,.35);padding:8px 0;">No data</div>';
     const maxVal = Math.max(...rows.map(r => r.earned), 1);
     return rows.map((r, i) => {
       const rank = i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
       const pct  = Math.round(r.earned / maxVal * 100);
-      const note = r.isFallback ? ' <span style="font-family:DM Mono,monospace;font-size:9px;color:rgba(250,246,238,.4);">(acting as CFT)</span>' : '';
+      const note = r.isFallback ? ' <span style="font-family:DM Mono,monospace;font-size:9px;color:rgba(20,16,8,.4);">(acting as CFT)</span>' : '';
       return `<div style="background:rgba(0,0,0,.15);border-radius:8px;padding:10px 12px;margin-bottom:7px;">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
           <span style="font-size:14px;">${rank}</span>
           <span style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;flex:1;">${r.name}${note}</span>
-          <span style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(250,246,238,.4);">${r.clients} client${r.clients!==1?'s':''}</span>
+          <span style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(20,16,8,.4);">${r.clients} client${r.clients!==1?'s':''}</span>
           <span style="font-family:'DM Mono',monospace;font-size:14px;font-weight:700;color:${color};">${fmtR(r.earned)}</span>
         </div>
-        <div style="height:4px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;">
+        <div style="height:4px;background:rgba(10,10,10,.08);border-radius:2px;overflow:hidden;">
           <div style="width:${pct}%;height:100%;background:${color};border-radius:2px;"></div>
         </div>
-        <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(250,246,238,.3);margin-top:4px;">Premium: ${fmt$(r.premium)}</div>
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(20,16,8,.3);margin-top:4px;">Premium: ${fmt$(r.premium)}</div>
       </div>`;
     }).join('');
   }
@@ -1462,9 +1462,9 @@ function recalcIncome() {
       const genEarn   = premium * commRate * 0.50;
       const captEarn  = premium * commRate * (cft ? 0.25 : 0.50);
       const cftEarn   = premium * commRate * 0.25;
-      return `<tr style="border-bottom:1px solid rgba(255,255,255,.05);">
+      return `<tr style="border-bottom:1px solid rgba(10,10,10,.05);">
         <td style="padding:7px 8px;font-weight:600;">${g.name}</td>
-        <td style="padding:7px 8px;text-align:center;font-family:'DM Mono',monospace;font-size:10px;color:rgba(250,246,238,.5);">${TYPE_LABEL[g.conversionType||'']}</td>
+        <td style="padding:7px 8px;text-align:center;font-family:'DM Mono',monospace;font-size:10px;color:rgba(20,16,8,.5);">${TYPE_LABEL[g.conversionType||'']}</td>
         <td style="padding:7px 8px;font-size:12px;">${captain}</td>
         <td style="padding:7px 8px;font-size:12px;">${generator}</td>
         <td style="padding:7px 8px;font-size:12px;">${cftLabel}</td>
@@ -1590,6 +1590,20 @@ document.addEventListener('DOMContentLoaded', function() {
   applyGuestFilter();
   recalcIncome();
   initGEBPanel();
+
+  // Deep link from Top 25's "🏢 Add to BOM" button
+  const params = new URLSearchParams(location.search);
+  if (params.get('addGuest') === '1') {
+    switchBOMTab('guests');
+    openGuestModal(null, {
+      name:  params.get('name')  || '',
+      phone: params.get('phone') || '',
+      email: params.get('email') || '',
+      notes: params.get('notes') || '',
+    });
+    // Clean the URL so refreshing doesn't reopen the modal
+    window.history.replaceState({}, '', 'bom.html');
+  }
 });
 
 // ── REFRESH GUESTS ────────────────────────────────────────────
@@ -1728,7 +1742,7 @@ async function cleanupMondayGuestNames() {
 
 <!-- ── GUEST ADD/EDIT MODAL ── -->
 <div id="guest-modal" style="position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:500;align-items:center;justify-content:center;padding:20px;">
-  <div style="background:#132240;border:1px solid rgba(201,168,76,.25);border-radius:6px;width:100%;max-width:480px;max-height:92vh;overflow-y:auto;font-family:\'Barlow\',sans-serif;">
+  <div style="background:#FFFFFF;border:1px solid rgba(201,168,76,.25);border-radius:6px;width:100%;max-width:480px;max-height:92vh;overflow-y:auto;font-family:\'Barlow\',sans-serif;">
     <div style="height:3px;background:linear-gradient(90deg,transparent,#C9A84C,transparent);"></div>
     <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid rgba(201,168,76,.15);">
       <div id="gm-title" style="font-family:\'Barlow Condensed\',sans-serif;font-size:14px;font-weight:700;color:#E8C97A;text-transform:uppercase;letter-spacing:.08em;">Add Guest</div>
@@ -1739,31 +1753,31 @@ async function cleanupMondayGuestNames() {
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
         <div style="grid-column:1/-1;">
           <label style="display:block;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(201,168,76,.7);margin-bottom:5px;">Guest Name *</label>
-          <input type="text" id="gm-name" placeholder="Full name" style="width:100%;background:#0A1628;border:1px solid rgba(201,168,76,.2);color:#FAF6EE;font-size:13px;padding:10px 12px;border-radius:3px;outline:none;">
+          <input type="text" id="gm-name" placeholder="Full name" style="width:100%;background:#F5F1E8;border:1px solid rgba(201,168,76,.2);color:#1E1A10;font-size:13px;padding:10px 12px;border-radius:3px;outline:none;">
         </div>
         <div>
           <label style="display:block;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(201,168,76,.7);margin-bottom:5px;">Phone</label>
-          <input type="tel" id="gm-phone" placeholder="(555) 000-0000" style="width:100%;background:#0A1628;border:1px solid rgba(201,168,76,.2);color:#FAF6EE;font-size:13px;padding:10px 12px;border-radius:3px;outline:none;">
+          <input type="tel" id="gm-phone" placeholder="(555) 000-0000" style="width:100%;background:#F5F1E8;border:1px solid rgba(201,168,76,.2);color:#1E1A10;font-size:13px;padding:10px 12px;border-radius:3px;outline:none;">
         </div>
         <div>
           <label style="display:block;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(201,168,76,.7);margin-bottom:5px;">Email</label>
-          <input type="email" id="gm-email" placeholder="guest@email.com" style="width:100%;background:#0A1628;border:1px solid rgba(201,168,76,.2);color:#FAF6EE;font-size:13px;padding:10px 12px;border-radius:3px;outline:none;">
+          <input type="email" id="gm-email" placeholder="guest@email.com" style="width:100%;background:#F5F1E8;border:1px solid rgba(201,168,76,.2);color:#1E1A10;font-size:13px;padding:10px 12px;border-radius:3px;outline:none;">
         </div>
         <div>
           <label style="display:block;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(201,168,76,.7);margin-bottom:5px;">BOM Date</label>
-          <input type="date" id="gm-date" style="width:100%;background:#0A1628;border:1px solid rgba(201,168,76,.2);color:#FAF6EE;font-size:13px;padding:10px 12px;border-radius:3px;outline:none;">
+          <input type="date" id="gm-date" style="width:100%;background:#F5F1E8;border:1px solid rgba(201,168,76,.2);color:#1E1A10;font-size:13px;padding:10px 12px;border-radius:3px;outline:none;">
         </div>
         <div>
-          <label style="display:block;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(201,168,76,.7);margin-bottom:5px;">Captain <span style="color:rgba(255,255,255,.3);font-size:9px;">(Agent who invited guest to office)</span></label>
-          <input type="text" id="gm-captain" placeholder="Agent name who brought guest" style="width:100%;background:#0A1628;border:1px solid rgba(201,168,76,.2);color:#FAF6EE;font-size:13px;padding:10px 12px;border-radius:3px;outline:none;">
+          <label style="display:block;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(201,168,76,.7);margin-bottom:5px;">Captain <span style="color:rgba(10,10,10,.3);font-size:9px;">(Agent who invited guest to office)</span></label>
+          <input type="text" id="gm-captain" placeholder="Agent name who brought guest" style="width:100%;background:#F5F1E8;border:1px solid rgba(201,168,76,.2);color:#1E1A10;font-size:13px;padding:10px 12px;border-radius:3px;outline:none;">
         </div>
         <div>
-          <label style="display:block;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(201,168,76,.7);margin-bottom:5px;">Generator <span style="color:rgba(255,255,255,.3);font-size:9px;">(Original referrer)</span></label>
-          <input type="text" id="gm-generator" placeholder="Who originally referred this guest" style="width:100%;background:#0A1628;border:1px solid rgba(201,168,76,.2);color:#FAF6EE;font-size:13px;padding:10px 12px;border-radius:3px;outline:none;">
+          <label style="display:block;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(201,168,76,.7);margin-bottom:5px;">Generator <span style="color:rgba(10,10,10,.3);font-size:9px;">(Original referrer)</span></label>
+          <input type="text" id="gm-generator" placeholder="Who originally referred this guest" style="width:100%;background:#F5F1E8;border:1px solid rgba(201,168,76,.2);color:#1E1A10;font-size:13px;padding:10px 12px;border-radius:3px;outline:none;">
         </div>
         <div>
           <label style="display:block;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(201,168,76,.7);margin-bottom:5px;">Status</label>
-          <select id="gm-status" style="width:100%;background:#0A1628;border:1px solid rgba(201,168,76,.2);color:#FAF6EE;font-size:13px;padding:10px 12px;border-radius:3px;outline:none;">
+          <select id="gm-status" style="width:100%;background:#F5F1E8;border:1px solid rgba(201,168,76,.2);color:#1E1A10;font-size:13px;padding:10px 12px;border-radius:3px;outline:none;">
             <option>Invited</option>
             <option>Confirmed</option>
             <option>Showed</option>
@@ -1775,13 +1789,13 @@ async function cleanupMondayGuestNames() {
         </div>
         <div style="grid-column:1/-1;">
           <label style="display:block;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(201,168,76,.7);margin-bottom:5px;">Notes</label>
-          <textarea id="gm-notes" placeholder="Interest level, follow-up needed, etc." style="width:100%;background:#0A1628;border:1px solid rgba(201,168,76,.2);color:#FAF6EE;font-size:13px;padding:10px 12px;border-radius:3px;outline:none;min-height:60px;resize:vertical;font-family:\'Barlow\',sans-serif;"></textarea>
+          <textarea id="gm-notes" placeholder="Interest level, follow-up needed, etc." style="width:100%;background:#F5F1E8;border:1px solid rgba(201,168,76,.2);color:#1E1A10;font-size:13px;padding:10px 12px;border-radius:3px;outline:none;min-height:60px;resize:vertical;font-family:\'Barlow\',sans-serif;"></textarea>
         </div>
       </div>
     </div>
     <div style="display:flex;gap:8px;justify-content:flex-end;padding:14px 20px;border-top:1px solid rgba(201,168,76,.15);">
-      <button onclick="closeGuestModal()" style="background:transparent;border:1px solid rgba(255,255,255,.1);color:#6B7C93;padding:9px 18px;border-radius:3px;cursor:pointer;font-family:\'Barlow Condensed\',sans-serif;font-size:12px;font-weight:700;">Cancel</button>
-      <button onclick="saveGuestModal()" style="background:#C9A84C;color:#0A1628;border:none;padding:9px 22px;border-radius:3px;cursor:pointer;font-family:\'Barlow Condensed\',sans-serif;font-size:12px;font-weight:700;letter-spacing:.05em;">Save Guest</button>
+      <button onclick="closeGuestModal()" style="background:transparent;border:1px solid rgba(10,10,10,.1);color:#6B7C93;padding:9px 18px;border-radius:3px;cursor:pointer;font-family:\'Barlow Condensed\',sans-serif;font-size:12px;font-weight:700;">Cancel</button>
+      <button onclick="saveGuestModal()" style="background:#C9A84C;color:#F5F1E8;border:none;padding:9px 22px;border-radius:3px;cursor:pointer;font-family:\'Barlow Condensed\',sans-serif;font-size:12px;font-weight:700;letter-spacing:.05em;">Save Guest</button>
     </div>
   </div>
 </div>

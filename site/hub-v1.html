@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="auth.js"></script>
 <style>
-:root{--navy:#0A1628;--navy-mid:#112040;--navy-light:#1A3158;--gold:#C9A84C;--gold-light:#E8C97A;--gold-pale:#F5E8C0;--cream:#FAF6EE;--success:#27AE60;--warn:#E67E22;--danger:#C0392B;--slate:#6B7C93;--border:rgba(201,168,76,0.22);}
+:root{--navy:#F5F1E8;--navy-mid:#FFFFFF;--navy-light:#ECE6D6;--gold:#C9A84C;--gold-light:#E8C97A;--gold-pale:#F5E8C0;--cream:#1E1A10;--success:#27AE60;--warn:#E67E22;--danger:#C0392B;--slate:#6B7C93;--border:rgba(201,168,76,0.22);}
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);min-height:100vh;overflow-x:hidden;}
 .app{display:flex;height:100vh;overflow:hidden;}
@@ -46,7 +46,7 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);m
 
 /* ── MAIN ── */
 .main{flex:1;overflow-y:auto;display:flex;flex-direction:column;min-width:0;}
-.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 22px;border-bottom:1px solid var(--border);background:rgba(10,22,40,0.97);backdrop-filter:blur(10px);position:sticky;top:0;z-index:50;flex-shrink:0;}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 22px;border-bottom:1px solid var(--border);background:rgba(245,241,232,0.97);backdrop-filter:blur(10px);position:sticky;top:0;z-index:50;flex-shrink:0;}
 .topbar-left{display:flex;align-items:center;gap:12px;}
 .topbar-title{font-family:Barlow Condensed,sans-serif;font-size:16px;font-weight:700;letter-spacing:0.04em;}
 .topbar-date{font-size:11px;color:var(--slate);}
@@ -287,7 +287,7 @@ function renderMondaySyncBanner(session) {
       + '<div style="flex:1;">'
       + '<div style="font-family:Barlow Condensed,sans-serif;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--gold);margin-bottom:6px;">'
       + '☁ Monday.com Agent Sync — ' + new Date(sync.checkedAt).toLocaleTimeString() + '</div>'
-      + '<div style="font-size:12px;color:rgba(255,255,255,.6);margin-bottom:8px;">'
+      + '<div style="font-size:12px;color:rgba(10,10,10,.6);margin-bottom:8px;">'
       + 'Board has <strong style="color:var(--cream);">' + sync.totalOnBoard + '</strong> agents · auth.js has <strong style="color:var(--cream);">' + sync.totalInAuth + '</strong>';
 
     if (newCount) html += ' · <strong style="color:#2DCA73;">' + newCount + ' new agent' + (newCount>1?'s':'') + ' on board not in auth.js</strong>';
@@ -296,7 +296,7 @@ function renderMondaySyncBanner(session) {
 
     if (newCount > 0) {
       html += '<div style="font-size:11px;color:var(--gold);font-family:Barlow Condensed,sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Suggested auth.js additions:</div>';
-      html += '<pre style="background:var(--navy);border:1px solid rgba(255,255,255,.1);border-radius:3px;padding:10px 12px;font-size:11px;color:#E8C97A;overflow-x:auto;margin-bottom:8px;">';
+      html += '<pre style="background:var(--navy);border:1px solid rgba(10,10,10,.1);border-radius:3px;padding:10px 12px;font-size:11px;color:#E8C97A;overflow-x:auto;margin-bottom:8px;">';
       sync.newAgents.forEach(a => {
         html += '  {\n'
           + '    id: "' + a.id + '", name: "' + a.name + '",\n'
@@ -311,7 +311,7 @@ function renderMondaySyncBanner(session) {
     }
 
     if (updCount > 0) {
-      html += '<div style="margin-top:8px;font-size:11px;color:rgba(255,255,255,.5);">';
+      html += '<div style="margin-top:8px;font-size:11px;color:rgba(10,10,10,.5);">';
       sync.updatedAgents.forEach(a => {
         html += '&#8635; <strong style="color:var(--cream);">' + a.name + '</strong>: ';
         html += Object.entries(a.changes).map(([k,v]) => k + ' → "' + v + '"').join(', ');
@@ -484,7 +484,7 @@ function buildSystemFlowCard(session) {
             <div style="text-align:center;width:100%;padding:10px 12px;background:${isMine?'rgba(201,168,76,0.12)':isDone?'rgba(39,174,96,0.07)':'var(--navy-light)'};border:1px solid ${isMine?'var(--gold)':isDone?'rgba(39,174,96,0.3)':'var(--border)'};border-radius:4px;position:relative;">
               ${isMine?'<div style="position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:var(--gold);color:var(--navy);font-size:8px;font-family:\'Barlow Condensed\',sans-serif;font-weight:700;padding:1px 7px;border-radius:2px;letter-spacing:0.06em;white-space:nowrap;">YOU ARE HERE</div>':''}
               <div style="font-size:9px;color:${isMine?'var(--gold)':isDone?'#2ecc71':'var(--slate)'};font-family:Barlow Condensed,sans-serif;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:4px;">${s.week}</div>
-              <div style="font-size:12px;font-weight:600;color:${isMine?'var(--cream)':isDone?'rgba(250,246,238,0.6)':'rgba(250,246,238,0.5)'};line-height:1.3;margin-bottom:6px;">${s.stage}</div>
+              <div style="font-size:12px;font-weight:600;color:${isMine?'var(--cream)':isDone?'rgba(20,16,8,0.6)':'rgba(20,16,8,0.5)'};line-height:1.3;margin-bottom:6px;">${s.stage}</div>
               <div style="font-size:10px;color:${isMine?'#C0392B':'rgba(192,57,43,0.5)'};font-weight:700;font-family:Barlow Condensed,sans-serif;letter-spacing:0.05em;">${s.milestone}</div>
               ${isMine?`<div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:3px;">${s.tasks.slice(0,3).map(t=>`<span style="background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.25);border-radius:2px;padding:2px 6px;font-size:9px;">${t}</span>`).join('')}${s.tasks.length>3?`<span style="font-size:9px;color:var(--slate);">+${s.tasks.length-3} more</span>`:''}</div>`:''}
             </div>
@@ -755,17 +755,17 @@ function buildPromotionProgress() {
     return '<div style="background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.2);border-radius:6px;padding:12px 18px;margin-bottom:12px;display:flex;align-items:center;gap:12px;">'
       + '<div style="font-size:1.4rem;">&#127942;</div>'
       + '<div><div style="font-family:Barlow Condensed,sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:' + color + ';">' + getRoleLabel(role) + ' &mdash; ' + comm + ' Commission</div>'
-      + '<div style="font-size:12px;color:rgba(255,255,255,.4);margin-top:2px;">Senior Leadership Level &mdash; Continue building your agency</div></div>'
+      + '<div style="font-size:12px;color:rgba(10,10,10,.4);margin-top:2px;">Senior Leadership Level &mdash; Continue building your agency</div></div>'
       + '</div>';
   }
 
-  return '<div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:6px;padding:14px 18px;margin-bottom:12px;">'
+  return '<div style="background:rgba(10,10,10,.03);border:1px solid rgba(10,10,10,.07);border-radius:6px;padding:14px 18px;margin-bottom:12px;">'
     + '<div style="display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap;">'
     + '<div style="font-size:1.4rem;flex-shrink:0;margin-top:2px;">&#128200;</div>'
     + '<div style="flex:1;min-width:200px;">'
     + '<div style="font-family:Barlow Condensed,sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--slate);margin-bottom:2px;">Current: ' + getRoleLabel(role) + ' &mdash; ' + comm + '</div>'
     + '<div style="font-family:Barlow Condensed,sans-serif;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:' + next.color + ';margin-bottom:4px;">&#8594; Next: ' + next.label + '</div>'
-    + '<div style="font-size:11px;color:rgba(255,255,255,.4);line-height:1.6;">' + next.req + '</div>'
+    + '<div style="font-size:11px;color:rgba(10,10,10,.4);line-height:1.6;">' + next.req + '</div>'
     + '</div>'
     + '<div style="display:flex;gap:7px;flex-shrink:0;flex-wrap:wrap;align-self:center;">'
     + '<a href="promotions.html" style="font-size:11px;background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.25);color:var(--gold);text-decoration:none;padding:6px 12px;border-radius:3px;font-family:Barlow Condensed,sans-serif;font-weight:700;white-space:nowrap;">View Progress &#8594;</a>'

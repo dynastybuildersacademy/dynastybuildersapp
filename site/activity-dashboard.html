@@ -9,16 +9,16 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 :root{
-  --navy:#0A1628;--navy-mid:#0F1E38;--navy-light:#132240;
+  --navy:#F5F1E8;--navy-mid:#FFFFFF;--navy-light:#FFFFFF;
   --gold:#C9A84C;--gold-light:#E8C97A;--green:#2DCA73;
   --blue:#5DADE2;--orange:#E67E22;--red:#E74C3C;
-  --text:#E8EDF5;--muted:#6B7C93;--border:rgba(255,255,255,.08);
+  --text:#182238;--muted:#6B7C93;--border:rgba(10,10,10,.08);
 }
 body{background:var(--navy);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh;padding-bottom:80px;}
-.header{background:linear-gradient(135deg,#0A1628,#0F1E38);border-bottom:1px solid rgba(201,168,76,.15);
+.header{background:linear-gradient(135deg,#F5F1E8,#FFFFFF);border-bottom:1px solid rgba(201,168,76,.15);
   padding:14px 18px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:100;}
 .header-title{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;color:var(--gold-light);flex:1;}
-.back-btn{background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:8px;
+.back-btn{background:rgba(10,10,10,.06);border:1px solid var(--border);border-radius:8px;
   padding:7px 12px;color:var(--muted);font-family:'DM Mono',monospace;font-size:11px;text-decoration:none;}
 .tab-bar{display:flex;border-bottom:2px solid var(--border);background:var(--navy-mid);
   position:sticky;top:56px;z-index:90;}
@@ -34,9 +34,9 @@ body{background:var(--navy);color:var(--text);font-family:'Barlow',sans-serif;mi
 .stat-box{background:rgba(0,0,0,.2);border-radius:9px;padding:12px;text-align:center;}
 .stat-num{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:900;}
 .stat-lbl{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);margin-top:2px;}
-.agent-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.05);}
+.agent-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(10,10,10,.05);}
 .agent-row:last-child{border:none;}
-.streak-bar{height:4px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;margin-top:4px;}
+.streak-bar{height:4px;background:rgba(10,10,10,.06);border-radius:2px;overflow:hidden;margin-top:4px;}
 .streak-fill{height:100%;border-radius:2px;transition:width .4s;}
 .heat-cell{width:12px;height:12px;border-radius:2px;flex-shrink:0;}
 .pill{display:inline-flex;align-items:center;padding:2px 8px;border-radius:10px;
@@ -44,7 +44,7 @@ body{background:var(--navy);color:var(--text);font-family:'Barlow',sans-serif;mi
 .pill-fire{background:rgba(230,126,34,.12);border:1px solid rgba(230,126,34,.3);color:#E67E22;}
 .pill-green{background:rgba(45,202,115,.12);border:1px solid rgba(45,202,115,.3);color:var(--green);}
 .pill-muted{background:rgba(107,124,147,.1);border:1px solid rgba(107,124,147,.2);color:var(--muted);}
-input,select{background:var(--navy-light);border:1px solid rgba(255,255,255,.12);color:var(--text);
+input,select{background:var(--navy-light);border:1px solid rgba(10,10,10,.12);color:var(--text);
   border-radius:7px;padding:8px 12px;font-family:'DM Mono',monospace;font-size:12px;outline:none;}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);
   background:var(--navy-mid);border:1px solid var(--gold);border-radius:8px;padding:10px 18px;
@@ -110,7 +110,7 @@ input,select{background:var(--navy-light);border:1px solid rgba(255,255,255,.12)
     <div id="heatmap-grid" style="overflow-x:auto;"></div>
     <div style="display:flex;align-items:center;gap:6px;margin-top:10px;">
       <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);">Less</div>
-      <div style="width:12px;height:12px;border-radius:2px;background:rgba(201,168,76,.1);border:1px solid rgba(255,255,255,.06);"></div>
+      <div style="width:12px;height:12px;border-radius:2px;background:rgba(201,168,76,.1);border:1px solid rgba(10,10,10,.06);"></div>
       <div style="width:12px;height:12px;border-radius:2px;background:rgba(201,168,76,.3);"></div>
       <div style="width:12px;height:12px;border-radius:2px;background:rgba(201,168,76,.55);"></div>
       <div style="width:12px;height:12px;border-radius:2px;background:rgba(201,168,76,.8);"></div>
@@ -224,7 +224,7 @@ function renderOverview() {
       return `<div style="margin-bottom:10px;">
         <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--gold);margin-bottom:6px;">${dateLabel} · ${entries.length} login${entries.length!==1?'s':''}</div>
         <div style="display:flex;flex-wrap:wrap;gap:6px;">
-          ${entries.map(e => `<span style="background:rgba(255,255,255,.06);border-radius:6px;padding:3px 8px;font-family:'DM Mono',monospace;font-size:10px;">${e.name.split(' ')[0]}</span>`).join('')}
+          ${entries.map(e => `<span style="background:rgba(10,10,10,.06);border-radius:6px;padding:3px 8px;font-family:'DM Mono',monospace;font-size:10px;">${e.name.split(' ')[0]}</span>`).join('')}
         </div>
       </div>`;
     }).join('');
@@ -294,9 +294,9 @@ function renderHeatmap() {
     const count = byDate[d] || 0;
     const pct = count / maxCount;
     const alpha = count ? Math.max(0.12, pct * 0.9) : 0.05;
-    const bg = count ? `rgba(201,168,76,${alpha.toFixed(2)})` : 'rgba(255,255,255,.04)';
+    const bg = count ? `rgba(201,168,76,${alpha.toFixed(2)})` : 'rgba(10,10,10,.04)';
     const label = new Date(d + 'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
-    return `<div class="heat-cell" style="background:${bg};border:1px solid rgba(255,255,255,.04);"
+    return `<div class="heat-cell" style="background:${bg};border:1px solid rgba(10,10,10,.04);"
       title="${label}: ${count} login${count!==1?'s':''}"></div>`;
   };
 
@@ -307,7 +307,7 @@ function renderHeatmap() {
     </div>
     ${weeks.map(week => `
       <div style="display:flex;flex-direction:column;gap:3px;">
-        <div style="font-family:'DM Mono',monospace;font-size:7px;color:rgba(255,255,255,.2);height:14px;white-space:nowrap;overflow:hidden;">
+        <div style="font-family:'DM Mono',monospace;font-size:7px;color:rgba(10,10,10,.2);height:14px;white-space:nowrap;overflow:hidden;">
           ${week[0] ? new Date(week[0]+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}) : ''}
         </div>
         ${Array.from({length:7}, (_,i) => {
@@ -329,7 +329,7 @@ function renderHeatmap() {
       return `<div class="agent-row">
         <div style="flex:1;min-width:0;">
           <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;">${a.name}</div>
-          <div style="height:4px;background:rgba(255,255,255,.06);border-radius:2px;margin-top:4px;overflow:hidden;">
+          <div style="height:4px;background:rgba(10,10,10,.06);border-radius:2px;margin-top:4px;overflow:hidden;">
             <div style="width:${pct}%;height:100%;background:var(--gold);border-radius:2px;"></div>
           </div>
         </div>
@@ -376,8 +376,8 @@ function renderMyStats() {
           const logged = myDates.has(d);
           const label = new Date(d+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
           return `<div style="width:28px;height:28px;border-radius:5px;display:flex;align-items:center;justify-content:center;
-            background:${logged?'rgba(45,202,115,.15)':'rgba(255,255,255,.04)'};
-            border:1px solid ${logged?'rgba(45,202,115,.3)':'rgba(255,255,255,.06)'};
+            background:${logged?'rgba(45,202,115,.15)':'rgba(10,10,10,.04)'};
+            border:1px solid ${logged?'rgba(45,202,115,.3)':'rgba(10,10,10,.06)'};
             font-family:'DM Mono',monospace;font-size:8px;color:${logged?'#2DCA73':'var(--muted)'};"
             title="${label}">${logged?'✓':new Date(d+'T12:00:00').getDate()}</div>`;
         }).join('')}

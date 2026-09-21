@@ -11,11 +11,11 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 :root{
-  --navy:#0A1628;--navy2:#122040;--navy3:#1A3158;
+  --navy:#F5F1E8;--navy2:#122040;--navy3:#ECE6D6;
   --gold:#C9A84C;--gold2:#E8C87A;--gold3:#F5E8C0;
   --green:#1D9E75;--red:#D85A30;--amber:#BA7517;--blue:#4B9AE8;
   --border:rgba(201,168,76,0.2);
-  --text:#FAF6EE;--text2:rgba(250,246,238,.65);--text3:rgba(250,246,238,.38);
+  --text:#1E1A10;--text2:rgba(20,16,8,.65);--text3:rgba(20,16,8,.38);
   --card:#0F1E36;--card2:#0D1A2E;
   --sidebar-w:242px;
   --sidebar-collapsed-w:54px;
@@ -97,7 +97,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--text);m
 .filters-row{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end}
 .fg{display:flex;flex-direction:column;gap:3px;min-width:100px;flex:1}
 .fl{font-size:9.5px;font-weight:500;color:var(--text3);letter-spacing:.05em;text-transform:uppercase}
-select,input[type=date],input[type=text]{font-family:'DM Sans',sans-serif;font-size:11.5px;padding:5px 8px;border:0.5px solid rgba(201,168,76,.2);border-radius:7px;background:rgba(10,22,40,.9);color:var(--text);width:100%}
+select,input[type=date],input[type=text]{font-family:'DM Sans',sans-serif;font-size:11.5px;padding:5px 8px;border:0.5px solid rgba(201,168,76,.2);border-radius:7px;background:rgba(245,241,232,.9);color:var(--text);width:100%}
 select:focus,input:focus{outline:none;border-color:rgba(201,168,76,.5)}
 .period-btn{background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.25);color:var(--gold2);font-size:11px;padding:4px 10px;border-radius:3px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:0.05em;transition:all 0.15s;}
 .period-btn:hover,.period-btn.active{background:rgba(201,168,76,0.25);border-color:var(--gold);}
@@ -114,7 +114,7 @@ select:focus,input:focus{outline:none;border-color:rgba(201,168,76,.5)}
 .tw{overflow-x:auto;border:0.5px solid rgba(201,168,76,.1);border-radius:10px}
 table{width:100%;border-collapse:collapse;font-size:11.5px;table-layout:fixed}
 th{background:rgba(10,18,34,.9);padding:8px 10px;text-align:left;font-size:9.5px;font-weight:500;letter-spacing:.04em;text-transform:uppercase;color:var(--text3);border-bottom:0.5px solid rgba(201,168,76,.1);white-space:nowrap;overflow:hidden}
-td{padding:7px 10px;border-bottom:0.5px solid rgba(255,255,255,.04);color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+td{padding:7px 10px;border-bottom:0.5px solid rgba(10,10,10,.04);color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 tr:last-child td{border-bottom:none}
 tr:hover td{background:rgba(201,168,76,.04)}
 .cb-row td{background:rgba(216,90,48,.05)}
@@ -555,13 +555,13 @@ tr:hover td{background:rgba(201,168,76,.04)}
         <div class="card" style="margin-bottom:10px">
           <div style="font-size:12px;font-weight:500;margin-bottom:8px">Sync queue</div>
           <div style="display:flex;flex-direction:column;gap:6px">
-            <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;padding:6px 0;border-bottom:0.5px solid rgba(255,255,255,.05)">
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;padding:6px 0;border-bottom:0.5px solid rgba(10,10,10,.05)">
               <span style="color:var(--text2)">Commission records</span><span class="am mv-go" id="sync-comm-count">—</span>
             </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;padding:6px 0;border-bottom:0.5px solid rgba(255,255,255,.05)">
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;padding:6px 0;border-bottom:0.5px solid rgba(10,10,10,.05)">
               <span style="color:var(--text2)">Chargeback records</span><span class="am mv-r" id="sync-cb-count">—</span>
             </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;padding:6px 0;border-bottom:0.5px solid rgba(255,255,255,.05)">
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;padding:6px 0;border-bottom:0.5px solid rgba(10,10,10,.05)">
               <span style="color:var(--text2)">Follow-up tasks</span><span class="am mv-r" id="sync-fu-count">—</span>
             </div>
             <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;padding:6px 0">
@@ -1355,8 +1355,8 @@ function mkChart(id, type, data, extraOpts={}) {
   const ctx = document.getElementById(id); if(!ctx) return;
   if(charts[id]) charts[id].destroy();
   const baseScales = {
-    x:{grid:{display:false},ticks:{color:'rgba(250,246,238,.38)',font:{size:10}}},
-    y:{grid:{color:'rgba(201,168,76,.05)'},ticks:{color:'rgba(250,246,238,.38)',font:{size:10},callback:v=>'$'+(Math.abs(v)>=1000?(Math.abs(v)/1000).toFixed(0)+'K':v)}}
+    x:{grid:{display:false},ticks:{color:'rgba(20,16,8,.38)',font:{size:10}}},
+    y:{grid:{color:'rgba(201,168,76,.05)'},ticks:{color:'rgba(20,16,8,.38)',font:{size:10},callback:v=>'$'+(Math.abs(v)>=1000?(Math.abs(v)/1000).toFixed(0)+'K':v)}}
   };
   charts[id] = new Chart(ctx, {type, data, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:baseScales,...extraOpts}});
 }
@@ -1399,13 +1399,13 @@ function renderAnalytics() {
   const carMap = {};
   data.filter(r=>r.amt<0).forEach(r=>{const k=r.car||'Unknown';if(!carMap[k])carMap[k]=0;carMap[k]+=Math.abs(r.amt);});
   const carSorted = Object.entries(carMap).sort((a,b)=>b[1]-a[1]).slice(0,6);
-  mkChart('an-carrier','bar',{labels:carSorted.map(e=>e[0].length>14?e[0].slice(0,14)+'…':e[0]),datasets:[{data:carSorted.map(e=>e[1]),backgroundColor:'#D85A30',borderRadius:3}]},{indexAxis:'y',scales:{y:{grid:{display:false},ticks:{color:'rgba(250,246,238,.38)',font:{size:10}}},x:{grid:{color:'rgba(201,168,76,.05)'},ticks:{color:'rgba(250,246,238,.38)',font:{size:10},callback:v=>'$'+(v>=1000?(v/1000).toFixed(0)+'K':v)}}}});
+  mkChart('an-carrier','bar',{labels:carSorted.map(e=>e[0].length>14?e[0].slice(0,14)+'…':e[0]),datasets:[{data:carSorted.map(e=>e[1]),backgroundColor:'#D85A30',borderRadius:3}]},{indexAxis:'y',scales:{y:{grid:{display:false},ticks:{color:'rgba(20,16,8,.38)',font:{size:10}}},x:{grid:{color:'rgba(201,168,76,.05)'},ticks:{color:'rgba(20,16,8,.38)',font:{size:10},callback:v=>'$'+(v>=1000?(v/1000).toFixed(0)+'K':v)}}}});
 
   // Product CB
   const prodMap = {};
   data.filter(r=>r.amt<0).forEach(r=>{const k=r.prod||'Other';if(!prodMap[k])prodMap[k]=0;prodMap[k]+=Math.abs(r.amt);});
   const prodSorted = Object.entries(prodMap).sort((a,b)=>b[1]-a[1]).slice(0,8);
-  mkChart('an-product','bar',{labels:prodSorted.map(e=>e[0].length>16?e[0].slice(0,16)+'…':e[0]),datasets:[{data:prodSorted.map(e=>e[1]),backgroundColor:'#BA7517',borderRadius:3}]},{indexAxis:'y',scales:{y:{grid:{display:false},ticks:{color:'rgba(250,246,238,.38)',font:{size:10}}},x:{grid:{color:'rgba(201,168,76,.05)'},ticks:{color:'rgba(250,246,238,.38)',font:{size:10},callback:v=>'$'+(v>=1000?(v/1000).toFixed(0)+'K':v)}}}});
+  mkChart('an-product','bar',{labels:prodSorted.map(e=>e[0].length>16?e[0].slice(0,16)+'…':e[0]),datasets:[{data:prodSorted.map(e=>e[1]),backgroundColor:'#BA7517',borderRadius:3}]},{indexAxis:'y',scales:{y:{grid:{display:false},ticks:{color:'rgba(20,16,8,.38)',font:{size:10}}},x:{grid:{color:'rgba(201,168,76,.05)'},ticks:{color:'rgba(20,16,8,.38)',font:{size:10},callback:v=>'$'+(v>=1000?(v/1000).toFixed(0)+'K':v)}}}});
 
   // CB rate by agent
   const agMap2 = {};
@@ -1421,8 +1421,8 @@ function renderAnalytics() {
   mkChart('ov-monthly','bar',{labels:mLabels.slice(-5),datasets:[{label:'Gross',data:months.slice(-5).map(m=>(monthMap[m]||{}).gross||0),backgroundColor:'#C9A84C',borderRadius:3},{label:'CB',data:months.slice(-5).map(m=>(monthMap[m]||{}).cb||0),backgroundColor:'#D85A30',borderRadius:3}]});
   const topAg = Object.entries(agMap2||{}).filter(([,v])=>v.g>0).map(([k,v])=>({n:k,net:v.g-v.cb})).sort((a,b)=>b.net-a.net).slice(0,8);
   mkChart('ov-agents','bar',{labels:topAg.map(a=>a.n.split(' ')[0]),datasets:[{data:topAg.map(a=>a.net),backgroundColor:topAg.map(a=>a.net>=0?'#C9A84C':'#D85A30'),borderRadius:3}]});
-  mkChart('ov-carrier','bar',{labels:carSorted.map(e=>e[0].length>13?e[0].slice(0,13)+'…':e[0]),datasets:[{data:carSorted.map(e=>e[1]),backgroundColor:'#D85A30',borderRadius:3}]},{indexAxis:'y',scales:{y:{grid:{display:false},ticks:{color:'rgba(250,246,238,.38)',font:{size:10}}},x:{grid:{color:'rgba(201,168,76,.05)'},ticks:{color:'rgba(250,246,238,.38)',font:{size:10},callback:v=>'$'+(v>=1000?(v/1000).toFixed(0)+'K':v)}}}});
-  mkChart('ov-product','bar',{labels:prodSorted.slice(0,6).map(e=>e[0].length>15?e[0].slice(0,15)+'…':e[0]),datasets:[{data:prodSorted.slice(0,6).map(e=>e[1]),backgroundColor:'#BA7517',borderRadius:3}]},{indexAxis:'y',scales:{y:{grid:{display:false},ticks:{color:'rgba(250,246,238,.38)',font:{size:10}}},x:{grid:{color:'rgba(201,168,76,.05)'},ticks:{color:'rgba(250,246,238,.38)',font:{size:10},callback:v=>'$'+(v>=1000?(v/1000).toFixed(0)+'K':v)}}}});
+  mkChart('ov-carrier','bar',{labels:carSorted.map(e=>e[0].length>13?e[0].slice(0,13)+'…':e[0]),datasets:[{data:carSorted.map(e=>e[1]),backgroundColor:'#D85A30',borderRadius:3}]},{indexAxis:'y',scales:{y:{grid:{display:false},ticks:{color:'rgba(20,16,8,.38)',font:{size:10}}},x:{grid:{color:'rgba(201,168,76,.05)'},ticks:{color:'rgba(20,16,8,.38)',font:{size:10},callback:v=>'$'+(v>=1000?(v/1000).toFixed(0)+'K':v)}}}});
+  mkChart('ov-product','bar',{labels:prodSorted.slice(0,6).map(e=>e[0].length>15?e[0].slice(0,15)+'…':e[0]),datasets:[{data:prodSorted.slice(0,6).map(e=>e[1]),backgroundColor:'#BA7517',borderRadius:3}]},{indexAxis:'y',scales:{y:{grid:{display:false},ticks:{color:'rgba(20,16,8,.38)',font:{size:10}}},x:{grid:{color:'rgba(201,168,76,.05)'},ticks:{color:'rgba(20,16,8,.38)',font:{size:10},callback:v=>'$'+(v>=1000?(v/1000).toFixed(0)+'K':v)}}}});
 }
 
 // ══════════════════════════════════════════════════════

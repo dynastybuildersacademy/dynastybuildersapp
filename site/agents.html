@@ -7,14 +7,14 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@700&family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="auth.js"></script>
 <style>
-:root{--navy:#0A1628;--navy2:#0F1E38;--navy3:#132240;--navy4:#1A2E50;
+:root{--navy:#F5F1E8;--navy2:#FFFFFF;--navy3:#FFFFFF;--navy4:#ECE6D6;
   --gold:#C9A84C;--gold2:#E8C97A;--gold-dim:rgba(201,168,76,.12);
   --green:#27AE60;--green2:#2DCA73;--green-dim:rgba(39,174,96,.1);
-  --red:#E05252;--warn:#E67E22;--slate:#6B7C93;--cream:#FAF6EE;
-  --border:rgba(201,168,76,.22);--bs:rgba(255,255,255,.06);}
+  --red:#E05252;--warn:#E67E22;--slate:#6B7C93;--cream:#1E1A10;
+  --border:rgba(201,168,76,.22);--bs:rgba(10,10,10,.06);}
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);min-height:100vh;}
-.header{background:rgba(10,22,40,.97);border-bottom:1px solid var(--border);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.header{background:rgba(245,241,232,.97);border-bottom:1px solid var(--border);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
 .hl{display:flex;align-items:center;gap:12px;}
 .shield{font-size:1.4rem;}
 .header h1{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--gold);}
@@ -24,7 +24,7 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);m
 .btn-gold:hover{opacity:.87;}
 .btn-outline{background:transparent;border:1px solid var(--border);color:var(--gold);}
 .btn-outline:hover{background:var(--gold-dim);}
-.btn-ghost{background:transparent;border:1px solid var(--bs);color:rgba(255,255,255,.4);}
+.btn-ghost{background:transparent;border:1px solid var(--bs);color:rgba(10,10,10,.4);}
 .btn-ghost:hover{border-color:var(--border);color:var(--gold);}
 .btn-green{background:rgba(39,174,96,.15);border:1px solid rgba(39,174,96,.3);color:var(--green2);}
 .btn-red{background:rgba(224,82,82,.1);border:1px solid rgba(224,82,82,.25);color:var(--red);}
@@ -43,7 +43,7 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);m
 .tbl-title{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.08em;}
 .tbl-wrap{overflow-x:auto;}
 table{width:100%;border-collapse:collapse;}
-th{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--slate);padding:9px 14px;text-align:left;border-bottom:1px solid var(--border);background:rgba(255,255,255,.02);white-space:nowrap;}
+th{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--slate);padding:9px 14px;text-align:left;border-bottom:1px solid var(--border);background:rgba(10,10,10,.02);white-space:nowrap;}
 td{padding:10px 14px;border-bottom:1px solid rgba(201,168,76,.05);font-size:13px;vertical-align:middle;}
 tr:last-child td{border-bottom:none;}
 tr:hover td{background:rgba(201,168,76,.03);}
@@ -418,7 +418,7 @@ function renderRoster(filter='') {
       : `Fast Start: ${fs.done.length}/8 — missing ${fs.missing.map(s=>s.label).join(', ')}`;
     const flowCell = `
       <div style="font-size:11px;font-weight:700;color:${flow.isMD ? 'var(--success,#27AE60)' : 'var(--gold)'};">${flow.isMD ? '🎖️' : '📈'} Stage ${flow.stageIndex}/5 — ${flow.stageName}</div>
-      <div style="background:rgba(255,255,255,.08);border-radius:3px;height:4px;margin:4px 0 3px;overflow:hidden;">
+      <div style="background:rgba(10,10,10,.08);border-radius:3px;height:4px;margin:4px 0 3px;overflow:hidden;">
         <div style="height:100%;width:${flow.pct}%;background:${flow.isMD?'var(--success,#27AE60)':'var(--gold)'};"></div>
       </div>
       <div style="font-size:10px;color:var(--slate);">${flow.stageIndex<=2 ? fsDetail : ''}</div>`;

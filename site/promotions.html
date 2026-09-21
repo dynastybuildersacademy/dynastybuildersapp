@@ -6,10 +6,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700&family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="auth.js"></script>
 <style>
-:root{--navy:#0A1628;--navy-mid:#112040;--navy-light:#1A3158;--gold:#C9A84C;--gold-light:#E8C97A;--cream:#FAF6EE;--php-red:#C0392B;--success:#27AE60;--warn:#E67E22;--slate:#6B7C93;--border:rgba(201,168,76,0.22);}
+:root{--navy:#F5F1E8;--navy-mid:#FFFFFF;--navy-light:#ECE6D6;--gold:#C9A84C;--gold-light:#E8C97A;--cream:#1E1A10;--php-red:#C0392B;--success:#27AE60;--warn:#E67E22;--slate:#6B7C93;--border:rgba(201,168,76,0.22);}
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);min-height:100vh;}
-.header{background:rgba(10,22,40,0.97);border-bottom:1px solid var(--border);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.header{background:rgba(245,241,232,0.97);border-bottom:1px solid var(--border);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
 .header-left{display:flex;align-items:center;gap:12px;}
 .shield{width:30px;height:34px;background:linear-gradient(160deg,var(--gold) 0%,#7a5c14 100%);clip-path:polygon(50% 0%,100% 18%,100% 65%,50% 100%,0% 65%,0% 18%);display:flex;align-items:center;justify-content:center;font-size:12px;}
 .header h1{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--gold);}
@@ -167,7 +167,7 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);m
     <textarea id="import-text" placeholder="agentId, recruits, pts, apps, subPts, paidPts, licensed, fastStartDone&#10;prochi1109, 4, 12000, 3, 12000, 8000, 1, spouse;top25;life" style="width:100%;min-height:90px;background:var(--navy);border:1px solid var(--border);border-radius:4px;padding:10px 12px;color:var(--cream);font-family:'DM Mono',monospace;font-size:12px;resize:vertical;margin-bottom:10px;"></textarea>
     <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
       <button onclick="importPromoText()" style="background:var(--gold);color:var(--navy);border:none;border-radius:4px;padding:9px 16px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;cursor:pointer;">Import Pasted Text</button>
-      <label style="background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:4px;padding:9px 16px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;cursor:pointer;color:var(--cream);">
+      <label style="background:rgba(10,10,10,.06);border:1px solid var(--border);border-radius:4px;padding:9px 16px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;cursor:pointer;color:var(--cream);">
         📁 Import CSV File
         <input type="file" accept=".csv,text/csv" onchange="importPromoCSV(event)" style="display:none;">
       </label>
@@ -185,7 +185,7 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);m
     <textarea id="import-clients" placeholder="agentId, clientName, submittedPts, paidPts, status&#10;prochi1109, Jane Doe, 5000, 5000, Paid&#10;prochi1109, Sam Lee, 3000, 0, Submitted" style="width:100%;min-height:80px;background:var(--navy);border:1px solid var(--border);border-radius:4px;padding:10px 12px;color:var(--cream);font-family:'DM Mono',monospace;font-size:12px;resize:vertical;margin-bottom:10px;"></textarea>
     <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
       <button onclick="importClientText()" style="background:var(--gold);color:var(--navy);border:none;border-radius:4px;padding:9px 16px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;cursor:pointer;">Import Pasted Text</button>
-      <label style="background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:4px;padding:9px 16px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;cursor:pointer;color:var(--cream);">
+      <label style="background:rgba(10,10,10,.06);border:1px solid var(--border);border-radius:4px;padding:9px 16px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;cursor:pointer;color:var(--cream);">
         📁 Import CSV File
         <input type="file" accept=".csv,text/csv" onchange="importClientCSV(event)" style="display:none;">
       </label>

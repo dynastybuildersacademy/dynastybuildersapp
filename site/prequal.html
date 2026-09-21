@@ -9,14 +9,14 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 :root{
-  --navy:#0A1628;--navy2:#0F1E38;--s1:#132240;--s2:#1A2E50;
-  --gold:#C9A84C;--gold2:#E8C97A;--text:#E8EDF5;--muted:#6B7C93;
+  --navy:#F5F1E8;--navy2:#FFFFFF;--s1:#FFFFFF;--s2:#ECE6D6;
+  --gold:#C9A84C;--gold2:#E8C97A;--text:#182238;--muted:#6B7C93;
   --border:rgba(201,168,76,.15);--green:#2DCA73;--red:#E74C3C;
   --blue:#3498DB;--purple:#9B59B6;--orange:#E67E22;
 }
 body{background:var(--navy);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh;}
 .topbar{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;
-  padding:0 16px;height:52px;background:rgba(10,22,40,.96);border-bottom:1px solid var(--border);
+  padding:0 16px;height:52px;background:rgba(245,241,232,.96);border-bottom:1px solid var(--border);
   backdrop-filter:blur(8px);}
 .tb-title{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:900;color:var(--gold2);letter-spacing:.04em;}
 .back-btn{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);text-decoration:none;}
@@ -38,7 +38,7 @@ body{background:var(--navy);color:var(--text);font-family:'Barlow',sans-serif;mi
   letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px;}
 .ph-title{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:900;color:var(--gold2);line-height:1.1;}
 .ph-company{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-top:3px;}
-.ph-desc{font-size:13px;color:rgba(250,246,238,.8);line-height:1.7;margin-top:10px;}
+.ph-desc{font-size:13px;color:rgba(20,16,8,.8);line-height:1.7;margin-top:10px;}
 .ph-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;}
 .ph-tag-pill{font-family:'DM Mono',monospace;font-size:10px;padding:3px 10px;border-radius:12px;
   background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.2);color:var(--gold2);}
@@ -52,7 +52,7 @@ body{background:var(--navy);color:var(--text);font-family:'Barlow',sans-serif;mi
 .field:last-child{margin-bottom:0;}
 .field-label{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);
   text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:5px;}
-.field-input{width:100%;background:var(--s1);border:1px solid rgba(255,255,255,.1);
+.field-input{width:100%;background:var(--s1);border:1px solid rgba(10,10,10,.1);
   border-radius:8px;padding:9px 12px;color:var(--text);font-family:'Barlow',sans-serif;
   font-size:14px;outline:none;transition:border-color .15s;}
 .field-input:focus{border-color:rgba(201,168,76,.4);}
@@ -79,16 +79,16 @@ input[type=radio]{display:none;}
 .result-box.ineligible{background:rgba(231,76,60,.08);border:1px solid rgba(231,76,60,.3);}
 .result-icon{font-size:32px;margin-bottom:8px;}
 .result-title{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;margin-bottom:6px;}
-.result-desc{font-size:13px;line-height:1.7;color:rgba(250,246,238,.85);}
+.result-desc{font-size:13px;line-height:1.7;color:rgba(20,16,8,.85);}
 .result-next{margin-top:14px;font-family:'DM Mono',monospace;font-size:11px;
-  color:rgba(250,246,238,.7);line-height:1.8;}
+  color:rgba(20,16,8,.7);line-height:1.8;}
 
 /* SUBMIT BTN */
 .submit-btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--gold),#b8901f);
   border:none;border-radius:10px;font-family:'Barlow Condensed',sans-serif;font-size:18px;
-  font-weight:900;letter-spacing:.04em;color:#0A1628;cursor:pointer;margin-top:6px;}
+  font-weight:900;letter-spacing:.04em;color:#F5F1E8;cursor:pointer;margin-top:6px;}
 .submit-btn:active{opacity:.88;}
-.reset-btn{width:100%;padding:10px;background:rgba(255,255,255,.06);border:1px solid var(--border);
+.reset-btn{width:100%;padding:10px;background:rgba(10,10,10,.06);border:1px solid var(--border);
   border-radius:10px;font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);
   cursor:pointer;margin-top:8px;}
 
@@ -368,7 +368,7 @@ input[type=radio]{display:none;}
       </div>
       <div class="section" style="margin-top:14px;background:rgba(201,168,76,.06);border-color:rgba(201,168,76,.2);">
         <div class="section-title" style="color:var(--gold);">ℹ Important Client Disclosures</div>
-        <p style="font-size:12px;color:rgba(250,246,238,.8);line-height:1.8;">
+        <p style="font-size:12px;color:rgba(20,16,8,.8);line-height:1.8;">
           • <strong>2-year waiting period:</strong> If client passes in years 1–2, beneficiary receives return of premiums paid + 10% interest.<br>
           • <strong>Full benefit</strong> applies after 2 years from policy date.<br>
           • <strong>Accidental death</strong> is covered at full face amount from day 1.<br>

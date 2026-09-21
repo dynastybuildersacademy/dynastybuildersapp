@@ -11,20 +11,20 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 :root{
-  --navy:#0A1628;--navy-mid:#0F1E38;--navy-light:#132240;
+  --navy:#F5F1E8;--navy-mid:#FFFFFF;--navy-light:#FFFFFF;
   --gold:#C9A84C;--gold-light:#E8C97A;--green:#2DCA73;
   --blue:#5DADE2;--purple:#9B59B6;--red:#E74C3C;--orange:#E67E22;
-  --text:#E8EDF5;--muted:#6B7C93;--border:rgba(255,255,255,.08);
+  --text:#182238;--muted:#6B7C93;--border:rgba(10,10,10,.08);
 }
 body{background:var(--navy);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh;padding-bottom:100px;}
 /* HEADER */
-.header{background:linear-gradient(135deg,#0A1628,#0F1E38);border-bottom:1px solid rgba(201,168,76,.2);
+.header{background:linear-gradient(135deg,#F5F1E8,#FFFFFF);border-bottom:1px solid rgba(201,168,76,.2);
   padding:14px 18px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:100;}
 .header-title{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;color:var(--gold-light);flex:1;}
-.back-btn{background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:8px;
+.back-btn{background:rgba(10,10,10,.06);border:1px solid var(--border);border-radius:8px;
   padding:7px 12px;color:var(--muted);font-family:'DM Mono',monospace;font-size:11px;text-decoration:none;}
 /* HERO */
-.hero{background:linear-gradient(160deg,#0A1628 0%,#111E3A 50%,#0A1628 100%);
+.hero{background:linear-gradient(160deg,#F5F1E8 0%,#111E3A 50%,#F5F1E8 100%);
   padding:28px 18px 22px;text-align:center;border-bottom:1px solid rgba(201,168,76,.1);}
 .hero-eyebrow{font-family:'DM Mono',monospace;font-size:10px;color:var(--gold);letter-spacing:.15em;
   text-transform:uppercase;margin-bottom:8px;}
@@ -33,7 +33,7 @@ body{background:var(--navy);color:var(--text);font-family:'Barlow',sans-serif;mi
 .hero-title span{color:var(--gold-light);}
 .hero-sub{font-size:14px;color:var(--muted);line-height:1.6;max-width:340px;margin:0 auto 16px;}
 .hero-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
-.hstat{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:12px 8px;}
+.hstat{background:rgba(10,10,10,.04);border:1px solid var(--border);border-radius:10px;padding:12px 8px;}
 .hstat-n{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:900;color:var(--gold-light);}
 .hstat-l{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);margin-top:2px;}
 /* TABS */
@@ -51,10 +51,10 @@ body{background:var(--navy);color:var(--text);font-family:'Barlow',sans-serif;mi
 .week-card{border-radius:14px;margin-bottom:16px;overflow:hidden;}
 .week-header{padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;}
 .week-num{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:900;
-  color:rgba(255,255,255,.5);letter-spacing:.08em;min-width:60px;}
+  color:rgba(10,10,10,.5);letter-spacing:.08em;min-width:60px;}
 .week-title{font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:900;color:#fff;flex:1;}
-.week-theme{font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.5);margin-top:2px;}
-.week-chevron{color:rgba(255,255,255,.4);transition:transform .2s;font-size:16px;}
+.week-theme{font-family:'DM Mono',monospace;font-size:10px;color:rgba(10,10,10,.5);margin-top:2px;}
+.week-chevron{color:rgba(10,10,10,.4);transition:transform .2s;font-size:16px;}
 .week-body{display:none;padding:0 16px 16px;}
 .week-body.open{display:block;}
 /* PLAY COLORS */
@@ -73,7 +73,7 @@ body{background:var(--navy);color:var(--text);font-family:'Barlow',sans-serif;mi
 .session-body{font-size:12px;color:var(--muted);line-height:1.7;}
 .session-body li{margin-left:14px;margin-bottom:3px;}
 .script-box{background:rgba(0,0,0,.3);border-left:3px solid var(--gold);border-radius:0 6px 6px 0;
-  padding:10px 12px;font-size:12px;line-height:1.7;color:rgba(250,246,238,.8);margin-top:8px;font-style:italic;}
+  padding:10px 12px;font-size:12px;line-height:1.7;color:rgba(20,16,8,.8);margin-top:8px;font-style:italic;}
 .kpi-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
 .kpi{background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);border-radius:7px;
   padding:5px 10px;font-family:'DM Mono',monospace;font-size:10px;color:var(--gold);}
@@ -91,14 +91,14 @@ body{background:var(--navy);color:var(--text);font-family:'Barlow',sans-serif;mi
 .ps-title{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;margin-bottom:3px;}
 .ps-detail{font-size:12px;color:var(--muted);line-height:1.6;}
 /* ONGOING */
-.milestone-row{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);}
+.milestone-row{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid rgba(10,10,10,.05);}
 .milestone-row:last-child{border:none;}
 .ms-num{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;color:var(--gold);min-width:42px;}
 .ms-body{flex:1;}
 .ms-title{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;}
 .ms-detail{font-size:12px;color:var(--muted);line-height:1.6;}
 /* PROGRESS */
-.prog-bar-bg{height:6px;background:rgba(255,255,255,.06);border-radius:4px;margin-top:6px;overflow:hidden;}
+.prog-bar-bg{height:6px;background:rgba(10,10,10,.06);border-radius:4px;margin-top:6px;overflow:hidden;}
 .prog-bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--gold),var(--gold-light));transition:width .4s;}
 .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:8px;
   font-family:'DM Mono',monospace;font-size:9px;font-weight:700;background:rgba(201,168,76,.1);
@@ -204,19 +204,19 @@ body{background:var(--navy);color:var(--text);font-family:'Barlow',sans-serif;mi
     border:1px solid rgba(155,89,182,.3);border-radius:14px;padding:16px;margin-bottom:14px;">
     <div style="font-family:'DM Mono',monospace;font-size:10px;color:#C39BD3;letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px;">Advanced Program · Post Associate</div>
     <div style="font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:900;color:#fff;margin-bottom:4px;">CFT — Certified Field Trainer</div>
-    <div style="font-size:13px;color:rgba(255,255,255,.55);margin-bottom:12px;">The fastest path to $50K+, Market Director, and a duplicating team. 9 weeks to certification.</div>
+    <div style="font-size:13px;color:rgba(10,10,10,.55);margin-bottom:12px;">The fastest path to $50K+, Market Director, and a duplicating team. 9 weeks to certification.</div>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
       <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px;text-align:center;">
         <div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;color:#C39BD3;">9</div>
-        <div style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(255,255,255,.4);">Weeks</div>
+        <div style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(10,10,10,.4);">Weeks</div>
       </div>
       <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px;text-align:center;">
         <div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;color:#E8C97A;">$50K+</div>
-        <div style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(255,255,255,.4);">Income Target</div>
+        <div style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(10,10,10,.4);">Income Target</div>
       </div>
       <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px;text-align:center;">
         <div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;color:#2DCA73;">MD</div>
-        <div style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(255,255,255,.4);">Path Goal</div>
+        <div style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(10,10,10,.4);">Path Goal</div>
       </div>
     </div>
   </div>
@@ -246,55 +246,55 @@ body{background:var(--navy);color:var(--text);font-family:'Barlow',sans-serif;mi
 
   <div class="card">
     <div class="card-title">9-Week CFT Curriculum</div>
-<div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);">
+<div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid rgba(10,10,10,.05);">
       <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;color:var(--gold);min-width:36px;">1</div>
       <div>
         <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;color:var(--text);">Business Launch</div>
         <div style="font-size:12px;color:var(--muted);margin-top:2px;line-height:1.6;">Bamboo orientation · Edification · Fast Start · Business plan · Social media announcement · Grand Opening · Complete CFT1/Calls in Bamboo Quest</div>
       </div>
-    </div><div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);">
+    </div><div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid rgba(10,10,10,.05);">
       <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;color:var(--gold);min-width:36px;">2</div>
       <div>
         <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;color:var(--text);">Calls & Scripts</div>
         <div style="font-size:12px;color:var(--muted);margin-top:2px;line-height:1.6;">3-call system drill · BOM invite scripts · Help Me script · Prospect BOM script · Objection handling calls · Role plays with trainer · 50+ dials this week</div>
       </div>
-    </div><div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);">
+    </div><div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid rgba(10,10,10,.05);">
       <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;color:var(--gold);min-width:36px;">3</div>
       <div>
         <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;color:var(--text);">Prospecting</div>
         <div style="font-size:12px;color:var(--muted);margin-top:2px;line-height:1.6;">New Top 25 build methodology · Monday morning planning · Captain system for BOM · Prospecting mindset · Contact management · Referral engine</div>
       </div>
-    </div><div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);">
+    </div><div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid rgba(10,10,10,.05);">
       <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;color:var(--gold);min-width:36px;">4</div>
       <div>
         <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;color:var(--text);">Recruiting Interview</div>
         <div style="font-size:12px;color:var(--muted);margin-top:2px;line-height:1.6;">Why we recruit · MD compensation formula · Basics of the RI blueprint · Role-plays: intro, rapport, 2-min story · Closing questions · Overcoming objections · Enrolling a new Associate · What to do after enrollment</div>
       </div>
-    </div><div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);">
+    </div><div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid rgba(10,10,10,.05);">
       <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;color:var(--gold);min-width:36px;">5</div>
       <div>
         <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;color:var(--text);">KTP — Life Insurance</div>
         <div style="font-size:12px;color:var(--muted);margin-top:2px;line-height:1.6;">Building rapport (Trust·Respect·Customized) · DIME framework · Term/GUL/ROP/IUL illustrations · Closing questions · Handling objections · Policy approval process · Celebrating the win</div>
       </div>
-    </div><div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);">
+    </div><div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid rgba(10,10,10,.05);">
       <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;color:var(--gold);min-width:36px;">6</div>
       <div>
         <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;color:var(--text);">KTP — Annuities</div>
         <div style="font-size:12px;color:var(--muted);margin-top:2px;line-height:1.6;">FLS framework · Qualified & Non-Qualified illustrations · Closing + objection handling for annuities · IGO checklist · Chargebacks and rating class handling</div>
       </div>
-    </div><div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);">
+    </div><div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid rgba(10,10,10,.05);">
       <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;color:var(--gold);min-width:36px;">7</div>
       <div>
         <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;color:var(--text);">CFT Certification</div>
         <div style="font-size:12px;color:var(--muted);margin-top:2px;line-height:1.6;">Comprehensive test submissions and reviews · Case scenario designs · Run 5–6 FT appointments · Submit 3K points · Certifications & Graduations ceremony</div>
       </div>
-    </div><div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);">
+    </div><div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid rgba(10,10,10,.05);">
       <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;color:var(--gold);min-width:36px;">8</div>
       <div>
         <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;color:var(--text);">Fast Start Leadership</div>
         <div style="font-size:12px;color:var(--muted);margin-top:2px;line-height:1.6;">Inviting and challenging new trainees · Building against Scenario of Disaster · Leading by example · Time management and scheduling · Over-dependency traps</div>
       </div>
-    </div><div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);">
+    </div><div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid rgba(10,10,10,.05);">
       <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;color:var(--gold);min-width:36px;">9</div>
       <div>
         <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;color:var(--text);">Personal Development</div>
@@ -628,7 +628,7 @@ function renderOverview() {
   const roadmap = document.getElementById('roadmap-rows');
   if (roadmap) {
     roadmap.innerHTML = WEEKS.map(w => `
-      <div style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05);" onclick="switchTab('week${w.week}')">
+      <div style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid rgba(10,10,10,.05);" onclick="switchTab('week${w.week}')">
         <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);min-width:48px;flex-shrink:0;margin-top:2px;">Week ${w.week}</div>
         <div style="flex:1;">
           <div style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;">${w.headline}</div>
@@ -642,7 +642,7 @@ function renderOverview() {
   const playsSumEl = document.getElementById('plays-summary');
   if (playsSumEl) {
     playsSumEl.innerHTML = PLAYS.map(p => `
-      <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05);" onclick="switchTab('plays')">
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(10,10,10,.05);" onclick="switchTab('plays')">
         <span style="font-size:22px;flex-shrink:0;">${p.icon}</span>
         <div style="flex:1;">
           <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;">Play ${p.num}: ${p.title}</div>
@@ -655,7 +655,7 @@ function renderOverview() {
   const incEl = document.getElementById('income-milestones');
   if (incEl) {
     incEl.innerHTML = MILESTONES.map(m => `
-      <div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04);">
+      <div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid rgba(10,10,10,.04);">
         <div style="flex:1;">
           <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;">${m.label}</div>
           <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);">${m.req}</div>
@@ -676,7 +676,7 @@ function renderWeek(w) {
         Week ${w.week} · Play ${w.play}: ${w.theme}
       </div>
       <div style="font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:900;color:#fff;margin-bottom:4px;">${w.headline}</div>
-      <div style="font-size:13px;color:rgba(255,255,255,.55);">${w.subtitle}</div>
+      <div style="font-size:13px;color:rgba(10,10,10,.55);">${w.subtitle}</div>
     </div>
 
     ${w.sessions.map(s => `
@@ -709,9 +709,9 @@ function renderWeek(w) {
             <span style="font-size:20px;">✅</span>
             <div>
               <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:900;color:#2DCA73;">Quiz Passed — ${prior.pct}%</div>
-              <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(250,246,238,.4);">${quiz.title} · Completed</div>
+              <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(20,16,8,.4);">${quiz.title} · Completed</div>
             </div>
-            <button onclick="renderQuiz('quiz-${qid}', QUIZ_BANK['${qid}'])" style="margin-left:auto;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:4px 10px;color:var(--muted);font-family:'DM Mono',monospace;font-size:10px;cursor:pointer;">Retake</button>
+            <button onclick="renderQuiz('quiz-${qid}', QUIZ_BANK['${qid}'])" style="margin-left:auto;background:rgba(10,10,10,.06);border:1px solid rgba(10,10,10,.1);border-radius:6px;padding:4px 10px;color:var(--muted);font-family:'DM Mono',monospace;font-size:10px;cursor:pointer;">Retake</button>
           </div>`
         : `<button onclick="renderQuiz('quiz-${qid}', QUIZ_BANK['${qid}'])" style="width:100%;background:rgba(201,168,76,.08);border:1px dashed rgba(201,168,76,.3);border-radius:10px;padding:12px;color:var(--gold-light);font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;cursor:pointer;letter-spacing:.04em;">
             🧠 Take the Week ${w.week} Quiz →
@@ -778,7 +778,7 @@ function renderProgress() {
   const chkEl = document.getElementById('checklist-content');
   if (chkEl) {
     chkEl.innerHTML = CHECKLIST_ITEMS.map(item => `
-      <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer;"
+      <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(10,10,10,.05);cursor:pointer;"
         onclick="toggleMilestone('${item.id}')">
         <div style="width:22px;height:22px;border-radius:6px;border:2px solid ${prog[item.id]?'var(--green)':'var(--border)'};
           background:${prog[item.id]?'rgba(45,202,115,.15)':'transparent'};display:flex;align-items:center;justify-content:center;
@@ -1003,11 +1003,11 @@ function renderScripts() {
     <div class="card" style="margin-bottom:14px;border-color:${cat.color}30;">
       <div style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;color:${cat.color};margin-bottom:12px;">${cat.category}</div>
       ${cat.scripts.map(s => `
-        <div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,.06);">
+        <div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid rgba(10,10,10,.06);">
           <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;margin-bottom:6px;">${s.title}</div>
           <div class="script-box" style="white-space:pre-wrap;">${s.body}</div>
           <button onclick="navigator.clipboard.writeText(${JSON.stringify(s.body)}).then(()=>toast('✓ Copied'))"
-            style="margin-top:6px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:5px;
+            style="margin-top:6px;background:rgba(10,10,10,.06);border:1px solid rgba(10,10,10,.1);border-radius:5px;
               padding:4px 10px;color:var(--muted);font-family:'DM Mono',monospace;font-size:9px;cursor:pointer;">
             📋 Copy
           </button>

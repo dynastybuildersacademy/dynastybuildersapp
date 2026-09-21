@@ -8,10 +8,10 @@
 <script src="auth.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-:root{--navy:#0A1628;--navy2:#0F1E38;--navy3:#132240;--navy4:#1A2E50;
+:root{--navy:#F5F1E8;--navy2:#FFFFFF;--navy3:#FFFFFF;--navy4:#ECE6D6;
   --gold:#C9A84C;--gold2:#E8C97A;--gold-dim:rgba(201,168,76,.12);
   --green:#2DCA73;--red:#E05252;--blue:#5DADE2;--orange:#E67E22;
-  --slate:#6B7C93;--cream:#FAF6EE;--border:rgba(201,168,76,.2);}
+  --slate:#6B7C93;--cream:#1E1A10;--border:rgba(201,168,76,.2);}
 *{box-sizing:border-box;margin:0;padding:0;}
 html,body{height:100%;}
 body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);overflow:hidden;}
@@ -24,7 +24,7 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);o
 .topnav a{font-size:11px;color:var(--gold);text-decoration:none;border:1px solid var(--border);padding:5px 12px;border-radius:3px;transition:border-color .15s;}
 .topnav a:hover{border-color:var(--gold);}
 .topnav-right{display:flex;align-items:center;gap:10px;}
-.week-pill{font-family:'DM Mono',monospace;font-size:11px;color:var(--gold2);background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:20px;padding:5px 14px;display:flex;align-items:center;gap:6px;}
+.week-pill{font-family:'DM Mono',monospace;font-size:11px;color:var(--gold2);background:rgba(10,10,10,.04);border:1px solid var(--border);border-radius:20px;padding:5px 14px;display:flex;align-items:center;gap:6px;}
 .week-pill .dot{width:5px;height:5px;border-radius:50%;background:var(--green);}
 
 /* SLIDESHOW STAGE */
@@ -37,18 +37,18 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);o
 .bg-blue{background:radial-gradient(circle at 70% 25%,rgba(93,173,226,.16),transparent 55%),linear-gradient(160deg,var(--navy) 0%,#16264a 100%);}
 .bg-green{background:radial-gradient(circle at 30% 75%,rgba(45,202,115,.14),transparent 55%),linear-gradient(160deg,var(--navy) 0%,#10283a 100%);}
 .bg-purple{background:radial-gradient(circle at 70% 75%,rgba(155,89,182,.18),transparent 55%),linear-gradient(160deg,var(--navy) 0%,#1e1a3a 100%);}
-.bg-spotlight{background:radial-gradient(circle at 50% 35%,rgba(201,168,76,.28),transparent 60%),linear-gradient(180deg,#0A1628 0%,#1d2c4d 50%,#0A1628 100%);}
+.bg-spotlight{background:radial-gradient(circle at 50% 35%,rgba(201,168,76,.28),transparent 60%),linear-gradient(180deg,#F5F1E8 0%,#1d2c4d 50%,#F5F1E8 100%);}
 .bg-dynasty{background:radial-gradient(circle at 50% 30%,rgba(201,168,76,.35),transparent 65%),linear-gradient(180deg,#0a1424 0%,#23375f 45%,#0a1424 100%);}
 
 /* CATEGORY HEADER (runners-up slides) */
 .cat-eyebrow{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;letter-spacing:.25em;text-transform:uppercase;color:var(--gold);margin-bottom:10px;}
 .cat-title-big{font-family:'Playfair Display',serif;font-weight:800;font-size:clamp(2rem,5vw,3.4rem);color:var(--cream);text-align:center;line-height:1.15;margin-bottom:6px;}
-.cat-threshold-big{font-family:'DM Mono',monospace;font-size:13px;color:rgba(255,255,255,.45);margin-bottom:8px;}
+.cat-threshold-big{font-family:'DM Mono',monospace;font-size:13px;color:rgba(10,10,10,.45);margin-bottom:8px;}
 .cat-sub-big{font-size:13px;color:var(--slate);text-align:center;margin-bottom:16px;max-width:480px;}
 
 /* RUNNER-UP CARDS ROW */
 .runnerup-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;width:100%;max-width:1000px;}
-.runnerup-card{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:10px;padding:14px 12px;text-align:center;backdrop-filter:blur(6px);position:relative;}
+.runnerup-card{background:rgba(10,10,10,.03);border:1px solid var(--border);border-radius:10px;padding:14px 12px;text-align:center;backdrop-filter:blur(6px);position:relative;}
 .runnerup-card.r2{border-color:rgba(192,192,192,.4);}
 .runnerup-card.r3{border-color:rgba(205,127,50,.4);}
 .runnerup-medal{font-size:1.4rem;margin-bottom:4px;display:block;}
@@ -61,7 +61,7 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);o
 .spotlight-eyebrow{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;letter-spacing:.3em;text-transform:uppercase;color:var(--gold2);margin-bottom:18px;opacity:.9;}
 .spotlight-crown{font-size:4rem;margin-bottom:18px;filter:drop-shadow(0 4px 16px rgba(201,168,76,.4));}
 .spotlight-name{font-family:'Playfair Display',serif;font-weight:900;font-size:clamp(2.6rem,7vw,5rem);color:var(--cream);text-align:center;line-height:1.1;margin-bottom:18px;max-width:900px;}
-.spotlight-cat{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:30px;}
+.spotlight-cat{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:rgba(10,10,10,.5);margin-bottom:30px;}
 .spotlight-value-box{display:flex;align-items:baseline;gap:10px;background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.35);border-radius:12px;padding:16px 32px;}
 .spotlight-value{font-family:'DM Mono',monospace;font-size:clamp(1.8rem,5vw,3.2rem);font-weight:500;color:var(--gold2);}
 .spotlight-unit{font-size:11px;color:var(--slate);text-transform:uppercase;letter-spacing:.15em;}
@@ -72,7 +72,7 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);o
 .dynasty-title{font-family:'Playfair Display',serif;font-weight:900;font-size:clamp(1.6rem,4vw,2.6rem);color:var(--gold2);text-align:center;margin-bottom:8px;letter-spacing:.02em;}
 .dynasty-name{font-family:'Playfair Display',serif;font-weight:900;font-size:clamp(3rem,8vw,5.6rem);color:var(--cream);text-align:center;line-height:1.05;margin:14px 0 28px;text-shadow:0 4px 30px rgba(201,168,76,.3);}
 .dynasty-score-row{display:flex;gap:18px;flex-wrap:wrap;justify-content:center;margin-bottom:30px;}
-.dynasty-score-chip{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:14px 22px;text-align:center;min-width:140px;}
+.dynasty-score-chip{background:rgba(10,10,10,.04);border:1px solid var(--border);border-radius:10px;padding:14px 22px;text-align:center;min-width:140px;}
 .dynasty-score-chip .lbl{font-size:9px;color:var(--slate);text-transform:uppercase;letter-spacing:.1em;font-family:'Barlow Condensed',sans-serif;font-weight:700;margin-bottom:4px;}
 .dynasty-score-chip .val{font-family:'DM Mono',monospace;font-size:1.4rem;color:var(--gold2);}
 .dynasty-total{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--cream);background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--navy);padding:10px 28px;border-radius:30px;}
@@ -82,23 +82,23 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);o
 .intro-badge{display:inline-block;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);border:1px solid var(--border);padding:6px 18px;border-radius:30px;margin-bottom:22px;background:rgba(201,168,76,.06);}
 .intro-title{font-family:'Playfair Display',serif;font-size:clamp(2.6rem,7vw,5rem);font-weight:900;color:var(--cream);line-height:1.1;margin-bottom:10px;text-align:center;}
 .intro-title span{color:var(--gold2);font-style:italic;}
-.intro-sub{font-size:14px;color:rgba(255,255,255,.55);max-width:520px;margin:0 auto 26px;line-height:1.6;text-align:center;}
-.intro-week{font-family:'DM Mono',monospace;font-size:13px;color:var(--gold2);background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;padding:10px 24px;}
+.intro-sub{font-size:14px;color:rgba(10,10,10,.55);max-width:520px;margin:0 auto 26px;line-height:1.6;text-align:center;}
+.intro-week{font-family:'DM Mono',monospace;font-size:13px;color:var(--gold2);background:rgba(10,10,10,.04);border:1px solid var(--border);border-radius:8px;padding:10px 24px;}
 .intro-cats{display:flex;gap:16px;margin-top:36px;flex-wrap:wrap;justify-content:center;}
-.intro-cat-chip{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:30px;padding:8px 18px;font-size:11px;color:var(--slate);font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:.05em;text-transform:uppercase;}
+.intro-cat-chip{display:flex;align-items:center;gap:8px;background:rgba(10,10,10,.03);border:1px solid var(--border);border-radius:30px;padding:8px 18px;font-size:11px;color:var(--slate);font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:.05em;text-transform:uppercase;}
 
 /* NAVIGATION CONTROLS */
 .nav-controls{position:absolute;bottom:24px;left:0;right:0;display:flex;justify-content:center;align-items:center;gap:18px;z-index:50;}
-.nav-btn{background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--gold);width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;transition:all .15s;backdrop-filter:blur(6px);}
+.nav-btn{background:rgba(10,10,10,.06);border:1px solid var(--border);color:var(--gold);width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;transition:all .15s;backdrop-filter:blur(6px);}
 .nav-btn:hover{background:var(--gold);color:var(--navy);}
 .nav-dots{display:flex;gap:7px;}
-.nav-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.15);cursor:pointer;transition:all .2s;}
+.nav-dot{width:8px;height:8px;border-radius:50%;background:rgba(10,10,10,.15);cursor:pointer;transition:all .2s;}
 .nav-dot.active{background:var(--gold);width:22px;border-radius:4px;}
 .slide-counter{position:absolute;top:14px;right:20px;font-family:'DM Mono',monospace;font-size:11px;color:var(--slate);z-index:50;}
 
 /* ADMIN BAR */
 .admin-bar{position:absolute;top:14px;left:20px;z-index:60;display:flex;gap:8px;}
-.btn-sm{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:6px 12px;border-radius:3px;cursor:pointer;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--gold);}
+.btn-sm{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:6px 12px;border-radius:3px;cursor:pointer;border:1px solid var(--border);background:rgba(10,10,10,.04);color:var(--gold);}
 .btn-sm:hover{background:var(--gold-dim);}
 
 /* ── EXTRA SLIDES ───────────────────────────────────────────── */
@@ -135,12 +135,12 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);o
 .mansion-date{font-family:'DM Mono',monospace;font-size:11px;color:var(--slate);margin-bottom:16px;letter-spacing:.08em;}
 .mansion-table{width:100%;max-width:680px;border-collapse:collapse;}
 .mansion-table th{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--slate);padding:6px 10px;border-bottom:1px solid rgba(201,168,76,.2);}
-.mansion-table td{padding:8px 10px;font-size:13px;border-bottom:1px solid rgba(255,255,255,.04);}
+.mansion-table td{padding:8px 10px;font-size:13px;border-bottom:1px solid rgba(10,10,10,.04);}
 .mansion-table tr:first-child td{color:var(--gold);font-weight:700;}
 .mansion-rank{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;color:var(--gold);text-align:center;}
 .mansion-status{display:inline-block;padding:2px 8px;border-radius:10px;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;background:rgba(201,168,76,.15);color:var(--gold);border:1px solid rgba(201,168,76,.3);}
 .mansion-cats{display:flex;gap:8px;flex-wrap:wrap;max-width:680px;margin-top:14px;}
-.mansion-cat{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:8px 12px;font-size:10px;color:var(--slate);line-height:1.6;}
+.mansion-cat{background:rgba(10,10,10,.04);border:1px solid rgba(10,10,10,.1);border-radius:8px;padding:8px 12px;font-size:10px;color:var(--slate);line-height:1.6;}
 .mansion-cat strong{color:var(--cream);font-family:'Barlow Condensed',sans-serif;font-size:12px;display:block;margin-bottom:2px;}
 
 /* BOOK CLUB SLIDE */
@@ -164,23 +164,23 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);o
 .speaker-badge{display:inline-block;padding:3px 12px;border-radius:3px;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px;}
 .badge-headline{background:#cc0000;color:#fff;}
 .badge-featured{background:rgba(201,168,76,.2);color:var(--gold);border:1px solid var(--gold);}
-.badge-guest{background:rgba(255,255,255,.08);color:var(--cream);border:1px solid rgba(255,255,255,.2);}
+.badge-guest{background:rgba(10,10,10,.08);color:var(--cream);border:1px solid rgba(10,10,10,.2);}
 .badge-gala{background:rgba(201,168,76,.12);color:var(--gold);border:1px solid rgba(201,168,76,.3);}
 .speaker-event{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#cc0000;margin-bottom:6px;}
 .speaker-name{font-family:'Barlow Condensed',sans-serif;font-size:44px;font-weight:900;line-height:1;color:#fff;margin-bottom:4px;text-align:center;}
 .speaker-role{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:600;color:var(--gold);font-style:italic;margin-bottom:14px;text-align:center;}
 .speaker-stats{display:flex;gap:12px;margin-bottom:14px;}
-.sstat{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:10px 14px;text-align:center;min-width:90px;}
+.sstat{background:rgba(10,10,10,.06);border:1px solid rgba(10,10,10,.1);border-radius:8px;padding:10px 14px;text-align:center;min-width:90px;}
 .sstat-val{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:var(--gold);line-height:1;}
 .sstat-lbl{font-family:'DM Mono',monospace;font-size:9px;color:var(--slate);margin-top:2px;}
 .speaker-bullets{max-width:520px;margin-bottom:14px;}
-.speaker-bullets li{font-size:12px;color:rgba(255,255,255,.75);line-height:1.9;list-style:none;padding-left:14px;position:relative;}
+.speaker-bullets li{font-size:12px;color:rgba(10,10,10,.75);line-height:1.9;list-style:none;padding-left:14px;position:relative;}
 .speaker-bullets li::before{content:'•';color:#cc0000;position:absolute;left:0;}
 .speaker-sessions{display:flex;flex-direction:column;gap:8px;max-width:520px;width:100%;}
-.ssession{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:10px 14px;}
+.ssession{background:rgba(10,10,10,.04);border:1px solid rgba(10,10,10,.08);border-radius:8px;padding:10px 14px;}
 .ssession-title{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:#fff;margin-bottom:3px;}
 .ssession-desc{font-size:11px;color:var(--slate);line-height:1.6;}
-.speaker-footer{font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.3);margin-top:12px;letter-spacing:.06em;}
+.speaker-footer{font-family:'DM Mono',monospace;font-size:10px;color:rgba(10,10,10,.3);margin-top:12px;letter-spacing:.06em;}
 
 /* EMPTY STATE */
 .empty-msg{color:var(--slate);font-size:13px;text-align:center;padding:40px;}
@@ -239,7 +239,7 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);o
 .mansion-date{font-family:'DM Mono',monospace;font-size:10px;color:var(--slate);margin-bottom:12px;letter-spacing:.08em;}
 .mansion-table{width:100%;max-width:640px;border-collapse:collapse;}
 .mansion-table th{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--slate);padding:5px 8px;border-bottom:1px solid rgba(201,168,76,.2);}
-.mansion-table td{padding:6px 8px;font-size:12px;border-bottom:1px solid rgba(255,255,255,.04);}
+.mansion-table td{padding:6px 8px;font-size:12px;border-bottom:1px solid rgba(10,10,10,.04);}
 .mansion-table tr:first-child td{color:var(--gold);font-weight:700;}
 .mansion-rank{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;color:var(--gold);text-align:center;}
 .mansion-badge{display:inline-block;padding:1px 7px;border-radius:8px;font-family:'Barlow Condensed',sans-serif;font-size:9px;font-weight:700;background:rgba(201,168,76,.15);color:var(--gold);border:1px solid rgba(201,168,76,.3);}
@@ -259,23 +259,23 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);o
 .speaker-badge-pill{display:inline-block;padding:3px 11px;border-radius:3px;font-family:'Barlow Condensed',sans-serif;font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px;}
 .sbp-headline{background:#cc0000;color:#fff;}
 .sbp-featured{background:rgba(201,168,76,.18);color:var(--gold);border:1px solid rgba(201,168,76,.4);}
-.sbp-guest{background:rgba(255,255,255,.08);color:var(--cream);border:1px solid rgba(255,255,255,.2);}
+.sbp-guest{background:rgba(10,10,10,.08);color:var(--cream);border:1px solid rgba(10,10,10,.2);}
 .sbp-gala{background:rgba(201,168,76,.12);color:var(--gold);border:1px solid rgba(201,168,76,.3);}
 .sp-event{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#cc0000;margin-bottom:4px;}
 .sp-name{font-family:'Barlow Condensed',sans-serif;font-size:40px;font-weight:900;line-height:1;color:#fff;margin-bottom:3px;text-align:center;}
 .sp-role{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;color:var(--gold);font-style:italic;margin-bottom:12px;text-align:center;}
 .sp-stats{display:flex;gap:10px;margin-bottom:12px;}
-.sp-stat{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:7px;padding:8px 12px;text-align:center;min-width:80px;}
+.sp-stat{background:rgba(10,10,10,.05);border:1px solid rgba(10,10,10,.1);border-radius:7px;padding:8px 12px;text-align:center;min-width:80px;}
 .sp-stat-val{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;color:var(--gold);line-height:1;}
 .sp-stat-lbl{font-family:'DM Mono',monospace;font-size:8px;color:var(--slate);margin-top:2px;}
 .sp-bullets{max-width:500px;margin-bottom:12px;}
-.sp-bullets li{font-size:11px;color:rgba(255,255,255,.75);line-height:1.9;list-style:none;padding-left:12px;position:relative;}
+.sp-bullets li{font-size:11px;color:rgba(10,10,10,.75);line-height:1.9;list-style:none;padding-left:12px;position:relative;}
 .sp-bullets li::before{content:'•';color:#cc0000;position:absolute;left:0;}
 .sp-sessions{display:flex;flex-direction:column;gap:7px;max-width:500px;width:100%;}
-.sp-session{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:7px;padding:9px 13px;}
+.sp-session{background:rgba(10,10,10,.04);border:1px solid rgba(10,10,10,.08);border-radius:7px;padding:9px 13px;}
 .sp-session-title{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:#fff;margin-bottom:2px;}
 .sp-session-desc{font-size:10px;color:var(--slate);line-height:1.6;}
-.sp-footer{font-family:'DM Mono',monospace;font-size:9px;color:rgba(255,255,255,.25);margin-top:10px;letter-spacing:.06em;}
+.sp-footer{font-family:'DM Mono',monospace;font-size:9px;color:rgba(10,10,10,.25);margin-top:10px;letter-spacing:.06em;}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
 </head>
@@ -386,7 +386,7 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);o
       Dynasty Builder of the Week. Leave blank to disable Monday sync.
     </p>
     <label>Board ID</label>
-    <input type="text" id="monday-board-id-input" placeholder="e.g. 18421234567" style="width:100%;background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--cream);font-size:14px;padding:10px 12px;border-radius:6px;outline:none;margin-bottom:6px;">
+    <input type="text" id="monday-board-id-input" placeholder="e.g. 18421234567" style="width:100%;background:rgba(10,10,10,.06);border:1px solid var(--border);color:var(--cream);font-size:14px;padding:10px 12px;border-radius:6px;outline:none;margin-bottom:6px;">
     <p style="font-size:11px;color:var(--slate);">Board ID from the Monday.com board URL, e.g. monday.com/boards/<strong>18421234567</strong></p>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeMondayConfig()">Cancel</button>
@@ -752,7 +752,7 @@ function renderSlideHTML(slide, idx) {
       <div style="display:flex;gap:8px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:#b388ff;letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px;">
         <span>90 Days</span><span style="color:var(--gold);">•</span><span>Top 2 Finalists</span><span style="color:var(--gold);">•</span><span>Road to Miami</span>
       </div>
-      <div style="background:rgba(255,255,255,.07);border:1.5px solid rgba(180,100,255,.3);border-radius:10px;padding:7px 18px;font-family:'DM Mono',monospace;font-size:12px;color:#e0d0ff;margin-bottom:18px;">📅 September 1 – November 30, 2026</div>
+      <div style="background:rgba(10,10,10,.07);border:1.5px solid rgba(180,100,255,.3);border-radius:10px;padding:7px 18px;font-family:'DM Mono',monospace;font-size:12px;color:#e0d0ff;margin-bottom:18px;">📅 September 1 – November 30, 2026</div>
       <div style="background:rgba(180,100,255,.1);border:1px solid rgba(180,100,255,.25);border-radius:10px;padding:12px 18px;margin-bottom:14px;width:100%;max-width:380px;">
         <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:var(--gold2);margin-bottom:4px;">TWO CONTESTS RUNNING CONCURRENTLY</div>
         <div style="font-family:'Barlow',sans-serif;font-size:11px;color:#d0c0f0;line-height:1.5;">Everyone registers for the Official Miami Contest · Dynasty contest runs at the same time</div>
@@ -805,7 +805,7 @@ function renderSlideHTML(slide, idx) {
       <div style="font-family:'Playfair Display',serif;font-size:36px;font-weight:900;color:var(--gold);line-height:1.1;margin-bottom:4px;font-style:italic;">Thankful</div>
       <div style="font-family:'Barlow Condensed',sans-serif;font-size:36px;font-weight:900;color:#ffffff;letter-spacing:.02em;text-transform:uppercase;line-height:1;margin-bottom:2px;">THURSDAY</div>
       <div style="background:var(--gold);padding:5px 20px;border-radius:4px;margin-bottom:10px;">
-        <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;color:#0a1628;text-transform:uppercase;letter-spacing:.05em;">TEAM TRAINING</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;color:#F5F1E8;text-transform:uppercase;letter-spacing:.05em;">TEAM TRAINING</div>
       </div>
       <div style="font-family:'DM Mono',monospace;font-size:10px;color:#8a9bb5;letter-spacing:.1em;text-transform:uppercase;margin-bottom:18px;">Grateful Hearts · Stronger Team · Greater Impact</div>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;max-width:380px;margin-bottom:18px;">
@@ -1117,7 +1117,7 @@ async function handleMultiFiles(fileList) {
     const catObj = CATEGORIES.find(c => c.key === r.cat);
     const catLabel = catObj ? catObj.title : 'Unknown category';
     const catColor = r.cat ? 'var(--green2)' : 'var(--orange)';
-    html += `<div style="padding:10px 14px;border-radius:6px;background:rgba(255,255,255,.04);border:1px solid var(--border);margin-bottom:8px;">
+    html += `<div style="padding:10px 14px;border-radius:6px;background:rgba(10,10,10,.04);border:1px solid var(--border);margin-bottom:8px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
         <strong style="font-size:13px;">${r.file.name}</strong>
         <select data-idx="${multiFileParsed.length}" onchange="updateFileCat(this)" style="background:var(--navy);border:1px solid var(--border);color:var(--cream);font-size:11px;padding:3px 7px;border-radius:3px;outline:none;">
@@ -1243,7 +1243,7 @@ renderAll();
 <!-- ══ EXPORT PPTX MODAL ══════════════════════════════════════ -->
 <div id="pptx-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);
   z-index:500;align-items:center;justify-content:center;">
-  <div style="background:#0F1E38;border:1px solid rgba(201,168,76,.3);border-radius:16px;
+  <div style="background:#FFFFFF;border:1px solid rgba(201,168,76,.3);border-radius:16px;
     padding:24px;max-width:480px;width:94%;max-height:90vh;overflow-y:auto;">
     <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;
       color:#E8C97A;margin-bottom:4px;">&#11015; Export Thankful Thursday PowerPoint</div>
@@ -1261,8 +1261,8 @@ renderAll();
       </div>
       <label style="font-family:'DM Mono',monospace;font-size:10px;color:#6B7C93;
         display:block;margin-bottom:5px;">WEEK</label>
-      <select id="pptx-week-select" style="width:100%;background:#1A2E50;border:1px solid rgba(201,168,76,.25);
-        color:#E8EDF5;border-radius:8px;padding:7px 12px;font-family:'DM Mono',monospace;font-size:12px;"></select>
+      <select id="pptx-week-select" style="width:100%;background:#ECE6D6;border:1px solid rgba(201,168,76,.25);
+        color:#182238;border-radius:8px;padding:7px 12px;font-family:'DM Mono',monospace;font-size:12px;"></select>
     </div>
 
     <!-- Preview of entered data -->
@@ -1283,36 +1283,36 @@ renderAll();
       <div style="font-family:'DM Mono',monospace;font-size:10px;color:#E8C97A;
         text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Dynasty Builder of the Week</div>
       <input id="pptx-dynasty-name" type="text" placeholder="Winner name"
-        style="width:100%;background:#1A2E50;border:1px solid rgba(201,168,76,.25);color:#E8EDF5;
+        style="width:100%;background:#ECE6D6;border:1px solid rgba(201,168,76,.25);color:#182238;
           border-radius:8px;padding:7px 12px;font-family:'DM Mono',monospace;font-size:12px;margin-bottom:5px;">
       <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:5px;">
         <input id="pptx-d-r" type="text" placeholder="Rec #"
-          style="background:#1A2E50;border:1px solid rgba(201,168,76,.15);color:#E8EDF5;
+          style="background:#ECE6D6;border:1px solid rgba(201,168,76,.15);color:#182238;
             border-radius:6px;padding:5px 8px;font-family:'DM Mono',monospace;font-size:11px;">
         <input id="pptx-d-p" type="text" placeholder="Prod #"
-          style="background:#1A2E50;border:1px solid rgba(201,168,76,.15);color:#E8EDF5;
+          style="background:#ECE6D6;border:1px solid rgba(201,168,76,.15);color:#182238;
             border-radius:6px;padding:5px 8px;font-family:'DM Mono',monospace;font-size:11px;">
         <input id="pptx-d-pp" type="text" placeholder="Paid #"
-          style="background:#1A2E50;border:1px solid rgba(201,168,76,.15);color:#E8EDF5;
+          style="background:#ECE6D6;border:1px solid rgba(201,168,76,.15);color:#182238;
             border-radius:6px;padding:5px 8px;font-family:'DM Mono',monospace;font-size:11px;">
         <input id="pptx-d-cf" type="text" placeholder="CF #"
-          style="background:#1A2E50;border:1px solid rgba(201,168,76,.15);color:#E8EDF5;
+          style="background:#ECE6D6;border:1px solid rgba(201,168,76,.15);color:#182238;
             border-radius:6px;padding:5px 8px;font-family:'DM Mono',monospace;font-size:11px;">
         <input id="pptx-d-score" type="text" placeholder="Score"
-          style="background:#1A2E50;border:1px solid rgba(201,168,76,.15);color:#E8EDF5;
+          style="background:#ECE6D6;border:1px solid rgba(201,168,76,.15);color:#182238;
             border-radius:6px;padding:5px 8px;font-family:'DM Mono',monospace;font-size:11px;">
       </div>
     </div>
 
     <div style="display:flex;gap:8px;margin-top:4px;">
       <button onclick="generatePptx()" style="flex:2;background:linear-gradient(135deg,#C9A84C,#E8C97A);
-        border:none;border-radius:8px;color:#0A1628;font-family:'Barlow Condensed',sans-serif;
+        border:none;border-radius:8px;color:#F5F1E8;font-family:'Barlow Condensed',sans-serif;
         font-size:16px;font-weight:900;letter-spacing:.05em;padding:11px;cursor:pointer;">
         &#11015; GENERATE POWERPOINT
       </button>
       <button onclick="document.getElementById('pptx-modal').style.display='none'"
-        style="flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);
-          border-radius:8px;color:#E8EDF5;font-family:'DM Mono',monospace;font-size:11px;
+        style="flex:1;background:rgba(10,10,10,.06);border:1px solid rgba(10,10,10,.12);
+          border-radius:8px;color:#182238;font-family:'DM Mono',monospace;font-size:11px;
           padding:11px;cursor:pointer;">Cancel</button>
     </div>
     <div id="pptx-status" style="font-family:'DM Mono',monospace;font-size:10px;
@@ -1487,10 +1487,10 @@ function refreshPptxPreview() {
       const list = (wk[cat.key]||[]).sort((a,b)=>a.rank-b.rank);
       const top3 = list.slice(0,3);
       const rows = top3.length
-        ? top3.map(w => `<div style="font-size:11px;color:#E8EDF5;font-family:'DM Mono',monospace;">#${w.rank} ${w.name} \u2014 ${w.value}</div>`).join('')
+        ? top3.map(w => `<div style="font-size:11px;color:#182238;font-family:'DM Mono',monospace;">#${w.rank} ${w.name} \u2014 ${w.value}</div>`).join('')
         : `<div style="font-size:10px;color:#6B7C93;font-family:'DM Mono',monospace;">No entries yet</div>`;
       const more = list.length > 3 ? `<div style="font-size:9px;color:#6B7C93;font-family:'DM Mono',monospace;margin-top:2px;">+${list.length-3} more</div>` : '';
-      return `<div style="margin-bottom:8px;padding:8px 10px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:8px;">
+      return `<div style="margin-bottom:8px;padding:8px 10px;background:rgba(10,10,10,.03);border:1px solid rgba(10,10,10,.07);border-radius:8px;">
         <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:#E8C97A;margin-bottom:4px;">${cat.icon} ${cat.label}</div>
         ${rows}${more}</div>`;
     }).join('');
@@ -1500,7 +1500,7 @@ function addEarnerRow(name) {
   const rows = document.getElementById('pptx-earners-rows');
   const div = document.createElement('div');
   div.style.cssText = 'display:flex;gap:6px;align-items:center;';
-  div.innerHTML = `<input type="text" value="${name||''}" placeholder="Earner name" style="flex:1;background:#1A2E50;border:1px solid rgba(201,168,76,.2);color:#E8EDF5;border-radius:6px;padding:6px 10px;font-family:'DM Mono',monospace;font-size:11px;">
+  div.innerHTML = `<input type="text" value="${name||''}" placeholder="Earner name" style="flex:1;background:#ECE6D6;border:1px solid rgba(201,168,76,.2);color:#182238;border-radius:6px;padding:6px 10px;font-family:'DM Mono',monospace;font-size:11px;">
     <button onclick="this.parentElement.remove()" style="background:rgba(231,76,60,.1);border:1px solid rgba(231,76,60,.25);border-radius:6px;color:#E74C3C;font-size:13px;padding:4px 10px;cursor:pointer;flex-shrink:0;">×</button>`;
   rows.appendChild(div);
 }

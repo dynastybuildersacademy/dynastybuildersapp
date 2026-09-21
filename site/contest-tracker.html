@@ -8,24 +8,24 @@
 <script src="auth.js"></script>
 <style>
 :root{
-  --navy:#0A1628;--navy2:#0F1E38;--s1:#132240;--s2:#1A2E50;
+  --navy:#F5F1E8;--navy2:#FFFFFF;--s1:#FFFFFF;--s2:#ECE6D6;
   --gold:#C9A84C;--gold2:#E8C97A;
-  --text:#E8EDF5;--muted:#6B7C93;--border:rgba(201,168,76,.15);
+  --text:#182238;--muted:#6B7C93;--border:rgba(201,168,76,.15);
   --green:#2DCA73;--red:#E74C3C;--blue:#3498DB;--purple:#9B59B6;
-  --miami:#FF6B35;--card:rgba(15,30,56,.8);
+  --miami:#FF6B35;--card:rgba(255,255,255,.8);
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:var(--navy);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh;}
 
 .topbar{position:sticky;top:0;z-index:100;display:flex;align-items:center;
   justify-content:space-between;padding:0 16px;height:52px;
-  background:rgba(10,22,40,.96);border-bottom:1px solid var(--border);backdrop-filter:blur(8px);}
+  background:rgba(245,241,232,.96);border-bottom:1px solid var(--border);backdrop-filter:blur(8px);}
 .tb-title{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:900;
   color:var(--gold2);letter-spacing:.04em;}
 .tb-right{display:flex;align-items:center;gap:10px;}
 a.back{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);text-decoration:none;}
 
-.hero{background:linear-gradient(135deg,#0A1628,#1a004d 50%,#0d1a00);
+.hero{background:linear-gradient(135deg,#F5F1E8,#1a004d 50%,#0d1a00);
   padding:20px 16px 16px;border-bottom:1px solid var(--border);text-align:center;}
 .hero-title{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:900;color:var(--gold2);}
 .hero-sub{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px;}
@@ -35,7 +35,7 @@ a.back{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);text-de
 .pill.active{background:rgba(201,168,76,.1);border-color:rgba(201,168,76,.3);color:var(--gold2);}
 
 .controls{padding:12px 16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;
-  border-bottom:1px solid var(--border);background:rgba(10,22,40,.5);}
+  border-bottom:1px solid var(--border);background:rgba(245,241,232,.5);}
 .search-box{flex:1;min-width:160px;background:var(--s1);border:1px solid var(--border);
   border-radius:8px;padding:8px 12px;color:var(--text);font-family:'DM Mono',monospace;
   font-size:12px;outline:none;}
@@ -58,9 +58,9 @@ th{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transf
 th:first-child{text-align:left;}
 th.sorted{color:var(--gold2);}
 th:hover{color:var(--text);}
-td{padding:9px 12px;border-bottom:1px solid rgba(26,46,80,.4);font-size:13px;text-align:right;vertical-align:middle;}
+td{padding:9px 12px;border-bottom:1px solid rgba(236,230,214,.4);font-size:13px;text-align:right;vertical-align:middle;}
 td:first-child{text-align:left;}
-tr:hover td{background:rgba(255,255,255,.02);}
+tr:hover td{background:rgba(10,10,10,.02);}
 tr.dba-row td{background:rgba(201,168,76,.05);}
 tr.dba-row:hover td{background:rgba(201,168,76,.09);}
 .rank-col{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;
@@ -101,7 +101,7 @@ tr.dba-row:hover td{background:rgba(201,168,76,.09);}
 .geb-title{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;
   color:var(--green);margin-bottom:10px;letter-spacing:.04em;}
 .geb-tiers{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;}
-.geb-tier{background:rgba(255,255,255,.03);border:1px solid rgba(45,202,115,.15);
+.geb-tier{background:rgba(10,10,10,.03);border:1px solid rgba(45,202,115,.15);
   border-radius:8px;padding:10px 12px;}
 .geb-tier-pct{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;
   color:var(--green);}
@@ -124,9 +124,9 @@ tr.dba-row:hover td{background:rgba(201,168,76,.09);}
 .section-title{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;
   letter-spacing:.06em;text-transform:uppercase;color:var(--gold2);}
 .btn-sm{font-family:'DM Mono',monospace;font-size:10px;padding:5px 12px;
-  background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:6px;
+  background:rgba(10,10,10,.06);border:1px solid var(--border);border-radius:6px;
   color:var(--text);cursor:pointer;}
-.btn-sm:hover{background:rgba(255,255,255,.1);}
+.btn-sm:hover{background:rgba(10,10,10,.1);}
 .btn-gold{background:rgba(201,168,76,.1);border-color:rgba(201,168,76,.3);color:var(--gold2);}
 
 /* Toast */

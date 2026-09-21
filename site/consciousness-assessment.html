@@ -7,17 +7,17 @@
 <script src="auth.js"></script>
 <style>
   :root{
-    --bg: #14131A;
-    --bg-card: #1E1D26;
-    --bg-card-2: #262533;
-    --rise-1: #14131A;
-    --rise-2: #3A3350;
+    --bg: #F5F1E8;
+    --bg-card: #FFFFFF;
+    --bg-card-2: #ECE6D6;
+    --rise-1: #F5F1E8;
+    --rise-2: #E4D9C4;
     --rise-3: #8A6F3E;
-    --rise-4: #D4A339;
-    --sage: #6E8F6B;
-    --text: #F2EFE9;
-    --text-muted: #9C97A6;
-    --border: #322F3E;
+    --rise-4: #B8923D;
+    --sage: #5C7A59;
+    --text: #1E1A10;
+    --text-muted: #6B6458;
+    --border: #DDD5C2;
   }
   *{ box-sizing: border-box; }
   html, body{
@@ -106,6 +106,19 @@
     font-size: 13px;
     font-variant-numeric: tabular-nums;
   }
+
+  .q-block{ margin-bottom: 28px; }
+  .q-block-count{ font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
+  .q-block-text{ font-size: 16px; line-height: 1.4; margin-bottom: 12px; }
+  .q-opts{ display:flex; gap:7px; flex-wrap:wrap; }
+  .q-opt{
+    flex:1; min-width: 76px; text-align:center;
+    background: var(--bg-card); border: 1px solid var(--border); color: var(--text-muted);
+    padding: 10px 6px; border-radius: 8px; font-size: 11.5px; font-family: inherit;
+    cursor:pointer; transition: border-color .15s ease, background .15s ease, color .15s ease;
+  }
+  .q-opt:hover{ border-color: var(--rise-4); }
+  .q-opt.selected{ border-color: var(--rise-4); background: var(--bg-card-2); color: var(--text); font-weight:600; }
 
   .navrow{ margin-top: 22px; }
   .back{
@@ -248,12 +261,24 @@
   </div>
 
   <!-- QUESTION SCREEN -->
-  <div class="screen" id="screen-question">
-    <div class="qcount" id="qcount"></div>
-    <div class="qtext" id="qtext"></div>
-    <div class="options" id="options"></div>
-    <div class="navrow">
-      <button class="back" id="backBtn" onclick="goBack()">← Back</button>
+  <div class="screen" id="screen-section">
+    <div class="qcount" id="sectionLabel"></div>
+    <div id="sectionQuestions"></div>
+    <div class="navrow" style="display:flex;justify-content:space-between;align-items:center;">
+      <button class="back" id="sectionBackBtn" onclick="goBackSection()">← Back</button>
+      <button class="cta" id="sectionContinueBtn" onclick="finishSection()" disabled style="opacity:.4;">Continue →</button>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-interim">
+    <div class="intro">
+      <h1 id="interimTitle" style="font-size:24px;"></h1>
+      <div class="total-score" style="margin:22px 0;">
+        <span class="ts-label" id="interimLabel"></span>
+        <span class="ts-value" id="interimScore"></span>
+      </div>
+      <p id="interimNote" style="color:var(--text-muted);line-height:1.7;margin-bottom:24px;"></p>
+      <button class="cta" onclick="continueFromInterim()">Continue →</button>
     </div>
   </div>
 
@@ -492,15 +517,27 @@ function beginAssessment(){
   goTo(0);
 }
 
+// The 17 questions are grouped into 3 pages instead of 17 individual
+// screens — fewer steps to click through, and each page's own score
+// shows up right after you finish it (STEPS[1] and STEPS[3]) instead of
+// everything staying invisible until the very end.
+const SECTIONS = [
+  { key:'A', label:'Contracted States',  range:[0,8],  max:24, color:'#8A6F3E' },
+  { key:'B', label:'Courage Threshold',  range:[8,10], max:6,  color:'#6E8F6B' },
+  { key:'C', label:'Expanded States',    range:[10,17],max:21, color:'#D4A339' },
+];
+// current: -1 intro | 0 sectionA | 1 interimA | 2 sectionB | 3 interimB | 4 sectionC | 5+ result
+const STEPS = ['sectionA','interimA','sectionB','interimB','sectionC','result'];
+
 function updateHorizon(){
-  const total = QUESTIONS.length;
-  const answeredCount = current < 0 ? 0 : current + 1;
-  const pct = current < 0 ? 0 : Math.min(100, (answeredCount/total)*100);
+  const totalSteps = STEPS.length;
+  const stepIdx = current < 0 ? -1 : current;
+  const pct = current < 0 ? 0 : Math.min(100, ((stepIdx+1)/totalSteps)*100);
   document.getElementById('horizonFill').style.transform = `scaleX(${1 - pct/100})`;
   document.getElementById('progressText').textContent =
     current < 0 ? "Before you begin" :
-    current >= total ? "Complete" :
-    `Question ${current+1} of ${total}`;
+    current >= STEPS.length-1 ? "Complete" :
+    `Step ${stepIdx+1} of ${STEPS.length-1}`;
 }
 
 function goTo(index){
@@ -508,14 +545,17 @@ function goTo(index){
   render();
 }
 
-function goBack(){
-  if(current > 0){ current -= 1; render(); }
-  else { current = -1; render(); }
+function goBackSection(){
+  if (current === 0) { current = -1; }
+  else if (current === 2) { current = 1; }
+  else if (current === 4) { current = 3; }
+  render();
 }
 
 function render(){
   document.getElementById('screen-intro').classList.remove('active');
-  document.getElementById('screen-question').classList.remove('active');
+  document.getElementById('screen-section').classList.remove('active');
+  document.getElementById('screen-interim').classList.remove('active');
   document.getElementById('screen-result').classList.remove('active');
   document.getElementById('screen-backfill').classList.remove('active');
 
@@ -524,33 +564,112 @@ function render(){
     updateHorizon();
     return;
   }
-  if(current >= QUESTIONS.length){
+  if(current >= STEPS.length - 1){
     showResult();
     updateHorizon();
     return;
   }
 
-  document.getElementById('screen-question').classList.add('active');
-  const q = QUESTIONS[current];
-  document.getElementById('qcount').textContent = `Question ${current+1} of ${QUESTIONS.length}`;
-  document.getElementById('qtext').textContent = q.text;
-  document.getElementById('backBtn').style.visibility = current === 0 ? 'hidden' : 'visible';
-
-  const optsDiv = document.getElementById('options');
-  optsDiv.innerHTML = '';
-  OPTS.forEach(o=>{
-    const btn = document.createElement('button');
-    btn.className = 'opt';
-    btn.innerHTML = `<span>${o.label}</span><span class="n">${o.v}</span>`;
-    btn.onclick = () => {
-      answers[current] = o.v;
-      current += 1;
-      render();
-    };
-    optsDiv.appendChild(btn);
-  });
+  const step = STEPS[current];
+  if (step === 'sectionA') renderSectionPage(0);
+  else if (step === 'sectionB') renderSectionPage(1);
+  else if (step === 'sectionC') renderSectionPage(2);
+  else if (step === 'interimA') renderInterim(0);
+  else if (step === 'interimB') renderInterim(1);
 
   updateHorizon();
+}
+
+function sectionScore(sectionIdx){
+  const [start, end] = SECTIONS[sectionIdx].range;
+  let total = 0;
+  for (let i = start; i < end; i++) total += (answers[i] || 0);
+  return total;
+}
+
+function renderSectionPage(sectionIdx){
+  document.getElementById('screen-section').classList.add('active');
+  const sec = SECTIONS[sectionIdx];
+  const [start, end] = sec.range;
+  document.getElementById('sectionLabel').textContent = `${sec.label} — ${end-start} statements`;
+  document.getElementById('sectionBackBtn').style.visibility = sectionIdx === 0 && current === 0 ? 'hidden' : 'visible';
+
+  const container = document.getElementById('sectionQuestions');
+  container.innerHTML = '';
+  for (let i = start; i < end; i++) {
+    const q = QUESTIONS[i];
+    const block = document.createElement('div');
+    block.className = 'q-block';
+    block.innerHTML = `
+      <div class="q-block-count">${i - start + 1} of ${end - start}</div>
+      <div class="q-block-text">${q.text}</div>
+      <div class="q-opts" id="qopts-${i}"></div>
+    `;
+    container.appendChild(block);
+    const optsDiv = block.querySelector(`#qopts-${i}`);
+    OPTS.forEach(o => {
+      const btn = document.createElement('button');
+      btn.className = 'q-opt' + (answers[i] === o.v ? ' selected' : '');
+      btn.textContent = o.label;
+      btn.onclick = () => {
+        answers[i] = o.v;
+        optsDiv.querySelectorAll('.q-opt').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        checkSectionComplete(sectionIdx);
+      };
+      optsDiv.appendChild(btn);
+    });
+  }
+  checkSectionComplete(sectionIdx);
+}
+
+function checkSectionComplete(sectionIdx){
+  const [start, end] = SECTIONS[sectionIdx].range;
+  let allAnswered = true;
+  for (let i = start; i < end; i++) { if (answers[i] === null || answers[i] === undefined) allAnswered = false; }
+  const btn = document.getElementById('sectionContinueBtn');
+  btn.disabled = !allAnswered;
+  btn.style.opacity = allAnswered ? '1' : '.4';
+}
+
+function finishSection(){
+  if (current === 0) current = 1;       // sectionA -> interimA
+  else if (current === 2) current = 3;  // sectionB -> interimB
+  else if (current === 4) current = 5;  // sectionC -> result
+  render();
+}
+
+function continueFromInterim(){
+  if (current === 1) current = 2;  // interimA -> sectionB
+  else if (current === 3) current = 4; // interimB -> sectionC
+  render();
+}
+
+// A short, honest read of a section's score — not the final tier verdict
+// (that still needs all three sections), just "here's where this part landed."
+function interimBlurb(sectionIdx, score){
+  const sec = SECTIONS[sectionIdx];
+  const pct = score / sec.max;
+  if (sectionIdx === 0) {
+    if (pct >= 0.6) return "That's a lot of weight sitting in contracted states right now — worth being honest with yourself about.";
+    if (pct >= 0.3) return "A moderate amount of contracted-state activity — normal, and worth watching.";
+    return "Relatively little pull toward contracted states this round.";
+  }
+  if (sectionIdx === 1) {
+    return score >= 4 ? "Courage is fairly available to you right now." : "Courage shows up, but not consistently yet — that's the hinge point the whole model turns on.";
+  }
+  return '';
+}
+
+function renderInterim(sectionIdx){
+  document.getElementById('screen-interim').classList.add('active');
+  const sec = SECTIONS[sectionIdx];
+  const score = sectionScore(sectionIdx);
+  document.getElementById('interimTitle').textContent = `${sec.label}: here's how that landed`;
+  document.getElementById('interimLabel').textContent = sec.label;
+  document.getElementById('interimScore').textContent = `${score} / ${sec.max}`;
+  document.getElementById('interimScore').style.color = sec.color;
+  document.getElementById('interimNote').textContent = interimBlurb(sectionIdx, score);
 }
 
 function pickBlockForA(){

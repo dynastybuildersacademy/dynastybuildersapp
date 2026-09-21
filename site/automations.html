@@ -9,16 +9,16 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 :root{
-  --navy:#0A1628;--navy-mid:#0F1E38;--navy-light:#132240;
+  --navy:#F5F1E8;--navy-mid:#FFFFFF;--navy-light:#FFFFFF;
   --gold:#C9A84C;--gold-light:#E8C97A;--green:#2DCA73;
   --blue:#5DADE2;--purple:#9B59B6;--orange:#E67E22;--red:#E74C3C;
-  --text:#E8EDF5;--muted:#6B7C93;--border:rgba(255,255,255,.08);
+  --text:#182238;--muted:#6B7C93;--border:rgba(10,10,10,.08);
 }
 body{background:var(--navy);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh;padding-bottom:80px;}
-.header{background:linear-gradient(135deg,#0A1628,#0F1E38);border-bottom:1px solid rgba(201,168,76,.15);
+.header{background:linear-gradient(135deg,#F5F1E8,#FFFFFF);border-bottom:1px solid rgba(201,168,76,.15);
   padding:14px 18px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;}
 .header-title{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;color:var(--gold-light);flex:1;}
-.back-btn{background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:8px;
+.back-btn{background:rgba(10,10,10,.06);border:1px solid var(--border);border-radius:8px;
   padding:7px 12px;color:var(--muted);font-family:'DM Mono',monospace;font-size:11px;cursor:pointer;text-decoration:none;}
 .page{padding:16px 14px;}
 .section-title{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;color:var(--gold);
@@ -29,21 +29,21 @@ body{background:var(--navy);color:var(--text);font-family:'Barlow',sans-serif;mi
 .seq-name{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:900;color:var(--text);}
 .seq-desc{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);line-height:1.6;margin-top:3px;}
 .seq-trigger{font-family:'DM Mono',monospace;font-size:10px;color:var(--gold);margin-top:3px;}
-input[type=url],input[type=text]{width:100%;background:var(--navy-light);border:1px solid rgba(255,255,255,.12);
+input[type=url],input[type=text]{width:100%;background:var(--navy-light);border:1px solid rgba(10,10,10,.12);
   color:var(--text);border-radius:7px;padding:9px 12px;font-family:'DM Mono',monospace;font-size:12px;outline:none;
   transition:border-color .2s;}
 input:focus{border-color:rgba(201,168,76,.4);}
 .btn{padding:8px 16px;border-radius:8px;font-family:'Barlow Condensed',sans-serif;font-size:14px;
   font-weight:800;cursor:pointer;border:none;letter-spacing:.04em;}
-.btn-gold{background:linear-gradient(135deg,#C9A84C,#E8C97A);color:#0A1628;}
-.btn-ghost{background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--text);}
+.btn-gold{background:linear-gradient(135deg,#C9A84C,#E8C97A);color:#F5F1E8;}
+.btn-ghost{background:rgba(10,10,10,.06);border:1px solid var(--border);color:var(--text);}
 .btn-green{background:rgba(45,202,115,.12);border:1px solid rgba(45,202,115,.3);color:var(--green);}
 .btn-red{background:rgba(231,76,60,.08);border:1px solid rgba(231,76,60,.2);color:var(--red);}
 .status-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;}
 .dot-active{background:var(--green);}
 .dot-inactive{background:var(--muted);}
 .steps-list{margin-top:10px;border-top:1px solid var(--border);padding-top:10px;}
-.step-row{display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04);}
+.step-row{display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-bottom:1px solid rgba(10,10,10,.04);}
 .step-num{font-family:'DM Mono',monospace;font-size:11px;color:var(--gold);font-weight:700;min-width:24px;padding-top:1px;}
 .step-body{flex:1;}
 .step-name{font-size:13px;font-weight:600;color:var(--text);}
@@ -94,7 +94,7 @@ input:focus{border-color:rgba(201,168,76,.4);}
         Zapier Webhooks ↗
       </a>
       <a href="https://zapier.com/app/zaps" target="_blank"
-        style="background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:7px;
+        style="background:rgba(10,10,10,.06);border:1px solid var(--border);border-radius:7px;
           padding:5px 14px;color:var(--muted);font-family:'DM Mono',monospace;font-size:10px;text-decoration:none;">
         My Zaps ↗
       </a>

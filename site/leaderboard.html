@@ -8,13 +8,13 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
 :root {
-  --navy: #0A1628;
-  --navy-mid: #112040;
-  --navy-light: #1A3158;
+  --navy: #F5F1E8;
+  --navy-mid: #FFFFFF;
+  --navy-light: #ECE6D6;
   --gold: #C9A84C;
   --gold-light: #E8C97A;
   --gold-pale: #F5E8C0;
-  --cream: #FAF6EE;
+  --cream: #1E1A10;
   --success: #27AE60;
   --warn: #E67E22;
   --danger: #C0392B;
@@ -31,7 +31,7 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);m
   padding:18px 28px;
   display:flex;align-items:center;justify-content:space-between;
   position:sticky;top:0;z-index:100;backdrop-filter:blur(12px);
-  background-color:rgba(10,22,40,0.95);
+  background-color:rgba(245,241,232,0.95);
 }
 .header-left{display:flex;align-items:center;gap:14px;}
 .shield{width:38px;height:44px;background:linear-gradient(160deg,var(--gold) 0%,#7a5c14 100%);clip-path:polygon(50% 0%,100% 18%,100% 65%,50% 100%,0% 65%,0% 18%);display:flex;align-items:center;justify-content:center;font-size:16px;}
@@ -507,7 +507,7 @@ async function exportPDF() {
     : period === 'week' ? 'This Week' : 'This Month';
 
   const el = document.createElement('div');
-  el.style.cssText = 'font-family:Barlow,sans-serif;background:#0A1628;color:#FAF6EE;padding:24px;';
+  el.style.cssText = 'font-family:Barlow,sans-serif;background:#F5F1E8;color:#1E1A10;padding:24px;';
   el.innerHTML = `
     <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #C9A84C;padding-bottom:14px;margin-bottom:20px;">
       <div>
@@ -534,7 +534,7 @@ async function exportPDF() {
       <tbody>
         ${getSorted().map((ag,i)=>`
           <tr style="border-bottom:1px solid rgba(201,168,76,0.1);">
-            <td style="padding:9px 8px;font-size:15px;font-weight:800;color:${i<3?'#C9A84C':'#FAF6EE'}">${['🥇','🥈','🥉'][i]||i+1}</td>
+            <td style="padding:9px 8px;font-size:15px;font-weight:800;color:${i<3?'#C9A84C':'#1E1A10'}">${['🥇','🥈','🥉'][i]||i+1}</td>
             <td style="padding:9px 8px;font-weight:600;">${ag.name}</td>
             <td style="padding:9px 8px;font-size:11px;color:#6B7C93;text-transform:uppercase;">${ROLE_LABELS[ag.role]||ag.role}</td>
             <td style="padding:9px 8px;text-align:right;">${ag.calls}</td>
@@ -552,7 +552,7 @@ async function exportPDF() {
   await html2pdf().set({
     margin:[8,8,8,8], filename,
     image:{type:'jpeg',quality:0.95},
-    html2canvas:{scale:2,backgroundColor:'#0A1628',useCORS:true},
+    html2canvas:{scale:2,backgroundColor:'#F5F1E8',useCORS:true},
     jsPDF:{unit:'mm',format:'a4',orientation:'landscape'}
   }).from(el).save();
   document.body.removeChild(el);

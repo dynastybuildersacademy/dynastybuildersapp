@@ -7,12 +7,12 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,700;1,400&family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{
-  --navy:#0A1628;--navy2:#0F1E38;--navy3:#132240;--navy4:#1A2E50;
+  --navy:#F5F1E8;--navy2:#FFFFFF;--navy3:#FFFFFF;--navy4:#ECE6D6;
   --gold:#C9A84C;--gold2:#E8C97A;--gold-dim:rgba(201,168,76,.12);
   --green:#27AE60;--green2:#2DCA73;
   --blue:#3498DB;--blue2:#5DADE2;
-  --slate:#6B7C93;--cream:#FAF6EE;
-  --border:rgba(201,168,76,.2);--bs:rgba(255,255,255,.06);
+  --slate:#6B7C93;--cream:#1E1A10;
+  --border:rgba(201,168,76,.2);--bs:rgba(10,10,10,.06);
   --danger:#E05252;--warn:#E67E22;
   /* legacy aliases for existing JS */
   --paper:var(--navy);--ink:var(--cream);--muted:var(--slate);
@@ -86,7 +86,7 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);m
 
 /* GROUPS */
 .group-checklist{border:1px solid var(--border);border-radius:3px;max-height:200px;overflow-y:auto;background:var(--navy);}
-.group-check-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid rgba(255,255,255,.04);}
+.group-check-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid rgba(10,10,10,.04);}
 .group-check-item:last-child{border-bottom:none;}
 .group-check-item input[type=checkbox]{accent-color:var(--gold);width:14px;height:14px;}
 .g-title{font-size:12px;flex:1;}
@@ -97,7 +97,7 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);m
 
 /* MAPPING TABLE */
 .map-hdr{display:grid;grid-template-columns:160px auto 1fr;gap:10px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--slate);padding:6px 0;border-bottom:1px solid var(--border);margin-bottom:8px;}
-.map-row{display:grid;grid-template-columns:160px auto 1fr;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04);}
+.map-row{display:grid;grid-template-columns:160px auto 1fr;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid rgba(10,10,10,.04);}
 .map-row:last-child{border-bottom:none;}
 .map-field{font-size:12px;font-weight:600;}
 .map-arrow{color:var(--gold);font-size:16px;text-align:center;}
@@ -106,7 +106,7 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);m
 /* PROGRESS */
 .fetch-progress{margin-top:12px;}
 .fetch-progress #fetchDetail{font-size:12px;color:var(--slate);margin-bottom:6px;font-family:'DM Mono',monospace;}
-.prog-bar-wrap{height:4px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;}
+.prog-bar-wrap{height:4px;background:rgba(10,10,10,.08);border-radius:2px;overflow:hidden;}
 .prog-bar{height:100%;background:var(--gold);border-radius:2px;transition:width .3s;width:0;}
 .loading-inline{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--slate);}
 
@@ -130,7 +130,7 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);m
 
 /* CARRIER/POLICY TABLES */
 table{width:100%;border-collapse:collapse;}
-th{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--slate);padding:9px 12px;text-align:left;border-bottom:1px solid var(--border);background:rgba(255,255,255,.02);}
+th{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--slate);padding:9px 12px;text-align:left;border-bottom:1px solid var(--border);background:rgba(10,10,10,.02);}
 td{padding:9px 12px;border-bottom:1px solid rgba(201,168,76,.06);font-size:13px;}
 tr:last-child td{border-bottom:none;}
 tr:hover td{background:rgba(201,168,76,.03);}

@@ -8,10 +8,10 @@
 <script src="quiz-engine.js"></script>
 <script src="quizzes.js"></script>
 <style>
-:root{--navy:#0A1628;--navy-mid:#112040;--navy-light:#1A3158;--gold:#C9A84C;--gold-light:#E8C97A;--cream:#FAF6EE;--success:#27AE60;--warn:#E67E22;--danger:#C0392B;--slate:#6B7C93;--border:rgba(201,168,76,0.22);}
+:root{--navy:#F5F1E8;--navy-mid:#FFFFFF;--navy-light:#ECE6D6;--gold:#C9A84C;--gold-light:#E8C97A;--cream:#1E1A10;--success:#27AE60;--warn:#E67E22;--danger:#C0392B;--slate:#6B7C93;--border:rgba(201,168,76,0.22);}
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);min-height:100vh;}
-.header{background:rgba(10,22,40,0.97);border-bottom:1px solid var(--border);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;backdrop-filter:blur(10px);}
+.header{background:rgba(245,241,232,0.97);border-bottom:1px solid var(--border);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;backdrop-filter:blur(10px);}
 .header-left{display:flex;align-items:center;gap:12px;}
 .shield{width:30px;height:34px;background:linear-gradient(160deg,var(--gold) 0%,#7a5c14 100%);clip-path:polygon(50% 0%,100% 18%,100% 65%,50% 100%,0% 65%,0% 18%);display:flex;align-items:center;justify-content:center;font-size:12px;}
 .header h1{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--gold);}
@@ -34,7 +34,7 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);m
 .mod-num{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;color:var(--gold);min-width:34px;}
 .mod-title{font-size:14px;font-weight:600;flex:1;}
 .mod-toggle{font-size:12px;color:var(--gold);transition:transform 0.25s;}
-.module-body{display:none;padding:16px 20px 20px;border-top:1px solid var(--border);font-size:13px;line-height:1.8;color:rgba(250,246,238,0.9);}
+.module-body{display:none;padding:16px 20px 20px;border-top:1px solid var(--border);font-size:13px;line-height:1.8;color:rgba(20,16,8,0.9);}
 .module-body.open{display:block;}
 .module-body ul{padding-left:20px;}
 .module-body li{margin-bottom:7px;}
@@ -47,7 +47,7 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);m
 /* ROLEPLAY */
 .rp-card{background:var(--navy-mid);border:1px solid var(--border);border-radius:4px;padding:20px;margin-bottom:16px;}
 .rp-card-title{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:0.09em;margin-bottom:14px;}
-.field-label{font-size:11px;color:rgba(250,246,238,0.6);font-weight:600;letter-spacing:0.09em;text-transform:uppercase;display:block;margin-bottom:6px;}
+.field-label{font-size:11px;color:rgba(20,16,8,0.6);font-weight:600;letter-spacing:0.09em;text-transform:uppercase;display:block;margin-bottom:6px;}
 select,input{width:100%;background:var(--navy);border:1px solid var(--border);color:var(--cream);font-family:'Barlow',sans-serif;font-size:13px;padding:10px 12px;border-radius:3px;margin-bottom:12px;}
 textarea{width:100%;background:var(--navy);border:1px solid var(--border);color:var(--cream);font-family:'Barlow',sans-serif;font-size:13px;padding:10px 12px;border-radius:3px;margin-bottom:12px;min-height:64px;resize:vertical;}
 .ws-step{background:var(--navy-mid);border:1px solid var(--border);border-radius:6px;padding:20px;margin-bottom:16px;}
@@ -176,7 +176,7 @@ select option{background:var(--navy-mid);}
   <div class="page-sub">The Magic of Thinking Big — 13 principles for building the success mindset. Study one section per day and apply it immediately.</div>
   <div class="rp-card" style="margin-bottom:20px;">
     <div class="rp-card-title">📖 Daily Success Affirmation</div>
-    <p style="font-size:13px;line-height:1.8;color:rgba(250,246,238,.9);">I think big because my future is bigger than my fears. I believe in my abilities, act with confidence, eliminate excuses, take immediate action, serve people with excellence, and continually improve. I surround myself with winners, think like a leader, and pursue my goals with faith and persistence. Every day, I become a better version of myself, creating value for others and achieving the life God has called me to live.</p>
+    <p style="font-size:13px;line-height:1.8;color:rgba(20,16,8,.9);">I think big because my future is bigger than my fears. I believe in my abilities, act with confidence, eliminate excuses, take immediate action, serve people with excellence, and continually improve. I surround myself with winners, think like a leader, and pursue my goals with faith and persistence. Every day, I become a better version of myself, creating value for others and achieving the life God has called me to live.</p>
   </div>
   <div id="mindset-modules"></div>
 </div>
@@ -187,32 +187,32 @@ select option{background:var(--navy-mid);}
   <div class="page-sub">A Christian self-development framework inspired by the Map of Consciousness model. Understand where you operate today — and how the work of Christ moves you upward.</div>
 
   <!-- TIER OVERVIEW CARD -->
-  <div class="rp-card" style="margin-bottom:16px;background:linear-gradient(135deg,rgba(10,22,40,.9),rgba(26,46,80,.7));border-color:rgba(201,168,76,.3);">
+  <div class="rp-card" style="margin-bottom:16px;background:linear-gradient(135deg,rgba(245,241,232,.9),rgba(236,230,214,.7));border-color:rgba(201,168,76,.3);">
     <div class="rp-card-title" style="font-size:16px;">The Three Tiers</div>
     <div style="display:grid;grid-template-columns:1fr;gap:10px;margin-top:8px;">
       <div style="background:rgba(231,76,60,.08);border:1px solid rgba(231,76,60,.2);border-radius:8px;padding:10px 14px;">
         <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;color:#E74C3C;margin-bottom:6px;">TIER 1 — Contracted States (Force)</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:12px;color:rgba(250,246,238,.8);">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:12px;color:rgba(20,16,8,.8);">
           <span>😔 Shame &amp; Guilt — hiding, self-blame</span>
           <span>😶 Apathy &amp; Grief — withdrawal, numbness</span>
           <span>😰 Fear &amp; Desire — anxious control, craving</span>
           <span>😠 Anger &amp; Pride — blame, need to win</span>
         </div>
-        <div style="font-size:11px;color:rgba(250,246,238,.5);margin-top:6px;font-style:italic;">Scripture: Genesis 3 · Psalm 51 · 1 Kings 19 · Genesis 4</div>
+        <div style="font-size:11px;color:rgba(20,16,8,.5);margin-top:6px;font-style:italic;">Scripture: Genesis 3 · Psalm 51 · 1 Kings 19 · Genesis 4</div>
       </div>
       <div style="background:rgba(52,152,219,.08);border:1px solid rgba(52,152,219,.25);border-radius:8px;padding:10px 14px;">
         <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;color:#5DADE2;margin-bottom:4px;">TIER 2 — The Turning Point</div>
-        <div style="font-size:12px;color:rgba(250,246,238,.8);">⚡ Courage — facing life, acting despite fear</div>
-        <div style="font-size:11px;color:rgba(250,246,238,.5);margin-top:4px;font-style:italic;">"Be strong and courageous" — Joshua 1:9 · David &amp; Goliath (1 Samuel 17)</div>
+        <div style="font-size:12px;color:rgba(20,16,8,.8);">⚡ Courage — facing life, acting despite fear</div>
+        <div style="font-size:11px;color:rgba(20,16,8,.5);margin-top:4px;font-style:italic;">"Be strong and courageous" — Joshua 1:9 · David &amp; Goliath (1 Samuel 17)</div>
       </div>
       <div style="background:rgba(45,202,115,.08);border:1px solid rgba(45,202,115,.2);border-radius:8px;padding:10px 14px;">
         <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;color:#2DCA73;margin-bottom:6px;">TIER 3 — Expanded States (Power)</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:12px;color:rgba(250,246,238,.8);">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:12px;color:rgba(20,16,8,.8);">
           <span>🕊 Willingness &amp; Acceptance — openness, letting go</span>
           <span>🧠 Reason — clear thinking, seeing patterns</span>
           <span>💛 Love, Joy &amp; Peace — warmth, deep stillness</span>
         </div>
-        <div style="font-size:11px;color:rgba(250,246,238,.5);margin-top:6px;font-style:italic;">1 Corinthians 13 · Galatians 5:22-23 · Isaiah 1:18</div>
+        <div style="font-size:11px;color:rgba(20,16,8,.5);margin-top:6px;font-style:italic;">1 Corinthians 13 · Galatians 5:22-23 · Isaiah 1:18</div>
       </div>
     </div>
   </div>
@@ -220,20 +220,20 @@ select option{background:var(--navy-mid);}
   <!-- HOW CHRIST MOVES YOU UPWARD -->
   <div class="rp-card" style="margin-bottom:16px;">
     <div class="rp-card-title">✝ How the Work of Jesus Moves You Upward</div>
-    <div style="font-size:13px;line-height:1.8;color:rgba(250,246,238,.85);">
+    <div style="font-size:13px;line-height:1.8;color:rgba(20,16,8,.85);">
       This model treats movement between tiers not as mere self-help, but as something scripture describes as being done to a person through Christ — not just self-generated effort.
     </div>
     <div style="margin-top:10px;display:flex;flex-direction:column;gap:8px;">
-      <div style="font-size:12px;color:rgba(250,246,238,.8);padding-left:10px;border-left:2px solid rgba(231,76,60,.5);">
+      <div style="font-size:12px;color:rgba(20,16,8,.8);padding-left:10px;border-left:2px solid rgba(231,76,60,.5);">
         <strong style="color:#E8C97A;">The cross answers guilt, shame, and pride.</strong> "If anyone is in Christ, he is a new creation. The old has passed away; behold, the new has come" (2 Corinthians 5:17).
       </div>
-      <div style="font-size:12px;color:rgba(250,246,238,.8);padding-left:10px;border-left:2px solid rgba(52,152,219,.5);">
+      <div style="font-size:12px;color:rgba(20,16,8,.8);padding-left:10px;border-left:2px solid rgba(52,152,219,.5);">
         <strong style="color:#E8C97A;">The resurrection answers apathy and grief.</strong> Believers are born again to a living hope — grief is given an end point, not just a coping mechanism (1 Peter 1:3, Revelation 21:4).
       </div>
-      <div style="font-size:12px;color:rgba(250,246,238,.8);padding-left:10px;border-left:2px solid rgba(52,152,219,.7);">
+      <div style="font-size:12px;color:rgba(20,16,8,.8);padding-left:10px;border-left:2px solid rgba(52,152,219,.7);">
         <strong style="color:#E8C97A;">The Spirit opens courage.</strong> "God gave us a spirit not of fear but of power and love and self-control" (2 Timothy 1:7). The disciples — hiding in John 20, then preaching boldly in Acts 4. Same men. Different level.
       </div>
-      <div style="font-size:12px;color:rgba(250,246,238,.8);padding-left:10px;border-left:2px solid rgba(45,202,115,.5);">
+      <div style="font-size:12px;color:rgba(20,16,8,.8);padding-left:10px;border-left:2px solid rgba(45,202,115,.5);">
         <strong style="color:#E8C97A;">Renewal moves you toward love, joy, and peace.</strong> "Be transformed by the renewal of your mind" (Romans 12:2). Love, joy, and peace are fruit the Spirit produces — not gritted out by effort (Galatians 5:22-23).
       </div>
     </div>
@@ -242,10 +242,10 @@ select option{background:var(--navy-mid);}
   <!-- SELF-ASSESSMENT LINK -->
   <div class="rp-card" style="margin-bottom:16px;border-color:rgba(201,168,76,.3);">
     <div class="rp-card-title">📊 Self-Assessment (17 Questions)</div>
-    <p style="font-size:13px;line-height:1.7;color:rgba(250,246,238,.8);margin-bottom:12px;">
+    <p style="font-size:13px;line-height:1.7;color:rgba(20,16,8,.8);margin-bottom:12px;">
       Rate each statement 0–3 for the past 2–4 weeks (0 = Rarely · 1 = Sometimes · 2 = Often · 3 = Almost always). Three sections: Contracted States (8 items) · Courage Threshold (2 items) · Expanded States (7 items).
     </p>
-    <div style="background:rgba(10,22,40,.6);border-radius:8px;padding:12px 14px;margin-bottom:12px;font-size:12px;color:rgba(250,246,238,.7);line-height:1.9;">
+    <div style="background:rgba(245,241,232,.6);border-radius:8px;padding:12px 14px;margin-bottom:12px;font-size:12px;color:rgba(20,16,8,.7);line-height:1.9;">
       <strong style="color:#E74C3C;">Section A — Contracted (max 24):</strong><br>
       I feel unworthy or deeply flawed · I feel undeserving of forgiveness · I believe nothing in my life will change · I experience a persistent sense of loss · I feel anxious about future outcomes · I find myself craving or grasping compulsively · I feel resentment toward others for my situation · I need to be seen as right or to win arguments
       <br><br>
@@ -255,98 +255,98 @@ select option{background:var(--navy-mid);}
       <strong style="color:#2DCA73;">Section C — Expanded (max 21):</strong><br>
       I can release control over outcomes I can't determine · I am open to changing my approach when needed · I can forgive others without needing a full resolution · I can see the logic or pattern in a difficult situation · I feel genuine warmth toward the people around me · I experience contentment without needing anything to change first · I have a settled sense that things are fundamentally okay
     </div>
-    <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(250,246,238,.5);margin-bottom:12px;">
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(20,16,8,.5);margin-bottom:12px;">
       Score: Section A ≥14 → Contracted baseline dominates. Section B ≥4 → Courage threshold crossed. Identify your highest-scoring A item (your active edge) or lowest-scoring C item to target your practice.
     </div>
-    <a href="consciousness-assessment.html" style="display:inline-block;background:linear-gradient(135deg,#C9A84C,#E8C97A);color:#0A1628;font-weight:700;font-family:'Barlow Condensed',sans-serif;font-size:15px;letter-spacing:.04em;padding:10px 22px;border-radius:8px;text-decoration:none;">⬆ Take the Full Interactive Assessment</a>
+    <a href="consciousness-assessment.html" style="display:inline-block;background:linear-gradient(135deg,#C9A84C,#E8C97A);color:#F5F1E8;font-weight:700;font-family:'Barlow Condensed',sans-serif;font-size:15px;letter-spacing:.04em;padding:10px 22px;border-radius:8px;text-decoration:none;">⬆ Take the Full Interactive Assessment</a>
   </div>
 
   <!-- LIFE AREA AFFIRMATIONS -->
   <div class="rp-card" style="margin-bottom:16px;border-color:rgba(201,168,76,.3);">
     <div class="rp-card-title" style="font-size:16px;">✨ Power Affirmations — All Areas of Life</div>
-    <p style="font-size:12px;color:rgba(250,246,238,.6);margin-bottom:14px;font-family:'DM Mono',monospace;">Speak these daily — morning is best. These are declarations of identity, not requests. Say them as present truth.</p>
+    <p style="font-size:12px;color:rgba(20,16,8,.6);margin-bottom:14px;font-family:'DM Mono',monospace;">Speak these daily — morning is best. These are declarations of identity, not requests. Say them as present truth.</p>
 
     <div style="display:flex;flex-direction:column;gap:10px;">
 
       <!-- SPIRITUAL -->
       <div style="background:rgba(155,89,182,.08);border:1px solid rgba(155,89,182,.25);border-radius:10px;padding:14px 16px;">
         <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:900;color:#C39BD3;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;">🙏 Spiritual</div>
-        <p style="font-size:13px;line-height:1.8;color:rgba(250,246,238,.9);">
+        <p style="font-size:13px;line-height:1.8;color:rgba(20,16,8,.9);">
           I am not trying to reach God — I am a son/daughter in whom He is well pleased. My spirit is alive, alert, and responsive to the Holy Spirit. I walk in the fruit of the Spirit naturally — love, joy, peace, patience, kindness, goodness, faithfulness, gentleness, and self-control flow from who I am, not what I do. I am being transformed daily by the renewal of my mind.
         </p>
-        <p style="font-size:11px;color:rgba(250,246,238,.4);font-style:italic;margin-top:6px;">Romans 8:16 · Galatians 5:22-23 · Romans 12:2</p>
+        <p style="font-size:11px;color:rgba(20,16,8,.4);font-style:italic;margin-top:6px;">Romans 8:16 · Galatians 5:22-23 · Romans 12:2</p>
       </div>
 
       <!-- MENTAL / EMOTIONAL -->
       <div style="background:rgba(52,152,219,.08);border:1px solid rgba(52,152,219,.22);border-radius:10px;padding:14px 16px;">
         <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:900;color:#5DADE2;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;">🧠 Mental & Emotional</div>
-        <p style="font-size:13px;line-height:1.8;color:rgba(250,246,238,.9);">
+        <p style="font-size:13px;line-height:1.8;color:rgba(20,16,8,.9);">
           I have the mind of Christ — clarity, wisdom, and discernment are available to me in every situation. I do not operate from fear, anxiety, or scarcity. I feel my emotions fully and move through them cleanly. I am not controlled by what happens to me — I choose my response. My mind is sharp, my thoughts are ordered, and I return to peace quickly.
         </p>
-        <p style="font-size:11px;color:rgba(250,246,238,.4);font-style:italic;margin-top:6px;">1 Corinthians 2:16 · 2 Timothy 1:7 · Philippians 4:7</p>
+        <p style="font-size:11px;color:rgba(20,16,8,.4);font-style:italic;margin-top:6px;">1 Corinthians 2:16 · 2 Timothy 1:7 · Philippians 4:7</p>
       </div>
 
       <!-- MARRIAGE -->
       <div style="background:rgba(231,76,60,.07);border:1px solid rgba(231,76,60,.2);border-radius:10px;padding:14px 16px;">
         <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:900;color:#EC7063;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;">💍 Marriage</div>
-        <p style="font-size:13px;line-height:1.8;color:rgba(250,246,238,.9);">
+        <p style="font-size:13px;line-height:1.8;color:rgba(20,16,8,.9);">
           My marriage is a covenant, not a contract. I love my spouse as Christ loved the church — sacrificially, not conditionally. I see my partner's greatness even when they cannot see it themselves. I bring peace, security, and warmth into our home. We grow stronger through every season, and what we are building together is greater than either of us could build alone.
         </p>
-        <p style="font-size:11px;color:rgba(250,246,238,.4);font-style:italic;margin-top:6px;">Ephesians 5:25 · Ecclesiastes 4:9-12 · Proverbs 31</p>
+        <p style="font-size:11px;color:rgba(20,16,8,.4);font-style:italic;margin-top:6px;">Ephesians 5:25 · Ecclesiastes 4:9-12 · Proverbs 31</p>
       </div>
 
       <!-- FAMILY -->
       <div style="background:rgba(230,126,34,.08);border:1px solid rgba(230,126,34,.22);border-radius:10px;padding:14px 16px;">
         <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:900;color:#F39C12;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;">👨‍👩‍👧‍👦 Family</div>
-        <p style="font-size:13px;line-height:1.8;color:rgba(250,246,238,.9);">
+        <p style="font-size:13px;line-height:1.8;color:rgba(20,16,8,.9);">
           My family is a legacy, not just a household. My children see in me what they can become. I lead my home with love, structure, and faith — not perfection. We are a team, and every member of my family is growing into their God-given identity. The atmosphere of my home is one of safety, joy, and possibility.
         </p>
-        <p style="font-size:11px;color:rgba(250,246,238,.4);font-style:italic;margin-top:6px;">Psalm 128:3 · Proverbs 22:6 · Joshua 24:15</p>
+        <p style="font-size:11px;color:rgba(20,16,8,.4);font-style:italic;margin-top:6px;">Psalm 128:3 · Proverbs 22:6 · Joshua 24:15</p>
       </div>
 
       <!-- CAREER -->
       <div style="background:rgba(26,188,156,.07);border:1px solid rgba(26,188,156,.2);border-radius:10px;padding:14px 16px;">
         <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:900;color:#48C9B0;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;">🎯 Career</div>
-        <p style="font-size:13px;line-height:1.8;color:rgba(250,246,238,.9);">
+        <p style="font-size:13px;line-height:1.8;color:rgba(20,16,8,.9);">
           I am excellent at what I do and my work creates real value for others. I am promoted because I develop people and produce results simultaneously. I show up with full commitment to my craft — I am always growing, always learning, and always raising the standard. My gifts make room for me, and doors open because of how I serve.
         </p>
-        <p style="font-size:11px;color:rgba(250,246,238,.4);font-style:italic;margin-top:6px;">Proverbs 18:16 · Colossians 3:23-24 · Daniel 1:20</p>
+        <p style="font-size:11px;color:rgba(20,16,8,.4);font-style:italic;margin-top:6px;">Proverbs 18:16 · Colossians 3:23-24 · Daniel 1:20</p>
       </div>
 
       <!-- BUSINESS -->
       <div style="background:rgba(201,168,76,.07);border:1px solid rgba(201,168,76,.22);border-radius:10px;padding:14px 16px;">
         <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:900;color:#E8C97A;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;">⚡ Business</div>
-        <p style="font-size:13px;line-height:1.8;color:rgba(250,246,238,.9);">
+        <p style="font-size:13px;line-height:1.8;color:rgba(20,16,8,.9);">
           My business is built on service, not sales. I solve real problems for real people and prosperity follows naturally. I build systems, not just results — what I create runs even when I am not in the room. My business is a vehicle for generational impact, not just personal income. I think in decades while I execute daily.
         </p>
-        <p style="font-size:11px;color:rgba(250,246,238,.4);font-style:italic;margin-top:6px;">Deuteronomy 8:18 · Proverbs 16:3 · Luke 16:10</p>
+        <p style="font-size:11px;color:rgba(20,16,8,.4);font-style:italic;margin-top:6px;">Deuteronomy 8:18 · Proverbs 16:3 · Luke 16:10</p>
       </div>
 
       <!-- FINANCIAL -->
       <div style="background:rgba(45,202,115,.07);border:1px solid rgba(45,202,115,.2);border-radius:10px;padding:14px 16px;">
         <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:900;color:#2DCA73;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;">💰 Financial</div>
-        <p style="font-size:13px;line-height:1.8;color:rgba(250,246,238,.9);">
+        <p style="font-size:13px;line-height:1.8;color:rgba(20,16,8,.9);">
           Money flows to me because I create value and serve well. I am a faithful steward — I manage what I have been given with integrity and wisdom. I am debt-free in direction, building wealth with purpose, and generating income that outlasts my effort. I give generously because I operate from abundance, not scarcity. My financial decisions reflect who I am becoming, not who I was.
         </p>
-        <p style="font-size:11px;color:rgba(250,246,238,.4);font-style:italic;margin-top:6px;">Deuteronomy 28:12 · Proverbs 13:11 · Luke 6:38</p>
+        <p style="font-size:11px;color:rgba(20,16,8,.4);font-style:italic;margin-top:6px;">Deuteronomy 28:12 · Proverbs 13:11 · Luke 6:38</p>
       </div>
 
       <!-- RELATIONSHIPS -->
       <div style="background:rgba(240,98,146,.07);border:1px solid rgba(240,98,146,.2);border-radius:10px;padding:14px 16px;">
         <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:900;color:#F06292;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;">🤝 Relationships</div>
-        <p style="font-size:13px;line-height:1.8;color:rgba(250,246,238,.9);">
+        <p style="font-size:13px;line-height:1.8;color:rgba(20,16,8,.9);">
           I attract high-quality relationships because I am a high-quality person. I am loyal, honest, and genuinely interested in the growth of those around me. I do not drain people — I add energy to every room I enter. I set boundaries from love, not fear. I resolve conflict quickly and do not carry offense. My inner circle is a reflection of my values and my aspirations.
         </p>
-        <p style="font-size:11px;color:rgba(250,246,238,.4);font-style:italic;margin-top:6px;">Proverbs 27:17 · 1 Corinthians 15:33 · Romans 12:18</p>
+        <p style="font-size:11px;color:rgba(20,16,8,.4);font-style:italic;margin-top:6px;">Proverbs 27:17 · 1 Corinthians 15:33 · Romans 12:18</p>
       </div>
 
       <!-- TEAM / PARTNERS -->
       <div style="background:rgba(103,58,183,.08);border:1px solid rgba(103,58,183,.25);border-radius:10px;padding:14px 16px;">
         <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:900;color:#AB8CE4;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;">🏗 Team & Partners</div>
-        <p style="font-size:13px;line-height:1.8;color:rgba(250,246,238,.9);">
+        <p style="font-size:13px;line-height:1.8;color:rgba(20,16,8,.9);">
           I lead from strength, not from need. My team is inspired by who I am before they are instructed by what I say. I recognize the greatness in every person I lead and I call it out before they see it themselves. I build up — I do not tear down. I am the kind of leader that people would run through walls for, because they know I am for them. Together we accomplish what none of us could reach alone.
         </p>
-        <p style="font-size:11px;color:rgba(250,246,238,.4);font-style:italic;margin-top:6px;">Mark 10:43-44 · Proverbs 11:14 · Nehemiah 2:18</p>
+        <p style="font-size:11px;color:rgba(20,16,8,.4);font-style:italic;margin-top:6px;">Mark 10:43-44 · Proverbs 11:14 · Nehemiah 2:18</p>
       </div>
 
     </div>
@@ -356,10 +356,10 @@ select option{background:var(--navy-mid);}
         <div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;color:#E8C97A;letter-spacing:.04em;line-height:1.4;margin-bottom:8px;">
           "I receive God's love and forgiveness,<br>and I walk in newness of life."
         </div>
-        <p style="font-size:11px;color:rgba(250,246,238,.5);font-style:italic;margin:0;">"Therefore, if anyone is in Christ, he is a new creation. The old has passed away; behold, the new has come." — 2 Corinthians 5:17</p>
+        <p style="font-size:11px;color:rgba(20,16,8,.5);font-style:italic;margin:0;">"Therefore, if anyone is in Christ, he is a new creation. The old has passed away; behold, the new has come." — 2 Corinthians 5:17</p>
       </div>
 
-    <div style="margin-top:16px;background:rgba(201,168,76,.06);border-radius:8px;padding:12px 14px;font-family:'DM Mono',monospace;font-size:10px;color:rgba(250,246,238,.6);line-height:1.8;">
+    <div style="margin-top:16px;background:rgba(201,168,76,.06);border-radius:8px;padding:12px 14px;font-family:'DM Mono',monospace;font-size:10px;color:rgba(20,16,8,.6);line-height:1.8;">
       <strong style="color:var(--gold-light);">HOW TO USE:</strong> Read aloud each morning — ideally before screens. Start with the area where you need the most growth. Say it slowly, as truth. These are not positive thinking — they are identity declarations that rewire the operating level from which you live and lead.
     </div>
   </div>
@@ -391,7 +391,7 @@ select option{background:var(--navy-mid);}
   <div class="page-sub">For Directors and above. How to build, lead, and duplicate a high-performing team.</div>
   <div class="rp-card" style="margin-bottom:20px;">
     <div class="rp-card-title">🎯 The DBA Leadership Standard</div>
-    <p style="font-size:13px;line-height:1.8;color:rgba(250,246,238,.9);">Great leaders don't manage people — they build systems, raise calibration, and create environments where others become their best selves. Your team will never sustainably outperform its leader's level of consciousness, work ethic, or belief.</p>
+    <p style="font-size:13px;line-height:1.8;color:rgba(20,16,8,.9);">Great leaders don't manage people — they build systems, raise calibration, and create environments where others become their best selves. Your team will never sustainably outperform its leader's level of consciousness, work ethic, or belief.</p>
   </div>
   <div id="teambuilder-modules"></div>
 </div>
@@ -739,9 +739,9 @@ function buildModules(containerId, modules) {
             <span style="font-size:20px;">✅</span>
             <div>
               <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:900;color:#2DCA73;">Quiz Passed — ${prior.pct}%</div>
-              <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(250,246,238,.4);">${quiz.title} · Completed</div>
+              <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(20,16,8,.4);">${quiz.title} · Completed</div>
             </div>
-            <button onclick="renderQuiz('quiz-${qid}', QUIZ_BANK['${qid}'])" style="margin-left:auto;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:4px 10px;color:var(--muted);font-family:'DM Mono',monospace;font-size:10px;cursor:pointer;">Retake</button>
+            <button onclick="renderQuiz('quiz-${qid}', QUIZ_BANK['${qid}'])" style="margin-left:auto;background:rgba(10,10,10,.06);border:1px solid rgba(10,10,10,.1);border-radius:6px;padding:4px 10px;color:var(--muted);font-family:'DM Mono',monospace;font-size:10px;cursor:pointer;">Retake</button>
           </div>`
         : `<button onclick="renderQuiz('quiz-${qid}', QUIZ_BANK['${qid}'])" style="width:100%;background:rgba(201,168,76,.08);border:1px dashed rgba(201,168,76,.3);border-radius:10px;padding:12px;color:var(--gold-light);font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;cursor:pointer;letter-spacing:.04em;">
             🧠 Take Quiz: ${quiz.title} →
@@ -1299,143 +1299,143 @@ buildModules('consciousness-modules', [
     <p><strong style="color:var(--gold-light);">Force depletes. Power sustains. The difference is measurable.</strong></p>
     <p style="margin:10px 0;">Human emotional and behavioral states arrange on a scale — from states that drain energy and narrow perception, to states that expand energy and open possibility. Every interaction you have as an agent or leader is either pulling people upward or pressing them downward.</p>
     <table style="width:100%;border-collapse:collapse;font-size:12px;margin-top:10px;">
-      <tr style="border-bottom:1px solid rgba(255,255,255,.1);">
+      <tr style="border-bottom:1px solid rgba(10,10,10,.1);">
         <td style="padding:6px 8px;color:#E74C3C;font-weight:700;">Shame / Guilt</td>
-        <td style="padding:6px 8px;color:rgba(250,246,238,.7);">Hiding, self-blame, over-apologizing</td>
-        <td style="padding:6px 8px;color:rgba(250,246,238,.4);font-style:italic;">Genesis 3 · Psalm 51</td>
+        <td style="padding:6px 8px;color:rgba(20,16,8,.7);">Hiding, self-blame, over-apologizing</td>
+        <td style="padding:6px 8px;color:rgba(20,16,8,.4);font-style:italic;">Genesis 3 · Psalm 51</td>
       </tr>
-      <tr style="border-bottom:1px solid rgba(255,255,255,.08);">
+      <tr style="border-bottom:1px solid rgba(10,10,10,.08);">
         <td style="padding:6px 8px;color:#E74C3C;font-weight:700;">Apathy / Grief</td>
-        <td style="padding:6px 8px;color:rgba(250,246,238,.7);">Withdrawal, resignation, quiet numbness</td>
-        <td style="padding:6px 8px;color:rgba(250,246,238,.4);font-style:italic;">1 Kings 19 · Lamentations</td>
+        <td style="padding:6px 8px;color:rgba(20,16,8,.7);">Withdrawal, resignation, quiet numbness</td>
+        <td style="padding:6px 8px;color:rgba(20,16,8,.4);font-style:italic;">1 Kings 19 · Lamentations</td>
       </tr>
-      <tr style="border-bottom:1px solid rgba(255,255,255,.08);">
+      <tr style="border-bottom:1px solid rgba(10,10,10,.08);">
         <td style="padding:6px 8px;color:#E67E22;font-weight:700;">Fear / Desire</td>
-        <td style="padding:6px 8px;color:rgba(250,246,238,.7);">Anxious control, compulsive craving</td>
-        <td style="padding:6px 8px;color:rgba(250,246,238,.4);font-style:italic;">Exodus 14 · Luke 12:16-21</td>
+        <td style="padding:6px 8px;color:rgba(20,16,8,.7);">Anxious control, compulsive craving</td>
+        <td style="padding:6px 8px;color:rgba(20,16,8,.4);font-style:italic;">Exodus 14 · Luke 12:16-21</td>
       </tr>
-      <tr style="border-bottom:1px solid rgba(255,255,255,.08);">
+      <tr style="border-bottom:1px solid rgba(10,10,10,.08);">
         <td style="padding:6px 8px;color:#E67E22;font-weight:700;">Anger / Pride</td>
-        <td style="padding:6px 8px;color:rgba(250,246,238,.7);">Blame, defensiveness, need to win</td>
-        <td style="padding:6px 8px;color:rgba(250,246,238,.4);font-style:italic;">Genesis 4 · Genesis 11</td>
+        <td style="padding:6px 8px;color:rgba(20,16,8,.7);">Blame, defensiveness, need to win</td>
+        <td style="padding:6px 8px;color:rgba(20,16,8,.4);font-style:italic;">Genesis 4 · Genesis 11</td>
       </tr>
       <tr style="border-bottom:1px solid rgba(52,152,219,.3);background:rgba(52,152,219,.06);">
         <td style="padding:6px 8px;color:#5DADE2;font-weight:700;">⚡ Courage</td>
-        <td style="padding:6px 8px;color:rgba(250,246,238,.8);">Facing life, acting despite fear</td>
-        <td style="padding:6px 8px;color:rgba(250,246,238,.4);font-style:italic;">1 Samuel 17 · Joshua 1:9</td>
+        <td style="padding:6px 8px;color:rgba(20,16,8,.8);">Facing life, acting despite fear</td>
+        <td style="padding:6px 8px;color:rgba(20,16,8,.4);font-style:italic;">1 Samuel 17 · Joshua 1:9</td>
       </tr>
-      <tr style="border-bottom:1px solid rgba(255,255,255,.08);">
+      <tr style="border-bottom:1px solid rgba(10,10,10,.08);">
         <td style="padding:6px 8px;color:#2DCA73;font-weight:700;">Willingness</td>
-        <td style="padding:6px 8px;color:rgba(250,246,238,.7);">Openness, forgiveness, letting things be</td>
-        <td style="padding:6px 8px;color:rgba(250,246,238,.4);font-style:italic;">Luke 1:38 · Job 42</td>
+        <td style="padding:6px 8px;color:rgba(20,16,8,.7);">Openness, forgiveness, letting things be</td>
+        <td style="padding:6px 8px;color:rgba(20,16,8,.4);font-style:italic;">Luke 1:38 · Job 42</td>
       </tr>
-      <tr style="border-bottom:1px solid rgba(255,255,255,.08);">
+      <tr style="border-bottom:1px solid rgba(10,10,10,.08);">
         <td style="padding:6px 8px;color:#2DCA73;font-weight:700;">Acceptance / Reason</td>
-        <td style="padding:6px 8px;color:rgba(250,246,238,.7);">Clear thinking, seeing patterns</td>
-        <td style="padding:6px 8px;color:rgba(250,246,238,.4);font-style:italic;">Isaiah 1:18 · Proverbs</td>
+        <td style="padding:6px 8px;color:rgba(20,16,8,.7);">Clear thinking, seeing patterns</td>
+        <td style="padding:6px 8px;color:rgba(20,16,8,.4);font-style:italic;">Isaiah 1:18 · Proverbs</td>
       </tr>
       <tr>
         <td style="padding:6px 8px;color:#2DCA73;font-weight:700;">Love / Joy / Peace</td>
-        <td style="padding:6px 8px;color:rgba(250,246,238,.7);">Warmth, contentment, deep stillness</td>
-        <td style="padding:6px 8px;color:rgba(250,246,238,.4);font-style:italic;">1 Cor 13 · Gal 5:22-23</td>
+        <td style="padding:6px 8px;color:rgba(20,16,8,.7);">Warmth, contentment, deep stillness</td>
+        <td style="padding:6px 8px;color:rgba(20,16,8,.4);font-style:italic;">1 Cor 13 · Gal 5:22-23</td>
       </tr>
     </table>` },
 
   { title: '2 — Ascension Practices: Shame / Guilt → Courage', body: `
     <p><strong style="color:var(--gold-light);">The cross answers shame before you work on it.</strong></p>
     <p style="margin:10px 0;">You cannot out-perform a shame identity. The first move is not effort — it is receiving what Christ already accomplished. Then practice follows.</p>
-    <div style="background:rgba(10,22,40,.5);border-radius:8px;padding:12px 14px;margin:10px 0;">
+    <div style="background:rgba(245,241,232,.5);border-radius:8px;padding:12px 14px;margin:10px 0;">
       <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:#E8C97A;margin-bottom:6px;">DAILY PRACTICE</div>
-      <p style="font-size:12px;color:rgba(250,246,238,.8);">Write one honest sentence naming what happened — without a self-judgment word attached. Just the fact.</p>
+      <p style="font-size:12px;color:rgba(20,16,8,.8);">Write one honest sentence naming what happened — without a self-judgment word attached. Just the fact.</p>
       <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:#E8C97A;margin:10px 0 6px;">WEEKLY PRACTICE</div>
-      <p style="font-size:12px;color:rgba(250,246,238,.8);">Take one small, real repair action — toward yourself or someone else.</p>
+      <p style="font-size:12px;color:rgba(20,16,8,.8);">Take one small, real repair action — toward yourself or someone else.</p>
       <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:#E8C97A;margin:10px 0 6px;">SCRIPTURE ANCHOR</div>
-      <p style="font-size:12px;color:rgba(250,246,238,.8);">"If we confess our sins, he is faithful and just to forgive us" (1 John 1:9).</p>
+      <p style="font-size:12px;color:rgba(20,16,8,.8);">"If we confess our sins, he is faithful and just to forgive us" (1 John 1:9).</p>
       <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:#E8C97A;margin:10px 0 6px;">WORSHIP AFFIRMATIONS</div>
-      <p style="font-size:12px;color:rgba(250,246,238,.7);">Who You Say I Am — Hillsong Worship · Nothing but the Blood — traditional hymn</p>
+      <p style="font-size:12px;color:rgba(20,16,8,.7);">Who You Say I Am — Hillsong Worship · Nothing but the Blood — traditional hymn</p>
     </div>` },
 
   { title: '3 — Ascension Practices: Apathy / Grief → Courage', body: `
     <p><strong style="color:var(--gold-light);">Grief is given an end point — not just a coping mechanism.</strong></p>
     <p style="margin:10px 0;">The resurrection means mourning has a boundary. Apathy is frozen grief — the practice is to thaw it by naming the actual loss, not numbing through it.</p>
-    <div style="background:rgba(10,22,40,.5);border-radius:8px;padding:12px 14px;margin:10px 0;">
+    <div style="background:rgba(245,241,232,.5);border-radius:8px;padding:12px 14px;margin:10px 0;">
       <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:#E8C97A;margin-bottom:6px;">DAILY PRACTICE</div>
-      <p style="font-size:12px;color:rgba(250,246,238,.8);">Name one specific loss out loud or in writing. Let it be sad rather than numb.</p>
+      <p style="font-size:12px;color:rgba(20,16,8,.8);">Name one specific loss out loud or in writing. Let it be sad rather than numb.</p>
       <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:#E8C97A;margin:10px 0 6px;">WEEKLY PRACTICE</div>
-      <p style="font-size:12px;color:rgba(250,246,238,.8);">Do one tiny action tied to something you'd claimed didn't matter to you anymore.</p>
+      <p style="font-size:12px;color:rgba(20,16,8,.8);">Do one tiny action tied to something you'd claimed didn't matter to you anymore.</p>
       <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:#E8C97A;margin:10px 0 6px;">SCRIPTURE ANCHOR</div>
-      <p style="font-size:12px;color:rgba(250,246,238,.8);">"Weeping may tarry for the night, but joy comes with the morning" (Psalm 30:5).</p>
+      <p style="font-size:12px;color:rgba(20,16,8,.8);">"Weeping may tarry for the night, but joy comes with the morning" (Psalm 30:5).</p>
       <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:#E8C97A;margin:10px 0 6px;">WORSHIP AFFIRMATIONS</div>
-      <p style="font-size:12px;color:rgba(250,246,238,.7);">It Is Well with My Soul — traditional hymn · Graves into Gardens — Elevation Worship</p>
+      <p style="font-size:12px;color:rgba(20,16,8,.7);">It Is Well with My Soul — traditional hymn · Graves into Gardens — Elevation Worship</p>
     </div>` },
 
   { title: '4 — Ascension Practices: Fear / Desire → Courage', body: `
     <p><strong style="color:var(--gold-light);">"Perfect love casts out fear." Fear is the absence of love — not the absence of safety.</strong></p>
     <p style="margin:10px 0;">Fear-based agents push. Fear-based leaders control. The Spirit gives courage as a replacement for fear — not as a suppression of it. The disciples hid in John 20. They preached boldly in Acts 4. Same men, same threats, a different level entirely.</p>
-    <div style="background:rgba(10,22,40,.5);border-radius:8px;padding:12px 14px;margin:10px 0;">
+    <div style="background:rgba(245,241,232,.5);border-radius:8px;padding:12px 14px;margin:10px 0;">
       <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:#E8C97A;margin-bottom:6px;">DAILY PRACTICE</div>
-      <p style="font-size:12px;color:rgba(250,246,238,.8);">Name the specific feared outcome, then write what you would actually do if it happened.</p>
+      <p style="font-size:12px;color:rgba(20,16,8,.8);">Name the specific feared outcome, then write what you would actually do if it happened.</p>
       <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:#E8C97A;margin:10px 0 6px;">WEEKLY PRACTICE</div>
-      <p style="font-size:12px;color:rgba(250,246,238,.8);">Do the thing you've been avoiding — at 60% readiness. Don't wait for certainty.</p>
+      <p style="font-size:12px;color:rgba(20,16,8,.8);">Do the thing you've been avoiding — at 60% readiness. Don't wait for certainty.</p>
       <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:#E8C97A;margin:10px 0 6px;">SCRIPTURE ANCHOR</div>
-      <p style="font-size:12px;color:rgba(250,246,238,.8);">"God gave us a spirit not of fear but of power and love and self-control" (2 Timothy 1:7).</p>
+      <p style="font-size:12px;color:rgba(20,16,8,.8);">"God gave us a spirit not of fear but of power and love and self-control" (2 Timothy 1:7).</p>
       <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:#E8C97A;margin:10px 0 6px;">WORSHIP AFFIRMATIONS</div>
-      <p style="font-size:12px;color:rgba(250,246,238,.7);">No Longer Slaves — Bethel Music · Way Maker — Sinach</p>
+      <p style="font-size:12px;color:rgba(20,16,8,.7);">No Longer Slaves — Bethel Music · Way Maker — Sinach</p>
     </div>` },
 
   { title: '5 — Ascension Practices: Anger / Pride → Courage', body: `
     <p><strong style="color:var(--gold-light);">Pride is the highest contracted state — and the most convincing.</strong></p>
     <p style="margin:10px 0;">Pride feels like confidence. It presents as strength. But Philippians 2 shows Christ — equal with God — emptying himself and becoming a servant. That is the template: power expressed through descent, not dominance. Anger is pride's enforcement mechanism.</p>
-    <div style="background:rgba(10,22,40,.5);border-radius:8px;padding:12px 14px;margin:10px 0;">
+    <div style="background:rgba(245,241,232,.5);border-radius:8px;padding:12px 14px;margin:10px 0;">
       <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:#E8C97A;margin-bottom:6px;">DAILY PRACTICE</div>
-      <p style="font-size:12px;color:rgba(250,246,238,.8);">Before reacting, ask: "What need of mine isn't being met right now?"</p>
+      <p style="font-size:12px;color:rgba(20,16,8,.8);">Before reacting, ask: "What need of mine isn't being met right now?"</p>
       <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:#E8C97A;margin:10px 0 6px;">WEEKLY PRACTICE</div>
-      <p style="font-size:12px;color:rgba(250,246,238,.8);">Have one direct, calm conversation — name the need instead of the blame.</p>
+      <p style="font-size:12px;color:rgba(20,16,8,.8);">Have one direct, calm conversation — name the need instead of the blame.</p>
       <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:#E8C97A;margin:10px 0 6px;">SCRIPTURE ANCHOR</div>
-      <p style="font-size:12px;color:rgba(250,246,238,.8);">"Be angry and do not sin; do not let the sun go down on your anger" (Ephesians 4:26).</p>
+      <p style="font-size:12px;color:rgba(20,16,8,.8);">"Be angry and do not sin; do not let the sun go down on your anger" (Ephesians 4:26).</p>
       <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:#E8C97A;margin:10px 0 6px;">WORSHIP AFFIRMATIONS</div>
-      <p style="font-size:12px;color:rgba(250,246,238,.7);">Broken Vessels (Amazing Grace) — Hillsong Worship · I Surrender All — traditional hymn</p>
+      <p style="font-size:12px;color:rgba(20,16,8,.7);">Broken Vessels (Amazing Grace) — Hillsong Worship · I Surrender All — traditional hymn</p>
     </div>` },
 
   { title: '6 — At Courage → Willingness / Acceptance', body: `
     <p><strong style="color:var(--gold-light);">Courage is the crossing — not the destination.</strong></p>
     <p style="margin:10px 0;">Once you can act despite fear, the next frontier is releasing what you cannot control. Willingness is Mary's posture: "Let it be to me according to your word" (Luke 1:38) — not passive, but open. Acceptance is Job after the whirlwind: not agreement with suffering, but release of the demand that life explain itself.</p>
-    <div style="background:rgba(10,22,40,.5);border-radius:8px;padding:12px 14px;margin:10px 0;">
+    <div style="background:rgba(245,241,232,.5);border-radius:8px;padding:12px 14px;margin:10px 0;">
       <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:#E8C97A;margin-bottom:6px;">DAILY PRACTICE</div>
-      <p style="font-size:12px;color:rgba(250,246,238,.8);">Pick one outcome you can influence but not control — and consciously release your grip on it.</p>
+      <p style="font-size:12px;color:rgba(20,16,8,.8);">Pick one outcome you can influence but not control — and consciously release your grip on it.</p>
       <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:#E8C97A;margin:10px 0 6px;">WEEKLY PRACTICE</div>
-      <p style="font-size:12px;color:rgba(250,246,238,.8);">Practice one sentence of acceptance about something that annoyed you: "This is what happened, and I can work with it."</p>
+      <p style="font-size:12px;color:rgba(20,16,8,.8);">Practice one sentence of acceptance about something that annoyed you: "This is what happened, and I can work with it."</p>
       <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:#E8C97A;margin:10px 0 6px;">SCRIPTURE ANCHOR</div>
-      <p style="font-size:12px;color:rgba(250,246,238,.8);">"Not my will, but yours, be done" (Luke 22:42).</p>
+      <p style="font-size:12px;color:rgba(20,16,8,.8);">"Not my will, but yours, be done" (Luke 22:42).</p>
       <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:#E8C97A;margin:10px 0 6px;">WORSHIP AFFIRMATIONS</div>
-      <p style="font-size:12px;color:rgba(250,246,238,.7);">Oceans (Where Feet May Fail) — Hillsong United · Build My Life — Housefires / Pat Barrett</p>
+      <p style="font-size:12px;color:rgba(20,16,8,.7);">Oceans (Where Feet May Fail) — Hillsong United · Build My Life — Housefires / Pat Barrett</p>
     </div>` },
 
   { title: '7 — Reason → Love, Joy & Peace', body: `
     <p><strong style="color:var(--gold-light);">Love, joy, and peace are fruit the Spirit produces — not gritted out by effort.</strong></p>
     <p style="margin:10px 0;">"Be transformed by the renewal of your mind" (Romans 12:2). Jesus is explicit about his aim for his followers: "that my joy may be in you" (John 15:11) and "my peace I give to you — not as the world gives" (John 14:27). This is not emotion management. It is participation in a different state of being entirely.</p>
-    <div style="background:rgba(10,22,40,.5);border-radius:8px;padding:12px 14px;margin:10px 0;">
+    <div style="background:rgba(245,241,232,.5);border-radius:8px;padding:12px 14px;margin:10px 0;">
       <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:#E8C97A;margin-bottom:6px;">DAILY PRACTICE</div>
-      <p style="font-size:12px;color:rgba(250,246,238,.8);">Spend two minutes actively appreciating something ordinary — not listing blessings, actually feeling them.</p>
+      <p style="font-size:12px;color:rgba(20,16,8,.8);">Spend two minutes actively appreciating something ordinary — not listing blessings, actually feeling them.</p>
       <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:#E8C97A;margin:10px 0 6px;">WEEKLY PRACTICE</div>
-      <p style="font-size:12px;color:rgba(250,246,238,.8);">Do one act of service with no expectation of credit — and notice the quality of energy it produces in you.</p>
+      <p style="font-size:12px;color:rgba(20,16,8,.8);">Do one act of service with no expectation of credit — and notice the quality of energy it produces in you.</p>
       <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:#E8C97A;margin:10px 0 6px;">SCRIPTURE ANCHOR</div>
-      <p style="font-size:12px;color:rgba(250,246,238,.8);">"My peace I give to you, not as the world gives" (John 14:27).</p>
+      <p style="font-size:12px;color:rgba(20,16,8,.8);">"My peace I give to you, not as the world gives" (John 14:27).</p>
       <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:#E8C97A;margin:10px 0 6px;">WORSHIP AFFIRMATIONS</div>
-      <p style="font-size:12px;color:rgba(250,246,238,.7);">How He Loves — David Crowder / John Mark McMillan · 10,000 Reasons (Bless the Lord) — Matt Redman · Living Hope — Phil Wickham</p>
+      <p style="font-size:12px;color:rgba(20,16,8,.7);">How He Loves — David Crowder / John Mark McMillan · 10,000 Reasons (Bless the Lord) — Matt Redman · Living Hope — Phil Wickham</p>
     </div>` },
 
   { title: '8 — Using This as a Recurring Practice', body: `
     <p><strong style="color:var(--gold-light);">Expect regression during high-stress seasons. Treat it as data, not failure.</strong></p>
     <p style="margin:10px 0;">Grace, not performance, is the engine of this model (Ephesians 2:8-9). The goal is not permanent residence in Tier 3 — it is a growing awareness of where you are operating and an increasing speed of return when you contract.</p>
-    <ol style="padding-left:16px;line-height:2;font-size:12px;color:rgba(250,246,238,.8);">
+    <ol style="padding-left:16px;line-height:2;font-size:12px;color:rgba(20,16,8,.8);">
       <li>Re-take the assessment every 4–6 weeks.</li>
       <li>Track your highest-scoring Section A item each time — this is your current edge.</li>
       <li>Keep a one-line daily log: which exercise you did and how it felt.</li>
       <li>Pair the exercise with its scripture anchor and worship affirmation as a short morning ritual: read the verse, play the song, do the practice.</li>
       <li>In your one-on-ones with team members, share this model — ask them which tier they recognize themselves in this week. Calibration is contagious in both directions.</li>
     </ol>
-    <div style="margin-top:14px;"><a href="consciousness-assessment.html" style="display:inline-block;background:linear-gradient(135deg,#C9A84C,#E8C97A);color:#0A1628;font-weight:700;font-family:'Barlow Condensed',sans-serif;font-size:14px;padding:9px 20px;border-radius:8px;text-decoration:none;">⬆ Take the Assessment</a></div>` },
+    <div style="margin-top:14px;"><a href="consciousness-assessment.html" style="display:inline-block;background:linear-gradient(135deg,#C9A84C,#E8C97A);color:#F5F1E8;font-weight:700;font-family:'Barlow Condensed',sans-serif;font-size:14px;padding:9px 20px;border-radius:8px;text-decoration:none;">⬆ Take the Assessment</a></div>` },
 ]);
 
 
@@ -1693,8 +1693,8 @@ function renderBookClub() {
       + BOOK_CATALOG.map((bk,i) =>
           `<button onclick="setCurrentBook(${i})"
             style="padding:6px 14px;border-radius:7px;font-family:'DM Mono',monospace;font-size:11px;font-weight:700;cursor:pointer;
-              border:1px solid ${i===CURRENT_BOOK_IDX?'rgba(201,168,76,.5)':'rgba(255,255,255,.12)'};
-              background:${i===CURRENT_BOOK_IDX?'rgba(201,168,76,.15)':'rgba(255,255,255,.05)'};
+              border:1px solid ${i===CURRENT_BOOK_IDX?'rgba(201,168,76,.5)':'rgba(10,10,10,.12)'};
+              background:${i===CURRENT_BOOK_IDX?'rgba(201,168,76,.15)':'rgba(10,10,10,.05)'};
               color:${i===CURRENT_BOOK_IDX?'#E8C97A':'#6B7C93'};">
             ${bk.emoji} ${bk.title}${i===CURRENT_BOOK_IDX?' ✓':''}
           </button>`
@@ -1738,7 +1738,7 @@ function renderBookClub() {
           `<div style="display:flex;align-items:center;gap:12px;">` +
             `<div style="font-size:32px;">${nextBook.emoji}</div>` +
             `<div>` +
-              `<div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;color:#E8EDF5;">${isAdmin ? nextBook.title : '🔒 Unlocks next month'}</div>` +
+              `<div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;color:#182238;">${isAdmin ? nextBook.title : '🔒 Unlocks next month'}</div>` +
               `<div style="font-family:'DM Mono',monospace;font-size:11px;color:#6B7C93;">${isAdmin ? nextBook.author : 'Preview available to admins only'}</div>` +
             `</div>` +
           `</div>` +
@@ -1763,7 +1763,7 @@ function renderBookClub() {
               `<div class="rp-card" style="margin-bottom:8px;opacity:.75;display:flex;align-items:center;gap:12px;">` +
                 `<div style="font-size:24px;">${b.emoji}</div>` +
                 `<div>` +
-                  `<div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;color:#E8EDF5;">${b.title}</div>` +
+                  `<div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;color:#182238;">${b.title}</div>` +
                   `<div style="font-family:'DM Mono',monospace;font-size:10px;color:#6B7C93;">${b.author} · ${b.month}</div>` +
                   `<div style="font-size:11px;color:#8A9BB5;margin-top:3px;">${b.tagline}</div>` +
                 `</div>` +
@@ -1782,8 +1782,8 @@ function renderBookClub() {
             '<div style="font-family:\'DM Mono\',monospace;font-size:11px;color:#8A9BB5;margin-top:3px;">Sharon L. Lechter &amp; Greg S. Reid · Napoleon Hill Foundation</div>' +
           '</div>' +
         '</div>' +
-        '<p style="font-size:13px;line-height:1.8;color:rgba(250,246,238,.9);margin-bottom:10px;">Inspired by Napoleon Hill\'s timeless principle: most people quit right before their breakthrough. Based on interviews with the world\'s top achievers, this book reveals what separates those who push through from those who walk away — and how to recognize when you\'re three feet from gold.</p>' +
-        '<div style="background:rgba(201,168,76,.08);border-radius:8px;padding:10px 14px;font-size:12px;color:rgba(250,246,238,.8);line-height:1.9;"><strong style="color:#E8C97A;">Core message:</strong> Every successful person you admire was once exactly where you are — uncertain, doubting, grinding. They didn\'t have more talent. They just didn\'t quit.</div>' +
+        '<p style="font-size:13px;line-height:1.8;color:rgba(20,16,8,.9);margin-bottom:10px;">Inspired by Napoleon Hill\'s timeless principle: most people quit right before their breakthrough. Based on interviews with the world\'s top achievers, this book reveals what separates those who push through from those who walk away — and how to recognize when you\'re three feet from gold.</p>' +
+        '<div style="background:rgba(201,168,76,.08);border-radius:8px;padding:10px 14px;font-size:12px;color:rgba(20,16,8,.8);line-height:1.9;"><strong style="color:#E8C97A;">Core message:</strong> Every successful person you admire was once exactly where you are — uncertain, doubting, grinding. They didn\'t have more talent. They just didn\'t quit.</div>' +
       '</div>';
   }
 
@@ -1801,16 +1801,16 @@ function renderBookClub() {
               '<div style="font-family:\'DM Mono\',monospace;font-size:11px;color:#8A9BB5;margin-top:3px;">Dr. David R. Hawkins</div>' +
             '</div>' +
           '</div>' +
-          '<p style="font-size:13px;line-height:1.8;color:rgba(250,246,238,.85);margin-bottom:10px;">The science of consciousness — why Force depletes and Power attracts. Hawkins calibrated human emotions on a scale from 1–1000. This book will fundamentally change how you understand your own leadership, client relationships, and team-building. Study guide and modules already live in the Power vs Force tab.</p>' +
+          '<p style="font-size:13px;line-height:1.8;color:rgba(20,16,8,.85);margin-bottom:10px;">The science of consciousness — why Force depletes and Power attracts. Hawkins calibrated human emotions on a scale from 1–1000. This book will fundamentally change how you understand your own leadership, client relationships, and team-building. Study guide and modules already live in the Power vs Force tab.</p>' +
           '<div style="font-family:\'DM Mono\',monospace;font-size:10px;color:#6B7C93;">Full study materials unlock for all when this becomes the current book.</div>' +
         '</div>';
     } else {
       nextEl.innerHTML =
-        '<div style="background:rgba(10,22,40,.4);border:1px solid rgba(107,124,147,.15);border-radius:12px;padding:16px 14px;margin-bottom:16px;display:flex;align-items:center;gap:14px;opacity:.65;">' +
+        '<div style="background:rgba(245,241,232,.4);border:1px solid rgba(107,124,147,.15);border-radius:12px;padding:16px 14px;margin-bottom:16px;display:flex;align-items:center;gap:14px;opacity:.65;">' +
           '<div style="font-size:32px;filter:grayscale(1);">🔒</div>' +
           '<div>' +
             '<div style="font-family:\'DM Mono\',monospace;font-size:10px;color:#6B7C93;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px;">📅 Next Book — Coming October 2026</div>' +
-            '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:20px;font-weight:900;color:rgba(250,246,238,.35);">Power vs Force</div>' +
+            '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:20px;font-weight:900;color:rgba(20,16,8,.35);">Power vs Force</div>' +
             '<div style="font-family:\'DM Mono\',monospace;font-size:11px;color:#6B7C93;">Dr. David R. Hawkins · Unlocks next month</div>' +
           '</div>' +
         '</div>';
@@ -1827,12 +1827,12 @@ function renderBookClub() {
     ];
     pastEl.innerHTML = '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:14px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#8A9BB5;margin-bottom:10px;">📋 Past Books</div>' +
       PAST.map(b =>
-        '<div style="background:rgba(15,30,56,.35);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;gap:12px;">' +
+        '<div style="background:rgba(255,255,255,.35);border:1px solid rgba(10,10,10,.06);border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;gap:12px;">' +
           '<div style="font-size:26px;flex-shrink:0;opacity:.6;">' + b.e + '</div>' +
           '<div>' +
-            '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:16px;font-weight:800;color:rgba(250,246,238,.55);">' + b.t + '</div>' +
+            '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:16px;font-weight:800;color:rgba(20,16,8,.55);">' + b.t + '</div>' +
             '<div style="font-family:\'DM Mono\',monospace;font-size:10px;color:#6B7C93;">' + b.a + ' · ' + b.m + '</div>' +
-            '<div style="font-family:\'DM Mono\',monospace;font-size:11px;color:rgba(250,246,238,.45);margin-top:4px;line-height:1.6;">' + b.k + '</div>' +
+            '<div style="font-family:\'DM Mono\',monospace;font-size:11px;color:rgba(20,16,8,.45);margin-top:4px;line-height:1.6;">' + b.k + '</div>' +
           '</div>' +
         '</div>'
       ).join('');

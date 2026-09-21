@@ -8,12 +8,12 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-:root{--bg:#0A1628;--s1:#112040;--s2:#1A3158;--gold:#C9A84C;--gold2:#E8C97A;--green:#2DCA73;--red:#C0392B;--text:#FAF6EE;--muted:#6B7C93;--border:rgba(201,168,76,.2);}
+:root{--bg:#F5F1E8;--s1:#FFFFFF;--s2:#ECE6D6;--gold:#C9A84C;--gold2:#E8C97A;--green:#2DCA73;--red:#C0392B;--text:#1E1A10;--muted:#6B7C93;--border:rgba(201,168,76,.2);}
 body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh;}
 body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(201,168,76,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(201,168,76,.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
 
 /* TOPBAR */
-.topbar{background:rgba(10,22,40,.97);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px);}
+.topbar{background:rgba(245,241,232,.97);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px);}
 .brand{display:flex;align-items:center;gap:10px;padding:13px 0;border-right:1px solid var(--border);padding-right:18px;}
 .brand-hex{width:28px;height:28px;background:linear-gradient(135deg,var(--gold),var(--gold2));clip-path:polygon(50% 0%,100% 20%,100% 68%,50% 100%,0% 68%,0% 20%);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--bg);}
 .brand-text{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;line-height:1.1;}
@@ -59,7 +59,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .agent-table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:10px;}
 .agent-table{width:100%;border-collapse:collapse;font-size:12px;}
 .agent-table th{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:8px 12px;border-bottom:1px solid var(--border);background:var(--s2);text-align:left;white-space:nowrap;}
-.agent-table td{padding:8px 12px;border-bottom:1px solid rgba(26,49,88,.6);vertical-align:middle;}
+.agent-table td{padding:8px 12px;border-bottom:1px solid rgba(236,230,214,.6);vertical-align:middle;}
 .agent-table tr:last-child td{border-bottom:none;}
 .agent-table tr:hover td{background:rgba(201,168,76,.03);}
 .pill{display:inline-flex;padding:2px 8px;border-radius:8px;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;}
@@ -148,7 +148,7 @@ AUTH.require('roster-admin.html');
           color:var(--gold);letter-spacing:.05em;white-space:nowrap;">🔑 PIN LOOKUP</span>
         <input type="text" id="pin-lookup-input" placeholder="Type agent name or ID…"
           oninput="pinLookup()"
-          style="flex:1;min-width:160px;background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.12);
+          style="flex:1;min-width:160px;background:rgba(0,0,0,.2);border:1px solid rgba(10,10,10,.12);
             border-radius:7px;padding:8px 12px;color:var(--text);font-family:'DM Mono',monospace;
             font-size:12px;outline:none;">
         <div id="pin-lookup-result" style="font-family:'DM Mono',monospace;font-size:12px;
@@ -460,7 +460,7 @@ function pinLookup() {
   }
 
   result.innerHTML = matches.map(a =>
-    `<div style="display:flex;align-items:center;gap:10px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.06);">
+    `<div style="display:flex;align-items:center;gap:10px;padding:4px 0;border-bottom:1px solid rgba(10,10,10,.06);">
       <span style="color:var(--text);font-weight:700;min-width:140px;">${a.name}</span>
       <span style="color:var(--muted);font-size:10px;">${a.id}</span>
       <span style="background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.3);
@@ -502,7 +502,7 @@ function renderRoster() {
       : `Fast Start: ${fs.done.length}/8 — missing ${fs.missing.map(s=>s.label).join(', ')}`;
     const flowCell = `
       <div style="font-size:11px;font-weight:700;color:${flow.isMD ? '#27AE60' : '#C9A84C'};">${flow.isMD ? '🎖️' : '📈'} Stage ${flow.stageIndex}/5 — ${flow.stageName}</div>
-      <div style="background:rgba(255,255,255,.08);border-radius:3px;height:4px;margin:4px 0 3px;overflow:hidden;">
+      <div style="background:rgba(10,10,10,.08);border-radius:3px;height:4px;margin:4px 0 3px;overflow:hidden;">
         <div style="height:100%;width:${flow.pct}%;background:${flow.isMD?'#27AE60':'#C9A84C'};"></div>
       </div>
       <div style="font-size:10px;color:var(--muted);" title="${fs.missing.map(s=>s.label).join(', ')}">${flow.stageIndex<=2 ? fsDetail : ''}</div>`;
@@ -1222,7 +1222,7 @@ function renderGenealogy() {
 
     const html = matchesSearch ? `
       <div style="display:flex;align-items:center;gap:8px;padding:7px 8px;
-        border-bottom:1px solid rgba(255,255,255,.04);margin-left:${indent}px;
+        border-bottom:1px solid rgba(10,10,10,.04);margin-left:${indent}px;
         background:${depth===0?'rgba(201,168,76,.04)':'transparent'};
         border-radius:${depth===0?'6px':'0'};">
         <span style="font-size:12px;flex-shrink:0;">${children.length ? '▾' : '·'}</span>

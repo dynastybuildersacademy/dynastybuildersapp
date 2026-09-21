@@ -10,20 +10,20 @@
 @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 :root{
-  --bg:#0A1628;--surface:#112040;--surface2:#1A3158;
+  --bg:#F5F1E8;--surface:#FFFFFF;--surface2:#ECE6D6;
   --border:rgba(201,168,76,0.22);--accent:#C9A84C;--accent2:#E8C97A;
-  --green:#2DCA73;--text:#FAF6EE;--muted:#6B7C93;
+  --green:#2DCA73;--text:#1E1A10;--muted:#6B7C93;
   --warn:#E67E22;--danger:#C0392B;--info:#3498DB;
 }
 body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh;overflow-x:hidden;}
 body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(201,168,76,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(201,168,76,.04) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
 .glow{position:fixed;width:600px;height:600px;border-radius:50%;filter:blur(120px);pointer-events:none;z-index:0;opacity:.1;}
 .glow-1{background:var(--accent);top:-200px;left:-100px;}
-.glow-2{background:#1A3158;bottom:-200px;right:-100px;}
+.glow-2{background:#ECE6D6;bottom:-200px;right:-100px;}
 .shell{position:relative;z-index:1;display:flex;flex-direction:column;min-height:100vh;}
 
 /* ── TOPBAR ── */
-.topbar{background:rgba(10,22,40,.97);border-bottom:1px solid var(--border);padding:0 28px;display:flex;align-items:center;backdrop-filter:blur(12px);position:sticky;top:0;z-index:100;flex-wrap:wrap;gap:0;}
+.topbar{background:rgba(245,241,232,.97);border-bottom:1px solid var(--border);padding:0 28px;display:flex;align-items:center;backdrop-filter:blur(12px);position:sticky;top:0;z-index:100;flex-wrap:wrap;gap:0;}
 .topbar-brand{display:flex;align-items:center;gap:12px;padding:14px 0;margin-right:28px;border-right:1px solid var(--border);padding-right:28px;flex-shrink:0;}
 .brand-mark{width:34px;height:34px;background:linear-gradient(135deg,var(--accent),var(--accent2));clip-path:polygon(50% 0%,100% 20%,100% 68%,50% 100%,0% 68%,0% 20%);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:var(--bg);}
 .brand-name{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;letter-spacing:-.2px;line-height:1.2;}
@@ -84,7 +84,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
   .tbl-head{grid-template-columns:34px 1fr 90px 70px;}
   .th-next,.th-duration,.th-log{display:none;}
 }
-.prospect-row{border-bottom:1px solid rgba(26,49,88,.8);transition:background .12s;}
+.prospect-row{border-bottom:1px solid rgba(236,230,214,.8);transition:background .12s;}
 .prospect-row:last-child{border-bottom:none;}
 .prospect-row:hover{background:rgba(201,168,76,.04);}
 .prospect-row.overdue{border-left:3px solid var(--danger);}
@@ -113,7 +113,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .qa-btn.call:hover{border-color:var(--green);color:var(--green);background:rgba(45,202,115,.08);}
 
 /* ── EXPANDED DETAIL PANEL ── */
-.row-detail{display:none;padding:16px 20px 20px;border-top:1px solid var(--border);background:rgba(17,32,64,.5);}
+.row-detail{display:none;padding:16px 20px 20px;border-top:1px solid var(--border);background:rgba(255,255,255,.5);}
 .row-detail.open{display:block;}
 .detail-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px;}
 @media(max-width:700px){.detail-grid{grid-template-columns:repeat(2,1fr);}}
@@ -183,7 +183,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .call-card-actions{display:flex;gap:6px;margin-top:12px;}
 
 /* ── BOARD PICKER ───────────────────────────────────────── */
-.board-item{display:flex;align-items:center;gap:12px;padding:11px 14px;border-bottom:1px solid rgba(26,49,88,.8);cursor:pointer;transition:background .12s;}
+.board-item{display:flex;align-items:center;gap:12px;padding:11px 14px;border-bottom:1px solid rgba(236,230,214,.8);cursor:pointer;transition:background .12s;}
 .board-item:last-child{border-bottom:none;}
 .board-item:hover{background:rgba(201,168,76,.06);}
 .board-item.selected{background:rgba(201,168,76,.1);}
@@ -219,7 +219,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 /* Review table */
 .review-table{width:100%;border-collapse:collapse;font-size:12px;}
 .review-table th{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:7px 8px;border-bottom:1px solid var(--border);text-align:left;white-space:nowrap;}
-.review-table td{padding:5px 5px;border-bottom:1px solid rgba(26,49,88,.6);vertical-align:middle;}
+.review-table td{padding:5px 5px;border-bottom:1px solid rgba(236,230,214,.6);vertical-align:middle;}
 .review-table tr:last-child td{border-bottom:none;}
 .review-table tr.low-conf td:first-child{border-left:2px solid var(--orange);}
 .review-table tr.duplicate td:first-child{border-left:2px solid var(--blue);}
@@ -1045,6 +1045,7 @@ function renderRows(prospects){
           ${p.phone?`<a href="sms:${p.phone}" class="btn btn-ghost btn-sm">💬 Text</a>`:''}
           ${p.email?`<a href="mailto:${p.email}" class="btn btn-ghost btn-sm">✉️ Email</a>`:''}
           <button class="btn btn-accent btn-sm" onclick="openModal('${p.id}','${nm}')">📝 Log Activity</button>
+          <button class="btn btn-ghost btn-sm" onclick="sendToBOM('${p.id}')">🏢 Add to BOM</button>
           <a href="${BOARD_URL()}/pulse/${p.id}" target="_blank" class="btn btn-ghost btn-sm">Open in Monday ↗</a>
         </div>
       </div>
@@ -1171,6 +1172,18 @@ function renderFollowUps(){
 function callProspect(id,phone,name){
   window.location.href=`tel:${phone}`;
   setTimeout(()=>openModal(id,name),2000);
+}
+function sendToBOM(id){
+  const p = allProspects.find(x => x.id === id);
+  if (!p) { toast('⚠ Could not find that prospect'); return; }
+  const params = new URLSearchParams({
+    addGuest: '1',
+    name: p.name || '',
+    phone: p.phone || '',
+    email: p.email || '',
+    notes: p.occupation ? `From Top 25 · ${p.occupation}` : 'From Top 25',
+  });
+  window.location.href = `bom.html?${params.toString()}`;
 }
 function openModal(id,name){
   document.getElementById('modal-item-id').value=id;
@@ -1838,9 +1851,9 @@ function openShareModal() {
   const canvas = document.getElementById('share-qr-canvas');
   canvas.innerHTML = '';
   if (typeof QRCode !== 'undefined') {
-    new QRCode(canvas, { text: link, width: 220, height: 220, colorDark: '#0A1628', colorLight: '#ffffff' });
+    new QRCode(canvas, { text: link, width: 220, height: 220, colorDark: '#F5F1E8', colorLight: '#ffffff' });
   } else {
-    canvas.innerHTML = `<div style="padding:40px;color:#0A1628;font-family:'DM Mono',monospace;font-size:11px;text-align:center;">QR library failed to load.<br>Use the link below instead.</div>`;
+    canvas.innerHTML = `<div style="padding:40px;color:#F5F1E8;font-family:'DM Mono',monospace;font-size:11px;text-align:center;">QR library failed to load.<br>Use the link below instead.</div>`;
   }
 
   if (navigator.share) document.getElementById('native-share-btn').style.display = 'flex';
@@ -1998,7 +2011,7 @@ function ctRenderQueue() {
 
   list.innerHTML = _ctQueue.map((p, i) => `
     <div style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;
-      background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);">
+      background:rgba(10,10,10,.04);border:1px solid rgba(10,10,10,.07);">
       <div style="flex:1;min-width:0;">
         <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;">${p.name}</div>
         <div style="font-family:'DM Mono',monospace;font-size:10px;color:#6B7C93;">
@@ -2172,7 +2185,7 @@ function renderExcelColumnMap(headers) {
   const makeSelect = (field, label, defIdx) =>
     `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
       <label style="font-family:'DM Mono',monospace;font-size:10px;color:#6B7C93;width:90px;flex-shrink:0;">${label}</label>
-      <select style="flex:1;background:#132240;border:1px solid rgba(255,255,255,.1);color:#E8EDF5;border-radius:6px;padding:5px 8px;font-family:'DM Mono',monospace;font-size:11px;"
+      <select style="flex:1;background:#FFFFFF;border:1px solid rgba(10,10,10,.1);color:#182238;border-radius:6px;padding:5px 8px;font-family:'DM Mono',monospace;font-size:11px;"
         id="col-${field}" onchange="_colMap.${field}=parseInt(this.value)">
         ${opts.replace(`value="${defIdx}"`, `value="${defIdx}" selected`)}
       </select>
@@ -2196,8 +2209,8 @@ function renderExcelPreview(headers) {
     `<div style="font-family:'DM Mono',monospace;font-size:10px;color:#6B7C93;margin-bottom:6px;">Preview (first ${preview.length} rows):</div>
     <div style="overflow-x:auto;">
     <table style="width:100%;border-collapse:collapse;font-size:11px;">
-      <tr>${visHeaders.map(h=>`<th style="font-family:'DM Mono',monospace;font-size:9px;color:#6B7C93;padding:4px 8px;text-align:left;border-bottom:1px solid rgba(255,255,255,.1);">${h}</th>`).join('')}</tr>
-      ${preview.map(row=>`<tr>${colNums.map(ci=>`<td style="padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.05);color:#E8EDF5;white-space:nowrap;max-width:160px;overflow:hidden;text-overflow:ellipsis;">${String(row[ci]||'').slice(0,50)}</td>`).join('')}</tr>`).join('')}
+      <tr>${visHeaders.map(h=>`<th style="font-family:'DM Mono',monospace;font-size:9px;color:#6B7C93;padding:4px 8px;text-align:left;border-bottom:1px solid rgba(10,10,10,.1);">${h}</th>`).join('')}</tr>
+      ${preview.map(row=>`<tr>${colNums.map(ci=>`<td style="padding:5px 8px;border-bottom:1px solid rgba(10,10,10,.05);color:#182238;white-space:nowrap;max-width:160px;overflow:hidden;text-overflow:ellipsis;">${String(row[ci]||'').slice(0,50)}</td>`).join('')}</tr>`).join('')}
     </table></div>`;
 }
 
@@ -2285,8 +2298,8 @@ async function handleVCFUpload(file) {
       + toImport.length + ' new · ' + dupeCount + ' duplicates (skipped) · ' + file.name + '</div>';
 
     const rows = toImport.slice(0,10).map(ct =>
-      '<tr style="border-bottom:1px solid rgba(255,255,255,.04);">'
-      + '<td style="padding:5px 8px;color:#E8EDF5;">' + (ct.name||'') + '</td>'
+      '<tr style="border-bottom:1px solid rgba(10,10,10,.04);">'
+      + '<td style="padding:5px 8px;color:#182238;">' + (ct.name||'') + '</td>'
       + '<td style="padding:5px 8px;color:#6B7C93;font-family:DM Mono,monospace;">' + (ct.phone||'—') + '</td>'
       + '<td style="padding:5px 8px;color:#6B7C93;font-family:DM Mono,monospace;">' + (ct.email||'—') + '</td>'
       + '<td style="padding:5px 8px;color:#6B7C93;font-size:10px;">' + (ct.org||'—') + '</td>'
@@ -2295,10 +2308,10 @@ async function handleVCFUpload(file) {
     document.getElementById('excel-preview-rows').innerHTML =
       '<div style="font-family:DM Mono,monospace;font-size:10px;color:#6B7C93;margin-bottom:6px;">Preview (first 10):</div>'
       + '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:11px;">'
-      + '<tr><th style="padding:4px 8px;text-align:left;border-bottom:1px solid rgba(255,255,255,.1);font-family:DM Mono,monospace;font-size:9px;color:#6B7C93;">Name</th>'
-      + '<th style="padding:4px 8px;text-align:left;border-bottom:1px solid rgba(255,255,255,.1);font-family:DM Mono,monospace;font-size:9px;color:#6B7C93;">Phone</th>'
-      + '<th style="padding:4px 8px;text-align:left;border-bottom:1px solid rgba(255,255,255,.1);font-family:DM Mono,monospace;font-size:9px;color:#6B7C93;">Email</th>'
-      + '<th style="padding:4px 8px;text-align:left;border-bottom:1px solid rgba(255,255,255,.1);font-family:DM Mono,monospace;font-size:9px;color:#6B7C93;">Org</th></tr>'
+      + '<tr><th style="padding:4px 8px;text-align:left;border-bottom:1px solid rgba(10,10,10,.1);font-family:DM Mono,monospace;font-size:9px;color:#6B7C93;">Name</th>'
+      + '<th style="padding:4px 8px;text-align:left;border-bottom:1px solid rgba(10,10,10,.1);font-family:DM Mono,monospace;font-size:9px;color:#6B7C93;">Phone</th>'
+      + '<th style="padding:4px 8px;text-align:left;border-bottom:1px solid rgba(10,10,10,.1);font-family:DM Mono,monospace;font-size:9px;color:#6B7C93;">Email</th>'
+      + '<th style="padding:4px 8px;text-align:left;border-bottom:1px solid rgba(10,10,10,.1);font-family:DM Mono,monospace;font-size:9px;color:#6B7C93;">Org</th></tr>'
       + rows + '</table></div>';
 
     summaryEl.textContent = toImport.length + ' contacts ready · ' + dupeCount + ' duplicates skipped';
@@ -2571,7 +2584,7 @@ if(!document.getElementById('xlsx-script')) {
 
 <!-- CONTACTS PICKER MODAL -->
 <div id="contacts-import-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:400;align-items:flex-end;justify-content:center;">
-  <div style="background:#0F1E38;border:1px solid rgba(201,168,76,.2);border-radius:16px 16px 0 0;
+  <div style="background:#FFFFFF;border:1px solid rgba(201,168,76,.2);border-radius:16px 16px 0 0;
     width:100%;max-width:540px;max-height:92vh;overflow-y:auto;padding:20px;">
 
     <!-- Header -->
@@ -2584,7 +2597,7 @@ if(!document.getElementById('xlsx-script')) {
     </div>
 
     <!-- METHOD TABS -->
-    <div style="display:flex;gap:0;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:16px;">
+    <div style="display:flex;gap:0;border-bottom:1px solid rgba(10,10,10,.08);margin-bottom:16px;">
       <button id="ct-tab-type" onclick="ctSwitchTab('type')"
         style="flex:1;padding:9px;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;
         background:none;border:none;border-bottom:3px solid #C9A84C;color:#E8C97A;cursor:pointer;letter-spacing:.04em;">
@@ -2602,18 +2615,18 @@ if(!document.getElementById('xlsx-script')) {
       <!-- Quick single entry -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
         <input id="ct-name" type="text" placeholder="Full name *"
-          style="background:#132240;border:1px solid rgba(255,255,255,.12);color:#E8EDF5;border-radius:8px;
+          style="background:#FFFFFF;border:1px solid rgba(10,10,10,.12);color:#182238;border-radius:8px;
             padding:10px 12px;font-family:'Barlow',sans-serif;font-size:14px;outline:none;">
         <input id="ct-phone" type="tel" placeholder="Phone number"
-          style="background:#132240;border:1px solid rgba(255,255,255,.12);color:#E8EDF5;border-radius:8px;
+          style="background:#FFFFFF;border:1px solid rgba(10,10,10,.12);color:#182238;border-radius:8px;
             padding:10px 12px;font-family:'Barlow',sans-serif;font-size:14px;outline:none;">
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
         <input id="ct-email" type="email" placeholder="Email (optional)"
-          style="background:#132240;border:1px solid rgba(255,255,255,.12);color:#E8EDF5;border-radius:8px;
+          style="background:#FFFFFF;border:1px solid rgba(10,10,10,.12);color:#182238;border-radius:8px;
             padding:10px 12px;font-family:'Barlow',sans-serif;font-size:14px;outline:none;">
         <input id="ct-occ" type="text" placeholder="Occupation (optional)"
-          style="background:#132240;border:1px solid rgba(255,255,255,.12);color:#E8EDF5;border-radius:8px;
+          style="background:#FFFFFF;border:1px solid rgba(10,10,10,.12);color:#182238;border-radius:8px;
             padding:10px 12px;font-family:'Barlow',sans-serif;font-size:14px;outline:none;">
       </div>
       <button onclick="ctAddToQueue()" style="width:100%;padding:9px;background:rgba(201,168,76,.12);
@@ -2627,7 +2640,7 @@ if(!document.getElementById('xlsx-script')) {
         Or paste a bulk list (one contact per line):
       </div>
       <textarea id="ct-bulk" rows="5" placeholder="John Smith 3105551234&#10;Jane Doe 3235559876&#10;Mike Johnson 2135554567&#10;&#10;Accepts: Name Phone, Name, Phone, or tab-separated"
-        style="width:100%;background:#132240;border:1px solid rgba(255,255,255,.1);color:#E8EDF5;
+        style="width:100%;background:#FFFFFF;border:1px solid rgba(10,10,10,.1);color:#182238;
           border-radius:8px;padding:10px 12px;font-family:'DM Mono',monospace;font-size:11px;
           resize:vertical;outline:none;line-height:1.6;" oninput="ctParseBulk()"></textarea>
       <div id="ct-bulk-preview" style="margin-top:8px;"></div>
@@ -2637,7 +2650,7 @@ if(!document.getElementById('xlsx-script')) {
     <div id="ct-view-picker" style="display:none;text-align:center;padding:8px 0 16px;">
       <div id="ct-picker-status" style="font-family:'DM Mono',monospace;font-size:11px;color:#6B7C93;line-height:1.8;margin-bottom:16px;">
         Tap the button below to open your phone's native contact picker.<br>
-        <strong style="color:rgba(250,246,238,.6);">Requires Chrome browser on Android.</strong><br>
+        <strong style="color:rgba(20,16,8,.6);">Requires Chrome browser on Android.</strong><br>
         iPhone users — use the ✏️ Type / Paste tab instead.
       </div>
       <button onclick="ctNativePicker()"
@@ -2660,13 +2673,13 @@ if(!document.getElementById('xlsx-script')) {
     <div style="display:flex;gap:8px;margin-top:16px;">
       <button id="ct-import-btn" onclick="ctImportAll()"
         style="flex:2;background:linear-gradient(135deg,#C9A84C,#E8C97A);border:none;border-radius:10px;
-          color:#0A1628;font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:900;
+          color:#F5F1E8;font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:900;
           padding:12px;cursor:pointer;">
         ✓ Import to Monday.com
       </button>
       <button onclick="closeContactsModal()"
-        style="flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);
-          border-radius:10px;color:#E8EDF5;font-family:'DM Mono',monospace;font-size:11px;
+        style="flex:1;background:rgba(10,10,10,.06);border:1px solid rgba(10,10,10,.1);
+          border-radius:10px;color:#182238;font-family:'DM Mono',monospace;font-size:11px;
           padding:12px;cursor:pointer;">Cancel</button>
     </div>
     <div id="ct-import-status" style="font-family:'DM Mono',monospace;font-size:10px;color:#6B7C93;
@@ -2677,7 +2690,7 @@ if(!document.getElementById('xlsx-script')) {
 <!-- EXCEL PREVIEW MODAL -->
 <div id="excel-preview-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:400;
   align-items:flex-end;justify-content:center;">
-  <div style="background:#0F1E38;border:1px solid rgba(201,168,76,.2);border-radius:16px 16px 0 0;
+  <div style="background:#FFFFFF;border:1px solid rgba(201,168,76,.2);border-radius:16px 16px 0 0;
     width:100%;max-width:600px;max-height:90vh;overflow-y:auto;padding:20px;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
       <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;color:#E8C97A;">📊 Excel / CSV Import</div>
@@ -2688,12 +2701,12 @@ if(!document.getElementById('xlsx-script')) {
     <div style="font-family:'DM Mono',monospace;font-size:10px;color:#6B7C93;margin-bottom:12px;" id="excel-summary"></div>
     <div style="display:flex;gap:8px;">
       <button onclick="importExcelToMonday()" style="flex:2;background:linear-gradient(135deg,#C9A84C,#E8C97A);
-        border:none;border-radius:8px;color:#0A1628;font-family:'Barlow Condensed',sans-serif;
+        border:none;border-radius:8px;color:#F5F1E8;font-family:'Barlow Condensed',sans-serif;
         font-size:16px;font-weight:900;padding:11px;cursor:pointer;" id="excel-import-btn">
         ✓ Import All to Monday.com
       </button>
-      <button onclick="closeExcelModal()" style="flex:1;background:rgba(255,255,255,.06);
-        border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#E8EDF5;
+      <button onclick="closeExcelModal()" style="flex:1;background:rgba(10,10,10,.06);
+        border:1px solid rgba(10,10,10,.12);border-radius:8px;color:#182238;
         font-family:'DM Mono',monospace;font-size:11px;padding:11px;cursor:pointer;">Cancel</button>
     </div>
     <div id="excel-import-status" style="font-family:'DM Mono',monospace;font-size:10px;color:#6B7C93;margin-top:8px;text-align:center;line-height:1.7;"></div>

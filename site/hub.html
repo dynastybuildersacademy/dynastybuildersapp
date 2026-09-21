@@ -10,11 +10,11 @@
 /* ── RESET & ROOT ─────────────────────────────────────────── */
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 :root{
-  --navy:#0A1628;--navy2:#0F1E38;--s1:#132240;--s2:#1A2E50;
+  --navy:#F5F1E8;--navy2:#FFFFFF;--s1:#FFFFFF;--s2:#ECE6D6;
   --gold:#C9A84C;--gold2:#E8C97A;
-  --text:#E8EDF5;--sub:#8A9BB5;--border:rgba(201,168,76,.15);
+  --text:#182238;--sub:#8A9BB5;--border:rgba(201,168,76,.15);
   --green:#2DCA73;--red:#E74C3C;--blue:#3498DB;
-  --card:rgba(15,30,56,.8);
+  --card:rgba(255,255,255,.8);
   --radius:14px;
 }
 html,body{height:100%;background:var(--navy);color:var(--text);font-family:'Barlow',sans-serif;overflow-x:hidden;}
@@ -24,7 +24,7 @@ html,body{height:100%;background:var(--navy);color:var(--text);font-family:'Barl
   position:sticky;top:0;z-index:100;
   display:flex;align-items:center;justify-content:space-between;
   padding:0 16px;height:52px;
-  background:rgba(10,22,40,.96);
+  background:rgba(245,241,232,.96);
   border-bottom:1px solid var(--border);
   backdrop-filter:blur(8px);
 }
@@ -140,13 +140,13 @@ html,body{height:100%;background:var(--navy);color:var(--text);font-family:'Barl
 .wiz-mod-check{width:24px;height:24px;border-radius:50%;border:2px solid var(--border);
   display:flex;align-items:center;justify-content:center;flex-shrink:0;
   font-size:13px;color:var(--gold);transition:all .15s;}
-.wiz-mod-check.checked,.wiz-mod.selected .wiz-mod-check{background:var(--gold);border-color:var(--gold);color:#0A1628;font-weight:900;}
+.wiz-mod-check.checked,.wiz-mod.selected .wiz-mod-check{background:var(--gold);border-color:var(--gold);color:#F5F1E8;font-weight:900;}
 .wiz-level-badge{font-family:'DM Mono',monospace;font-size:9px;padding:2px 8px;
   border-radius:10px;background:rgba(107,124,147,.15);color:var(--sub);
   display:inline-block;margin-top:4px;}
 .wiz-btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--gold),#b8901f);
   border:none;border-radius:10px;font-family:'Barlow Condensed',sans-serif;
-  font-size:18px;font-weight:900;letter-spacing:.04em;color:#0A1628;cursor:pointer;}
+  font-size:18px;font-weight:900;letter-spacing:.04em;color:#F5F1E8;cursor:pointer;}
 .wiz-btn:active{opacity:.88;}
 .wiz-skip{display:block;text-align:center;margin-top:12px;font-family:'DM Mono',monospace;
   font-size:11px;color:var(--sub);cursor:pointer;text-decoration:underline;}
@@ -162,7 +162,7 @@ html,body{height:100%;background:var(--navy);color:var(--text);font-family:'Barl
   background:var(--navy2);min-height:100%;padding:0 0 60px;
 }
 .manage-topbar{
-  position:sticky;top:0;background:rgba(10,22,40,.96);
+  position:sticky;top:0;background:rgba(245,241,232,.96);
   border-bottom:1px solid var(--border);
   display:flex;align-items:center;justify-content:space-between;
   padding:0 16px;height:52px;z-index:10;
@@ -189,7 +189,7 @@ html,body{height:100%;background:var(--navy);color:var(--text);font-family:'Barl
 .agent-modules{display:none;padding:0 14px 12px;border-top:1px solid var(--border);}
 .agent-row.open .agent-modules{display:block;}
 .mod-toggle-row{display:flex;align-items:center;justify-content:space-between;
-  padding:8px 0;border-bottom:1px solid rgba(26,46,80,.4);}
+  padding:8px 0;border-bottom:1px solid rgba(236,230,214,.4);}
 .mod-toggle-row:last-child{border:none;}
 .mod-toggle-label{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;color:var(--text);}
 .mod-toggle-sub{font-family:'DM Mono',monospace;font-size:9px;color:var(--sub);}
@@ -212,7 +212,7 @@ html,body{height:100%;background:var(--navy);color:var(--text);font-family:'Barl
 /* ── BOTTOM NAV ──────────────────────────────────────────── */
 .bottom-nav{
   position:fixed;bottom:0;left:0;right:0;
-  background:rgba(10,22,40,.96);border-top:1px solid var(--border);
+  background:rgba(245,241,232,.96);border-top:1px solid var(--border);
   display:flex;height:60px;z-index:50;
   backdrop-filter:blur(8px);
 }
@@ -278,7 +278,7 @@ html,body{height:100%;background:var(--navy);color:var(--text);font-family:'Barl
       <div class="wiz-modules" id="wiz-module-list"></div>
       <div style="display:flex;gap:8px;margin-bottom:14px;">
         <button class="wiz-btn" onclick="saveWizard()" style="flex:2;">✓ Save My Hub</button>
-        <button onclick="skipWizard()" style="flex:1;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:10px;color:var(--sub);font-family:'DM Mono',monospace;font-size:11px;padding:14px;cursor:pointer;">All tools</button>
+        <button onclick="skipWizard()" style="flex:1;background:rgba(10,10,10,.06);border:1px solid var(--border);border-radius:10px;color:var(--sub);font-family:'DM Mono',monospace;font-size:11px;padding:14px;cursor:pointer;">All tools</button>
       </div>
       <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--sub);text-align:center;line-height:1.6;">You can change this any time by tapping <strong style="color:var(--gold);">🧩 My Tools</strong> on the hub.</div>
     </div>
@@ -512,35 +512,35 @@ function renderHub(session) {
 
   html += `<div style="margin-bottom:20px;">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-      <div style="font-size:18px;width:32px;height:32px;background:#132240;border-radius:8px;display:flex;align-items:center;justify-content:center;">📚</div>
+      <div style="font-size:18px;width:32px;height:32px;background:#FFFFFF;border-radius:8px;display:flex;align-items:center;justify-content:center;">📚</div>
       <div style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#8A9BB5;">Book Club</div>
     </div>
     <div style="display:grid;grid-template-columns:${_nextBk ? '1fr 1fr' : '1fr'};gap:10px;">
 
       <a href="training.html#bookclub"
-        style="background:rgba(15,30,56,.8);border:1px solid rgba(201,168,76,.35);border-radius:14px;
-          padding:16px 14px 14px;text-decoration:none;color:#E8EDF5;display:flex;flex-direction:column;
+        style="background:rgba(255,255,255,.8);border:1px solid rgba(201,168,76,.35);border-radius:14px;
+          padding:16px 14px 14px;text-decoration:none;color:#182238;display:flex;flex-direction:column;
           gap:6px;position:relative;overflow:hidden;min-height:110px;">
         <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#C9A84C,transparent);opacity:.8;"></div>
         <div style="position:absolute;top:10px;right:10px;font-family:'DM Mono',monospace;font-size:9px;
           padding:2px 8px;border-radius:10px;background:rgba(45,202,115,.15);color:#2DCA73;font-weight:700;letter-spacing:.04em;">NOW READING</div>
         <div style="font-size:28px;line-height:1;">${_curBk.emoji}</div>
-        <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;line-height:1.1;color:#E8EDF5;padding-right:60px;">${_curBk.title}</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;line-height:1.1;color:#182238;padding-right:60px;">${_curBk.title}</div>
         <div style="font-family:'DM Mono',monospace;font-size:11px;color:#8A9BB5;">${_curBk.author}</div>
-        <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(250,246,238,.6);margin-top:2px;line-height:1.5;">${_curBk.tagline}</div>
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(20,16,8,.6);margin-top:2px;line-height:1.5;">${_curBk.tagline}</div>
       </a>
 
       ${_nextBk ? `<a href="training.html#bookclub"
-        style="background:rgba(15,30,56,.5);border:1px solid rgba(255,255,255,.08);border-radius:14px;
-          padding:16px 14px 14px;text-decoration:none;color:#E8EDF5;display:flex;flex-direction:column;
+        style="background:rgba(255,255,255,.5);border:1px solid rgba(10,10,10,.08);border-radius:14px;
+          padding:16px 14px 14px;text-decoration:none;color:#182238;display:flex;flex-direction:column;
           gap:6px;position:relative;overflow:hidden;min-height:110px;opacity:.85;">
         <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#9B59B6,transparent);opacity:.6;"></div>
         <div style="position:absolute;top:10px;right:10px;font-family:'DM Mono',monospace;font-size:9px;
           padding:2px 8px;border-radius:10px;background:rgba(155,89,182,.15);color:#C39BD3;font-weight:700;letter-spacing:.04em;">UP NEXT</div>
         <div style="font-size:28px;line-height:1;">${_nextBk.emoji}</div>
-        <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;line-height:1.1;color:rgba(250,246,238,.7);padding-right:55px;">${_nextBk.title}</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;line-height:1.1;color:rgba(20,16,8,.7);padding-right:55px;">${_nextBk.title}</div>
         <div style="font-family:'DM Mono',monospace;font-size:11px;color:#8A9BB5;">${_nextBk.author}</div>
-        <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(250,246,238,.45);margin-top:2px;line-height:1.5;">${_nextBk.tagline}</div>
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(20,16,8,.45);margin-top:2px;line-height:1.5;">${_nextBk.tagline}</div>
       </a>` : ''}
 
     </div>

@@ -8,7 +8,7 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 :root{
-  --navy:#0A1628;--navy-mid:#132240;--navy-light:#1E3460;
+  --navy:#F5F1E8;--navy-mid:#FFFFFF;--navy-light:#1E3460;
   --gold:#C9A84C;--gold-light:#E8C97A;--gold-dim:rgba(201,168,76,0.15);
   --blue:#4C8EC9;--blue-dim:rgba(76,142,201,0.15);--blue-mid:rgba(76,142,201,0.3);
   --green:#2DCA73;--green-dim:rgba(45,202,115,0.12);
@@ -16,7 +16,7 @@
   --cream:#FDF8F0;
   --white:#FFFFFF;
   --border:rgba(201,168,76,0.22);
-  --border-soft:rgba(255,255,255,0.08);
+  --border-soft:rgba(10,10,10,0.08);
 }
 body{
   font-family:'DM Sans',sans-serif;
@@ -29,7 +29,7 @@ body{
   background:
     radial-gradient(ellipse 70% 50% at 20% 20%,rgba(201,168,76,0.06),transparent 60%),
     radial-gradient(ellipse 50% 70% at 80% 80%,rgba(201,168,76,0.04),transparent 60%),
-    linear-gradient(160deg,#0A1628,#0D1C35 50%,#0A1628);
+    linear-gradient(160deg,#F5F1E8,#0D1C35 50%,#F5F1E8);
 }
 .bg-grid{
   position:fixed;inset:0;z-index:0;pointer-events:none;
@@ -52,11 +52,11 @@ header{
   letter-spacing:0.1em;color:var(--gold);
   text-transform:uppercase;
 }
-.logo span{color:rgba(255,255,255,0.45);}
+.logo span{color:rgba(10,10,10,0.45);}
 .header-badge{
   font-size:0.65rem;font-weight:600;letter-spacing:0.18em;
-  text-transform:uppercase;color:rgba(255,255,255,0.25);
-  border:1px solid rgba(255,255,255,0.1);
+  text-transform:uppercase;color:rgba(10,10,10,0.25);
+  border:1px solid rgba(10,10,10,0.1);
   padding:5px 14px;border-radius:2px;
 }
 
@@ -85,10 +85,10 @@ header{
 }
 .hero h1 em{font-style:italic;color:var(--gold);}
 .hero p{
-  font-size:0.95rem;color:rgba(255,255,255,0.5);
+  font-size:0.95rem;color:rgba(10,10,10,0.5);
   line-height:1.75;max-width:500px;margin:0 auto;
 }
-.hero p strong{color:rgba(255,255,255,0.8);}
+.hero p strong{color:rgba(10,10,10,0.8);}
 
 /* EVENT SELECTOR */
 .event-wrap{
@@ -105,7 +105,7 @@ header{
   gap:10px;margin-bottom:8px;
 }
 .event-btn{
-  background:rgba(255,255,255,0.03);
+  background:rgba(10,10,10,0.03);
   border:1px solid var(--border-soft);
   border-radius:3px;padding:14px 16px;
   cursor:pointer;transition:all 0.2s;
@@ -122,7 +122,7 @@ header{
 }
 .event-btn.selected .event-type{color:#4C8EC9;}
 .event-btn.selected .event-name{color:var(--white);}
-.event-btn.selected .event-time{color:rgba(255,255,255,0.6);}
+.event-btn.selected .event-time{color:rgba(10,10,10,0.6);}
 
 /* FORM CARD */
 .form-wrap{
@@ -159,7 +159,7 @@ header{
 .field select,
 .field textarea{
   width:100%;
-  background:rgba(255,255,255,0.04);
+  background:rgba(10,10,10,0.04);
   border:1px solid rgba(201,168,76,0.2);
   border-radius:3px;
   color:var(--white);
@@ -177,8 +177,8 @@ header{
   background:rgba(201,168,76,0.05);
 }
 .field input::placeholder,
-.field textarea::placeholder{color:rgba(255,255,255,0.18);}
-.field select option{background:#132240;color:var(--white);}
+.field textarea::placeholder{color:rgba(10,10,10,0.18);}
+.field select option{background:#FFFFFF;color:var(--white);}
 .field select{
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23C9A84C' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
   background-repeat:no-repeat;
@@ -201,17 +201,17 @@ header{
 }
 .form-divider span{
   font-size:0.62rem;letter-spacing:0.16em;text-transform:uppercase;
-  color:rgba(255,255,255,0.25);white-space:nowrap;
+  color:rgba(10,10,10,0.25);white-space:nowrap;
 }
 .form-divider::before,
 .form-divider::after{
   content:'';flex:1;height:1px;
-  background:rgba(255,255,255,0.07);
+  background:rgba(10,10,10,0.07);
 }
 
 /* REFERRAL ROW */
 .referral-note{
-  font-size:0.75rem;color:rgba(255,255,255,0.35);
+  font-size:0.75rem;color:rgba(10,10,10,0.35);
   margin-top:6px;line-height:1.5;
 }
 
@@ -232,7 +232,7 @@ header{
 .submit-btn:active{transform:translateY(0);}
 .submit-btn:disabled{opacity:0.4;cursor:not-allowed;transform:none;}
 .submit-note{
-  font-size:0.7rem;color:rgba(255,255,255,0.2);
+  font-size:0.7rem;color:rgba(10,10,10,0.2);
   text-align:center;margin-top:14px;line-height:1.5;
 }
 
@@ -262,7 +262,7 @@ header{
   margin-bottom:12px;
 }
 .success-sub{
-  font-size:0.9rem;color:rgba(255,255,255,0.5);
+  font-size:0.9rem;color:rgba(10,10,10,0.5);
   line-height:1.7;margin-bottom:28px;
 }
 .success-event{
@@ -277,8 +277,8 @@ header{
   font-family:'DM Sans',sans-serif;
   font-size:0.72rem;font-weight:600;letter-spacing:0.12em;
   text-transform:uppercase;
-  background:transparent;color:rgba(255,255,255,0.4);
-  border:1px solid rgba(255,255,255,0.15);
+  background:transparent;color:rgba(10,10,10,0.4);
+  border:1px solid rgba(10,10,10,0.15);
   border-radius:2px;padding:10px 20px;
   cursor:pointer;text-decoration:none;
   transition:all 0.2s;
@@ -300,8 +300,8 @@ footer{
   border-top:1px solid var(--border-soft);
   padding:28px 5vw;text-align:center;
 }
-footer p{font-size:0.7rem;color:rgba(255,255,255,0.2);line-height:1.6;}
-footer strong{color:rgba(255,255,255,0.35);}
+footer p{font-size:0.7rem;color:rgba(10,10,10,0.2);line-height:1.6;}
+footer strong{color:rgba(10,10,10,0.35);}
 
 @media(max-width:520px){
   .form-row{grid-template-columns:1fr;}
@@ -318,7 +318,7 @@ footer strong{color:rgba(255,255,255,0.35);}
 <header>
   <div class="logo">Dynasty Builders <span>Academy</span></div>
   <div class="header-badge" style="color:rgba(76,142,201,0.7);border-color:rgba(76,142,201,0.25);">Zoom Registration</div>
-  <a href="register-inperson.html" style="font-size:0.7rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.35);text-decoration:none;border:1px solid rgba(255,255,255,0.1);padding:6px 14px;border-radius:2px;transition:all 0.2s;" onmouseover="this.style.color='var(--gold)';this.style.borderColor='rgba(201,168,76,0.3)'" onmouseout="this.style.color='rgba(255,255,255,0.35)';this.style.borderColor='rgba(255,255,255,0.1)'">📍 In-Person Meetings →</a>
+  <a href="register-inperson.html" style="font-size:0.7rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:rgba(10,10,10,0.35);text-decoration:none;border:1px solid rgba(10,10,10,0.1);padding:6px 14px;border-radius:2px;transition:all 0.2s;" onmouseover="this.style.color='var(--gold)';this.style.borderColor='rgba(201,168,76,0.3)'" onmouseout="this.style.color='rgba(10,10,10,0.35)';this.style.borderColor='rgba(10,10,10,0.1)'">📍 In-Person Meetings →</a>
 </header>
 
 <!-- HERO -->
@@ -453,7 +453,7 @@ footer strong{color:rgba(255,255,255,0.35);}
 
       <div class="form-row single">
         <div class="field">
-          <label>Any questions for us? <span style="color:rgba(255,255,255,0.2);font-size:0.85em;">(optional)</span></label>
+          <label>Any questions for us? <span style="color:rgba(10,10,10,0.2);font-size:0.85em;">(optional)</span></label>
           <textarea id="notes" placeholder="Anything you'd like us to know before we meet..."></textarea>
         </div>
       </div>
@@ -485,10 +485,10 @@ footer strong{color:rgba(255,255,255,0.35);}
 
 <footer>
   <div style="display:flex;justify-content:center;gap:20px;flex-wrap:wrap;margin-bottom:16px;">
-    <a href="index.html" style="font-size:.68rem;color:rgba(255,255,255,.3);text-decoration:none;letter-spacing:.08em;" onmouseover="this.style.color='#C9A84C'" onmouseout="this.style.color='rgba(255,255,255,.3)'">🎬 Watch the Video</a>
-    <a href="register-inperson.html" style="font-size:.68rem;color:rgba(255,255,255,.3);text-decoration:none;letter-spacing:.08em;" onmouseover="this.style.color='#C9A84C'" onmouseout="this.style.color='rgba(255,255,255,.3)'">📍 In-Person Meetings</a>
-    <a href="schedule.html" style="font-size:.68rem;color:rgba(255,255,255,.3);text-decoration:none;letter-spacing:.08em;" onmouseover="this.style.color='#2DCA73'" onmouseout="this.style.color='rgba(255,255,255,.3)'">📅 Book 1-on-1</a>
-    <a href="awakenthegiant/" style="font-size:.68rem;color:rgba(255,255,255,.3);text-decoration:none;letter-spacing:.08em;" onmouseover="this.style.color='#9B6FD4'" onmouseout="this.style.color='rgba(255,255,255,.3)'">🧠 Mindset Training</a>
+    <a href="index.html" style="font-size:.68rem;color:rgba(10,10,10,.3);text-decoration:none;letter-spacing:.08em;" onmouseover="this.style.color='#C9A84C'" onmouseout="this.style.color='rgba(10,10,10,.3)'">🎬 Watch the Video</a>
+    <a href="register-inperson.html" style="font-size:.68rem;color:rgba(10,10,10,.3);text-decoration:none;letter-spacing:.08em;" onmouseover="this.style.color='#C9A84C'" onmouseout="this.style.color='rgba(10,10,10,.3)'">📍 In-Person Meetings</a>
+    <a href="schedule.html" style="font-size:.68rem;color:rgba(10,10,10,.3);text-decoration:none;letter-spacing:.08em;" onmouseover="this.style.color='#2DCA73'" onmouseout="this.style.color='rgba(10,10,10,.3)'">📅 Book 1-on-1</a>
+    <a href="awakenthegiant/" style="font-size:.68rem;color:rgba(10,10,10,.3);text-decoration:none;letter-spacing:.08em;" onmouseover="this.style.color='#9B6FD4'" onmouseout="this.style.color='rgba(10,10,10,.3)'">🧠 Mindset Training</a>
   </div>
   <p>
     <strong>Dynasty Builders Academy</strong><br>

@@ -12,7 +12,7 @@
   --bg:#07111F;--s1:#0F1E33;--s2:#172840;--s3:#1E3352;
   --gold:#C9A84C;--gold2:#E8C97A;--green:#2DCA73;--red:#E74C3C;
   --orange:#E67E22;--blue:#3498DB;--purple:#9B59B6;
-  --text:#FAF6EE;--muted:#6B7C93;--border:rgba(201,168,76,.18);
+  --text:#1E1A10;--muted:#6B7C93;--border:rgba(201,168,76,.18);
 }
 html,body{height:100%;}
 body{background:var(--bg);color:var(--text);font-family:"Barlow",sans-serif;min-height:100vh;overscroll-behavior:none;}
@@ -102,7 +102,7 @@ body::before{content:"";position:fixed;inset:0;
 .ac-rel{font-size:12px;color:var(--muted);margin-bottom:8px;}
 .ac-meta{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;}
 .ac-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:8px;
-  font-size:12px;background:rgba(255,255,255,.04);border:1px solid var(--border);}
+  font-size:12px;background:rgba(10,10,10,.04);border:1px solid var(--border);}
 .ac-chip.editable{cursor:pointer;transition:border-color .15s;}
 .ac-chip.editable:hover{border-color:var(--gold);}
 .ac-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
@@ -145,7 +145,7 @@ body::before{content:"";position:fixed;inset:0;
 .p-table{width:100%;border-collapse:collapse;font-size:12px;}
 .p-table th{font-family:"DM Mono",monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;
   color:var(--muted);padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;background:var(--s2);white-space:nowrap;}
-.p-table td{padding:9px 12px;border-bottom:1px solid rgba(26,49,88,.4);vertical-align:middle;}
+.p-table td{padding:9px 12px;border-bottom:1px solid rgba(236,230,214,.4);vertical-align:middle;}
 .p-table tbody tr:last-child td{border-bottom:none;}
 .p-table tbody tr:hover td{background:rgba(201,168,76,.03);cursor:pointer;}
 .status-pill{display:inline-flex;padding:2px 8px;border-radius:8px;font-family:"Barlow Condensed",sans-serif;font-size:10px;font-weight:700;}
@@ -243,7 +243,7 @@ body::before{content:"";position:fixed;inset:0;
 .lb-table{width:100%;border-collapse:collapse;font-size:12px;}
 .lb-table th{font-family:"DM Mono",monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;
   color:var(--muted);padding:8px 12px;border-bottom:1px solid var(--border);text-align:left;background:var(--s2);}
-.lb-table td{padding:9px 12px;border-bottom:1px solid rgba(26,49,88,.4);}
+.lb-table td{padding:9px 12px;border-bottom:1px solid rgba(236,230,214,.4);}
 .lb-table tbody tr:last-child td{border-bottom:none;}
 .lb-rank{font-family:"Barlow Condensed",sans-serif;font-size:15px;font-weight:800;color:var(--muted);}
 
@@ -1495,8 +1495,8 @@ function renderContactList(contacts) {
     const id    = `c-${i}`;
 
     return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;
-      background:${isDupe ? 'rgba(231,76,60,.06)' : 'rgba(255,255,255,.03)'};
-      border:1px solid ${isDupe ? 'rgba(231,76,60,.25)' : 'rgba(255,255,255,.07)'};
+      background:${isDupe ? 'rgba(231,76,60,.06)' : 'rgba(10,10,10,.03)'};
+      border:1px solid ${isDupe ? 'rgba(231,76,60,.25)' : 'rgba(10,10,10,.07)'};
       border-radius:8px;cursor:${isDupe ? 'default':'pointer'};"
       onclick="${isDupe ? '' : `toggleContact(${i})`}" id="${id}">
       <div style="width:20px;height:20px;border-radius:50%;border:2px solid ${isDupe ? '#E74C3C':'rgba(201,168,76,.4)'};
@@ -1504,7 +1504,7 @@ function renderContactList(contacts) {
         id="${id}-check"></div>
       <div style="flex:1;min-width:0;">
         <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;
-          color:${isDupe ? '#6B7C93':'#E8EDF5'};">${name || '(no name)'}</div>
+          color:${isDupe ? '#6B7C93':'#182238'};">${name || '(no name)'}</div>
         <div style="font-family:'DM Mono',monospace;font-size:10px;color:#6B7C93;">
           ${phone ? phone.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3') : ''}
           ${email ? ' · ' + email : ''}
@@ -1521,8 +1521,8 @@ function toggleContact(i) {
   const ch = document.getElementById(`${id}-check`);
   if(_selectedContacts.has(i)) {
     _selectedContacts.delete(i);
-    el.style.background = 'rgba(255,255,255,.03)';
-    el.style.borderColor = 'rgba(255,255,255,.07)';
+    el.style.background = 'rgba(10,10,10,.03)';
+    el.style.borderColor = 'rgba(10,10,10,.07)';
     ch.style.background = '';
     ch.textContent = '';
   } else {
@@ -1531,7 +1531,7 @@ function toggleContact(i) {
     el.style.borderColor = 'rgba(201,168,76,.3)';
     ch.style.background = '#C9A84C';
     ch.textContent = '✓';
-    ch.style.color = '#0A1628';
+    ch.style.color = '#F5F1E8';
   }
   const btn = document.querySelector('#contacts-modal button');
   const sel = _selectedContacts.size;

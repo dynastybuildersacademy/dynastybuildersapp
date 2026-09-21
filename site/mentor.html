@@ -7,12 +7,12 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="auth.js"></script>
 <style>
-:root{--navy:#0A1628;--navy-mid:#112040;--gold:#C9A84C;--gold-light:#E8C97A;
-  --cream:#FAF6EE;--success:#27AE60;--danger:#C0392B;--warn:#E67E22;--slate:#6B7C93;
+:root{--navy:#F5F1E8;--navy-mid:#FFFFFF;--gold:#C9A84C;--gold-light:#E8C97A;
+  --cream:#1E1A10;--success:#27AE60;--danger:#C0392B;--warn:#E67E22;--slate:#6B7C93;
   --border:rgba(201,168,76,0.22);}
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);min-height:100vh;padding-bottom:40px;}
-.header{background:rgba(10,22,40,0.97);border-bottom:1px solid var(--border);padding:14px 20px;
+.header{background:rgba(245,241,232,0.97);border-bottom:1px solid var(--border);padding:14px 20px;
   display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;flex-wrap:wrap;gap:10px;}
 .header h1{font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:800;color:var(--gold);}
 .back-btn{font-size:12px;color:var(--gold);text-decoration:none;border:1px solid var(--border);padding:6px 12px;border-radius:3px;}
@@ -21,7 +21,7 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);m
 .card-title{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px;}
 .field{margin-bottom:12px;}
 .field label{display:block;font-size:10px;color:var(--slate);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px;}
-.field input,.field select,.field textarea{width:100%;background:#132240;border:1px solid rgba(255,255,255,.12);
+.field input,.field select,.field textarea{width:100%;background:#FFFFFF;border:1px solid rgba(10,10,10,.12);
   color:var(--cream);border-radius:6px;padding:9px 11px;font-family:'Barlow',sans-serif;font-size:13px;outline:none;}
 .field textarea{min-height:60px;resize:vertical;}
 .field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
@@ -30,7 +30,7 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);m
 .btn{display:inline-block;padding:9px 16px;border-radius:4px;font-family:'Barlow Condensed',sans-serif;
   font-size:13px;font-weight:700;cursor:pointer;border:none;text-align:center;}
 .btn-gold{background:var(--gold);color:var(--navy);}
-.btn-ghost{background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--cream);}
+.btn-ghost{background:rgba(10,10,10,.06);border:1px solid var(--border);color:var(--cream);}
 .btn-block{width:100%;justify-content:center;}
 .empty-state{color:var(--slate);text-align:center;padding:40px 20px;font-size:13px;}
 .agent-hdr{display:flex;align-items:center;gap:14px;margin-bottom:6px;}
@@ -42,11 +42,11 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);m
 .stat-box{background:var(--navy);border:1px solid var(--border);border-radius:6px;padding:12px;text-align:center;}
 .stat-val{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;color:var(--gold-light);}
 .stat-label{font-size:9px;color:var(--slate);text-transform:uppercase;letter-spacing:.06em;margin-top:3px;}
-.flow-bar{background:rgba(255,255,255,.08);border-radius:4px;height:6px;overflow:hidden;margin:8px 0;}
+.flow-bar{background:rgba(10,10,10,.08);border-radius:4px;height:6px;overflow:hidden;margin:8px 0;}
 .flow-fill{height:100%;background:var(--gold);}
 .appt-row{background:var(--navy);border:1px solid var(--border);border-radius:6px;padding:9px 12px;margin-bottom:6px;font-size:12px;display:flex;justify-content:space-between;gap:8px;}
 .tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;}
-.tab-btn{background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--slate);border-radius:4px;
+.tab-btn{background:rgba(10,10,10,.05);border:1px solid var(--border);color:var(--slate);border-radius:4px;
   padding:8px 14px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;cursor:pointer;}
 .tab-btn.active{background:rgba(201,168,76,.12);color:var(--gold);border-color:var(--gold);}
 .tab-panel{display:none;}
@@ -67,8 +67,8 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);m
   <div class="card">
     <div class="card-title">Select an Agent From Your Downline</div>
     <input type="text" id="agent-search" placeholder="🔍 Search by name…" oninput="filterAgentPicker(this.value)"
-      style="width:100%;background:#132240;border:1px solid rgba(255,255,255,.12);color:var(--cream);border-radius:6px;padding:9px 11px;font-size:13px;margin-bottom:8px;">
-    <select id="agent-picker" onchange="selectAgent(this.value)" style="width:100%;background:#132240;border:1px solid rgba(255,255,255,.12);color:var(--cream);border-radius:6px;padding:10px 12px;font-size:13px;">
+      style="width:100%;background:#FFFFFF;border:1px solid rgba(10,10,10,.12);color:var(--cream);border-radius:6px;padding:9px 11px;font-size:13px;margin-bottom:8px;">
+    <select id="agent-picker" onchange="selectAgent(this.value)" style="width:100%;background:#FFFFFF;border:1px solid rgba(10,10,10,.12);color:var(--cream);border-radius:6px;padding:10px 12px;font-size:13px;">
     </select>
     <div id="agent-search-count" style="font-size:11px;color:var(--slate);margin-top:6px;"></div>
   </div>

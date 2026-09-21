@@ -11,7 +11,7 @@
 :root{
   --bg:#08121F;--s1:#0F1E33;--s2:#172840;--s3:#1E3352;
   --gold:#C9A84C;--gold2:#E8C97A;--green:#2DCA73;--red:#E74C3C;--blue:#3498DB;
-  --text:#FAF6EE;--muted:#6B7C93;--border:rgba(201,168,76,.18);
+  --text:#1E1A10;--muted:#6B7C93;--border:rgba(201,168,76,.18);
 }
 body{background:var(--bg);color:var(--text);font-family:"Barlow",sans-serif;min-height:100vh;}
 body::before{content:"";position:fixed;inset:0;
@@ -53,7 +53,7 @@ body::before{content:"";position:fixed;inset:0;
 .pp-bars{display:flex;flex-direction:column;gap:8px;}
 .pp-row{display:flex;align-items:center;gap:10px;}
 .pp-lbl{font-family:"DM Mono",monospace;font-size:10px;color:var(--muted);width:90px;flex-shrink:0;}
-.pp-track{flex:1;height:8px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden;}
+.pp-track{flex:1;height:8px;background:rgba(10,10,10,.06);border-radius:99px;overflow:hidden;}
 .pp-fill{height:100%;border-radius:99px;transition:width .5s ease;}
 .pp-fill.recruits{background:linear-gradient(90deg,var(--blue),#5dade2);}
 .pp-fill.apps{background:linear-gradient(90deg,var(--gold),var(--gold2));}
@@ -73,7 +73,7 @@ body::before{content:"";position:fixed;inset:0;
 .tc-count{font-family:"DM Mono",monospace;font-size:10px;color:var(--gold);background:rgba(201,168,76,.1);padding:2px 8px;border-radius:8px;border:1px solid rgba(201,168,76,.2);}
 .data-table{width:100%;border-collapse:collapse;font-size:12px;}
 .data-table th{font-family:"DM Mono",monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:7px 10px;border-bottom:1px solid var(--border);text-align:left;white-space:nowrap;background:rgba(0,0,0,.2);}
-.data-table td{padding:7px 10px;border-bottom:1px solid rgba(26,49,88,.4);vertical-align:middle;}
+.data-table td{padding:7px 10px;border-bottom:1px solid rgba(236,230,214,.4);vertical-align:middle;}
 .data-table tbody tr:last-child td{border-bottom:none;}
 .data-table tbody tr:hover td{background:rgba(201,168,76,.03);}
 .row-num{font-family:"DM Mono",monospace;font-size:10px;color:var(--muted);width:22px;}
@@ -123,7 +123,7 @@ body::before{content:"";position:fixed;inset:0;
 .drop-zone .dz-h{font-size:11px;color:var(--muted);}
 .import-preview{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:12px;
   font-family:"DM Mono",monospace;font-size:11px;line-height:1.8;margin-top:10px;display:none;}
-.imp-row{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid rgba(26,49,88,.3);}
+.imp-row{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid rgba(236,230,214,.3);}
 .imp-row:last-child{border-bottom:none;}
 .imp-key{color:var(--muted);}
 .imp-val{color:var(--gold2);font-weight:700;}
@@ -162,7 +162,7 @@ body::before{content:"";position:fixed;inset:0;
 .need-progress{display:flex;align-items:baseline;gap:5px;margin-bottom:6px;}
 .need-have{font-family:"Barlow Condensed",sans-serif;font-size:24px;font-weight:900;line-height:1;}
 .need-of{font-family:"DM Mono",monospace;font-size:11px;color:var(--muted);}
-.need-bar{height:5px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden;margin-bottom:5px;}
+.need-bar{height:5px;background:rgba(10,10,10,.06);border-radius:99px;overflow:hidden;margin-bottom:5px;}
 .need-fill{height:100%;border-radius:99px;transition:width .5s;}
 .need-remain{font-family:"DM Mono",monospace;font-size:10px;}
 .need-remain.done{color:var(--green);}
@@ -198,7 +198,7 @@ body::before{content:"";position:fixed;inset:0;
 
 /* MONTH BREAKDOWN CALLOUT */
 .month-callout{margin-top:10px;display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
-.mc-item{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:7px;padding:8px 10px;text-align:center;}
+.mc-item{background:rgba(10,10,10,.03);border:1px solid var(--border);border-radius:7px;padding:8px 10px;text-align:center;}
 .mc-item.current-month{border-color:rgba(201,168,76,.3);background:rgba(201,168,76,.04);}
 .mc-val{font-family:"Barlow Condensed",sans-serif;font-size:15px;font-weight:800;color:var(--gold2);}
 .mc-lbl{font-family:"DM Mono",monospace;font-size:8px;color:var(--muted);letter-spacing:.06em;margin-top:1px;}
@@ -211,7 +211,7 @@ body::before{content:"";position:fixed;inset:0;
   background-repeat:no-repeat;background-position:10px center;background-size:13px;}
 .dl-search:focus{background-color:rgba(201,168,76,.04);}
 .dl-list{max-height:180px;overflow-y:auto;background:var(--s2);}
-.dl-item{display:flex;align-items:center;gap:9px;padding:8px 12px;border-bottom:1px solid rgba(26,49,88,.35);cursor:pointer;transition:background .12s;}
+.dl-item{display:flex;align-items:center;gap:9px;padding:8px 12px;border-bottom:1px solid rgba(236,230,214,.35);cursor:pointer;transition:background .12s;}
 .dl-item:last-child{border-bottom:none;}
 .dl-item:hover{background:rgba(201,168,76,.05);}
 .dl-item.checked{background:rgba(45,202,115,.05);}
@@ -1445,7 +1445,7 @@ function showEditableImportPreview(source, run, targetMonth) {
       const apps = p.teamApps !== undefined ? p.teamApps : calcSplitApps(p.split);
       window._editRows.push({ ...p, _month: m, _apps: apps, _skip: existing });
       rowsHTML += `<div style="display:grid;grid-template-columns:1fr 70px 80px 70px 28px;gap:5px;
-        align-items:center;padding:5px 0;border-bottom:1px solid rgba(26,49,88,.3);
+        align-items:center;padding:5px 0;border-bottom:1px solid rgba(236,230,214,.3);
         ${existing?"opacity:.4":""}">
         <div>
           <input id="er-client-${ri}" value="${(p.client||"").replace(/"/g,"")}"
@@ -3258,7 +3258,7 @@ function renderCareerPath(run) {
       const next    = i === currentIdx + 1;
       const locked  = i > currentIdx + 1;
 
-      const bg   = done ? "rgba(45,202,115,.12)" : current ? "rgba(201,168,76,.12)" : "rgba(255,255,255,.03)";
+      const bg   = done ? "rgba(45,202,115,.12)" : current ? "rgba(201,168,76,.12)" : "rgba(10,10,10,.03)";
       const bord = done ? "rgba(45,202,115,.3)"  : current ? "var(--gold)"          : "var(--border)";
       const tc   = done ? "var(--green)"          : current ? "var(--gold2)"         : next ? "var(--muted)" : "rgba(107,124,147,.4)";
       const check= done ? "✓ " : current ? "● " : "";
