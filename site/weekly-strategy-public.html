@@ -301,7 +301,7 @@ select option{background:var(--navy-mid);}
     <div class="ws-compare-card" style="margin-top:14px;">
       <div class="ws-compare-title">📞 This Week's Activity Number — to Stay on Pace</div>
       <div style="font-size:11.5px;color:var(--slate);margin-bottom:12px;line-height:1.6;">
-        Working backward from the recruit pace above, using the same funnel from Step 4 (roughly 10 prospects → 6–7 calls/conversations → 4 appointments per recruit). These numbers also fill in your Organized Plan in Step 4 automatically.
+        Working backward from <strong>your personal recruit pace</strong> above (not the company number), using the same funnel from Step 4 (roughly 10 prospects → 6–7 calls/conversations → 4 appointments per recruit). Set a Personal Target for Recruits above to see this. These numbers also fill in your Organized Plan in Step 4 automatically.
       </div>
       <div id="ws-weekly-activity-grid" class="ws-compare-grid" style="grid-template-columns:repeat(3,1fr);"></div>
     </div>
@@ -859,7 +859,6 @@ function renderGoalPace() {
     const target = Number(document.getElementById(`ws-goal-target-${wsGoalPeriod}-${key}`)?.value) || 0;
     const current = Number(document.getElementById(`ws-goal-current-${wsGoalPeriod}-${key}`)?.value) || 0;
     const p = computeGoalPace(target, current, startDate, endDate);
-    if (key === 'recruits') recruitDailyPace = p.dailyPaceNeeded;
     const color = p.onTrack ? '#2DCA73' : '#E67E22';
     return `<div class="ws-compare-item">
       <div class="wc-label">${m.label}</div>
@@ -871,6 +870,17 @@ function renderGoalPace() {
       </div>
     </div>`;
   }).join('');
+
+  // "This Week's Activity Number" (and Step 4's Organized Plan) run off the
+  // agent's own PERSONAL recruit pace, not the company-wide number.
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0,10);
+  const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0,10);
+  const personalTarget = Number(document.getElementById('ws-goal-personal-target-month-recruits')?.value) || 0;
+  const personalActual = Number(document.getElementById('ws-goal-personal-actual-month-recruits')?.value) || 0;
+  if (personalTarget > 0) {
+    recruitDailyPace = computeGoalPace(personalTarget, personalActual, monthStart, monthEnd).dailyPaceNeeded;
+  }
 
   renderWeeklyActivityFromGoal(recruitDailyPace);
 }

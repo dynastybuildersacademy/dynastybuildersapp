@@ -139,7 +139,6 @@ select option{background:var(--navy-mid);}
   <div class="tab" onclick="switchTab('leadership',this)">🏆 Leadership</div>
   <div class="tab" onclick="switchTab('products',this)">📋 Products</div>
   <div class="tab" onclick="switchTab('mindset',this)">🧠 Mindset</div>
-  <div class="tab" onclick="switchTab('consciousness',this)">⬆ Power vs Force</div>
   <div class="tab" onclick="switchTab('roleplay',this)">🎭 AI Role-Play</div>
   <div class="tab" onclick="switchTab('teambuilder',this)">🏗 Team Builder</div>
 </div>
@@ -181,10 +180,10 @@ select option{background:var(--navy-mid);}
     <thead><tr><th>Level</th><th>Commission</th><th>4 Apps/Wk</th><th>Requirement</th></tr></thead>
     <tbody>
       <tr><td>Trainee</td><td style="color:var(--gold)">30%</td><td>$3,120/mo</td><td>Licensed</td></tr>
-      <tr><td>Associate</td><td style="color:var(--gold)">40%</td><td>$4,160/mo</td><td>2R / 2A / 2K pts</td></tr>
-      <tr><td>Field Associate</td><td style="color:var(--gold)">50%</td><td>$5,200/mo</td><td>4R / 4A / 4K pts</td></tr>
-      <tr><td>Director</td><td style="color:var(--gold)">60%</td><td>$6,240/mo</td><td>2P + 8T recruits</td></tr>
-      <tr><td style="font-weight:700">Mktg Director</td><td style="color:var(--gold-light);font-weight:700">75–115%</td><td style="color:var(--gold-light);font-weight:700">$7,800+/mo</td><td>Team GV milestones</td></tr>
+      <tr><td>Associate</td><td style="color:var(--gold)">40%</td><td>$4,160/mo</td><td>3R / 3A / 3K pts</td></tr>
+      <tr><td>Field Associate</td><td style="color:var(--gold)">50%</td><td>$5,200/mo</td><td>10R / 10A / 10K pts</td></tr>
+      <tr><td>Director</td><td style="color:var(--gold)">60%</td><td>$6,240/mo</td><td>25R / 25A / 25K pts</td></tr>
+      <tr><td style="font-weight:700">Mktg Director</td><td style="color:var(--gold-light);font-weight:700">75–115%</td><td style="color:var(--gold-light);font-weight:700">$7,800+/mo</td><td>50R / 50A / 70K pts pd</td></tr>
     </tbody>
   </table>
   <div id="prod-modules"></div>
@@ -476,6 +475,10 @@ select option{background:var(--navy-mid);}
   <div class="ws-step">
     <span class="ws-step-num">1</span><span class="ws-step-title">Assess Your Current State</span>
     <div class="ws-principle">Principle: Accurate Thinking — before deciding where you're going, get clear about where you are.</div>
+    <div style="margin:-4px 0 12px;">
+      <a href="#" onclick="autofillStep1FromTracker();return false;" style="font-size:11px;color:var(--gold);">📞 Auto-fill from my Activity Tracker (this week)</a>
+      <div id="ws-step1-autofill-status" style="font-size:10.5px;color:var(--slate);margin-top:4px;"></div>
+    </div>
     <div class="ws-grid3">
       <div><label class="ws-mini-label">Prospects</label><input class="ws-field" type="number" id="ws-last-prospects" min="0" oninput="updateWsTargetBadges()"><span class="ws-target-badge" id="ws-badge-prospects"></span></div>
       <div><label class="ws-mini-label">Calls</label><input class="ws-field" type="number" id="ws-last-calls" min="0" oninput="updateWsTargetBadges()"><span class="ws-target-badge" id="ws-badge-calls"></span></div>
@@ -624,7 +627,7 @@ select option{background:var(--navy-mid);}
     <div class="ws-compare-card" style="margin-top:14px;">
       <div class="ws-compare-title">📞 This Week's Activity Number — to Stay on Pace</div>
       <div style="font-size:11.5px;color:var(--slate);margin-bottom:12px;line-height:1.6;">
-        Working backward from the recruit pace above, using the same funnel from Step 4 (roughly 10 prospects → 6–7 calls/conversations → 4 appointments per recruit). These numbers also fill in your Organized Plan in Step 4 automatically.
+        Working backward from <strong>your personal recruit pace</strong> above (not the company number), using the same funnel from Step 4 (roughly 10 prospects → 6–7 calls/conversations → 4 appointments per recruit). Set a Personal Target for Recruits above to see this. These numbers also fill in your Organized Plan in Step 4 automatically.
       </div>
       <div id="ws-weekly-activity-grid" class="ws-compare-grid" style="grid-template-columns:repeat(3,1fr);"></div>
     </div>
@@ -854,6 +857,17 @@ function switchTab(id, el) {
   el.classList.add('active');
   if (id === 'bookclub') renderBookClub();
   if (id === 'weeklystrategy') initWeeklyStrategy();
+}
+
+// Power vs Force no longer has its own tab in the bar — it's reached from
+// the Book Club's "Power vs Force" card instead. The panel and all its
+// content (tier breakdown, scripture references) still live on this page;
+// this just shows it without needing a tab button to mark active.
+function openConsciousnessPanel() {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-consciousness').classList.add('active');
+  window.scrollTo(0, 0);
 }
 
 function buildModules(containerId, modules) {
@@ -1989,7 +2003,6 @@ function renderGoalPace() {
     const target = Number(document.getElementById(`ws-goal-target-${wsGoalPeriod}-${key}`)?.value) || 0;
     const current = Number(document.getElementById(`ws-goal-current-${wsGoalPeriod}-${key}`)?.value) || 0;
     const p = computeGoalPace(target, current, startDate, endDate);
-    if (key === 'recruits') recruitDailyPace = p.dailyPaceNeeded;
     const color = p.onTrack ? '#2DCA73' : '#E67E22';
     return `<div class="ws-compare-item">
       <div class="wc-label">${m.label}</div>
@@ -2001,6 +2014,20 @@ function renderGoalPace() {
       </div>
     </div>`;
   }).join('');
+
+  // "This Week's Activity Number" (and Step 4's Organized Plan) run off the
+  // agent's own PERSONAL recruit pace, not the company-wide number — this
+  // is what actually determines what one person needs to do this week.
+  // Personal numbers are month-scoped, so this always uses the calendar
+  // month's window regardless of which tab (Month/90-Day) is showing.
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0,10);
+  const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0,10);
+  const personalTarget = Number(document.getElementById('ws-goal-personal-target-month-recruits')?.value) || 0;
+  const personalActual = Number(document.getElementById('ws-goal-personal-actual-month-recruits')?.value) || 0;
+  if (personalTarget > 0) {
+    recruitDailyPace = computeGoalPace(personalTarget, personalActual, monthStart, monthEnd).dailyPaceNeeded;
+  }
 
   renderWeeklyActivityFromGoal(recruitDailyPace);
 }
@@ -2099,6 +2126,51 @@ function wsStorageKey(weekOf) {
 }
 function wsIndexKey() {
   return `dba_weekly_strategy_index_${session.agentId}`;
+}
+
+// Pulls this week's real logged numbers straight from the Activity Tracker
+// (tracker.html), summing its daily snapshots for the 7 days of whatever
+// "Week Of" is selected — Prospects, Calls, Appointments (RI+FT+FS),
+// Guests (personal guests that showed), and Recruits. Submitted/Paid
+// Points and Licensed Agents aren't tracked per-day there, so those stay
+// manual.
+function autofillStep1FromTracker() {
+  const statusEl = document.getElementById('ws-step1-autofill-status');
+  const weekOf = document.getElementById('ws-week-of')?.value;
+  if (!weekOf) { if (statusEl) statusEl.textContent = '⚠ Pick a "Week Of" date first'; return; }
+
+  const monday = new Date(weekOf + 'T00:00:00');
+  const totals = { prospects: 0, calls: 0, appointments: 0, guests: 0, recruits: 0 };
+  let daysFound = 0;
+
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday); d.setDate(d.getDate() + i);
+    const dateStr = d.toISOString().slice(0,10);
+    let raw = null;
+    try { raw = JSON.parse(localStorage.getItem(`dba_tracker_${session.agentId}_${dateStr}`) || 'null'); } catch(e) {}
+    if (!raw || !raw.counts) continue;
+    daysFound++;
+    const c = raw.counts;
+    totals.prospects   += c.prospects || 0;
+    totals.calls       += c.calls || 0;
+    totals.appointments += (c.ri||0) + (c.ft||0) + (c.fs||0);
+    totals.guests       += c.pers_ga || 0;
+    totals.recruits     += c.recruits || 0;
+  }
+
+  document.getElementById('ws-last-prospects').value = totals.prospects;
+  document.getElementById('ws-last-calls').value = totals.calls;
+  document.getElementById('ws-last-appointments').value = totals.appointments;
+  document.getElementById('ws-last-guests').value = totals.guests;
+  document.getElementById('ws-last-recruits').value = totals.recruits;
+  updateWsTargetBadges();
+  renderWsCompare();
+
+  if (statusEl) {
+    statusEl.textContent = daysFound
+      ? `✓ Filled from ${daysFound} logged day${daysFound===1?'':'s'} this week — Submitted/Paid Points and Licensed Agents still need to be entered by hand`
+      : '⚠ No logged Activity Tracker days found for this week';
+  }
 }
 
 function saveWeeklyStrategy() {
@@ -2482,7 +2554,8 @@ function renderBookClub() {
               '<div style="font-family:\'DM Mono\',monospace;font-size:11px;color:#8A9BB5;margin-top:3px;">Dr. David R. Hawkins</div>' +
             '</div>' +
           '</div>' +
-          '<p style="font-size:13px;line-height:1.8;color:rgba(20,16,8,.85);margin-bottom:10px;">The science of consciousness — why Force depletes and Power attracts. Hawkins calibrated human emotions on a scale from 1–1000. This book will fundamentally change how you understand your own leadership, client relationships, and team-building. Study guide and modules already live in the Power vs Force tab.</p>' +
+          '<p style="font-size:13px;line-height:1.8;color:rgba(20,16,8,.85);margin-bottom:10px;">The science of consciousness — why Force depletes and Power attracts. Hawkins calibrated human emotions on a scale from 1–1000. This book will fundamentally change how you understand your own leadership, client relationships, and team-building.</p>' +
+          '<a href="#" onclick="openConsciousnessPanel();return false;" style="display:inline-block;background:linear-gradient(135deg,#C9A84C,#E8C97A);color:#F5F1E8;font-weight:700;font-family:\'Barlow Condensed\',sans-serif;font-size:13px;letter-spacing:.03em;padding:8px 16px;border-radius:6px;text-decoration:none;margin-bottom:10px;">⬆ Expanded Training and Assessment</a>' +
           '<div style="font-family:\'DM Mono\',monospace;font-size:10px;color:#6B7C93;">Full study materials unlock for all when this becomes the current book.</div>' +
         '</div>';
     } else {

@@ -20,7 +20,7 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);m
 .bg{position:fixed;inset:0;z-index:0;pointer-events:none;
   background:radial-gradient(ellipse 70% 50% at 15% 20%,rgba(52,152,219,.05),transparent 55%),
   radial-gradient(ellipse 50% 70% at 85% 80%,rgba(201,168,76,.05),transparent 60%),
-  linear-gradient(160deg,#F5F1E8,#0E1C35 50%,#F5F1E8);}
+  linear-gradient(160deg,#F5F1E8,#ECE6D6 50%,#F5F1E8);}
 .bgrid{position:fixed;inset:0;z-index:0;pointer-events:none;
   background-image:linear-gradient(rgba(201,168,76,.03) 1px,transparent 1px),
   linear-gradient(90deg,rgba(201,168,76,.03) 1px,transparent 1px);
@@ -619,23 +619,6 @@ function load() {
     });
   }
 
-  // ── Legacy manual seed ────────────────────────────────────────
-  const seedAgents = [
-    { agentId:'romcru001', name:'Romeo Cruz', phone:'310-733-9994', stage:'not_started', upline:'Obi Iroezi' },
-  ];
-  seedAgents.forEach(seed => {
-    if (!records.find(r => r.agentId === seed.agentId)) {
-      records.push(newRecord({
-        agentId:   seed.agentId,
-        name:      seed.name,
-        phone:     seed.phone,
-        upline:    seed.upline,
-        stage:     seed.stage,
-        stageDate: new Date().toISOString().slice(0,10),
-      }));
-      save();
-    }
-  });
 }
 
 // ── RENDER ────────────────────────────────────────────────────

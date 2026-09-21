@@ -234,7 +234,7 @@ const session  = AUTH.getSession();
 const myAgent  = AUTH.getAgent();
 
 // ── PERSISTENT PROMOTION STATS ──────────────────────────────────
-// Replaces what used to be a hardcoded, undefined DEMO_STATS/JUNE_MD_PROMO
+// Replaces what used to be a hardcoded, undefined DEMO_STATS/MD_PROMO_CAMPAIGN
 // reference (the page silently crashed before — My Path, System Flow, and
 // Team Progress never actually rendered). Real values now live here,
 // populated via the Import panel (paste or CSV) on the Team Progress tab.
@@ -369,26 +369,19 @@ function downloadPromoTemplate() {
 let PROMO_STATS = loadPromoStats();
 const myStats  = PROMO_STATS[session.agentId] || {};
 
-// ── PHP SYSTEM FLOW — matches the roadmap already used in Training ──
-const PHP_SYSTEM_FLOW = [
-  { week:'WEEK 1',      stage:'New Associate',        milestone:'Qualify for Fast Start School',
-    tasks:['Meet Spouse','Business Plan','Top 25','3 FT & 3 Guests','Financial Analysis','Life Class','Big Event','Sprint Award'] },
-  { week:'MONTH 1',     stage:'Graduate Fast Start School', milestone:'Get a promotion',
-    tasks:['Life License','Complete 10 FT','3+3 Associate','10+10 Field Associate','25+25 Director (15/15/15k)'] },
-  { week:'MONTH 1 ON',  stage:"Qualify for President's Club", milestone:'Become a certified trainer',
-    tasks:['10 rec. (average)','25 rec. (above average)','50 rec. (competitor)','100 rec. (record breaker)'] },
-  { week:'MONTH 3–6',   stage:'Develop Direct FAs',    milestone:'Get coached to become MD',
-    tasks:['$50,000 income+','90-day run to MD','Graduate PHP University'] },
-  { week:'MONTH 6–12',  stage:'Marketing Director Promotion', milestone:'Develop other MDs',
-    tasks:['3 direct FAs','15 licensed agents','50 rec. & 100K points in 90 days'] },
-];
+// PHP_SYSTEM_FLOW comes from auth.js (shared across the app) — it used to
+// also be redeclared here, which crashed the whole page's script with
+// "Identifier 'PHP_SYSTEM_FLOW' has already been declared" the moment
+// auth.js and this page's own script both ran in the same global scope.
+// That's why the "All 16 Levels" table (and everything after it) was
+// rendering blank — the crash happened before any of it could run.
 
 // ── PROMOTION REQUIREMENTS PER ROLE ──────────────────────────────
 // Anchored to the same PHP System Flow criteria used above and in
 // Training. Roles beyond Marketing Director don't have published
 // numeric thresholds in our materials, so those are marked ongoing
 // rather than guessed at.
-const PHP_PROMO_REQS = {
+const PROMO_PATH_REQS = {
   trainee:          { next:'Associate',                     personal:{ recruits:3 },  team:{ notes:'3+3 — 3 personal, 3 team recruits' }, timeframe:'Target: Month 1', notes:'Complete Fast Start School requirements' },
   associate:        { next:'Field Associate',                personal:{ recruits:10 }, team:{ notes:'10+10 — 10 personal, 10 team recruits' }, timeframe:'Target: Month 1–3', notes:'Keep production active alongside recruiting' },
   field_associate:  { next:'Director',                       personal:{ recruits:25 }, team:{ notes:'25+25 — 25 personal, 25 team recruits, 15/15/15K' }, timeframe:'Target: Month 3–6', notes:'15 licensed, 15 producing, 15K team points' },
@@ -410,7 +403,7 @@ function saveDashboardSettings(s) {
   try { localStorage.setItem(DASHBOARD_SETTINGS_KEY, JSON.stringify(s)); } catch(e) {}
 }
 const _dashSettings = loadDashboardSettings();
-const JUNE_MD_PROMO = {
+const MD_PROMO_CAMPAIGN = {
   deadline:        _dashSettings.deadline        || '2026-06-30',
   paidPtsDeadline: _dashSettings.paidPtsDeadline || '2026-07-15',
   asOf:            new Date().toISOString().slice(0,10),
@@ -516,7 +509,7 @@ function importClientCSV(event) {
 (function renderJuneMdCard() {
   const el = document.getElementById('june-md-card');
   if (!el) return;
-  const campaign = JUNE_MD_PROMO;
+  const campaign = MD_PROMO_CAMPAIGN;
   const mine = campaign.stats[session.agentId];
 
   const today = new Date();
@@ -618,7 +611,7 @@ document.getElementById('levels-grid').innerHTML = LEVEL_DATA.map(l => {
 }).join('');
 
 // ── MY PATH ───────────────────────────────────────────────────
-const myReq = PHP_PROMO_REQS[session.role];
+const myReq = PROMO_PATH_REQS[session.role];
 if (myReq) {
   const p = myReq.personal;
   const t = myReq.team;
@@ -699,7 +692,7 @@ function renderTeamProgress() {
     ? getManageableAgents(myAgent).filter(a => a.id !== session.agentId)
     : (typeof getFullDownline === 'function' ? getFullDownline(session.agentId).filter(Boolean) : []);
   const teamHtml = visible.map(ag => {
-    const req = PHP_PROMO_REQS[ag.role];
+    const req = PROMO_PATH_REQS[ag.role];
     if (!req || !req.personal) return '';
     const s = PROMO_STATS[ag.id] || {};
     const p = req.personal;
