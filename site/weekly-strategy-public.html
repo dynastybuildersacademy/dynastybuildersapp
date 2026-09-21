@@ -227,7 +227,7 @@ select option{background:var(--navy-mid);}
     <div id="ws-goal-inputs-month">
       <div class="ws-grid2">
         <div>
-          <label class="field-label">Target — This Month</label>
+          <label class="field-label">Company Target — This Month</label>
           <div class="ws-goal-row"><span>Recruits</span><input class="ws-field" type="number" id="ws-goal-target-month-recruits" min="0" oninput="renderGoalPace()"></div>
           <div class="ws-goal-row"><span>Submitted Points</span><input class="ws-field" type="number" id="ws-goal-target-month-subpts" min="0" oninput="renderGoalPace()"></div>
           <div class="ws-goal-row"><span>Paid Points</span><input class="ws-field" type="number" id="ws-goal-target-month-paidpts" min="0" oninput="renderGoalPace()"></div>
@@ -235,7 +235,7 @@ select option{background:var(--navy-mid);}
           <div class="ws-goal-row"><span>First Checks</span><input class="ws-field" type="number" id="ws-goal-target-month-firstchecks" min="0" oninput="renderGoalPace()"></div>
         </div>
         <div>
-          <label class="field-label">Where We Are Right Now</label>
+          <label class="field-label">Company — Where We Are Right Now</label>
           <div class="ws-goal-row"><span>Recruits</span><input class="ws-field" type="number" id="ws-goal-current-month-recruits" min="0" oninput="renderGoalPace()"></div>
           <div class="ws-goal-row"><span>Submitted Points</span><input class="ws-field" type="number" id="ws-goal-current-month-subpts" min="0" oninput="renderGoalPace()"></div>
           <div class="ws-goal-row"><span>Paid Points</span><input class="ws-field" type="number" id="ws-goal-current-month-paidpts" min="0" oninput="renderGoalPace()"></div>
@@ -243,6 +243,29 @@ select option{background:var(--navy-mid);}
           <div class="ws-goal-row"><span>First Checks</span><input class="ws-field" type="number" id="ws-goal-current-month-firstchecks" min="0" oninput="renderGoalPace()"></div>
         </div>
       </div>
+
+      <div class="ws-grid2" style="margin-top:16px;">
+        <div>
+          <label class="field-label">🙋 My Personal Target — This Month</label>
+          <div class="ws-goal-row"><span>Recruits</span><input class="ws-field" type="number" id="ws-goal-personal-target-month-recruits" min="0" oninput="renderGoalPace()"></div>
+          <div class="ws-goal-row"><span>Submitted Points</span><input class="ws-field" type="number" id="ws-goal-personal-target-month-subpts" min="0" oninput="renderGoalPace()"></div>
+          <div class="ws-goal-row"><span>Paid Points</span><input class="ws-field" type="number" id="ws-goal-personal-target-month-paidpts" min="0" oninput="renderGoalPace()"></div>
+          <div class="ws-goal-row"><span>Licensed Agents</span><input class="ws-field" type="number" id="ws-goal-personal-target-month-licensed" min="0" oninput="renderGoalPace()"></div>
+          <div class="ws-goal-row"><span>First Checks</span><input class="ws-field" type="number" id="ws-goal-personal-target-month-firstchecks" min="0" oninput="renderGoalPace()"></div>
+        </div>
+        <div>
+          <label class="field-label" style="display:inline;">🙋 My Personal Actual — This Month</label>
+          <a href="#" onclick="autofillPersonalMonthFromWeeks();return false;" style="font-size:11px;color:var(--gold);margin-left:8px;">🔄 Auto-fill from my saved weeks</a>
+          <div class="ws-goal-row"><span>Recruits</span><input class="ws-field" type="number" id="ws-goal-personal-actual-month-recruits" min="0" oninput="renderGoalPace()"></div>
+          <div class="ws-goal-row"><span>Submitted Points</span><input class="ws-field" type="number" id="ws-goal-personal-actual-month-subpts" min="0" oninput="renderGoalPace()"></div>
+          <div class="ws-goal-row"><span>Paid Points</span><input class="ws-field" type="number" id="ws-goal-personal-actual-month-paidpts" min="0" oninput="renderGoalPace()"></div>
+          <div class="ws-goal-row"><span>Licensed Agents</span><input class="ws-field" type="number" id="ws-goal-personal-actual-month-licensed" min="0" oninput="renderGoalPace()"></div>
+          <div class="ws-goal-row"><span>First Checks</span><input class="ws-field" type="number" id="ws-goal-personal-actual-month-firstchecks" min="0" oninput="renderGoalPace()"></div>
+          <div id="ws-personal-month-autofill-status" style="font-size:10.5px;color:var(--slate);margin-top:4px;"></div>
+        </div>
+      </div>
+
+      <div id="ws-personal-month-grid" class="ws-compare-grid" style="margin-top:14px;"></div>
     </div>
 
     <!-- 90-DAY INPUTS -->
@@ -649,6 +672,19 @@ function initCompanyGoalPace() {
     });
   });
 
+  Object.keys(WS_GOAL_METRICS).forEach(key => {
+    const pTargetEl = document.getElementById(`ws-goal-personal-target-month-${key}`);
+    const pActualEl = document.getElementById(`ws-goal-personal-actual-month-${key}`);
+    if (pTargetEl && !pTargetEl.dataset.wsGoalWired) {
+      pTargetEl.value = saved[`personal-target-month-${key}`] ?? '';
+      pTargetEl.dataset.wsGoalWired = '1';
+    }
+    if (pActualEl && !pActualEl.dataset.wsGoalWired) {
+      pActualEl.value = saved[`personal-actual-month-${key}`] ?? '';
+      pActualEl.dataset.wsGoalWired = '1';
+    }
+  });
+
   const startEl = document.getElementById('ws-goal-90day-start');
   if (startEl && !startEl.value) {
     startEl.value = saved['90day-start'] || new Date().toISOString().slice(0,10);
@@ -667,8 +703,69 @@ function saveCompanyGoalInputs() {
       data[`current-${period}-${key}`] = document.getElementById(`ws-goal-current-${period}-${key}`)?.value || '';
     });
   });
+  Object.keys(WS_GOAL_METRICS).forEach(key => {
+    data[`personal-target-month-${key}`] = document.getElementById(`ws-goal-personal-target-month-${key}`)?.value || '';
+    data[`personal-actual-month-${key}`] = document.getElementById(`ws-goal-personal-actual-month-${key}`)?.value || '';
+  });
   data['90day-start'] = document.getElementById('ws-goal-90day-start')?.value || '';
   try { localStorage.setItem(WS_COMPANY_GOAL_KEY, JSON.stringify(data)); } catch(e) {}
+}
+
+function renderPersonalMonthGrid() {
+  const el = document.getElementById('ws-personal-month-grid');
+  if (!el) return;
+  el.innerHTML = Object.entries(WS_GOAL_METRICS).map(([key, m]) => {
+    const target = Number(document.getElementById(`ws-goal-personal-target-month-${key}`)?.value) || 0;
+    const actual = Number(document.getElementById(`ws-goal-personal-actual-month-${key}`)?.value) || 0;
+    if (!target && !actual) {
+      return `<div class="ws-compare-item">
+        <div class="wc-label">${m.label}</div>
+        <div class="wc-actual" style="color:var(--slate);">—</div>
+        <div class="wc-pace">set a personal target</div>
+      </div>`;
+    }
+    const hit = actual >= target;
+    const color = hit ? '#2DCA73' : '#E67E22';
+    const pct = target > 0 ? Math.round((actual/target)*100) : 0;
+    return `<div class="ws-compare-item">
+      <div class="wc-label">${m.label}</div>
+      <div class="wc-actual" style="color:${color};">${actual} / ${target}</div>
+      <div class="wc-pace">${hit ? '✓ target hit' : `${pct}% of personal goal`}</div>
+    </div>`;
+  }).join('');
+}
+
+function autofillPersonalMonthFromWeeks() {
+  const statusEl = document.getElementById('ws-personal-month-autofill-status');
+  const now = new Date();
+  const startDate = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0,10);
+  const endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0,10);
+
+  let index = [];
+  try { index = JSON.parse(localStorage.getItem(wsIndexKey()) || '[]'); } catch(e) {}
+  const weeksInRange = index.filter(w => w >= startDate && w <= endDate);
+
+  const totals = { recruits: 0, subpts: 0, paidpts: 0, licensed: 0 };
+  weeksInRange.forEach(w => {
+    let data = {};
+    try { data = JSON.parse(localStorage.getItem(wsStorageKey(w)) || '{}'); } catch(e) {}
+    totals.recruits += Number(data['ws-last-recruits']) || 0;
+    totals.subpts   += Number(data['ws-last-subpts']) || 0;
+    totals.paidpts  += Number(data['ws-last-paidpts']) || 0;
+    totals.licensed += Number(data['ws-last-licensing']) || 0;
+  });
+
+  document.getElementById('ws-goal-personal-actual-month-recruits').value = totals.recruits;
+  document.getElementById('ws-goal-personal-actual-month-subpts').value = totals.subpts;
+  document.getElementById('ws-goal-personal-actual-month-paidpts').value = totals.paidpts;
+  document.getElementById('ws-goal-personal-actual-month-licensed').value = totals.licensed;
+
+  if (statusEl) {
+    statusEl.textContent = weeksInRange.length
+      ? `✓ Filled from ${weeksInRange.length} saved week${weeksInRange.length===1?'':'s'} this month — First Checks still needs to be entered by hand`
+      : '⚠ No saved weeks fall in this month yet';
+  }
+  renderGoalPace();
 }
 
 function switchGoalPeriod(period) {
@@ -742,6 +839,7 @@ function fmtNum(n) {
 
 function renderGoalPace() {
   saveCompanyGoalInputs();
+  renderPersonalMonthGrid();
   const grid = document.getElementById('ws-goal-pace-grid');
   if (!grid) return;
 
