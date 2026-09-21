@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Design Your Perfect Week — Dynasty Builders Academy</title>
+<meta name="description" content="Design your Perfect Week — the exact weekly activity that compounds into real annual production. Free, no login required.">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,400&family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="auth.js"></script>
+<style>
+:root{--navy:#F5F1E8;--navy-mid:#FFFFFF;--navy-light:#ECE6D6;--gold:#C9A84C;--gold-light:#E8C97A;--cream:#1E1A10;--success:#27AE60;--warn:#E67E22;--danger:#C0392B;--slate:#6B7C93;--border:rgba(201,168,76,0.22);}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);min-height:100vh;}
+.header{background:rgba(245,241,232,0.97);border-bottom:1px solid var(--border);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;backdrop-filter:blur(10px);}
+.header-left{display:flex;align-items:center;gap:12px;}
+.shield{width:30px;height:34px;background:linear-gradient(160deg,var(--gold) 0%,#7a5c14 100%);clip-path:polygon(50% 0%,100% 18%,100% 65%,50% 100%,0% 65%,0% 18%);display:flex;align-items:center;justify-content:center;font-size:12px;}
+.header h1{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--gold);}
+.back-btn{font-size:12px;color:var(--gold);text-decoration:none;border:1px solid var(--border);padding:6px 12px;border-radius:3px;}
+/* TABS */
+.tab-bar{display:flex;border-bottom:1px solid var(--border);background:var(--navy-mid);overflow-x:auto;padding:0 22px;gap:0;}
+.tab{padding:13px 20px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;cursor:pointer;border-bottom:2px solid transparent;color:var(--slate);transition:all 0.2s;white-space:nowrap;flex-shrink:0;}
+.tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+.tab:hover:not(.active){color:var(--cream);}
+.content{padding:22px 24px;max-width:860px;margin:0 auto;}
+.panel{display:none;animation:fadeIn 0.3s ease;}
+.panel.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+/* MODULES */
+.page-title{font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--gold);margin-bottom:6px;}
+.page-sub{font-size:13px;color:var(--slate);margin-bottom:22px;line-height:1.6;}
+.module{background:var(--navy-mid);border:1px solid var(--border);border-radius:4px;margin-bottom:12px;overflow:hidden;}
+.module-hdr{padding:16px 20px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:background 0.15s;user-select:none;}
+.module-hdr:hover{background:rgba(201,168,76,0.04);}
+.mod-num{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;color:var(--gold);min-width:34px;}
+.mod-title{font-size:14px;font-weight:600;flex:1;}
+.mod-toggle{font-size:12px;color:var(--gold);transition:transform 0.25s;}
+.module-body{display:none;padding:16px 20px 20px;border-top:1px solid var(--border);font-size:13px;line-height:1.8;color:rgba(20,16,8,0.9);}
+.module-body.open{display:block;}
+.module-body ul{padding-left:20px;}
+.module-body li{margin-bottom:7px;}
+.module-body strong{color:var(--gold-light);}
+.script-box{background:var(--navy);border-left:3px solid var(--gold);padding:14px 16px;border-radius:0 4px 4px 0;margin:12px 0;font-size:13px;line-height:1.8;font-style:italic;}
+.table-sm{width:100%;border-collapse:collapse;margin:10px 0;font-size:12px;}
+.table-sm th{font-family:'Barlow Condensed',sans-serif;font-size:10px;color:var(--gold);letter-spacing:0.1em;text-transform:uppercase;padding:7px 10px;text-align:left;border-bottom:1px solid var(--gold);}
+.table-sm td{padding:8px 10px;border-bottom:1px solid rgba(201,168,76,0.07);}
+.table-sm tr:hover td{background:rgba(201,168,76,0.03);}
+/* ROLEPLAY */
+.rp-card{background:var(--navy-mid);border:1px solid var(--border);border-radius:4px;padding:20px;margin-bottom:16px;}
+.rp-card-title{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:0.09em;margin-bottom:14px;}
+.field-label{font-size:11px;color:rgba(20,16,8,0.6);font-weight:600;letter-spacing:0.09em;text-transform:uppercase;display:block;margin-bottom:6px;}
+select,input{width:100%;background:var(--navy);border:1px solid var(--border);color:var(--cream);font-family:'Barlow',sans-serif;font-size:13px;padding:10px 12px;border-radius:3px;margin-bottom:12px;}
+textarea{width:100%;background:var(--navy);border:1px solid var(--border);color:var(--cream);font-family:'Barlow',sans-serif;font-size:13px;padding:10px 12px;border-radius:3px;margin-bottom:12px;min-height:64px;resize:vertical;}
+.ws-step{background:var(--navy-mid);border:1px solid var(--border);border-radius:6px;padding:20px;margin-bottom:16px;}
+.ws-step-num{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:rgba(201,168,76,.15);color:var(--gold);font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:13px;margin-right:10px;}
+.ws-step-title{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:800;color:var(--cream);display:inline;}
+.ws-principle{font-size:11px;color:var(--gold);font-style:italic;margin:4px 0 14px 36px;}
+.ws-grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.ws-grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+@media(max-width:640px){.ws-grid2,.ws-grid3{grid-template-columns:1fr;}}
+.ws-mini-label{font-size:10px;color:var(--slate);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:4px;}
+.ws-day-card{background:var(--navy);border:1px solid var(--border);border-radius:5px;padding:12px;margin-bottom:8px;}
+.ws-day-name{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;color:var(--gold);margin-bottom:8px;}
+.ws-declaration{background:rgba(201,168,76,.06);border:1px dashed rgba(201,168,76,.35);border-radius:6px;padding:18px;font-family:'Cormorant Garamond',serif;font-size:16px;line-height:1.9;color:var(--cream);}
+.ws-obstacle-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+@media(max-width:640px){.ws-obstacle-row{grid-template-columns:1fr;}}
+.ws-rating-row{display:flex;gap:14px;flex-wrap:wrap;align-items:center;}
+.ws-rating{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.ws-rating input{width:56px;text-align:center;margin-bottom:0;}
+.ws-rating label{font-size:9px;color:var(--slate);text-transform:uppercase;}
+.ws-target-badge{display:block;font-size:10px;font-weight:700;margin-top:-8px;margin-bottom:12px;}
+.ws-target-badge.hit{color:#2DCA73;}
+.ws-target-badge.miss{color:#E67E22;}
+.ws-compare-card{background:rgba(201,168,76,.05);border:1px solid rgba(201,168,76,.2);border-radius:8px;padding:16px;margin-top:6px;}
+.ws-compare-title{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;}
+.ws-compare-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+@media(max-width:640px){.ws-compare-grid{grid-template-columns:repeat(2,1fr);}}
+.ws-compare-item{background:var(--navy);border:1px solid var(--border);border-radius:6px;padding:10px;text-align:center;}
+.ws-compare-item .wc-label{font-size:9.5px;color:var(--slate);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;}
+.ws-compare-item .wc-actual{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;}
+.ws-compare-item .wc-target{font-size:10px;color:var(--slate);}
+.ws-compare-item .wc-trend{font-size:11px;margin-top:4px;font-weight:700;}
+.ws-goal-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;}
+.ws-goal-row span{font-size:12.5px;color:var(--slate);flex-shrink:0;}
+.ws-goal-row input{margin-bottom:0;max-width:110px;text-align:right;}
+.ws-goal-period-tabs{display:flex;gap:8px;margin-bottom:14px;}
+.ws-period-tab{background:rgba(255,255,255,.04);border:1px solid var(--border);color:var(--slate);border-radius:6px;padding:8px 16px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;cursor:pointer;}
+.ws-period-tab.active{background:rgba(201,168,76,.12);color:var(--gold);border-color:var(--gold);}
+.wc-pace{font-size:10.5px;color:var(--slate);margin-top:6px;line-height:1.5;}
+select:focus,input:focus{outline:none;border-color:var(--gold);}
+select option{background:var(--navy-mid);}
+.btn-gold{background:linear-gradient(135deg,var(--gold) 0%,#9a7018 100%);color:var(--navy);border:none;padding:11px 22px;border-radius:3px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;letter-spacing:0.06em;cursor:pointer;transition:opacity 0.2s;}
+.btn-gold:hover{opacity:0.87;}
+.chat-box{background:var(--navy);border:1px solid var(--border);border-radius:4px;overflow:hidden;margin-top:14px;}
+.chat-msgs{height:280px;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;}
+.chat-msgs::-webkit-scrollbar{width:3px;}
+.chat-msgs::-webkit-scrollbar-thumb{background:var(--gold);border-radius:2px;}
+.chat-msg{max-width:88%;padding:9px 13px;border-radius:4px;font-size:13px;line-height:1.55;}
+.chat-msg.user{align-self:flex-end;background:rgba(201,168,76,0.15);border:1px solid rgba(201,168,76,0.3);}
+.chat-msg.ai{align-self:flex-start;background:var(--navy-light);border:1px solid var(--border);}
+.chat-msg.ai .name{font-size:9px;color:var(--gold);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;}
+.chat-msg.typing span{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--slate);margin:0 1px;animation:blink 1s infinite;}
+.chat-msg.typing span:nth-child(2){animation-delay:0.2s;}
+.chat-msg.typing span:nth-child(3){animation-delay:0.4s;}
+@keyframes blink{0%,100%{opacity:0.2;}50%{opacity:1;}}
+.chat-input-row{display:flex;border-top:1px solid var(--border);}
+.chat-input{flex:1;background:transparent;border:none;padding:10px 14px;color:var(--cream);font-family:'Barlow',sans-serif;font-size:13px;}
+.chat-input:focus{outline:none;}
+.chat-input::placeholder{color:var(--slate);}
+.mic-btn{width:40px;height:40px;border-radius:50%;border:1.5px solid rgba(201,168,76,.3);
+  background:rgba(201,168,76,.1);font-size:18px;cursor:pointer;flex-shrink:0;
+  transition:all .15s;display:flex;align-items:center;justify-content:center;}
+.mic-btn.listening{background:rgba(231,76,60,.2);border-color:rgba(231,76,60,.5);animation:mic-pulse 1s ease-in-out infinite;}
+@keyframes mic-pulse{0%,100%{box-shadow:0 0 0 0 rgba(231,76,60,.3);}50%{box-shadow:0 0 0 8px rgba(231,76,60,0);}}
+.chat-send{background:var(--gold);border:none;padding:0 18px;color:var(--navy);cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;}
+.feedback-box{background:rgba(201,168,76,0.07);border:1px solid rgba(201,168,76,0.25);border-radius:4px;padding:16px;margin-top:14px;font-size:13px;line-height:1.8;display:none;}
+.score-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;}
+.score{background:var(--navy);border:1px solid var(--border);border-radius:4px;padding:10px 16px;text-align:center;min-width:90px;}
+.score-val{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:800;color:var(--gold-light);}
+.score-lbl{font-size:10px;color:var(--slate);text-transform:uppercase;letter-spacing:0.08em;margin-top:2px;}
+
+.dba-public-header{background:var(--navy-mid);border-bottom:1px solid var(--border);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+.dba-public-logo{font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:800;color:var(--gold);}
+.dba-public-wrap{max-width:760px;margin:0 auto;padding:24px 22px 60px;}
+.dba-gate{max-width:420px;margin:60px auto;text-align:center;}
+.dba-gate input{margin-bottom:14px;}
+</style>
+</head>
+<body>
+
+<div class="dba-public-header">
+  <div class="dba-public-logo">🏆 Dynasty Builders Academy</div>
+  <div style="font-size:11px;color:var(--slate);font-family:'DM Mono',monospace;">Design Your Perfect Week — free, no login required</div>
+</div>
+<div style="background:rgba(201,168,76,.06);border-bottom:1px solid var(--border);padding:8px 22px;font-size:11px;color:var(--slate);">
+  Also free: <a href="weekly-strategy-public.html" style="color:var(--gold);">🎯 Weekly Strategies Workshop</a> &middot; <a href="magic-wand-public.html" style="color:var(--gold);">🪄 The Magic Wand Exercise</a>
+</div>
+
+<div class="dba-public-wrap">
+
+  <div class="dba-gate" id="pw-gate">
+    <div class="page-title" style="text-align:center;">🌟 Design Your Perfect Week</div>
+    <div class="page-sub" style="text-align:center;">The exact weekly activity that compounds into real annual production.</div>
+    <label class="field-label">Your Name</label>
+    <input type="text" id="pw-guest-name" placeholder="Enter your name to begin">
+    <div style="margin:14px 0;">
+      <label class="field-label">Which tier applies to you?</label>
+      <select id="pw-guest-tier" style="width:100%;">
+        <option value="nonmd">Non-MD</option>
+        <option value="md">Marketing Director+</option>
+      </select>
+    </div>
+    <button class="btn-gold" style="width:100%;" onclick="startAsGuest()">Begin →</button>
+  </div>
+
+  <div id="pw-workshop" style="display:none;">
+  <div class="page-title">🌟 Design Your Perfect Week</div>
+  <div class="page-sub">A week is either building toward the life you actually want, or it's just busy. This ties your weekly numbers to your why — and to the specific activity that compounds into a $1,000,000/year baseshop.</div>
+
+  <!-- FOUR LEVELS OF YOUR WHY -->
+  <div class="ws-step">
+    <span class="ws-step-num">1</span><span class="ws-step-title">The Four Levels of Your Why</span>
+    <div class="ws-principle">Everybody has a why. The challenge is that most people never graduate from their initial why.</div>
+    <p style="font-size:12.5px;color:var(--slate);line-height:1.7;margin-bottom:14px;">This mirrors Maslow's Hierarchy of Needs: if you're struggling to survive, you're not thinking about purpose. Once your core needs are met, you naturally move up toward belonging, esteem, and growth. Be honest about where you actually are right now — not where you think you should be.</p>
+
+    <label class="field-label">04 — Survival</label>
+    <div style="font-size:11px;color:var(--slate);margin:-6px 0 6px;">Fear of not having enough. Needing this income just to get by. Where does this show up for you, if anywhere?</div>
+    <textarea class="pw-field" id="pw-why-survival" style="min-height:60px;"></textarea>
+
+    <label class="field-label">03 — Status</label>
+    <div style="font-size:11px;color:var(--slate);margin:-6px 0 6px;">How you're seen. The car, the title, the image. Where does this show up for you?</div>
+    <textarea class="pw-field" id="pw-why-status" style="min-height:60px;"></textarea>
+
+    <label class="field-label">02 — Freedom</label>
+    <div style="font-size:11px;color:var(--slate);margin:-6px 0 6px;">Time. Flexibility. Not answering to anyone. What would freedom actually look like for you?</div>
+    <textarea class="pw-field" id="pw-why-freedom" style="min-height:60px;"></textarea>
+
+    <label class="field-label">01 — Purpose</label>
+    <div style="font-size:11px;color:var(--slate);margin:-6px 0 6px;">Legacy. Impact. Becoming who you're capable of becoming. What's your purpose?</div>
+    <textarea class="pw-field" id="pw-why-purpose" style="min-height:60px;"></textarea>
+
+    <div class="ws-grid2" style="margin-top:6px;">
+      <div>
+        <label class="field-label">My primary why right now is</label>
+        <select class="pw-field" id="pw-why-primary">
+          <option value="">— Select —</option>
+          <option value="survival">Survival</option>
+          <option value="status">Status</option>
+          <option value="freedom">Freedom</option>
+          <option value="purpose">Purpose</option>
+        </select>
+      </div>
+      <div>
+        <label class="field-label">The level I want to graduate to</label>
+        <select class="pw-field" id="pw-why-graduate">
+          <option value="">— Select —</option>
+          <option value="survival">Survival</option>
+          <option value="status">Status</option>
+          <option value="freedom">Freedom</option>
+          <option value="purpose">Purpose</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- THE PERFECT WEEK FORMULA -->
+  <div class="ws-step">
+    <span class="ws-step-num">2</span><span class="ws-step-title">The Perfect Week Formula</span>
+    <div class="ws-principle">These exact numbers, hit consistently, compound to real annual paid points across your baseshop — the activity is the same either way, the base numbers scale with your rank.</div>
+
+    <div class="ws-goal-period-tabs">
+      <button class="ws-period-tab active" id="pw-tier-tab-nonmd" onclick="switchPerfectWeekTier('nonmd')">Non-MD</button>
+      <button class="ws-period-tab" id="pw-tier-tab-md" onclick="switchPerfectWeekTier('md')">Marketing Director+</button>
+    </div>
+
+    <div class="ws-compare-card">
+      <div class="ws-compare-title">🙋 Personal — Every Week (Both Tiers)</div>
+      <div class="ws-compare-grid">
+        <div class="ws-compare-item"><div class="wc-label">Prospects</div><div class="wc-actual" style="color:var(--gold);">25+</div></div>
+        <div class="ws-compare-item"><div class="wc-label">Calls</div><div class="wc-actual" style="color:var(--gold);">250+</div></div>
+        <div class="ws-compare-item"><div class="wc-label">Recruiting Interviews</div><div class="wc-actual" style="color:var(--gold);">10+</div></div>
+        <div class="ws-compare-item"><div class="wc-label">Client Appointments</div><div class="wc-actual" style="color:var(--gold);">6+</div></div>
+        <div class="ws-compare-item"><div class="wc-label">Fast Start Appointments</div><div class="wc-actual" style="color:var(--gold);">4+</div></div>
+      </div>
+      <div style="font-size:11px;color:var(--slate);margin-top:10px;">This top-of-funnel activity is identical for everyone — what changes by tier below is the production it's expected to produce.</div>
+    </div>
+
+    <div class="ws-compare-card" style="margin-top:14px;" id="pw-tier-personal-card">
+      <div class="ws-compare-title" id="pw-tier-personal-title">🙋 Personal Production — Non-MD</div>
+      <div class="ws-compare-grid" id="pw-tier-personal-grid"></div>
+    </div>
+
+    <div class="ws-compare-card" style="margin-top:14px;" id="pw-tier-base-card">
+      <div class="ws-compare-title" id="pw-tier-base-title">🏢 Base (Team) — Non-MD</div>
+      <div class="ws-compare-grid" id="pw-tier-base-grid"></div>
+      <div style="font-size:11px;color:var(--slate);margin-top:10px;" id="pw-tier-annual-note"></div>
+    </div>
+  </div>
+
+  <!-- THIS WEEK VS THE STANDARD -->
+  <div class="ws-step">
+    <span class="ws-step-num">3</span><span class="ws-step-title">This Week vs. The Perfect Week Standard</span>
+    <div class="ws-principle">Not company-wide, not aspirational — this is the fixed personal bar from the formula above, for whichever tier you selected.</div>
+    <a href="#" onclick="autofillPerfectWeekFromTracker();return false;" style="font-size:11px;color:var(--gold);">📞 Auto-fill from my Activity Tracker (this week)</a>
+    <div id="pw-autofill-status" style="font-size:10.5px;color:var(--slate);margin:4px 0 12px;"></div>
+    <div class="ws-grid3">
+      <div><label class="ws-mini-label">Prospects</label><input class="pw-field" type="number" id="pw-actual-prospects" min="0" oninput="renderPerfectWeekCompare()"></div>
+      <div><label class="ws-mini-label">Calls</label><input class="pw-field" type="number" id="pw-actual-calls" min="0" oninput="renderPerfectWeekCompare()"></div>
+      <div><label class="ws-mini-label">Recruiting Interviews</label><input class="pw-field" type="number" id="pw-actual-ri" min="0" oninput="renderPerfectWeekCompare()"></div>
+      <div><label class="ws-mini-label">Client Appointments</label><input class="pw-field" type="number" id="pw-actual-appts" min="0" oninput="renderPerfectWeekCompare()"></div>
+      <div><label class="ws-mini-label">Fast Start Appointments</label><input class="pw-field" type="number" id="pw-actual-fs" min="0" oninput="renderPerfectWeekCompare()"></div>
+      <div><label class="ws-mini-label">Personal Recruits</label><input class="pw-field" type="number" id="pw-actual-recruits" min="0" oninput="renderPerfectWeekCompare()"></div>
+      <div><label class="ws-mini-label">Personal Submitted Pts</label><input class="pw-field" type="number" id="pw-actual-subpts" min="0" oninput="renderPerfectWeekCompare()"></div>
+      <div><label class="ws-mini-label">Personal Paid Pts</label><input class="pw-field" type="number" id="pw-actual-paidpts" min="0" oninput="renderPerfectWeekCompare()"></div>
+    </div>
+    <div id="pw-compare-grid" class="ws-compare-grid" style="margin-top:14px;"></div>
+  </div>
+
+  <!-- DESIGN THE SCHEDULE -->
+  <div class="ws-step">
+    <span class="ws-step-num">4</span><span class="ws-step-title">Design Your Perfect Week Schedule</span>
+    <div class="ws-principle">Block the time before the week starts. Don't wake up each day deciding when to prospect.</div>
+    <div id="pw-days-container"></div>
+  </div>
+
+  <button class="btn-gold" style="width:100%;font-size:15px;padding:14px;" onclick="savePerfectWeek()">💾 Save My Perfect Week</button>
+  <div style="display:flex;gap:10px;margin-top:8px;">
+    <button class="btn-gold" style="flex:1;background:rgba(201,168,76,.12);color:var(--gold);" onclick="downloadPerfectWeek()">📄 Download as Text</button>
+    <button class="btn-gold" style="flex:1;background:rgba(201,168,76,.12);color:var(--gold);" onclick="syncPerfectWeekToMonday()">☁ Send to Monday.com</button>
+  </div>
+  <div id="pw-save-status" style="text-align:center;font-size:12px;color:var(--slate);margin-top:8px;"></div>
+
+  </div>
+
+</div>
+
+<script>
+// ── IDENTITY ──────────────────────────────────────────────────
+let session = (typeof AUTH !== 'undefined' && AUTH.getSession) ? AUTH.getSession() : null;
+let guestName = '';
+let guestTier = 'nonmd';
+
+function currentIdentity() {
+  if (session) return { id: session.agentId, name: session.name };
+  return { id: 'guest_' + guestName.toLowerCase().replace(/[^a-z0-9]+/g,'_'), name: guestName };
+}
+
+function startAsGuest() {
+  const input = document.getElementById('pw-guest-name');
+  const name = input.value.trim();
+  if (!name) { input.focus(); input.style.borderColor = '#C0392B'; return; }
+  guestName = name;
+  guestTier = document.getElementById('pw-guest-tier').value;
+  document.getElementById('pw-gate').style.display = 'none';
+  document.getElementById('pw-workshop').style.display = 'block';
+  initPerfectWeekPublic();
+}
+
+function toast(msg) {
+  let el = document.getElementById('dba-toast');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'dba-toast';
+    el.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--gold);color:#1E1A10;padding:10px 20px;border-radius:6px;font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:13px;z-index:999;opacity:0;transition:opacity .25s;pointer-events:none;';
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  el.style.opacity = '1';
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.style.opacity = '0', 2400);
+}
+
+// Shared download helper — builds a .txt file client-side and triggers
+// the browser's own download, no server or library involved. This lives
+// on the Magic Wand page too; duplicated here since Perfect Week is a
+// separate standalone page with no shared script to pull it from.
+function downloadTextFile(filename, text) {
+  const blob = new Blob([text], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// ── PERFECT WEEK DESIGNER ─────────────────────────────────────
+// Shared top-of-funnel activity target (same for every rank), plus
+// the two production tiers you defined — non-MD and Marketing
+// Director and above. This is a fixed standard, not something an
+// agent edits, so unlike Weekly Strategy's company goals these
+// numbers are hardcoded rather than stored per-agent.
+const PW_SHARED_TARGETS = { prospects:25, calls:250, ri:10, appts:6, fs:4 };
+const PW_TIER_TARGETS = {
+  nonmd: {
+    label: 'Non-MD',
+    personal: { recruits:1, subpts:5000, paidpts:3500 },
+    base: { recruits:8, subpts:12142, paidpts:8500 },
+  },
+  md: {
+    label: 'Marketing Director+',
+    personal: { recruits:1, subpts:7142, paidpts:5000 },
+    base: { recruits:10, subpts:28571, paidpts:20000 },
+  },
+};
+let pwTier = 'nonmd';
+
+// Computed fresh each time, not frozen at page load — on this public page,
+// the real identity isn't known until the guest name gate is submitted.
+function getPwKey() { return `dba_perfect_week_${currentIdentity().id}`; }
+
+function initPerfectWeek() {
+  // Default the tier to whatever this agent actually is, but they can
+  // still flip the tab manually to see the other one.
+  const isMdPlus = (session?.level || 0) >= 60;
+  pwTier = isMdPlus ? 'md' : 'nonmd';
+  document.getElementById('pw-tier-tab-nonmd').classList.toggle('active', pwTier === 'nonmd');
+  document.getElementById('pw-tier-tab-md').classList.toggle('active', pwTier === 'md');
+  renderPerfectWeekTierCards();
+
+  if (!pwDaysRendered) {
+    renderPerfectWeekDays();
+    pwDaysRendered = true;
+  }
+  loadPerfectWeek();
+  renderPerfectWeekCompare();
+  startPerfectWeekAutosave();
+}
+
+function switchPerfectWeekTier(tier) {
+  pwTier = tier;
+  document.getElementById('pw-tier-tab-nonmd').classList.toggle('active', tier === 'nonmd');
+  document.getElementById('pw-tier-tab-md').classList.toggle('active', tier === 'md');
+  renderPerfectWeekTierCards();
+  renderPerfectWeekCompare();
+}
+
+function renderPerfectWeekTierCards() {
+  const t = PW_TIER_TARGETS[pwTier];
+  document.getElementById('pw-tier-personal-title').textContent = `🙋 Personal Production — ${t.label}`;
+  document.getElementById('pw-tier-base-title').textContent = `🏢 Base (Team) — ${t.label}`;
+
+  document.getElementById('pw-tier-personal-grid').innerHTML = `
+    <div class="ws-compare-item"><div class="wc-label">Personal Recruits</div><div class="wc-actual" style="color:var(--gold);">${t.personal.recruits}+</div></div>
+    <div class="ws-compare-item"><div class="wc-label">Personal Submitted Pts</div><div class="wc-actual" style="color:var(--gold);">${t.personal.subpts.toLocaleString()}</div></div>
+    <div class="ws-compare-item"><div class="wc-label">Personal Paid Pts</div><div class="wc-actual" style="color:var(--gold);">${t.personal.paidpts.toLocaleString()}</div></div>
+  `;
+  document.getElementById('pw-tier-base-grid').innerHTML = `
+    <div class="ws-compare-item"><div class="wc-label">Base Recruits</div><div class="wc-actual" style="color:var(--gold-light);">${t.base.recruits}+</div></div>
+    <div class="ws-compare-item"><div class="wc-label">Base Submitted Pts</div><div class="wc-actual" style="color:var(--gold-light);">${t.base.subpts.toLocaleString()}</div></div>
+    <div class="ws-compare-item"><div class="wc-label">Base Paid Pts</div><div class="wc-actual" style="color:var(--gold-light);">${t.base.paidpts.toLocaleString()}</div></div>
+  `;
+  const annual = t.base.paidpts * 52;
+  document.getElementById('pw-tier-annual-note').textContent =
+    `${t.base.paidpts.toLocaleString()} base paid points × 52 weeks ≈ $${annual.toLocaleString()}/year in your baseshop at this tier.`;
+}
+
+function renderPerfectWeekCompare() {
+  const t = PW_TIER_TARGETS[pwTier];
+  const targets = {
+    prospects: PW_SHARED_TARGETS.prospects, calls: PW_SHARED_TARGETS.calls, ri: PW_SHARED_TARGETS.ri,
+    appts: PW_SHARED_TARGETS.appts, fs: PW_SHARED_TARGETS.fs,
+    recruits: t.personal.recruits, subpts: t.personal.subpts, paidpts: t.personal.paidpts,
+  };
+  const labels = { prospects:'Prospects', calls:'Calls', ri:'Recruiting Interviews', appts:'Client Appointments',
+    fs:'Fast Start Appts', recruits:'Personal Recruits', subpts:'Submitted Pts', paidpts:'Paid Pts' };
+
+  const grid = document.getElementById('pw-compare-grid');
+  if (!grid) return;
+  grid.innerHTML = Object.entries(targets).map(([key, target]) => {
+    const actual = Number(document.getElementById('pw-actual-' + key)?.value) || 0;
+    const hit = actual >= target;
+    const color = hit ? '#2DCA73' : '#E67E22';
+    return `<div class="ws-compare-item">
+      <div class="wc-label">${labels[key]}</div>
+      <div class="wc-actual" style="color:${color};">${actual} / ${target.toLocaleString()}</div>
+      <div class="wc-pace">${hit ? '✓ standard met' : `${target-actual} short`}</div>
+    </div>`;
+  }).join('');
+  savePerfectWeek();
+}
+
+function autofillPerfectWeekFromTracker() {
+  const statusEl = document.getElementById('pw-autofill-status');
+  const now = new Date();
+  const day = now.getDay();
+  const monday = new Date(now);
+  monday.setDate(now.getDate() + ((day === 0 ? -6 : 1) - day));
+
+  const totals = { prospects:0, calls:0, ri:0, appts:0, fs:0, recruits:0 };
+  let daysFound = 0;
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday); d.setDate(d.getDate() + i);
+    const dateStr = d.toISOString().slice(0,10);
+    let raw = null;
+    try { raw = JSON.parse(localStorage.getItem(`dba_tracker_${currentIdentity().id}_${dateStr}`) || 'null'); } catch(e) {}
+    if (!raw || !raw.counts) continue;
+    daysFound++;
+    const c = raw.counts;
+    totals.prospects += c.prospects || 0;
+    totals.calls     += c.calls || 0;
+    totals.ri         += c.ri || 0;
+    totals.appts      += c.pers_ga || 0; // closest available proxy for client appointments
+    totals.fs          += c.fs || 0;
+    totals.recruits     += c.recruits || 0;
+  }
+  document.getElementById('pw-actual-prospects').value = totals.prospects;
+  document.getElementById('pw-actual-calls').value = totals.calls;
+  document.getElementById('pw-actual-ri').value = totals.ri;
+  document.getElementById('pw-actual-appts').value = totals.appts;
+  document.getElementById('pw-actual-fs').value = totals.fs;
+  document.getElementById('pw-actual-recruits').value = totals.recruits;
+  renderPerfectWeekCompare();
+
+  if (statusEl) {
+    statusEl.textContent = daysFound
+      ? `✓ Filled from ${daysFound} logged day${daysFound===1?'':'s'} this week — Submitted/Paid Points still need to be entered by hand`
+      : '⚠ No logged Activity Tracker days found for this week';
+  }
+}
+
+const PW_DAYS = ['mon','tue','wed','thu','fri','sat','sun'];
+const PW_DAY_LABELS = { mon:'Monday', tue:'Tuesday', wed:'Wednesday', thu:'Thursday', fri:'Friday', sat:'Saturday', sun:'Sunday' };
+let pwDaysRendered = false;
+function renderPerfectWeekDays() {
+  const el = document.getElementById('pw-days-container');
+  if (!el) return;
+  el.innerHTML = PW_DAYS.map(d => `<div class="ws-day-card">
+      <div class="ws-day-name">${PW_DAY_LABELS[d]}</div>
+      <div style="font-size:10px;color:var(--slate);margin-bottom:6px;">Time-block: when will you prospect, call, and run appointments today?</div>
+      <input class="pw-field" type="text" id="pw-day-${d}-1" placeholder="Morning block — e.g. 8-10am calls">
+      <input class="pw-field" type="text" id="pw-day-${d}-2" placeholder="Afternoon block">
+      <input class="pw-field" type="text" id="pw-day-${d}-3" placeholder="Evening block" style="margin-bottom:0;">
+    </div>`).join('');
+}
+
+function collectPerfectWeekFields() {
+  const data = { tier: pwTier };
+  document.querySelectorAll('.pw-field').forEach(f => { data[f.id] = f.value; });
+  return data;
+}
+function loadPerfectWeek() {
+  let data = {};
+  try { data = JSON.parse(localStorage.getItem(getPwKey()) || '{}'); } catch(e) {}
+  document.querySelectorAll('.pw-field').forEach(f => { f.value = data[f.id] || ''; });
+}
+function savePerfectWeek() {
+  try {
+    localStorage.setItem(getPwKey(), JSON.stringify(collectPerfectWeekFields()));
+    const statusEl = document.getElementById('pw-save-status');
+    if (statusEl) statusEl.textContent = '✓ Saved';
+  } catch(e) {
+    const statusEl = document.getElementById('pw-save-status');
+    if (statusEl) statusEl.textContent = '⚠ Could not save — storage may be full';
+  }
+}
+let pwAutosaveTimer = null;
+function startPerfectWeekAutosave() {
+  if (pwAutosaveTimer) return;
+  pwAutosaveTimer = setInterval(() => {
+    try {
+      localStorage.setItem(getPwKey(), JSON.stringify(collectPerfectWeekFields()));
+      const statusEl = document.getElementById('pw-save-status');
+      if (statusEl) statusEl.textContent = `💾 Autosaved — ${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`;
+    } catch(e) {}
+  }, 120000);
+}
+
+function downloadPerfectWeek() {
+  const d = collectPerfectWeekFields();
+  const name = currentIdentity().name || 'Guest';
+  const t = PW_TIER_TARGETS[d.tier || pwTier];
+  const schedule = PW_DAYS.map(day => {
+    const blocks = [d[`pw-day-${day}-1`], d[`pw-day-${day}-2`], d[`pw-day-${day}-3`]].filter(Boolean);
+    return `${PW_DAY_LABELS[day]}:\n${blocks.length ? blocks.map(b=>'  - '+b).join('\n') : '  (not scheduled)'}`;
+  }).join('\n\n');
+
+  const text = `MY PERFECT WEEK — ${name}\nTier: ${t.label} | ${new Date().toLocaleDateString()}\n\n` +
+`FOUR LEVELS OF MY WHY\nSurvival: ${d['pw-why-survival']||'(not answered)'}\nStatus: ${d['pw-why-status']||'(not answered)'}\nFreedom: ${d['pw-why-freedom']||'(not answered)'}\nPurpose: ${d['pw-why-purpose']||'(not answered)'}\nPrimary why: ${d['pw-why-primary']||'(not selected)'} | Graduating to: ${d['pw-why-graduate']||'(not selected)'}\n\n` +
+`THE PERFECT WEEK FORMULA (${t.label})\nProspects 25+ | Calls 250+ | Recruiting Interviews 10+ | Client Appointments 6+ | Fast Start Appointments 4+\nPersonal Recruits ${t.personal.recruits}+ | Personal Submitted Pts ${t.personal.subpts.toLocaleString()} | Personal Paid Pts ${t.personal.paidpts.toLocaleString()}\nBase Recruits ${t.base.recruits}+ | Base Submitted Pts ${t.base.subpts.toLocaleString()} | Base Paid Pts ${t.base.paidpts.toLocaleString()}\n\n` +
+`THIS WEEK'S ACTUAL NUMBERS\nProspects: ${d['pw-actual-prospects']||0} | Calls: ${d['pw-actual-calls']||0} | RI: ${d['pw-actual-ri']||0} | Appointments: ${d['pw-actual-appts']||0} | Fast Start: ${d['pw-actual-fs']||0}\nRecruits: ${d['pw-actual-recruits']||0} | Submitted Pts: ${d['pw-actual-subpts']||0} | Paid Pts: ${d['pw-actual-paidpts']||0}\n\n` +
+`MY WEEKLY SCHEDULE\n${schedule}\n`;
+  downloadTextFile(`Perfect-Week-${name.replace(/\s+/g,'-')}.txt`, text);
+}
+
+const PW_MONDAY_BOARD_KEY = 'dba_perfect_week_board_id';
+async function syncPerfectWeekToMonday() {
+  const statusEl = document.getElementById('pw-save-status');
+  if (typeof AUTH === 'undefined' || !AUTH.getMondayKey?.()) {
+    if (statusEl) statusEl.textContent = '⚠ Monday.com isn\'t connected';
+    return;
+  }
+  const boardId = localStorage.getItem(PW_MONDAY_BOARD_KEY);
+  if (!boardId) {
+    if (statusEl) statusEl.textContent = '⚠ No Perfect Week board configured yet — ask an admin to set dba_perfect_week_board_id';
+    return;
+  }
+  const d = collectPerfectWeekFields();
+  const name = currentIdentity().name || 'Guest';
+  try {
+    const cacheKey = 'dba_pw_cols_' + boardId;
+    let colIds = {};
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) colIds = JSON.parse(cached);
+    else {
+      const res = await mondayQuery(`{ boards(ids: ${boardId}) { columns { id title } } }`);
+      const cols = res?.data?.boards?.[0]?.columns || [];
+      const find = (...kws) => cols.find(c => kws.some(k => c.title.toLowerCase().includes(k)))?.id || null;
+      colIds = { tier: find('tier'), prospects: find('prospects'), calls: find('calls'), ri: find('recruiting interviews','ri'),
+        appts: find('client appointments','appointments'), fs: find('fast start'), recruits: find('recruits'),
+        subpts: find('submitted'), paidpts: find('paid'), why: find('why') };
+      localStorage.setItem(cacheKey, JSON.stringify(colIds));
+    }
+    const t = PW_TIER_TARGETS[d.tier || pwTier];
+    const cv = {};
+    if (colIds.tier) cv[colIds.tier] = { label: t.label };
+    if (colIds.prospects) cv[colIds.prospects] = Number(d['pw-actual-prospects']) || 0;
+    if (colIds.calls) cv[colIds.calls] = Number(d['pw-actual-calls']) || 0;
+    if (colIds.ri) cv[colIds.ri] = Number(d['pw-actual-ri']) || 0;
+    if (colIds.appts) cv[colIds.appts] = Number(d['pw-actual-appts']) || 0;
+    if (colIds.fs) cv[colIds.fs] = Number(d['pw-actual-fs']) || 0;
+    if (colIds.recruits) cv[colIds.recruits] = Number(d['pw-actual-recruits']) || 0;
+    if (colIds.subpts) cv[colIds.subpts] = Number(d['pw-actual-subpts']) || 0;
+    if (colIds.paidpts) cv[colIds.paidpts] = Number(d['pw-actual-paidpts']) || 0;
+    if (colIds.why) cv[colIds.why] = d['pw-why-primary'] || '';
+
+    const itemName = `${name} — Perfect Week (${t.label}) — ${new Date().toISOString().slice(0,10)}`.replace(/"/g,"'");
+    await mondayQuery(`mutation { create_item(board_id:${boardId}, item_name:"${itemName}", column_values: ${JSON.stringify(JSON.stringify(cv))}, create_labels_if_missing:true) { id } }`);
+    if (statusEl) statusEl.textContent = '✓ Sent to Monday.com';
+  } catch(e) {
+    if (statusEl) statusEl.textContent = '⚠ Could not reach Monday — try again';
+  }
+}
+
+
+// Public-page variant of initPerfectWeek() — the gated version reads the
+// agent's real rank from their session; here we use whatever tier the
+// guest selected (or the logged-in agent's real rank, if there is one).
+function initPerfectWeekPublic() {
+  const isMdPlus = (session?.level || 0) >= 60;
+  pwTier = session ? (isMdPlus ? 'md' : 'nonmd') : guestTier;
+  document.getElementById('pw-tier-tab-nonmd').classList.toggle('active', pwTier === 'nonmd');
+  document.getElementById('pw-tier-tab-md').classList.toggle('active', pwTier === 'md');
+  renderPerfectWeekTierCards();
+
+  if (!pwDaysRendered) {
+    renderPerfectWeekDays();
+    pwDaysRendered = true;
+  }
+  loadPerfectWeek();
+  renderPerfectWeekCompare();
+  startPerfectWeekAutosave();
+}
+
+// If already logged in elsewhere in this browser, skip the name gate.
+if (session) {
+  document.getElementById('pw-gate').style.display = 'none';
+  document.getElementById('pw-workshop').style.display = 'block';
+  initPerfectWeekPublic();
+}
+</script>
+</body>
+</html>

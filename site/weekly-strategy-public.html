@@ -131,6 +131,9 @@ select option{background:var(--navy-mid);}
   <div class="dba-public-logo">🏆 Dynasty Builders Academy</div>
   <div style="font-size:11px;color:var(--slate);font-family:'DM Mono',monospace;">Weekly Strategies Workshop — free, no login required</div>
 </div>
+<div style="background:rgba(201,168,76,.06);border-bottom:1px solid var(--border);padding:8px 22px;font-size:11px;color:var(--slate);">
+  Also free: <a href="magic-wand-public.html" style="color:var(--gold);">🪄 The Magic Wand Exercise</a> &middot; <a href="perfect-week-public.html" style="color:var(--gold);">🌟 Design Your Perfect Week</a>
+</div>
 
 <div class="dba-public-wrap">
 
@@ -573,6 +576,7 @@ function initWeeklyStrategy() {
     goalInput.dataset.wsWired = '1';
   }
   initCompanyGoalPace();
+  startWeeklyStrategyAutosave();
 }
 
 function renderWeeklyStrategyDays() {
@@ -981,10 +985,8 @@ function wsIndexKey() {
   return `dba_weekly_strategy_index_${currentIdentity().id}`;
 }
 
-function saveWeeklyStrategy() {
-  const weekOf = document.getElementById('ws-week-of').value;
-  if (!weekOf) { document.getElementById('ws-save-status').textContent = '⚠ Pick a "Week Of" date first'; return; }
-
+// Shared by both the autosave timer and the explicit Save button.
+function collectWeeklyStrategyFields() {
   const data = {};
   document.querySelectorAll('.ws-field').forEach(field => {
     if (field.type === 'radio') {
@@ -993,6 +995,35 @@ function saveWeeklyStrategy() {
       data[field.id] = field.value;
     }
   });
+  return data;
+}
+
+// Runs every 2 minutes while this tab is open — cache only, no Monday sync.
+function autosaveWeeklyStrategyCache() {
+  const weekOf = document.getElementById('ws-week-of')?.value;
+  if (!weekOf) return;
+  const data = collectWeeklyStrategyFields();
+  try {
+    localStorage.setItem(wsStorageKey(weekOf), JSON.stringify(data));
+    const index = JSON.parse(localStorage.getItem(wsIndexKey()) || '[]');
+    if (!index.includes(weekOf)) { index.push(weekOf); index.sort().reverse(); localStorage.setItem(wsIndexKey(), JSON.stringify(index)); }
+    const statusEl = document.getElementById('ws-save-status');
+    if (statusEl) statusEl.textContent = `💾 Autosaved to this device — ${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`;
+  } catch(e) {}
+}
+let wsAutosaveTimer = null;
+function startWeeklyStrategyAutosave() {
+  if (wsAutosaveTimer) return;
+  wsAutosaveTimer = setInterval(autosaveWeeklyStrategyCache, 120000);
+}
+
+// The explicit "Save This Week's Strategy" button — the only one that
+// also pushes to Monday.com.
+function saveWeeklyStrategy() {
+  const weekOf = document.getElementById('ws-week-of').value;
+  if (!weekOf) { document.getElementById('ws-save-status').textContent = '⚠ Pick a "Week Of" date first'; return; }
+
+  const data = collectWeeklyStrategyFields();
 
   try {
     localStorage.setItem(wsStorageKey(weekOf), JSON.stringify(data));

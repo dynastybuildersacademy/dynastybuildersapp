@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Magic Wand Exercise — Dynasty Builders Academy</title>
+<meta name="description" content="Brian Tracy's Magic Wand Exercise — design your ideal life 5 years from now, free, no login required.">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,400&family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="auth.js"></script>
+<style>
+:root{--navy:#F5F1E8;--navy-mid:#FFFFFF;--navy-light:#ECE6D6;--gold:#C9A84C;--gold-light:#E8C97A;--cream:#1E1A10;--success:#27AE60;--warn:#E67E22;--danger:#C0392B;--slate:#6B7C93;--border:rgba(201,168,76,0.22);}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);min-height:100vh;}
+.header{background:rgba(245,241,232,0.97);border-bottom:1px solid var(--border);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;backdrop-filter:blur(10px);}
+.header-left{display:flex;align-items:center;gap:12px;}
+.shield{width:30px;height:34px;background:linear-gradient(160deg,var(--gold) 0%,#7a5c14 100%);clip-path:polygon(50% 0%,100% 18%,100% 65%,50% 100%,0% 65%,0% 18%);display:flex;align-items:center;justify-content:center;font-size:12px;}
+.header h1{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--gold);}
+.back-btn{font-size:12px;color:var(--gold);text-decoration:none;border:1px solid var(--border);padding:6px 12px;border-radius:3px;}
+/* TABS */
+.tab-bar{display:flex;border-bottom:1px solid var(--border);background:var(--navy-mid);overflow-x:auto;padding:0 22px;gap:0;}
+.tab{padding:13px 20px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;cursor:pointer;border-bottom:2px solid transparent;color:var(--slate);transition:all 0.2s;white-space:nowrap;flex-shrink:0;}
+.tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+.tab:hover:not(.active){color:var(--cream);}
+.content{padding:22px 24px;max-width:860px;margin:0 auto;}
+.panel{display:none;animation:fadeIn 0.3s ease;}
+.panel.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+/* MODULES */
+.page-title{font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--gold);margin-bottom:6px;}
+.page-sub{font-size:13px;color:var(--slate);margin-bottom:22px;line-height:1.6;}
+.module{background:var(--navy-mid);border:1px solid var(--border);border-radius:4px;margin-bottom:12px;overflow:hidden;}
+.module-hdr{padding:16px 20px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:background 0.15s;user-select:none;}
+.module-hdr:hover{background:rgba(201,168,76,0.04);}
+.mod-num{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;color:var(--gold);min-width:34px;}
+.mod-title{font-size:14px;font-weight:600;flex:1;}
+.mod-toggle{font-size:12px;color:var(--gold);transition:transform 0.25s;}
+.module-body{display:none;padding:16px 20px 20px;border-top:1px solid var(--border);font-size:13px;line-height:1.8;color:rgba(20,16,8,0.9);}
+.module-body.open{display:block;}
+.module-body ul{padding-left:20px;}
+.module-body li{margin-bottom:7px;}
+.module-body strong{color:var(--gold-light);}
+.script-box{background:var(--navy);border-left:3px solid var(--gold);padding:14px 16px;border-radius:0 4px 4px 0;margin:12px 0;font-size:13px;line-height:1.8;font-style:italic;}
+.table-sm{width:100%;border-collapse:collapse;margin:10px 0;font-size:12px;}
+.table-sm th{font-family:'Barlow Condensed',sans-serif;font-size:10px;color:var(--gold);letter-spacing:0.1em;text-transform:uppercase;padding:7px 10px;text-align:left;border-bottom:1px solid var(--gold);}
+.table-sm td{padding:8px 10px;border-bottom:1px solid rgba(201,168,76,0.07);}
+.table-sm tr:hover td{background:rgba(201,168,76,0.03);}
+/* ROLEPLAY */
+.rp-card{background:var(--navy-mid);border:1px solid var(--border);border-radius:4px;padding:20px;margin-bottom:16px;}
+.rp-card-title{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:0.09em;margin-bottom:14px;}
+.field-label{font-size:11px;color:rgba(20,16,8,0.6);font-weight:600;letter-spacing:0.09em;text-transform:uppercase;display:block;margin-bottom:6px;}
+select,input{width:100%;background:var(--navy);border:1px solid var(--border);color:var(--cream);font-family:'Barlow',sans-serif;font-size:13px;padding:10px 12px;border-radius:3px;margin-bottom:12px;}
+textarea{width:100%;background:var(--navy);border:1px solid var(--border);color:var(--cream);font-family:'Barlow',sans-serif;font-size:13px;padding:10px 12px;border-radius:3px;margin-bottom:12px;min-height:64px;resize:vertical;}
+.ws-step{background:var(--navy-mid);border:1px solid var(--border);border-radius:6px;padding:20px;margin-bottom:16px;}
+.ws-step-num{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:rgba(201,168,76,.15);color:var(--gold);font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:13px;margin-right:10px;}
+.ws-step-title{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:800;color:var(--cream);display:inline;}
+.ws-principle{font-size:11px;color:var(--gold);font-style:italic;margin:4px 0 14px 36px;}
+.ws-grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.ws-grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+@media(max-width:640px){.ws-grid2,.ws-grid3{grid-template-columns:1fr;}}
+.ws-mini-label{font-size:10px;color:var(--slate);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:4px;}
+.ws-day-card{background:var(--navy);border:1px solid var(--border);border-radius:5px;padding:12px;margin-bottom:8px;}
+.ws-day-name{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;color:var(--gold);margin-bottom:8px;}
+.ws-declaration{background:rgba(201,168,76,.06);border:1px dashed rgba(201,168,76,.35);border-radius:6px;padding:18px;font-family:'Cormorant Garamond',serif;font-size:16px;line-height:1.9;color:var(--cream);}
+.ws-obstacle-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+@media(max-width:640px){.ws-obstacle-row{grid-template-columns:1fr;}}
+.ws-rating-row{display:flex;gap:14px;flex-wrap:wrap;align-items:center;}
+.ws-rating{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.ws-rating input{width:56px;text-align:center;margin-bottom:0;}
+.ws-rating label{font-size:9px;color:var(--slate);text-transform:uppercase;}
+.ws-target-badge{display:block;font-size:10px;font-weight:700;margin-top:-8px;margin-bottom:12px;}
+.ws-target-badge.hit{color:#2DCA73;}
+.ws-target-badge.miss{color:#E67E22;}
+.ws-compare-card{background:rgba(201,168,76,.05);border:1px solid rgba(201,168,76,.2);border-radius:8px;padding:16px;margin-top:6px;}
+.ws-compare-title{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;}
+.ws-compare-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+@media(max-width:640px){.ws-compare-grid{grid-template-columns:repeat(2,1fr);}}
+.ws-compare-item{background:var(--navy);border:1px solid var(--border);border-radius:6px;padding:10px;text-align:center;}
+.ws-compare-item .wc-label{font-size:9.5px;color:var(--slate);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;}
+.ws-compare-item .wc-actual{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;}
+.ws-compare-item .wc-target{font-size:10px;color:var(--slate);}
+.ws-compare-item .wc-trend{font-size:11px;margin-top:4px;font-weight:700;}
+.ws-goal-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;}
+.ws-goal-row span{font-size:12.5px;color:var(--slate);flex-shrink:0;}
+.ws-goal-row input{margin-bottom:0;max-width:110px;text-align:right;}
+.ws-goal-period-tabs{display:flex;gap:8px;margin-bottom:14px;}
+.ws-period-tab{background:rgba(255,255,255,.04);border:1px solid var(--border);color:var(--slate);border-radius:6px;padding:8px 16px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;cursor:pointer;}
+.ws-period-tab.active{background:rgba(201,168,76,.12);color:var(--gold);border-color:var(--gold);}
+.wc-pace{font-size:10.5px;color:var(--slate);margin-top:6px;line-height:1.5;}
+select:focus,input:focus{outline:none;border-color:var(--gold);}
+select option{background:var(--navy-mid);}
+.btn-gold{background:linear-gradient(135deg,var(--gold) 0%,#9a7018 100%);color:var(--navy);border:none;padding:11px 22px;border-radius:3px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;letter-spacing:0.06em;cursor:pointer;transition:opacity 0.2s;}
+.btn-gold:hover{opacity:0.87;}
+.chat-box{background:var(--navy);border:1px solid var(--border);border-radius:4px;overflow:hidden;margin-top:14px;}
+.chat-msgs{height:280px;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;}
+.chat-msgs::-webkit-scrollbar{width:3px;}
+.chat-msgs::-webkit-scrollbar-thumb{background:var(--gold);border-radius:2px;}
+.chat-msg{max-width:88%;padding:9px 13px;border-radius:4px;font-size:13px;line-height:1.55;}
+.chat-msg.user{align-self:flex-end;background:rgba(201,168,76,0.15);border:1px solid rgba(201,168,76,0.3);}
+.chat-msg.ai{align-self:flex-start;background:var(--navy-light);border:1px solid var(--border);}
+.chat-msg.ai .name{font-size:9px;color:var(--gold);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;}
+.chat-msg.typing span{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--slate);margin:0 1px;animation:blink 1s infinite;}
+.chat-msg.typing span:nth-child(2){animation-delay:0.2s;}
+.chat-msg.typing span:nth-child(3){animation-delay:0.4s;}
+@keyframes blink{0%,100%{opacity:0.2;}50%{opacity:1;}}
+.chat-input-row{display:flex;border-top:1px solid var(--border);}
+.chat-input{flex:1;background:transparent;border:none;padding:10px 14px;color:var(--cream);font-family:'Barlow',sans-serif;font-size:13px;}
+.chat-input:focus{outline:none;}
+.chat-input::placeholder{color:var(--slate);}
+.mic-btn{width:40px;height:40px;border-radius:50%;border:1.5px solid rgba(201,168,76,.3);
+  background:rgba(201,168,76,.1);font-size:18px;cursor:pointer;flex-shrink:0;
+  transition:all .15s;display:flex;align-items:center;justify-content:center;}
+.mic-btn.listening{background:rgba(231,76,60,.2);border-color:rgba(231,76,60,.5);animation:mic-pulse 1s ease-in-out infinite;}
+@keyframes mic-pulse{0%,100%{box-shadow:0 0 0 0 rgba(231,76,60,.3);}50%{box-shadow:0 0 0 8px rgba(231,76,60,0);}}
+.chat-send{background:var(--gold);border:none;padding:0 18px;color:var(--navy);cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;}
+.feedback-box{background:rgba(201,168,76,0.07);border:1px solid rgba(201,168,76,0.25);border-radius:4px;padding:16px;margin-top:14px;font-size:13px;line-height:1.8;display:none;}
+.score-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;}
+.score{background:var(--navy);border:1px solid var(--border);border-radius:4px;padding:10px 16px;text-align:center;min-width:90px;}
+.score-val{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:800;color:var(--gold-light);}
+.score-lbl{font-size:10px;color:var(--slate);text-transform:uppercase;letter-spacing:0.08em;margin-top:2px;}
+
+.dba-public-header{background:var(--navy-mid);border-bottom:1px solid var(--border);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+.dba-public-logo{font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:800;color:var(--gold);}
+.dba-public-wrap{max-width:760px;margin:0 auto;padding:24px 22px 60px;}
+.dba-gate{max-width:420px;margin:60px auto;text-align:center;}
+.dba-gate input{margin-bottom:14px;}
+</style>
+</head>
+<body>
+
+<div class="dba-public-header">
+  <div class="dba-public-logo">🏆 Dynasty Builders Academy</div>
+  <div style="font-size:11px;color:var(--slate);font-family:'DM Mono',monospace;">The Magic Wand Exercise — free, no login required</div>
+</div>
+<div style="background:rgba(201,168,76,.06);border-bottom:1px solid var(--border);padding:8px 22px;font-size:11px;color:var(--slate);">
+  Also free: <a href="weekly-strategy-public.html" style="color:var(--gold);">🎯 Weekly Strategies Workshop</a> &middot; <a href="perfect-week-public.html" style="color:var(--gold);">🌟 Design Your Perfect Week</a>
+</div>
+
+<div class="dba-public-wrap">
+
+  <div class="dba-gate" id="mw-gate">
+    <div class="page-title" style="text-align:center;">🪄 The Magic Wand Exercise</div>
+    <div class="page-sub" style="text-align:center;">Brian Tracy — design your ideal life, 5 years from now.</div>
+    <label class="field-label">Your Name</label>
+    <input type="text" id="mw-guest-name" placeholder="Enter your name to begin">
+    <button class="btn-gold" style="width:100%;" onclick="startAsGuest()">Begin →</button>
+  </div>
+
+  <div id="mw-workshop" style="display:none;">
+
+  <div class="rp-card" style="margin-bottom:20px;">
+    <div class="rp-card-title">🪄 The Magic Wand Exercise — Brian Tracy</div>
+    <p style="font-size:13px;line-height:1.8;color:rgba(20,16,8,.9);margin-bottom:10px;">Imagine you could wave a magic wand and make your life perfect in every key area. If your life was completely ideal 5 years from now, what would it look like? Write it as if you're describing a movie of your future life — absolute clarity, no hedging.</p>
+
+    <label class="field-label">1. Career and Business</label>
+    <div style="font-size:11px;color:var(--slate);margin:-6px 0 6px;">What would you be doing? How much would you be earning? What level of success would you have attained?</div>
+    <textarea class="mw-field" id="mw-career" style="min-height:70px;"></textarea>
+
+    <label class="field-label">2. Family and Relationships</label>
+    <div style="font-size:11px;color:var(--slate);margin:-6px 0 6px;">What kind of lifestyle do you want to create for yourself and the people closest to you? Who would be there with you?</div>
+    <textarea class="mw-field" id="mw-family" style="min-height:70px;"></textarea>
+
+    <label class="field-label">3. Health and Fitness</label>
+    <div style="font-size:11px;color:var(--slate);margin:-6px 0 6px;">How would your health be different if it was perfect in every way?</div>
+    <textarea class="mw-field" id="mw-health" style="min-height:70px;"></textarea>
+
+    <label class="field-label">4. Financial Net Worth</label>
+    <div style="font-size:11px;color:var(--slate);margin:-6px 0 6px;">How much money do you want to save and accumulate over your lifetime?</div>
+    <textarea class="mw-field" id="mw-networth" style="min-height:70px;"></textarea>
+
+    <label class="field-label">5. Lifestyle and Time Use</label>
+    <div style="font-size:11px;color:var(--slate);margin:-6px 0 6px;">How would you spend an ideal day, week, or year? Where would you live?</div>
+    <textarea class="mw-field" id="mw-lifestyle" style="min-height:70px;"></textarea>
+
+    <label class="field-label" style="margin-top:6px;">Present-Tense Goals</label>
+    <div style="font-size:11px;color:var(--slate);margin:-6px 0 8px;">Write your top goals daily in the present tense, starting with "I" — e.g. "I earn $10,000/month by December 2027" or "I am at my ideal weight."</div>
+    <input class="mw-field" type="text" id="mw-goal-1" placeholder="I ...">
+    <input class="mw-field" type="text" id="mw-goal-2" placeholder="I ...">
+    <input class="mw-field" type="text" id="mw-goal-3" placeholder="I ...">
+
+    <label class="field-label" style="margin-top:6px;">Reverse Engineering</label>
+    <div style="font-size:11px;color:var(--slate);margin:-6px 0 6px;">Work backward from your ideal life to today, then take action on at least one thing immediately. What's the very next action you can take right now?</div>
+    <textarea class="mw-field" id="mw-nextaction" style="min-height:60px;"></textarea>
+
+    <button class="btn-gold" style="width:100%;margin-top:6px;" onclick="saveMagicWand()">💾 Save My Magic Wand Vision</button>
+    <div style="display:flex;gap:10px;margin-top:8px;">
+      <button class="btn-gold" style="flex:1;background:rgba(201,168,76,.12);color:var(--gold);" onclick="downloadMagicWand()">📄 Download as Text</button>
+      <button class="btn-gold" style="flex:1;background:rgba(201,168,76,.12);color:var(--gold);" onclick="syncMagicWandToMonday()">☁ Send to Monday.com</button>
+    </div>
+    <div id="mw-save-status" style="text-align:center;font-size:12px;color:var(--slate);margin-top:8px;"></div>
+  </div>
+
+  </div>
+
+</div>
+
+<script>
+// ── IDENTITY ──────────────────────────────────────────────────
+let session = (typeof AUTH !== 'undefined' && AUTH.getSession) ? AUTH.getSession() : null;
+let guestName = '';
+
+function currentIdentity() {
+  if (session) return { id: session.agentId, name: session.name };
+  return { id: 'guest_' + guestName.toLowerCase().replace(/[^a-z0-9]+/g,'_'), name: guestName };
+}
+
+function startAsGuest() {
+  const input = document.getElementById('mw-guest-name');
+  const name = input.value.trim();
+  if (!name) { input.focus(); input.style.borderColor = '#C0392B'; return; }
+  guestName = name;
+  document.getElementById('mw-gate').style.display = 'none';
+  document.getElementById('mw-workshop').style.display = 'block';
+  loadMagicWand();
+  setInterval(autosaveMagicWand, 120000);
+}
+
+function toast(msg) {
+  let el = document.getElementById('dba-toast');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'dba-toast';
+    el.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--gold);color:#1E1A10;padding:10px 20px;border-radius:6px;font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:13px;z-index:999;opacity:0;transition:opacity .25s;pointer-events:none;';
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  el.style.opacity = '1';
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.style.opacity = '0', 2400);
+}
+
+const MAGIC_WAND_KEY = `dba_magic_wand_${currentIdentity().id}`;
+function collectMagicWandFields() {
+  const data = {};
+  document.querySelectorAll('.mw-field').forEach(f => { data[f.id] = f.value; });
+  return data;
+}
+function loadMagicWand() {
+  let data = {};
+  try { data = JSON.parse(localStorage.getItem(MAGIC_WAND_KEY) || '{}'); } catch(e) {}
+  document.querySelectorAll('.mw-field').forEach(f => { f.value = data[f.id] || ''; });
+}
+function saveMagicWand() {
+  try {
+    localStorage.setItem(MAGIC_WAND_KEY, JSON.stringify(collectMagicWandFields()));
+    document.getElementById('mw-save-status').textContent = '✓ Saved';
+  } catch(e) {
+    document.getElementById('mw-save-status').textContent = '⚠ Could not save — storage may be full';
+  }
+}
+function autosaveMagicWand() {
+  try {
+    localStorage.setItem(MAGIC_WAND_KEY, JSON.stringify(collectMagicWandFields()));
+    const statusEl = document.getElementById('mw-save-status');
+    if (statusEl) statusEl.textContent = `💾 Autosaved — ${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`;
+  } catch(e) {}
+}
+loadMagicWand();
+setInterval(autosaveMagicWand, 120000); // every 2 minutes, same cadence as Weekly Strategy
+
+// Shared by any tool that wants a plain-text download — builds a .txt
+// file client-side and triggers the browser's own download, no server
+// or library involved.
+function downloadTextFile(filename, text) {
+  const blob = new Blob([text], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function downloadMagicWand() {
+  const d = collectMagicWandFields();
+  const name = currentIdentity().name || 'Guest';
+  const text = `THE MAGIC WAND EXERCISE — ${name}\nBrian Tracy | ${new Date().toLocaleDateString()}\n\n` +
+`1. CAREER AND BUSINESS\n${d['mw-career'] || '(not answered)'}\n\n` +
+`2. FAMILY AND RELATIONSHIPS\n${d['mw-family'] || '(not answered)'}\n\n` +
+`3. HEALTH AND FITNESS\n${d['mw-health'] || '(not answered)'}\n\n` +
+`4. FINANCIAL NET WORTH\n${d['mw-networth'] || '(not answered)'}\n\n` +
+`5. LIFESTYLE AND TIME USE\n${d['mw-lifestyle'] || '(not answered)'}\n\n` +
+`PRESENT-TENSE GOALS\n${[d['mw-goal-1'], d['mw-goal-2'], d['mw-goal-3']].filter(Boolean).map(g=>'- '+g).join('\n') || '(none entered)'}\n\n` +
+`REVERSE ENGINEERING — NEXT ACTION\n${d['mw-nextaction'] || '(not answered)'}\n`;
+  downloadTextFile(`Magic-Wand-Vision-${name.replace(/\s+/g,'-')}.txt`, text);
+}
+
+const MAGIC_WAND_BOARD_KEY = 'dba_magic_wand_board_id';
+async function syncMagicWandToMonday() {
+  const statusEl = document.getElementById('mw-save-status');
+  if (typeof AUTH === 'undefined' || !AUTH.getMondayKey?.()) {
+    if (statusEl) statusEl.textContent = '⚠ Monday.com isn\'t connected';
+    return;
+  }
+  const boardId = localStorage.getItem(MAGIC_WAND_BOARD_KEY);
+  if (!boardId) {
+    if (statusEl) statusEl.textContent = '⚠ No Magic Wand board configured yet — ask an admin to set dba_magic_wand_board_id';
+    return;
+  }
+  const d = collectMagicWandFields();
+  const name = currentIdentity().name || 'Guest';
+  try {
+    const cacheKey = 'dba_mw_cols_' + boardId;
+    let colIds = {};
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) colIds = JSON.parse(cached);
+    else {
+      const res = await mondayQuery(`{ boards(ids: ${boardId}) { columns { id title } } }`);
+      const cols = res?.data?.boards?.[0]?.columns || [];
+      const find = (...kws) => cols.find(c => kws.some(k => c.title.toLowerCase().includes(k)))?.id || null;
+      colIds = { career: find('career'), family: find('family'), health: find('health'),
+        networth: find('net worth','networth'), lifestyle: find('lifestyle'), goals: find('goal'), nextaction: find('next action','action') };
+      localStorage.setItem(cacheKey, JSON.stringify(colIds));
+    }
+    const cv = {};
+    if (colIds.career) cv[colIds.career] = d['mw-career'] || '';
+    if (colIds.family) cv[colIds.family] = d['mw-family'] || '';
+    if (colIds.health) cv[colIds.health] = d['mw-health'] || '';
+    if (colIds.networth) cv[colIds.networth] = d['mw-networth'] || '';
+    if (colIds.lifestyle) cv[colIds.lifestyle] = d['mw-lifestyle'] || '';
+    if (colIds.goals) cv[colIds.goals] = [d['mw-goal-1'],d['mw-goal-2'],d['mw-goal-3']].filter(Boolean).join(' | ');
+    if (colIds.nextaction) cv[colIds.nextaction] = d['mw-nextaction'] || '';
+
+    const itemName = `${name} — Magic Wand Vision`.replace(/"/g,"'");
+    await mondayQuery(`mutation { create_item(board_id:${boardId}, item_name:"${itemName}", column_values: ${JSON.stringify(JSON.stringify(cv))}, create_labels_if_missing:true) { id } }`);
+    if (statusEl) statusEl.textContent = '✓ Sent to Monday.com';
+  } catch(e) {
+    if (statusEl) statusEl.textContent = '⚠ Could not reach Monday — try again';
+  }
+}
+
+
+// If already logged in elsewhere in this browser, skip the name gate.
+if (session) {
+  document.getElementById('mw-gate').style.display = 'none';
+  document.getElementById('mw-workshop').style.display = 'block';
+  loadMagicWand();
+  setInterval(autosaveMagicWand, 120000);
+}
+</script>
+</body>
+</html>
