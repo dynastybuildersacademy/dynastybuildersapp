@@ -7,6 +7,7 @@
 <script src="auth.js"></script>
 <script src="quiz-engine.js"></script>
 <script src="quizzes.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 :root{--navy:#F5F1E8;--navy-mid:#FFFFFF;--navy-light:#ECE6D6;--gold:#C9A84C;--gold-light:#E8C97A;--cream:#1E1A10;--success:#27AE60;--warn:#E67E22;--danger:#C0392B;--slate:#6B7C93;--border:rgba(201,168,76,0.22);}
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -67,6 +68,18 @@ textarea{width:100%;background:var(--navy);border:1px solid var(--border);color:
 .ws-rating{display:flex;flex-direction:column;align-items:center;gap:4px;}
 .ws-rating input{width:56px;text-align:center;margin-bottom:0;}
 .ws-rating label{font-size:9px;color:var(--slate);text-transform:uppercase;}
+.ws-target-badge{display:block;font-size:10px;font-weight:700;margin-top:-8px;margin-bottom:12px;}
+.ws-target-badge.hit{color:#2DCA73;}
+.ws-target-badge.miss{color:#E67E22;}
+.ws-compare-card{background:rgba(201,168,76,.05);border:1px solid rgba(201,168,76,.2);border-radius:8px;padding:16px;margin-top:6px;}
+.ws-compare-title{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;}
+.ws-compare-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+@media(max-width:640px){.ws-compare-grid{grid-template-columns:repeat(2,1fr);}}
+.ws-compare-item{background:var(--navy);border:1px solid var(--border);border-radius:6px;padding:10px;text-align:center;}
+.ws-compare-item .wc-label{font-size:9.5px;color:var(--slate);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;}
+.ws-compare-item .wc-actual{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;}
+.ws-compare-item .wc-target{font-size:10px;color:var(--slate);}
+.ws-compare-item .wc-trend{font-size:11px;margin-top:4px;font-weight:700;}
 select:focus,input:focus{outline:none;border-color:var(--gold);}
 select option{background:var(--navy-mid);}
 .btn-gold{background:linear-gradient(135deg,var(--gold) 0%,#9a7018 100%);color:var(--navy);border:none;padding:11px 22px;border-radius:3px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;letter-spacing:0.06em;cursor:pointer;transition:opacity 0.2s;}
@@ -452,17 +465,26 @@ select option{background:var(--navy-mid);}
     <span class="ws-step-num">1</span><span class="ws-step-title">Assess Your Current State</span>
     <div class="ws-principle">Principle: Accurate Thinking — before deciding where you're going, get clear about where you are.</div>
     <div class="ws-grid3">
-      <div><label class="ws-mini-label">Prospects</label><input class="ws-field" type="number" id="ws-last-prospects" min="0"></div>
-      <div><label class="ws-mini-label">Calls</label><input class="ws-field" type="number" id="ws-last-calls" min="0"></div>
-      <div><label class="ws-mini-label">Appointments</label><input class="ws-field" type="number" id="ws-last-appointments" min="0"></div>
-      <div><label class="ws-mini-label">Guests</label><input class="ws-field" type="number" id="ws-last-guests" min="0"></div>
-      <div><label class="ws-mini-label">Recruits</label><input class="ws-field" type="number" id="ws-last-recruits" min="0"></div>
+      <div><label class="ws-mini-label">Prospects</label><input class="ws-field" type="number" id="ws-last-prospects" min="0" oninput="updateWsTargetBadges()"><span class="ws-target-badge" id="ws-badge-prospects"></span></div>
+      <div><label class="ws-mini-label">Calls</label><input class="ws-field" type="number" id="ws-last-calls" min="0" oninput="updateWsTargetBadges()"><span class="ws-target-badge" id="ws-badge-calls"></span></div>
+      <div><label class="ws-mini-label">Appointments</label><input class="ws-field" type="number" id="ws-last-appointments" min="0" oninput="updateWsTargetBadges()"><span class="ws-target-badge" id="ws-badge-appointments"></span></div>
+      <div><label class="ws-mini-label">Guests</label><input class="ws-field" type="number" id="ws-last-guests" min="0" oninput="updateWsTargetBadges()"><span class="ws-target-badge" id="ws-badge-guests"></span></div>
+      <div><label class="ws-mini-label">Recruits</label><input class="ws-field" type="number" id="ws-last-recruits" min="0" oninput="updateWsTargetBadges()"><span class="ws-target-badge" id="ws-badge-recruits"></span></div>
       <div><label class="ws-mini-label">Families Served</label><input class="ws-field" type="number" id="ws-last-families" min="0"></div>
       <div><label class="ws-mini-label">Applications</label><input class="ws-field" type="number" id="ws-last-applications" min="0"></div>
-      <div><label class="ws-mini-label">Submitted Points</label><input class="ws-field" type="number" id="ws-last-subpts" min="0"></div>
-      <div><label class="ws-mini-label">Paid Points</label><input class="ws-field" type="number" id="ws-last-paidpts" min="0"></div>
-      <div><label class="ws-mini-label">Licensing Activity</label><input class="ws-field" type="text" id="ws-last-licensing"></div>
+      <div><label class="ws-mini-label">Submitted Points</label><input class="ws-field" type="number" id="ws-last-subpts" min="0" oninput="updateWsTargetBadges()"><span class="ws-target-badge" id="ws-badge-subpts"></span></div>
+      <div><label class="ws-mini-label">Paid Points</label><input class="ws-field" type="number" id="ws-last-paidpts" min="0" oninput="updateWsTargetBadges()"><span class="ws-target-badge" id="ws-badge-paidpts"></span></div>
+      <div><label class="ws-mini-label">Licensed Agents</label><input class="ws-field" type="number" id="ws-last-licensing" min="0" oninput="updateWsTargetBadges()"><span class="ws-target-badge" id="ws-badge-licensing"></span></div>
       <div><label class="ws-mini-label">Follow-Ups Completed</label><input class="ws-field" type="number" id="ws-last-followups" min="0"></div>
+    </div>
+
+    <div class="ws-compare-card" id="ws-compare-card">
+      <div class="ws-compare-title">📊 This Week vs. Target &amp; Last Week</div>
+      <div id="ws-compare-grid" class="ws-compare-grid"></div>
+      <div style="margin-top:16px;">
+        <canvas id="ws-trend-chart" height="90"></canvas>
+      </div>
+      <div id="ws-chart-empty" style="font-size:11.5px;color:var(--slate);text-align:center;padding:10px 0;display:none;">Save a couple of weeks to start seeing your trend here.</div>
     </div>
 
     <div style="margin-top:6px;font-family:'Cormorant Garamond',serif;font-size:16px;color:var(--gold-light);margin-bottom:10px;">
@@ -579,7 +601,7 @@ select option{background:var(--navy-mid);}
       <div><label class="ws-mini-label">Follow-Ups</label><input class="ws-field" type="number" id="ws-plan-followups" min="0"></div>
       <div><label class="ws-mini-label">Families Served</label><input class="ws-field" type="number" id="ws-plan-families" min="0"></div>
       <div><label class="ws-mini-label">Points Target</label><input class="ws-field" type="number" id="ws-plan-points" min="0"></div>
-      <div><label class="ws-mini-label">Licensing Activity</label><input class="ws-field" type="text" id="ws-plan-licensing"></div>
+      <div><label class="ws-mini-label">Licensed Agents</label><input class="ws-field" type="number" id="ws-plan-licensing" min="0"></div>
     </div>
   </div>
 
@@ -1601,6 +1623,9 @@ function saveWeeklyStrategy() {
     if (!index.includes(weekOf)) { index.push(weekOf); index.sort().reverse(); localStorage.setItem(wsIndexKey(), JSON.stringify(index)); }
     document.getElementById('ws-save-status').textContent = `✓ Saved — Week of ${weekOf}`;
     populateWeekPicker();
+    updateWsTargetBadges();
+    renderWsCompare();
+    syncWeeklyStrategyToMonday(weekOf, data);
   } catch(e) {
     document.getElementById('ws-save-status').textContent = '⚠ Could not save — storage may be full';
   }
@@ -1622,6 +1647,163 @@ function loadWeeklyStrategy() {
   const goalInput = document.getElementById('ws-goal-text');
   document.getElementById('ws-decl-goal').textContent = (goalInput.value || '').trim() || '___________________';
   document.getElementById('ws-save-status').textContent = Object.keys(data).length ? `Loaded — Week of ${weekOf}` : 'New week — nothing saved yet';
+  updateWsTargetBadges();
+  renderWsCompare();
+}
+
+// ── WEEKLY ACTIVITY TARGETS ───────────────────────────────────
+const WS_TARGETS = {
+  prospects: 25, calls: 250, appointments: 20, guests: 2, recruits: 1,
+  subpts: 7000, paidpts: 5000, licensing: 1,
+};
+const WS_METRIC_LABELS = {
+  prospects: 'Prospects', calls: 'Calls', appointments: 'Appointments', guests: 'Guests',
+  recruits: 'Recruits', subpts: 'Submitted Pts', paidpts: 'Paid Pts', licensing: 'Licensed Agents',
+};
+
+function updateWsTargetBadges() {
+  Object.entries(WS_TARGETS).forEach(([key, target]) => {
+    const input = document.getElementById('ws-last-' + key);
+    const badge = document.getElementById('ws-badge-' + key);
+    if (!input || !badge) return;
+    const val = Number(input.value) || 0;
+    if (input.value === '') { badge.textContent = ''; badge.className = 'ws-target-badge'; return; }
+    const hit = val >= target;
+    badge.textContent = hit ? `✓ ${val} / ${target} — target hit` : `${val} / ${target} — ${target - val} short`;
+    badge.className = 'ws-target-badge ' + (hit ? 'hit' : 'miss');
+  });
+}
+
+let wsChartInstance = null;
+function renderWsCompare() {
+  const grid = document.getElementById('ws-compare-grid');
+  if (!grid) return;
+
+  let index = [];
+  try { index = JSON.parse(localStorage.getItem(wsIndexKey()) || '[]'); } catch(e) {}
+  const sortedWeeks = [...index].sort(); // oldest -> newest for chart order
+  const currentWeek = document.getElementById('ws-week-of')?.value || '';
+  const priorWeeks = sortedWeeks.filter(w => w < currentWeek);
+  const lastWeek = priorWeeks.length ? priorWeeks[priorWeeks.length - 1] : null;
+  let lastWeekData = {};
+  if (lastWeek) {
+    try { lastWeekData = JSON.parse(localStorage.getItem(wsStorageKey(lastWeek)) || '{}'); } catch(e) {}
+  }
+
+  grid.innerHTML = Object.entries(WS_TARGETS).map(([key, target]) => {
+    const input = document.getElementById('ws-last-' + key);
+    const actual = Number(input?.value) || 0;
+    const prior = Number(lastWeekData['ws-last-' + key]) || 0;
+    let trendHtml = '<span style="color:var(--slate);">— no prior week yet</span>';
+    if (lastWeek) {
+      if (actual > prior) trendHtml = `<span style="color:#2DCA73;">▲ up from ${prior}</span>`;
+      else if (actual < prior) trendHtml = `<span style="color:#E67E22;">▼ down from ${prior}</span>`;
+      else trendHtml = `<span style="color:var(--slate);">— flat vs ${prior}</span>`;
+    }
+    return `<div class="ws-compare-item">
+      <div class="wc-label">${WS_METRIC_LABELS[key]}</div>
+      <div class="wc-actual" style="color:${actual>=target?'#2DCA73':'#E67E22'};">${actual}</div>
+      <div class="wc-target">Target: ${target}</div>
+      <div class="wc-trend">${trendHtml}</div>
+    </div>`;
+  }).join('');
+
+  renderWsTrendChart(sortedWeeks);
+}
+
+function renderWsTrendChart(sortedWeeks) {
+  const canvas = document.getElementById('ws-trend-chart');
+  const emptyMsg = document.getElementById('ws-chart-empty');
+  if (!canvas) return;
+
+  if (typeof Chart === 'undefined') {
+    canvas.style.display = 'none';
+    if (emptyMsg) { emptyMsg.style.display = 'block'; emptyMsg.textContent = 'Chart library didn\u2019t load — check your internet connection and refresh.'; }
+    return;
+  }
+  if (sortedWeeks.length < 1) {
+    canvas.style.display = 'none';
+    if (emptyMsg) { emptyMsg.style.display = 'block'; emptyMsg.textContent = 'Save a couple of weeks to start seeing your trend here.'; }
+    return;
+  }
+  canvas.style.display = 'block';
+  if (emptyMsg) emptyMsg.style.display = 'none';
+
+  // Pull every saved week's numbers for the metrics that matter most on a
+  // trend line — Prospects, Calls, and Appointments (points dwarf the
+  // activity counts on the same axis, so they stay in the compare cards).
+  const metrics = ['prospects', 'calls', 'appointments'];
+  const colors = { prospects: '#C9A84C', calls: '#5DADE2', appointments: '#2DCA73' };
+  const datasets = metrics.map(key => {
+    const values = sortedWeeks.map(w => {
+      try {
+        const d = JSON.parse(localStorage.getItem(wsStorageKey(w)) || '{}');
+        return Number(d['ws-last-' + key]) || 0;
+      } catch(e) { return 0; }
+    });
+    return {
+      label: WS_METRIC_LABELS[key],
+      data: values,
+      borderColor: colors[key],
+      backgroundColor: colors[key],
+      tension: 0.3,
+      pointRadius: 3,
+    };
+  });
+
+  if (wsChartInstance) wsChartInstance.destroy();
+  wsChartInstance = new Chart(canvas, {
+    type: 'line',
+    data: { labels: sortedWeeks.map(w => 'Wk of ' + w.slice(5)), datasets },
+    options: {
+      responsive: true,
+      plugins: { legend: { position: 'bottom', labels: { color: '#8A9BB5', font: { size: 10 } } } },
+      scales: {
+        x: { ticks: { color: '#8A9BB5', font: { size: 9 } }, grid: { display: false } },
+        y: { ticks: { color: '#8A9BB5', font: { size: 9 } }, beginAtZero: true },
+      },
+    },
+  });
+}
+
+// ── SYNC TO MONDAY — makes each week's assessment visible centrally so it
+// can be reviewed by leadership, since this static app has no email
+// delivery of its own. Writes one row per agent per week.
+const WS_MONDAY_BOARD_KEY = 'dba_weekly_strategy_board_id';
+async function syncWeeklyStrategyToMonday(weekOf, data) {
+  if (typeof AUTH === 'undefined' || !AUTH.getMondayKey?.()) return;
+  const boardId = localStorage.getItem(WS_MONDAY_BOARD_KEY);
+  if (!boardId) return; // no board configured yet — local save still succeeded
+
+  try {
+    const cacheKey = 'dba_ws_cols_' + boardId;
+    let colIds = {};
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) colIds = JSON.parse(cached);
+    else {
+      const res = await mondayQuery(`{ boards(ids: ${boardId}) { columns { id title } } }`);
+      const cols = res?.data?.boards?.[0]?.columns || [];
+      const find = (...kws) => cols.find(c => kws.some(k => c.title.toLowerCase().includes(k)))?.id || null;
+      colIds = {
+        agent: find('agent','name'), week: find('week'),
+        prospects: find('prospects'), calls: find('calls'), appointments: find('appointments'),
+        guests: find('guests'), recruits: find('recruits'),
+        subpts: find('submitted'), paidpts: find('paid'), licensing: find('licensed'),
+        goal: find('goal'),
+      };
+      localStorage.setItem(cacheKey, JSON.stringify(colIds));
+    }
+    const cv = {};
+    if (colIds.week) cv[colIds.week] = { date: weekOf };
+    if (colIds.goal) cv[colIds.goal] = data['ws-goal-text'] || '';
+    Object.keys(WS_TARGETS).forEach(key => {
+      if (colIds[key]) cv[colIds[key]] = Number(data['ws-last-' + key]) || 0;
+    });
+    const itemName = `${session?.name || 'Agent'} — Week of ${weekOf}`.replace(/"/g,"'");
+    await mondayQuery(`mutation { create_item(board_id:${boardId}, item_name:"${itemName}", column_values: ${JSON.stringify(JSON.stringify(cv))}, create_labels_if_missing:true) { id } }`);
+  } catch(e) {
+    console.warn('Weekly Strategy: Monday sync failed:', e.message);
+  }
 }
 
 function populateWeekPicker() {
