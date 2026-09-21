@@ -80,6 +80,13 @@ textarea{width:100%;background:var(--navy);border:1px solid var(--border);color:
 .ws-compare-item .wc-actual{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;}
 .ws-compare-item .wc-target{font-size:10px;color:var(--slate);}
 .ws-compare-item .wc-trend{font-size:11px;margin-top:4px;font-weight:700;}
+.ws-goal-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;}
+.ws-goal-row span{font-size:12.5px;color:var(--slate);flex-shrink:0;}
+.ws-goal-row input{margin-bottom:0;max-width:110px;text-align:right;}
+.ws-goal-period-tabs{display:flex;gap:8px;margin-bottom:14px;}
+.ws-period-tab{background:rgba(255,255,255,.04);border:1px solid var(--border);color:var(--slate);border-radius:6px;padding:8px 16px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;cursor:pointer;}
+.ws-period-tab.active{background:rgba(201,168,76,.12);color:var(--gold);border-color:var(--gold);}
+.wc-pace{font-size:10.5px;color:var(--slate);margin-top:6px;line-height:1.5;}
 select:focus,input:focus{outline:none;border-color:var(--gold);}
 select option{background:var(--navy-mid);}
 .btn-gold{background:linear-gradient(135deg,var(--gold) 0%,#9a7018 100%);color:var(--navy);border:none;padding:11px 22px;border-radius:3px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;letter-spacing:0.06em;cursor:pointer;transition:opacity 0.2s;}
@@ -459,6 +466,11 @@ select option{background:var(--navy-mid);}
     </div>
     <button class="btn-gold" onclick="printWeeklyStrategy()" style="align-self:flex-end;">🖨 Print</button>
   </div>
+  <div style="font-size:11px;color:var(--slate);margin:-6px 0 16px;">
+    Sharing this with someone who isn't in the system yet? Send them the
+    <a href="weekly-strategy-public.html" target="_blank" style="color:var(--gold);">public version</a> —
+    same workshop, no login required. Anything they save stays in their own browser under the name they enter.
+  </div>
 
   <!-- STEP 1 -->
   <div class="ws-step">
@@ -511,6 +523,44 @@ select option{background:var(--navy-mid);}
       </label>
     </div>
     <div style="margin-top:8px;"><label class="ws-mini-label">Did my activities match the person who already believes the goal is possible?</label><textarea class="ws-field" id="ws-frequency-match"></textarea></div>
+  </div>
+
+  <!-- STEP 1B -->
+  <div class="ws-step">
+    <span class="ws-step-num">1B</span><span class="ws-step-title">Dynasty Builders — Monthly &amp; 90-Day Goal Pace</span>
+    <div class="ws-principle">Know the target, know today's date, and the daily number does the rest of the thinking for you.</div>
+
+    <div class="ws-grid2">
+      <div>
+        <label class="field-label">Company Target</label>
+        <div class="ws-goal-row"><span>Recruits</span><input class="ws-field" type="number" id="ws-goal-target-recruits" min="0"></div>
+        <div class="ws-goal-row"><span>Submitted Points</span><input class="ws-field" type="number" id="ws-goal-target-subpts" min="0"></div>
+        <div class="ws-goal-row"><span>Paid Points</span><input class="ws-field" type="number" id="ws-goal-target-paidpts" min="0"></div>
+        <div class="ws-goal-row"><span>Licensed Agents</span><input class="ws-field" type="number" id="ws-goal-target-licensed" min="0"></div>
+        <div class="ws-goal-row"><span>First Checks</span><input class="ws-field" type="number" id="ws-goal-target-firstchecks" min="0"></div>
+      </div>
+      <div>
+        <label class="field-label">Where We Are Right Now</label>
+        <div class="ws-goal-row"><span>Recruits</span><input class="ws-field" type="number" id="ws-goal-current-recruits" min="0" oninput="renderGoalPace()"></div>
+        <div class="ws-goal-row"><span>Submitted Points</span><input class="ws-field" type="number" id="ws-goal-current-subpts" min="0" oninput="renderGoalPace()"></div>
+        <div class="ws-goal-row"><span>Paid Points</span><input class="ws-field" type="number" id="ws-goal-current-paidpts" min="0" oninput="renderGoalPace()"></div>
+        <div class="ws-goal-row"><span>Licensed Agents</span><input class="ws-field" type="number" id="ws-goal-current-licensed" min="0" oninput="renderGoalPace()"></div>
+        <div class="ws-goal-row"><span>First Checks</span><input class="ws-field" type="number" id="ws-goal-current-firstchecks" min="0" oninput="renderGoalPace()"></div>
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--slate);margin:-4px 0 16px;">These numbers are company-wide, not personal — update them whenever leadership shares fresh totals. They're saved on this device, separate from your weekly answers above.</div>
+
+    <div class="ws-goal-period-tabs">
+      <button class="ws-period-tab active" id="ws-period-tab-month" onclick="switchGoalPeriod('month')">📅 This Month</button>
+      <button class="ws-period-tab" id="ws-period-tab-90day" onclick="switchGoalPeriod('90day')">🗓 90-Day Run</button>
+    </div>
+
+    <div id="ws-goal-90day-startwrap" style="display:none;margin-bottom:10px;">
+      <label class="ws-mini-label">90-Day Run Started</label>
+      <input class="ws-field" type="date" id="ws-goal-90day-start" oninput="renderGoalPace()" style="max-width:220px;">
+    </div>
+
+    <div id="ws-goal-pace-grid" class="ws-compare-grid"></div>
   </div>
 
   <!-- STEP 2 -->
@@ -723,6 +773,23 @@ select option{background:var(--navy-mid);}
 
 <script>
 const session = AUTH.getSession();
+
+// Was called from several places but never actually defined — those calls
+// were silently throwing (or, in one spot, defensively skipped with a
+// typeof check because whoever wrote it already suspected as much).
+function toast(msg) {
+  let el = document.getElementById('dba-toast');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'dba-toast';
+    el.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--gold);color:#1E1A10;padding:10px 20px;border-radius:6px;font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:13px;z-index:999;opacity:0;transition:opacity .25s;pointer-events:none;';
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  el.style.opacity = '1';
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.style.opacity = '0', 2400);
+}
 
 function switchTab(id, el) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
@@ -1574,8 +1641,8 @@ function initWeeklyStrategy() {
     });
     goalInput.dataset.wsWired = '1';
   }
+  initCompanyGoalPace();
 }
-
 function renderWeeklyStrategyDays() {
   const el = document.getElementById('ws-days-container');
   if (!el) return;
@@ -1593,6 +1660,117 @@ function renderWeeklyStrategyDays() {
       <input class="ws-field" type="text" id="ws-day-${d}-1" placeholder="1.">
       <input class="ws-field" type="text" id="ws-day-${d}-2" placeholder="2.">
       <input class="ws-field" type="text" id="ws-day-${d}-3" placeholder="3." style="margin-bottom:0;">
+    </div>`;
+  }).join('');
+}
+
+// ── COMPANY GOAL PACE (Monthly & 90-Day) ─────────────────────
+// Company-wide, not personal — persisted separately from the week-by-week
+// answers above so switching "Week Of" doesn't touch it.
+const WS_COMPANY_GOAL_KEY = 'dba_company_goal_state';
+const WS_GOAL_METRICS = {
+  recruits:    { label: 'Recruits',        defaultTarget: 50,     defaultCurrent: 11 },
+  subpts:      { label: 'Submitted Points',defaultTarget: 100000, defaultCurrent: 30000 },
+  paidpts:     { label: 'Paid Points',     defaultTarget: 70000,  defaultCurrent: 0 },
+  licensed:    { label: 'Licensed Agents', defaultTarget: 8,      defaultCurrent: 2 },
+  firstchecks: { label: 'First Checks',    defaultTarget: 5,      defaultCurrent: 0 },
+};
+let wsGoalPeriod = 'month';
+
+function initCompanyGoalPace() {
+  let saved = {};
+  try { saved = JSON.parse(localStorage.getItem(WS_COMPANY_GOAL_KEY) || '{}'); } catch(e) {}
+
+  Object.entries(WS_GOAL_METRICS).forEach(([key, m]) => {
+    const targetEl = document.getElementById('ws-goal-target-' + key);
+    const currentEl = document.getElementById('ws-goal-current-' + key);
+    if (targetEl && !targetEl.dataset.wsGoalWired) {
+      targetEl.value = saved['target-' + key] ?? m.defaultTarget;
+      targetEl.addEventListener('input', saveCompanyGoalInputs);
+      targetEl.dataset.wsGoalWired = '1';
+    }
+    if (currentEl && !currentEl.dataset.wsGoalWired) {
+      currentEl.value = saved['current-' + key] ?? m.defaultCurrent;
+      currentEl.dataset.wsGoalWired = '1';
+    }
+  });
+
+  const startEl = document.getElementById('ws-goal-90day-start');
+  if (startEl && !startEl.value) {
+    startEl.value = saved['90day-start'] || new Date().toISOString().slice(0,10);
+  }
+
+  renderGoalPace();
+}
+
+function saveCompanyGoalInputs() {
+  const data = {};
+  Object.keys(WS_GOAL_METRICS).forEach(key => {
+    data['target-' + key] = document.getElementById('ws-goal-target-' + key)?.value || '';
+    data['current-' + key] = document.getElementById('ws-goal-current-' + key)?.value || '';
+  });
+  data['90day-start'] = document.getElementById('ws-goal-90day-start')?.value || '';
+  try { localStorage.setItem(WS_COMPANY_GOAL_KEY, JSON.stringify(data)); } catch(e) {}
+}
+
+function switchGoalPeriod(period) {
+  wsGoalPeriod = period;
+  document.getElementById('ws-period-tab-month').classList.toggle('active', period === 'month');
+  document.getElementById('ws-period-tab-90day').classList.toggle('active', period === '90day');
+  document.getElementById('ws-goal-90day-startwrap').style.display = period === '90day' ? 'block' : 'none';
+  renderGoalPace();
+}
+
+// Given a target, current progress, and a date window, works out how much
+// is left, how many days are left, and the daily number required from
+// today forward to still land on target by the end of the window.
+function computeGoalPace(target, current, startDate, endDate) {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const start = new Date(startDate + 'T00:00:00');
+  const end = new Date(endDate + 'T00:00:00');
+  const totalDays = Math.max(1, Math.round((end - start) / 86400000));
+  const daysElapsed = Math.max(0, Math.min(totalDays, Math.round((today - start) / 86400000)));
+  const daysRemaining = Math.max(1, Math.round((end - today) / 86400000));
+  const remaining = Math.max(0, target - current);
+  const dailyPaceNeeded = remaining / daysRemaining;
+  const paceSoFar = daysElapsed > 0 ? current / daysElapsed : 0;
+  const onTrack = remaining === 0 || paceSoFar >= dailyPaceNeeded * 0.97; // small tolerance
+  return { totalDays, daysElapsed, daysRemaining, remaining, dailyPaceNeeded, paceSoFar, onTrack };
+}
+
+function fmtNum(n) {
+  return n >= 1000 ? Math.round(n).toLocaleString() : (Math.round(n * 10) / 10).toString();
+}
+
+function renderGoalPace() {
+  saveCompanyGoalInputs();
+  const grid = document.getElementById('ws-goal-pace-grid');
+  if (!grid) return;
+
+  let startDate, endDate;
+  if (wsGoalPeriod === 'month') {
+    const now = new Date();
+    startDate = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0,10);
+    endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0,10);
+  } else {
+    startDate = document.getElementById('ws-goal-90day-start')?.value || new Date().toISOString().slice(0,10);
+    const end = new Date(startDate + 'T00:00:00'); end.setDate(end.getDate() + 90);
+    endDate = end.toISOString().slice(0,10);
+  }
+
+  grid.innerHTML = Object.entries(WS_GOAL_METRICS).map(([key, m]) => {
+    const target = Number(document.getElementById('ws-goal-target-' + key)?.value) || 0;
+    const current = Number(document.getElementById('ws-goal-current-' + key)?.value) || 0;
+    const p = computeGoalPace(target, current, startDate, endDate);
+    const color = p.onTrack ? '#2DCA73' : '#E67E22';
+    return `<div class="ws-compare-item">
+      <div class="wc-label">${m.label}</div>
+      <div class="wc-actual" style="color:${color};">${current} / ${target}</div>
+      <div class="wc-pace">
+        ${p.remaining} to go &middot; ${p.daysRemaining} day${p.daysRemaining===1?'':'s'} left<br>
+        <strong style="color:${color};">${fmtNum(p.dailyPaceNeeded)} / day needed</strong><br>
+        ${p.onTrack ? '✓ on pace' : `currently ~${fmtNum(p.paceSoFar)}/day — behind`}
+      </div>
     </div>`;
   }).join('');
 }
