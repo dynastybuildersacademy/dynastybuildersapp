@@ -234,6 +234,10 @@ select option{background:var(--navy-mid);}
     <textarea class="mw-field" id="mw-nextaction" style="min-height:60px;"></textarea>
 
     <button class="btn-gold" style="width:100%;margin-top:6px;" onclick="saveMagicWand()">💾 Save My Magic Wand Vision</button>
+    <div style="display:flex;gap:10px;margin-top:8px;">
+      <button class="btn-gold" style="flex:1;background:rgba(201,168,76,.12);color:var(--gold);" onclick="downloadMagicWand()">📄 Download as Text</button>
+      <button class="btn-gold" style="flex:1;background:rgba(201,168,76,.12);color:var(--gold);" onclick="syncMagicWandToMonday()">☁ Send to Monday.com</button>
+    </div>
     <div id="mw-save-status" style="text-align:center;font-size:12px;color:var(--slate);margin-top:8px;"></div>
   </div>
   <div id="mindset-modules"></div>
@@ -676,6 +680,8 @@ select option{background:var(--navy-mid);}
   <div class="ws-step">
     <span class="ws-step-num">2</span><span class="ws-step-title">Create a Definite Weekly Aim</span>
     <div class="ws-principle">Napoleon Hill Principle: Definiteness of Purpose — a vague goal creates vague activity.</div>
+    <a href="#" onclick="pullGoalFromMagicWand();return false;" style="font-size:11px;color:var(--gold);">🪄 Pull a present-tense goal from my Magic Wand Vision</a>
+    <div id="ws-pull-mw-status" style="font-size:10.5px;color:var(--slate);margin:4px 0 10px;"></div>
     <div class="ws-grid2">
       <div><label class="ws-mini-label">By this date, I will accomplish:</label><input class="ws-field" type="date" id="ws-goal-date"></div>
       <div><label class="ws-mini-label">My Definite Weekly Goal (make it measurable — e.g. 3 recruits, 5,000 personal points, 100 calls)</label><input class="ws-field" type="text" id="ws-goal-text"></div>
@@ -751,6 +757,8 @@ select option{background:var(--navy-mid);}
   <div class="ws-step">
     <span class="ws-step-num">4</span><span class="ws-step-title">Turn the Vision Into an Organized Plan</span>
     <div class="ws-principle">Napoleon Hill Principle: Organized Planning — faith should produce action. Work backward from the result using proven activities.</div>
+    <a href="#" onclick="pullPlanFromPerfectWeek();return false;" style="font-size:11px;color:var(--gold);">🌟 Pull my numbers from The Perfect Week Formula</a>
+    <div id="ws-pull-pw-status" style="font-size:10.5px;color:var(--slate);margin:4px 0 10px;"></div>
     <div class="ws-grid3">
       <div><label class="ws-mini-label">Prospects</label><input class="ws-field" type="number" id="ws-plan-prospects" min="0"></div>
       <div><label class="ws-mini-label">Calls</label><input class="ws-field" type="number" id="ws-plan-calls" min="0"></div>
@@ -978,6 +986,10 @@ select option{background:var(--navy-mid);}
   </div>
 
   <button class="btn-gold" style="width:100%;font-size:15px;padding:14px;" onclick="savePerfectWeek()">💾 Save My Perfect Week</button>
+  <div style="display:flex;gap:10px;margin-top:8px;">
+    <button class="btn-gold" style="flex:1;background:rgba(201,168,76,.12);color:var(--gold);" onclick="downloadPerfectWeek()">📄 Download as Text</button>
+    <button class="btn-gold" style="flex:1;background:rgba(201,168,76,.12);color:var(--gold);" onclick="syncPerfectWeekToMonday()">☁ Send to Monday.com</button>
+  </div>
   <div id="pw-save-status" style="text-align:center;font-size:12px;color:var(--slate);margin-top:8px;"></div>
 </div>
 
@@ -1020,6 +1032,76 @@ function autosaveMagicWand() {
 }
 loadMagicWand();
 setInterval(autosaveMagicWand, 120000); // every 2 minutes, same cadence as Weekly Strategy
+
+// Shared by any tool that wants a plain-text download — builds a .txt
+// file client-side and triggers the browser's own download, no server
+// or library involved.
+function downloadTextFile(filename, text) {
+  const blob = new Blob([text], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function downloadMagicWand() {
+  const d = collectMagicWandFields();
+  const name = session?.name || 'Agent';
+  const text = `THE MAGIC WAND EXERCISE — ${name}\nBrian Tracy | ${new Date().toLocaleDateString()}\n\n` +
+`1. CAREER AND BUSINESS\n${d['mw-career'] || '(not answered)'}\n\n` +
+`2. FAMILY AND RELATIONSHIPS\n${d['mw-family'] || '(not answered)'}\n\n` +
+`3. HEALTH AND FITNESS\n${d['mw-health'] || '(not answered)'}\n\n` +
+`4. FINANCIAL NET WORTH\n${d['mw-networth'] || '(not answered)'}\n\n` +
+`5. LIFESTYLE AND TIME USE\n${d['mw-lifestyle'] || '(not answered)'}\n\n` +
+`PRESENT-TENSE GOALS\n${[d['mw-goal-1'], d['mw-goal-2'], d['mw-goal-3']].filter(Boolean).map(g=>'- '+g).join('\n') || '(none entered)'}\n\n` +
+`REVERSE ENGINEERING — NEXT ACTION\n${d['mw-nextaction'] || '(not answered)'}\n`;
+  downloadTextFile(`Magic-Wand-Vision-${name.replace(/\s+/g,'-')}.txt`, text);
+}
+
+const MAGIC_WAND_BOARD_KEY = 'dba_magic_wand_board_id';
+async function syncMagicWandToMonday() {
+  const statusEl = document.getElementById('mw-save-status');
+  if (typeof AUTH === 'undefined' || !AUTH.getMondayKey?.()) {
+    if (statusEl) statusEl.textContent = '⚠ Monday.com isn\'t connected';
+    return;
+  }
+  const boardId = localStorage.getItem(MAGIC_WAND_BOARD_KEY);
+  if (!boardId) {
+    if (statusEl) statusEl.textContent = '⚠ No Magic Wand board configured yet — ask an admin to set dba_magic_wand_board_id';
+    return;
+  }
+  const d = collectMagicWandFields();
+  const name = session?.name || 'Agent';
+  try {
+    const cacheKey = 'dba_mw_cols_' + boardId;
+    let colIds = {};
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) colIds = JSON.parse(cached);
+    else {
+      const res = await mondayQuery(`{ boards(ids: ${boardId}) { columns { id title } } }`);
+      const cols = res?.data?.boards?.[0]?.columns || [];
+      const find = (...kws) => cols.find(c => kws.some(k => c.title.toLowerCase().includes(k)))?.id || null;
+      colIds = { career: find('career'), family: find('family'), health: find('health'),
+        networth: find('net worth','networth'), lifestyle: find('lifestyle'), goals: find('goal'), nextaction: find('next action','action') };
+      localStorage.setItem(cacheKey, JSON.stringify(colIds));
+    }
+    const cv = {};
+    if (colIds.career) cv[colIds.career] = d['mw-career'] || '';
+    if (colIds.family) cv[colIds.family] = d['mw-family'] || '';
+    if (colIds.health) cv[colIds.health] = d['mw-health'] || '';
+    if (colIds.networth) cv[colIds.networth] = d['mw-networth'] || '';
+    if (colIds.lifestyle) cv[colIds.lifestyle] = d['mw-lifestyle'] || '';
+    if (colIds.goals) cv[colIds.goals] = [d['mw-goal-1'],d['mw-goal-2'],d['mw-goal-3']].filter(Boolean).join(' | ');
+    if (colIds.nextaction) cv[colIds.nextaction] = d['mw-nextaction'] || '';
+
+    const itemName = `${name} — Magic Wand Vision`.replace(/"/g,"'");
+    await mondayQuery(`mutation { create_item(board_id:${boardId}, item_name:"${itemName}", column_values: ${JSON.stringify(JSON.stringify(cv))}, create_labels_if_missing:true) { id } }`);
+    if (statusEl) statusEl.textContent = '✓ Sent to Monday.com';
+  } catch(e) {
+    if (statusEl) statusEl.textContent = '⚠ Could not reach Monday — try again';
+  }
+}
 
 // ── PERFECT WEEK DESIGNER ─────────────────────────────────────
 // Shared top-of-funnel activity target (same for every rank), plus
@@ -1199,6 +1281,72 @@ function startPerfectWeekAutosave() {
       if (statusEl) statusEl.textContent = `💾 Autosaved — ${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`;
     } catch(e) {}
   }, 120000);
+}
+
+function downloadPerfectWeek() {
+  const d = collectPerfectWeekFields();
+  const name = session?.name || 'Agent';
+  const t = PW_TIER_TARGETS[d.tier || pwTier];
+  const schedule = PW_DAYS.map(day => {
+    const blocks = [d[`pw-day-${day}-1`], d[`pw-day-${day}-2`], d[`pw-day-${day}-3`]].filter(Boolean);
+    return `${PW_DAY_LABELS[day]}:\n${blocks.length ? blocks.map(b=>'  - '+b).join('\n') : '  (not scheduled)'}`;
+  }).join('\n\n');
+
+  const text = `MY PERFECT WEEK — ${name}\nTier: ${t.label} | ${new Date().toLocaleDateString()}\n\n` +
+`FOUR LEVELS OF MY WHY\nSurvival: ${d['pw-why-survival']||'(not answered)'}\nStatus: ${d['pw-why-status']||'(not answered)'}\nFreedom: ${d['pw-why-freedom']||'(not answered)'}\nPurpose: ${d['pw-why-purpose']||'(not answered)'}\nPrimary why: ${d['pw-why-primary']||'(not selected)'} | Graduating to: ${d['pw-why-graduate']||'(not selected)'}\n\n` +
+`THE PERFECT WEEK FORMULA (${t.label})\nProspects 25+ | Calls 250+ | Recruiting Interviews 10+ | Client Appointments 6+ | Fast Start Appointments 4+\nPersonal Recruits ${t.personal.recruits}+ | Personal Submitted Pts ${t.personal.subpts.toLocaleString()} | Personal Paid Pts ${t.personal.paidpts.toLocaleString()}\nBase Recruits ${t.base.recruits}+ | Base Submitted Pts ${t.base.subpts.toLocaleString()} | Base Paid Pts ${t.base.paidpts.toLocaleString()}\n\n` +
+`THIS WEEK'S ACTUAL NUMBERS\nProspects: ${d['pw-actual-prospects']||0} | Calls: ${d['pw-actual-calls']||0} | RI: ${d['pw-actual-ri']||0} | Appointments: ${d['pw-actual-appts']||0} | Fast Start: ${d['pw-actual-fs']||0}\nRecruits: ${d['pw-actual-recruits']||0} | Submitted Pts: ${d['pw-actual-subpts']||0} | Paid Pts: ${d['pw-actual-paidpts']||0}\n\n` +
+`MY WEEKLY SCHEDULE\n${schedule}\n`;
+  downloadTextFile(`Perfect-Week-${name.replace(/\s+/g,'-')}.txt`, text);
+}
+
+const PW_MONDAY_BOARD_KEY = 'dba_perfect_week_board_id';
+async function syncPerfectWeekToMonday() {
+  const statusEl = document.getElementById('pw-save-status');
+  if (typeof AUTH === 'undefined' || !AUTH.getMondayKey?.()) {
+    if (statusEl) statusEl.textContent = '⚠ Monday.com isn\'t connected';
+    return;
+  }
+  const boardId = localStorage.getItem(PW_MONDAY_BOARD_KEY);
+  if (!boardId) {
+    if (statusEl) statusEl.textContent = '⚠ No Perfect Week board configured yet — ask an admin to set dba_perfect_week_board_id';
+    return;
+  }
+  const d = collectPerfectWeekFields();
+  const name = session?.name || 'Agent';
+  try {
+    const cacheKey = 'dba_pw_cols_' + boardId;
+    let colIds = {};
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) colIds = JSON.parse(cached);
+    else {
+      const res = await mondayQuery(`{ boards(ids: ${boardId}) { columns { id title } } }`);
+      const cols = res?.data?.boards?.[0]?.columns || [];
+      const find = (...kws) => cols.find(c => kws.some(k => c.title.toLowerCase().includes(k)))?.id || null;
+      colIds = { tier: find('tier'), prospects: find('prospects'), calls: find('calls'), ri: find('recruiting interviews','ri'),
+        appts: find('client appointments','appointments'), fs: find('fast start'), recruits: find('recruits'),
+        subpts: find('submitted'), paidpts: find('paid'), why: find('why') };
+      localStorage.setItem(cacheKey, JSON.stringify(colIds));
+    }
+    const t = PW_TIER_TARGETS[d.tier || pwTier];
+    const cv = {};
+    if (colIds.tier) cv[colIds.tier] = { label: t.label };
+    if (colIds.prospects) cv[colIds.prospects] = Number(d['pw-actual-prospects']) || 0;
+    if (colIds.calls) cv[colIds.calls] = Number(d['pw-actual-calls']) || 0;
+    if (colIds.ri) cv[colIds.ri] = Number(d['pw-actual-ri']) || 0;
+    if (colIds.appts) cv[colIds.appts] = Number(d['pw-actual-appts']) || 0;
+    if (colIds.fs) cv[colIds.fs] = Number(d['pw-actual-fs']) || 0;
+    if (colIds.recruits) cv[colIds.recruits] = Number(d['pw-actual-recruits']) || 0;
+    if (colIds.subpts) cv[colIds.subpts] = Number(d['pw-actual-subpts']) || 0;
+    if (colIds.paidpts) cv[colIds.paidpts] = Number(d['pw-actual-paidpts']) || 0;
+    if (colIds.why) cv[colIds.why] = d['pw-why-primary'] || '';
+
+    const itemName = `${name} — Perfect Week (${t.label}) — ${new Date().toISOString().slice(0,10)}`.replace(/"/g,"'");
+    await mondayQuery(`mutation { create_item(board_id:${boardId}, item_name:"${itemName}", column_values: ${JSON.stringify(JSON.stringify(cv))}, create_labels_if_missing:true) { id } }`);
+    if (statusEl) statusEl.textContent = '✓ Sent to Monday.com';
+  } catch(e) {
+    if (statusEl) statusEl.textContent = '⚠ Could not reach Monday — try again';
+  }
 }
 
 function toast(msg) {
@@ -2578,6 +2726,38 @@ function startWeeklyStrategyAutosave() {
 // The explicit "Save This Week's Strategy" button — this is the one that
 // also pushes to Monday.com. Autosave above only ever touches the local
 // cache; Monday only ever hears about it here, at a deliberate save point.
+// ── PULL-INS FROM MAGIC WAND & PERFECT WEEK ─────────────────────
+function pullGoalFromMagicWand() {
+  const statusEl = document.getElementById('ws-pull-mw-status');
+  let mw = {};
+  try { mw = JSON.parse(localStorage.getItem(MAGIC_WAND_KEY) || '{}'); } catch(e) {}
+  const goal = mw['mw-goal-1'] || mw['mw-goal-2'] || mw['mw-goal-3'];
+  if (!goal) {
+    statusEl.textContent = '⚠ No present-tense goals saved in Magic Wand yet — fill that out in Mindset first.';
+    return;
+  }
+  document.getElementById('ws-goal-text').value = goal;
+  statusEl.textContent = `✓ Pulled: "${goal}"`;
+}
+
+function pullPlanFromPerfectWeek() {
+  const statusEl = document.getElementById('ws-pull-pw-status');
+  let pw = {};
+  try { pw = JSON.parse(localStorage.getItem(`dba_perfect_week_${session.agentId}`) || '{}'); } catch(e) {}
+  const tier = pw.tier || (session.level >= 60 ? 'md' : 'nonmd');
+  const t = PW_TIER_TARGETS ? PW_TIER_TARGETS[tier] : null;
+  if (!t) {
+    statusEl.textContent = '⚠ Perfect Week formula not available.';
+    return;
+  }
+  document.getElementById('ws-plan-prospects').value = PW_SHARED_TARGETS.prospects;
+  document.getElementById('ws-plan-calls').value = PW_SHARED_TARGETS.calls;
+  document.getElementById('ws-plan-appointments').value = PW_SHARED_TARGETS.appts;
+  document.getElementById('ws-plan-ri').value = PW_SHARED_TARGETS.ri;
+  document.getElementById('ws-plan-points').value = t.personal.subpts;
+  statusEl.textContent = `✓ Pulled the ${t.label} standard into your plan.`;
+}
+
 function saveWeeklyStrategy() {
   const weekOf = document.getElementById('ws-week-of').value;
   if (!weekOf) { document.getElementById('ws-save-status').textContent = '⚠ Pick a "Week Of" date first'; return; }
