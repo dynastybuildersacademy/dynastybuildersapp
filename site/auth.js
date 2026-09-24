@@ -1145,6 +1145,14 @@ const GRANTABLE_TOOLS = [
   { page: 'create-bom-board.html', label: 'Create BOM Board' },
   { page: 'create-consciousness-board.html', label: 'Create Power vs Force Board' },
   { page: 'make-scenario-builder.html', label: 'Scenario Builder' },
+  { page: 'md-tracker.html',    label: 'MD Promotion Tracker' },
+  { page: 'attendance.html',    label: 'Attendance' },
+  { page: 'licensing.html',     label: 'Licensing Tracker' },
+  { page: 'recognitions.html',  label: 'Thankful Thursday' },
+  { page: 'contest-tracker.html', label: 'Contest & Recognition' },
+  { page: 'bom.html',           label: 'BOM Tracker' },
+  { page: 'cft-matcher.html',   label: 'CFT Matcher' },
+  { page: 'reminders.html',     label: 'Team Reminders' },
 ];
 function getAllToolGrants() {
   try { return JSON.parse(localStorage.getItem(TOOL_GRANTS_KEY) || '{}'); } catch(e) { return {}; }
