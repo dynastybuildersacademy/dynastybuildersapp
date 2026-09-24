@@ -27,6 +27,9 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 /* LAYOUT */
 .content{max-width:1100px;margin:0 auto;padding:28px 24px;position:relative;z-index:1;}
 .card{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:22px;margin-bottom:18px;}
+.attend-stat-item{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center;}
+.attend-stat-item .as-val{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:800;color:var(--gold);}
+.attend-stat-item .as-label{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-top:4px;}
 .card-title{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
 .card-title::before{content:'';width:3px;height:12px;background:var(--gold);border-radius:2px;}
 
@@ -132,6 +135,8 @@ AUTH.require('roster-admin.html');
     <button class="tab" onclick="switchTab('mdteams',this)">👔 MD Team Assignment</button>
     <button class="tab" id="tab-btn-adminaccess" onclick="switchTab('adminaccess',this)" style="display:none;">🔐 Admin Access</button>
     <button class="tab" onclick="switchTab('genealogy',this)">🌳 Downline Tree</button>
+    <button class="tab" onclick="switchTab('attendance',this)">📅 Attendance &amp; Certifications</button>
+    <button class="tab" id="tab-btn-toolaccess" onclick="switchTab('toolaccess',this)" style="display:none;">🔑 Tool Access</button>
   </div>
 
   <!-- ── ROSTER TAB ── -->
@@ -335,6 +340,72 @@ AUTH.require('roster-admin.html');
       <div id="gene-tree" style="max-height:600px;overflow-y:auto;background:var(--s1);border:1px solid var(--border);border-radius:8px;padding:10px;"></div>
     </div>
   </div>
+
+  <!-- ── ATTENDANCE & CERTIFICATIONS TAB ── -->
+  <div class="tab-pane" id="pane-attendance">
+    <div class="card">
+      <div class="card-title">📊 Roster Overview</div>
+      <div id="attend-summary-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📥 Import Meeting Attendance</div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:12px;line-height:1.7;">
+        One row per attendee: <code style="background:rgba(201,168,76,.1);padding:1px 5px;border-radius:3px;">agentId, date, meetingType</code> — optionally add a 4th column for notes.
+        agentId is the login ID from this roster (e.g. <code style="background:rgba(201,168,76,.1);padding:1px 5px;border-radius:3px;">obi001</code>). Date as YYYY-MM-DD. First row can be a header — it's detected automatically.
+        This feeds the same attendance record store used by the live Attendance app, so imported history shows up there too.
+      </p>
+      <textarea id="attend-import-text" placeholder="agentId, date, meetingType, notes&#10;prochi1109, 2026-09-15, BOM&#10;deigar526, 2026-09-15, Weekly Training" style="width:100%;min-height:90px;background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:10px 12px;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;resize:vertical;margin-bottom:10px;"></textarea>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+        <button class="btn btn-gold" onclick="importAttendanceText()">Import Pasted Text</button>
+        <label class="btn btn-ghost" style="cursor:pointer;">
+          📁 Import CSV File
+          <input type="file" accept=".csv,text/csv" onchange="importAttendanceCSV(event)" style="display:none;">
+        </label>
+        <button class="btn btn-ghost" onclick="downloadAttendanceTemplate()">↓ Download CSV Template</button>
+        <span id="attend-import-status" style="font-size:12px;color:var(--muted);"></span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Agent Attendance &amp; Certification Status</div>
+      <div class="search-bar" style="margin-bottom:12px;">
+        <span class="si">🔍</span>
+        <input type="text" id="attend-search" placeholder="Search name or ID…" oninput="renderAttendanceTable()">
+      </div>
+      <div class="agent-table-wrap">
+        <table class="agent-table">
+          <thead><tr><th>Agent</th><th>Licensed</th><th>Certified Field Trainer</th><th>Meetings Attended</th><th>Last Attended</th></tr></thead>
+          <tbody id="attend-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TOOL ACCESS TAB (Marketing Director / super_admin+ only) ── -->
+  <div class="tab-pane" id="pane-toolaccess">
+    <div class="card">
+      <div class="card-title">🔑 Assign Tool Access</div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.7;">
+        Give someone in your downline access to a tool they wouldn't normally have by rank — including handing one of your admins an additional tool beyond their default set. This only ever adds access; it never takes away what someone's role already grants them.
+      </p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;">
+        <select id="toolaccess-agent" onchange="renderToolAccessGrid()" style="flex:1;min-width:240px;background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:8px 12px;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;">
+          <option value="">— Select someone in your downline —</option>
+        </select>
+      </div>
+      <div id="toolaccess-grid" style="display:none;">
+        <div id="toolaccess-checkboxes" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:10px;"></div>
+        <div id="toolaccess-status" style="font-size:12px;color:var(--muted);"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Everyone With Extra Access Right Now</div>
+      <div id="toolaccess-summary" style="font-size:13px;color:var(--muted);line-height:2;"></div>
+    </div>
+  </div>
 </div>
 
 <!-- UPLINE EDIT MODAL -->
@@ -426,6 +497,8 @@ function switchTab(name, el) {
   if (name === 'mdteams') renderMDTeamTable();
   if (name === 'adminaccess') renderAdminAccessTable();
   if (name === 'genealogy') renderGenealogy();
+  if (name === 'attendance') { renderAttendanceSummary(); renderAttendanceTable(); }
+  if (name === 'toolaccess') { populateToolAccessAgentPicker(); renderToolAccessSummary(); }
 }
 
 // ── ROLE DISPLAY ──────────────────────────────────────────────
@@ -1072,6 +1145,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const tabBtn = document.getElementById('tab-btn-adminaccess');
     if (tabBtn) tabBtn.style.display = 'inline-block';
   }
+  // Tool Access is visible to any real Marketing Director (super_admin
+  // tier) or above — every MD can extend access within their own
+  // downline, not just the one Super User account.
+  const viewerTier = getAdminTier(AUTH.getSession());
+  if (viewerTier === 'super_admin' || viewerTier === 'super_user') {
+    const toolTabBtn = document.getElementById('tab-btn-toolaccess');
+    if (toolTabBtn) toolTabBtn.style.display = 'inline-block';
+  }
 });
 
 // ── SYNC AGENT TO MONDAY ROSTER ──────────────────────────────────
@@ -1297,6 +1378,205 @@ function saveGenealogyEdit() {
     syncAgentToMonday(agent, 'update');
   }
   if (typeof toast === 'function') toast(`✓ ${agent.name}'s upline updated`);
+}
+
+// ── ATTENDANCE & CERTIFICATIONS ────────────────────────────────
+// Attendance records use the same dba_attendance_records store the live
+// Attendance app writes to (agentId, agentName, date, meetingType, notes),
+// so imported history and live-tracked history show up side by side.
+const ATTENDANCE_STORE_KEY = 'dba_attendance_records';
+const CFT_IDS_KEY = 'dba_cft_certified_ids';
+
+function getAttendanceRecords() {
+  try { return JSON.parse(localStorage.getItem(ATTENDANCE_STORE_KEY) || '[]'); } catch(e) { return []; }
+}
+function saveAttendanceRecords(records) {
+  try { localStorage.setItem(ATTENDANCE_STORE_KEY, JSON.stringify(records.slice(0, 5000))); } catch(e) {}
+}
+function getCftIds() {
+  try { return new Set(JSON.parse(localStorage.getItem(CFT_IDS_KEY) || '[]')); } catch(e) { return new Set(); }
+}
+function saveCftIds(idSet) {
+  try { localStorage.setItem(CFT_IDS_KEY, JSON.stringify([...idSet])); } catch(e) {}
+}
+function toggleCFT(agentId) {
+  const ids = getCftIds();
+  if (ids.has(agentId)) ids.delete(agentId); else ids.add(agentId);
+  saveCftIds(ids);
+  renderAttendanceSummary();
+}
+
+function renderAttendanceSummary() {
+  const grid = document.getElementById('attend-summary-grid');
+  if (!grid) return;
+  const records = getAttendanceRecords();
+  const cftIds = getCftIds();
+  const licensedCount = agentList.filter(a => (a.licenseStates || []).length > 0).length;
+  const stats = [
+    { label: 'Total Agents', val: agentList.length },
+    { label: 'Licensed', val: licensedCount },
+    { label: 'Certified Field Trainers', val: cftIds.size },
+    { label: 'Attendance Records', val: records.length },
+  ];
+  grid.innerHTML = stats.map(s => `<div class="attend-stat-item"><div class="as-val">${s.val}</div><div class="as-label">${s.label}</div></div>`).join('');
+}
+
+function renderAttendanceTable() {
+  const tbody = document.getElementById('attend-tbody');
+  if (!tbody) return;
+  const search = (document.getElementById('attend-search')?.value || '').toLowerCase();
+  const records = getAttendanceRecords();
+  const cftIds = getCftIds();
+
+  // Group attendance by agentId for a fast lookup while rendering rows.
+  const byAgent = {};
+  records.forEach(r => {
+    if (!byAgent[r.agentId]) byAgent[r.agentId] = [];
+    byAgent[r.agentId].push(r);
+  });
+
+  const rows = agentList.filter(a =>
+    !search || a.name.toLowerCase().includes(search) || a.id.toLowerCase().includes(search)
+  );
+
+  tbody.innerHTML = rows.map(a => {
+    const licensed = (a.licenseStates || []).length > 0;
+    const isCft = cftIds.has(a.id);
+    const attended = byAgent[a.id] || [];
+    const lastDate = attended.length ? attended.map(r => r.date).sort().reverse()[0] : '—';
+    return `<tr>
+      <td><strong>${a.name}</strong><br><span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);">${a.id}</span></td>
+      <td>${licensed ? '<span style="color:#2DCA73;">✓ Licensed</span>' : '<span style="color:var(--muted);">—</span>'}</td>
+      <td><label style="display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" ${isCft?'checked':''} onchange="toggleCFT('${a.id}')"> ${isCft ? '✓ CFT' : 'Not certified'}</label></td>
+      <td>${attended.length}</td>
+      <td>${lastDate}</td>
+    </tr>`;
+  }).join('');
+}
+
+// Shared by both the paste-box and CSV-file import paths.
+function parseAttendanceRows(text) {
+  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+  if (!lines.length) return [];
+  // Detect and skip a header row (e.g. "agentId, date, meetingType").
+  const startIdx = /agentid/i.test(lines[0]) ? 1 : 0;
+  const added = [];
+  for (let i = startIdx; i < lines.length; i++) {
+    const cols = lines[i].split(',').map(c => c.trim());
+    const [agentId, date, meetingType, notes] = cols;
+    if (!agentId || !date) continue;
+    const agent = agentList.find(a => a.id === agentId) || (typeof AGENTS !== 'undefined' ? AGENTS.find(a => a.id === agentId) : null);
+    added.push({
+      agentId,
+      agentName: agent?.name || agentId,
+      date,
+      meetingType: meetingType || 'Meeting',
+      notes: notes || '',
+      eventId: `import_${agentId}_${date}_${meetingType || 'meeting'}`.replace(/\s+/g,'_'),
+      eventName: meetingType || 'Meeting',
+    });
+  }
+  return added;
+}
+
+function importAttendanceText() {
+  const text = document.getElementById('attend-import-text').value;
+  const statusEl = document.getElementById('attend-import-status');
+  const parsed = parseAttendanceRows(text);
+  if (!parsed.length) { statusEl.textContent = '⚠ No valid rows found — check the format.'; return; }
+
+  const existing = getAttendanceRecords();
+  const unknownIds = parsed.filter(p => !agentList.find(a => a.id === p.agentId) && !(typeof AGENTS !== 'undefined' && AGENTS.find(a => a.id === p.agentId)));
+  // De-dupe by eventId so re-importing the same paste twice doesn't double-count.
+  const existingEventIds = new Set(existing.map(r => r.eventId));
+  const fresh = parsed.filter(p => !existingEventIds.has(p.eventId));
+  saveAttendanceRecords([...existing, ...fresh]);
+
+  statusEl.textContent = `✓ Imported ${fresh.length} record${fresh.length===1?'':'s'}` +
+    (parsed.length - fresh.length > 0 ? ` (${parsed.length - fresh.length} already on file, skipped)` : '') +
+    (unknownIds.length ? ` — ⚠ ${unknownIds.length} row(s) used an agentId not found in the roster` : '');
+  document.getElementById('attend-import-text').value = '';
+  renderAttendanceSummary();
+  renderAttendanceTable();
+}
+
+function importAttendanceCSV(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('attend-import-text').value = e.target.result;
+    importAttendanceText();
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+function downloadAttendanceTemplate() {
+  const csv = 'agentId, date, meetingType, notes\nobi001, 2026-09-15, BOM, \ndeigar526, 2026-09-15, Weekly Training, \n';
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'attendance-import-template.csv';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// ── TOOL ACCESS — MD-assigned extra access ──────────────────────
+function populateToolAccessAgentPicker() {
+  const sel = document.getElementById('toolaccess-agent');
+  if (!sel || sel.dataset.wired) return;
+  sel.dataset.wired = '1';
+  const viewerId = AUTH.getSession()?.agentId;
+  agentList
+    .filter(a => a.id !== viewerId)
+    .sort((a,b) => a.name.localeCompare(b.name))
+    .forEach(a => {
+      const opt = document.createElement('option');
+      opt.value = a.id;
+      opt.textContent = `${a.name} — ${a.role || 'agent'}`;
+      sel.appendChild(opt);
+    });
+}
+
+function renderToolAccessGrid() {
+  const agentId = document.getElementById('toolaccess-agent').value;
+  const gridWrap = document.getElementById('toolaccess-grid');
+  const box = document.getElementById('toolaccess-checkboxes');
+  if (!agentId) { gridWrap.style.display = 'none'; return; }
+  gridWrap.style.display = 'block';
+
+  const granted = new Set(AUTH.getToolGrants(agentId));
+  box.innerHTML = AUTH.GRANTABLE_TOOLS.map(t => `
+    <label style="display:flex;align-items:center;gap:8px;font-size:13px;background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:9px 12px;cursor:pointer;">
+      <input type="checkbox" ${granted.has(t.page)?'checked':''} onchange="toggleToolGrant('${agentId}','${t.page}',this.checked)">
+      ${t.label}
+    </label>`).join('');
+
+  const agent = agentList.find(a => a.id === agentId);
+  document.getElementById('toolaccess-status').textContent = agent ? `Editing access for ${agent.name}` : '';
+}
+
+function toggleToolGrant(agentId, page, checked) {
+  AUTH.setToolGrant(agentId, page, checked);
+  const agent = agentList.find(a => a.id === agentId);
+  const toolLabel = AUTH.GRANTABLE_TOOLS.find(t => t.page === page)?.label || page;
+  document.getElementById('toolaccess-status').textContent =
+    `✓ ${checked ? 'Granted' : 'Removed'} ${toolLabel} ${checked ? 'to' : 'from'} ${agent?.name || agentId}`;
+  renderToolAccessSummary();
+}
+
+function renderToolAccessSummary() {
+  const el = document.getElementById('toolaccess-summary');
+  if (!el) return;
+  const all = JSON.parse(localStorage.getItem('dba_tool_grants') || '{}');
+  const entries = Object.entries(all).filter(([, pages]) => pages.length);
+  if (!entries.length) { el.textContent = 'No extra tool access assigned yet.'; return; }
+  el.innerHTML = entries.map(([agentId, pages]) => {
+    const agent = agentList.find(a => a.id === agentId);
+    const labels = pages.map(p => AUTH.GRANTABLE_TOOLS.find(t => t.page === p)?.label || p);
+    return `<div><strong>${agent?.name || agentId}</strong> — ${labels.join(', ')}</div>`;
+  }).join('');
 }
 </script>
 </body>

@@ -1127,6 +1127,40 @@ const AGENTS = [
 ];
 
 // ── 4. PAGE ACCESS LEVELS ─────────────────────────────────────
+// ── TOOL GRANTS — MD-assigned access beyond the default role gate ────
+// Marketing Directors (super_admin tier) can hand an individual agent —
+// including one of their admins — access to a specific restricted tool
+// they wouldn't otherwise have by rank. This never lowers anyone's
+// access, only adds to it, and it's scoped per-agent, not org-wide.
+const TOOL_GRANTS_KEY = 'dba_tool_grants';
+const GRANTABLE_TOOLS = [
+  { page: 'roster-admin.html',  label: 'Roster Admin' },
+  { page: 'os.html',            label: 'Agency OS' },
+  { page: 'pmd-hub.html',       label: 'PMD Hub' },
+  { page: 'bmp-platform.html',  label: 'BMP Platform' },
+  { page: 'monday-sync.html',   label: 'Monday Sync' },
+  { page: 'monday-setup.html',  label: 'Monday Board Setup' },
+  { page: 'monday-test.html',   label: 'Monday Test Tool' },
+  { page: 'mentor.html',        label: 'Mentor Mode' },
+  { page: 'create-bom-board.html', label: 'Create BOM Board' },
+  { page: 'create-consciousness-board.html', label: 'Create Power vs Force Board' },
+  { page: 'make-scenario-builder.html', label: 'Scenario Builder' },
+];
+function getAllToolGrants() {
+  try { return JSON.parse(localStorage.getItem(TOOL_GRANTS_KEY) || '{}'); } catch(e) { return {}; }
+}
+function getToolGrantsFor(agentId) {
+  const all = getAllToolGrants();
+  return all[agentId] || [];
+}
+function setToolGrant(agentId, page, granted) {
+  const all = getAllToolGrants();
+  const current = new Set(all[agentId] || []);
+  if (granted) current.add(page); else current.delete(page);
+  if (current.size) all[agentId] = [...current]; else delete all[agentId];
+  try { localStorage.setItem(TOOL_GRANTS_KEY, JSON.stringify(all)); } catch(e) {}
+}
+
 const PAGE_ACCESS = {
   // ── All agents (level 0) ──────────────────────────────────
   "hub.html":                   0,
@@ -1344,9 +1378,15 @@ const AUTH = {
     const s = AUTH.getSession();
     if (!s) { window.location.href = 'index.html'; return false; }
     const required = PAGE_ACCESS[page] ?? 0;
-    if (s.level < required) { window.location.href = 'hub.html'; return false; }
+    if (s.level < required && !getToolGrantsFor(s.agentId).includes(page)) {
+      window.location.href = 'hub.html';
+      return false;
+    }
     return true;
   },
+  getToolGrants: getToolGrantsFor,
+  setToolGrant: setToolGrant,
+  GRANTABLE_TOOLS: GRANTABLE_TOOLS,
 
   logout() {
     sessionStorage.removeItem(AUTH.SESSION_KEY);
