@@ -388,6 +388,22 @@ const MODULE_DEFS = [
   },
 ];
 
+// A module is normally gated purely by rank (minLevel). But an MD can
+// individually grant a specific tool to someone below that rank (Tool
+// Access in Roster Admin) — when that's happened, the module containing
+// that tool should open up too, or there'd be no way to reach it at all.
+// This only controls what's visible/navigable here; the actual page
+// (AUTH.require) still enforces the real gate independently, so granting
+// visibility to one tool in a module never exposes the others in it.
+function moduleEligible(session, m) {
+  if (!session) return false;
+  if (session.level >= m.minLevel) return true;
+  if (typeof AUTH === 'undefined' || !AUTH.getToolGrants || !session.agentId) return false;
+  const grants = AUTH.getToolGrants(session.agentId);
+  if (!grants.length) return false;
+  return m.tools.some(t => grants.includes((t.href || '').split('?')[0]));
+}
+
 // Quick links always visible in scroll strip
 const QUICK_LINKS = [
   { label:'🎋 PHP Bamboo',      href:'https://app.phpbamboo.com/agent/signin', ext:true },
@@ -406,7 +422,7 @@ function saveModulePrefs(agentId, prefs) {
 function getActiveModules(session) {
   const p = loadModulePrefs(session.agentId);
   if(p) return p;
-  return MODULE_DEFS.filter(m => session.level >= m.minLevel && m.defaultOn).map(m => m.id);
+  return MODULE_DEFS.filter(m => moduleEligible(session, m) && m.defaultOn).map(m => m.id);
 }
 
 // ── PAGE-LEVEL TOOL VISIBILITY (admin-set, per agent) ──────────
@@ -433,7 +449,7 @@ function toggleAgentTool(agentId, href) {
 // ── BOTTOM NAV — built from top 4 active modules ──────────────
 function renderBottomNav(session) {
   const activeIds = getActiveModules(session);
-  const activeMods = MODULE_DEFS.filter(m => activeIds.includes(m.id) && session.level >= m.minLevel);
+  const activeMods = MODULE_DEFS.filter(m => activeIds.includes(m.id) && moduleEligible(session, m));
 
   // Always: Home + up to 3 from active modules
   const navMods = activeMods.slice(0, 3);
@@ -480,7 +496,7 @@ function renderBottomNav(session) {
 // ── RENDER HUB ────────────────────────────────────────────────
 function renderHub(session) {
   const activeIds = getActiveModules(session);
-  const activeMods = MODULE_DEFS.filter(m => activeIds.includes(m.id) && session.level >= m.minLevel);
+  const activeMods = MODULE_DEFS.filter(m => activeIds.includes(m.id) && moduleEligible(session, m));
   const main = document.getElementById('main-content');
 
   if(!activeMods.length) {
@@ -588,8 +604,8 @@ function renderHub(session) {
 function openWizard() {
   const session = AUTH.getSession();
   const activeIds = getActiveModules(session);
-  const eligible = MODULE_DEFS.filter(m => session.level >= m.minLevel);
-  const locked   = MODULE_DEFS.filter(m => session.level < m.minLevel);
+  const eligible = MODULE_DEFS.filter(m => moduleEligible(session, m));
+  const locked   = MODULE_DEFS.filter(m => !moduleEligible(session, m));
 
   document.getElementById('wiz-module-list').innerHTML =
     eligible.map(m => `
@@ -678,7 +694,7 @@ function openManage() {
 function buildMyToolsListHTML(session) {
   const activeIds = getActiveModules(session);
   return MODULE_DEFS.map(m=>{
-    const eligible = session.level >= m.minLevel;
+    const eligible = moduleEligible(session, m);
     const isOn = activeIds.includes(m.id);
     const pageRows = m.tools.map(tool => {
       const tOn = isToolVisible(session.agentId, tool.href);
@@ -717,7 +733,7 @@ function buildAgentRow(agent) {
   const agLevel = ROLES[agent.role]?.level || 0;
   const agentSession = { agentId: agent.id, level: agLevel };
   const agActive = getActiveModules(agentSession);
-  const eligMods = MODULE_DEFS.filter(m => agLevel >= m.minLevel);
+  const eligMods = MODULE_DEFS.filter(m => moduleEligible(agentSession, m));
   const initials = agent.name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
   const roleColor = ROLES[agent.role]?.color || '#6B7C93';
 
