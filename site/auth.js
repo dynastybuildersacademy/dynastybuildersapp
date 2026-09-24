@@ -1169,10 +1169,16 @@ function getToolGrantsFor(agentId) {
 // grant on a shared board, named "<agentId>__<page>", is the source of
 // truth; the localStorage map above is just a same-device cache of it.
 const TOOL_GRANTS_BOARD_KEY = 'dba_tool_grants_board_id';
+// Org-wide default so every device works out of the box — no per-device
+// setup step required. A local override (if ever set) still wins.
+const TOOL_GRANTS_BOARD_DEFAULT = '18432605333'; // "DBA Tool Access Grants"
+function getToolGrantsBoardId() {
+  return localStorage.getItem(TOOL_GRANTS_BOARD_KEY) || TOOL_GRANTS_BOARD_DEFAULT;
+}
 let _toolGrantsRefreshed = false;
 
 async function refreshToolGrantsFromMonday() {
-  const boardId = localStorage.getItem(TOOL_GRANTS_BOARD_KEY);
+  const boardId = getToolGrantsBoardId();
   if (!boardId || typeof AUTH === 'undefined' || !AUTH.getMondayKey?.()) return false;
   try {
     const res = await mondayQuery(`{ boards(ids:${boardId}) { items_page(limit:500) { items { id name } } } }`);
@@ -1195,7 +1201,7 @@ async function refreshToolGrantsFromMonday() {
 }
 
 async function syncGrantToMonday(agentId, page, granted) {
-  const boardId = localStorage.getItem(TOOL_GRANTS_BOARD_KEY);
+  const boardId = getToolGrantsBoardId();
   if (!boardId || typeof AUTH === 'undefined' || !AUTH.getMondayKey?.()) return;
   const itemName = `${agentId}__${page}`;
   try {
