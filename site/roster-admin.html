@@ -498,7 +498,18 @@ function switchTab(name, el) {
   if (name === 'adminaccess') renderAdminAccessTable();
   if (name === 'genealogy') renderGenealogy();
   if (name === 'attendance') { renderAttendanceSummary(); renderAttendanceTable(); }
-  if (name === 'toolaccess') { populateToolAccessAgentPicker(); renderToolAccessSummary(); }
+  if (name === 'toolaccess') {
+    populateToolAccessAgentPicker();
+    renderToolAccessSummary();
+    // Pull the latest from Monday first — this MD may have granted
+    // something from a different device since this one last checked.
+    if (typeof AUTH.refreshToolGrants === 'function') {
+      AUTH.refreshToolGrants().then(() => {
+        renderToolAccessSummary();
+        renderToolAccessGrid();
+      });
+    }
+  }
 }
 
 // ── ROLE DISPLAY ──────────────────────────────────────────────

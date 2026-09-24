@@ -18,7 +18,10 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);m
 .header h1{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--gold);}
 .back-btn{font-size:12px;color:var(--gold);text-decoration:none;border:1px solid var(--border);padding:6px 12px;border-radius:3px;}
 /* TABS */
-.tab-bar{display:flex;border-bottom:1px solid var(--border);background:var(--navy-mid);overflow-x:auto;padding:0 22px;gap:0;}
+.tab-bar{display:flex;border-bottom:1px solid var(--border);background:var(--navy-mid);overflow-x:auto;padding:0 22px;gap:0;scrollbar-width:thin;}
+.tab-bar-wrap{position:relative;}
+.tab-scroll-hint{position:absolute;right:0;top:0;bottom:1px;width:34px;background:linear-gradient(to right, transparent, var(--navy-mid) 65%);display:flex;align-items:center;justify-content:flex-end;padding-right:3px;pointer-events:none;font-size:16px;color:var(--gold);transition:opacity .2s;}
+.tab-scroll-hint.hidden{opacity:0;}
 .tab{padding:13px 20px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;cursor:pointer;border-bottom:2px solid transparent;color:var(--slate);transition:all 0.2s;white-space:nowrap;flex-shrink:0;}
 .tab.active{color:var(--gold);border-bottom-color:var(--gold);}
 .tab:hover:not(.active){color:var(--cream);}
@@ -129,7 +132,8 @@ select option{background:var(--navy-mid);}
   </div>
   <a href="hub.html" class="back-btn">← Hub</a>
 </div>
-<div class="tab-bar">
+<div class="tab-bar-wrap">
+<div class="tab-bar" id="training-tab-bar" onscroll="updateTabScrollHint()">
   <div class="tab" onclick="switchTab('bookclub',this)">📚 Book Club</div>
   <div class="tab" onclick="switchTab('weeklystrategy',this)">🎯 Weekly Strategy</div>
   <div class="tab" onclick="switchTab('perfectweek',this)">🌟 Perfect Week</div>
@@ -137,11 +141,13 @@ select option{background:var(--navy-mid);}
   <div class="tab" onclick="window.location.href='academy.html'" style="background:rgba(201,168,76,.1);border-bottom:2px solid var(--gold);">🏛️ Academy</div>
   <div class="tab" onclick="switchTab('sales',this)">💰 Sales Mastery</div>
   <div class="tab" onclick="switchTab('recruiting',this)">👥 Recruiting</div>
-  <div class="tab" onclick="switchTab('leadership',this)">🏆 Leadership</div>
+  <div class="tab" onclick="switchTab('leadership',this)">📔 Leadership Journal</div>
   <div class="tab" onclick="switchTab('products',this)">📋 Products</div>
   <div class="tab" onclick="switchTab('mindset',this)">🧠 Mindset</div>
   <div class="tab" onclick="switchTab('roleplay',this)">🎭 AI Role-Play</div>
   <div class="tab" onclick="switchTab('teambuilder',this)">🏗 Team Builder</div>
+</div>
+<div class="tab-scroll-hint" id="tab-scroll-hint">›</div>
 </div>
 <div class="content">
 
@@ -168,8 +174,13 @@ select option{background:var(--navy-mid);}
 
 <!-- LEADERSHIP -->
 <div class="panel" id="panel-leadership">
-  <div class="page-title">Leadership Development</div>
+  <div class="page-title">📔 Leadership Journal</div>
   <div class="page-sub">Atomic Habits applied to building your dynasty. Systems beat motivation every time.</div>
+
+  <div id="leadership-post-badge" style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+    <span style="background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.3);color:var(--gold);font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:800;letter-spacing:.05em;padding:4px 10px;border-radius:20px;text-transform:uppercase;">📝 This Week's Post</span>
+    <span id="leadership-post-date" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--slate);">Posted September 21, 2026</span>
+  </div>
 
   <div class="rp-card" style="margin-bottom:20px;">
     <div class="rp-card-title">🔭 Telescope + Microscope + Filter — The MD2 Council Leadership Philosophy</div>
@@ -421,6 +432,17 @@ select option{background:var(--navy-mid);}
   </div>
 
   <div class="rp-card" style="margin-bottom:20px;">
+    <div class="rp-card-title">🗣️ Affirmations Library</div>
+    <p style="font-size:12.5px;color:var(--slate);margin-bottom:14px;">Speak these out loud, not just read them. Pick whatever matches what today's work actually requires.</p>
+    <div class="ws-goal-period-tabs" style="flex-wrap:wrap;">
+      <button class="ws-period-tab active" id="affirm-tab-steps" onclick="switchAffirmView('steps')">6 Steps of the Business</button>
+      <button class="ws-period-tab" id="affirm-tab-skills" onclick="switchAffirmView('skills')">By Skill</button>
+    </div>
+    <div id="affirm-category-buttons" style="display:flex;flex-wrap:wrap;gap:8px;margin:14px 0;"></div>
+    <div id="affirm-display"></div>
+  </div>
+
+  <div class="rp-card" style="margin-bottom:20px;">
     <div class="rp-card-title">🪄 The Magic Wand Exercise — Brian Tracy</div>
     <p style="font-size:13px;line-height:1.8;color:rgba(20,16,8,.9);margin-bottom:10px;">Imagine you could wave a magic wand and make your life perfect in every key area. If your life was completely ideal 5 years from now, what would it look like? Write it as if you're describing a movie of your future life — absolute clarity, no hedging.</p>
     <div style="font-size:11px;color:var(--slate);margin-bottom:14px;">Sharing this with someone who isn't in the system yet? Send them the <a href="magic-wand-public.html" target="_blank" style="color:var(--gold);">public version</a> — same exercise, no login required.</div>
@@ -657,6 +679,14 @@ select option{background:var(--navy-mid);}
 <div class="panel" id="panel-bookclub">
   <div class="page-title">📚 Book Club</div>
   <div class="page-sub">DBA's monthly reading program. Study together, grow together. Each book compounds the last.</div>
+
+  <div class="rp-card" style="margin-bottom:16px;background:rgba(201,168,76,.06);display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;">
+    <div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;color:var(--gold);">🔭 Power vs Force — Training &amp; Self-Assessment</div>
+      <div style="font-size:12px;color:var(--slate);margin-top:2px;">Always open — doesn't depend on which book is current this month.</div>
+    </div>
+    <a href="#" onclick="openConsciousnessPanel();return false;" style="display:inline-block;background:linear-gradient(135deg,#C9A84C,#E8C97A);color:#F5F1E8;font-weight:700;font-family:'Barlow Condensed',sans-serif;font-size:13px;letter-spacing:.03em;padding:9px 18px;border-radius:6px;text-decoration:none;white-space:nowrap;">⬆ Open Training and Assessment</a>
+  </div>
 
   <!-- CURRENT BOOK: 3 FEET FROM GOLD -->
   <div id="bc-current"></div>
@@ -1609,6 +1639,117 @@ function autosaveLeadershipTracker() {
 loadLeadershipTracker();
 setInterval(autosaveLeadershipTracker, 120000);
 
+// ── AFFIRMATIONS LIBRARY ──────────────────────────────────────────
+const AFFIRMATIONS_STEPS = {
+  prospecting: { label: '1 · Prospecting', icon: '🔎', lines: [
+    'I see opportunity in every conversation.',
+    'I talk to people every day about what I do.',
+    'My pipeline is never empty because I never stop planting seeds.',
+    'I am curious about people, and people are curious about me.',
+  ]},
+  booking: { label: '2 · Booking / Invitation', icon: '📞', lines: [
+    'I invite with confidence, not apology.',
+    'Every invitation I make is a gift, not an imposition.',
+    'I ask clearly and let the answer be theirs to give.',
+    'Rejection of the invitation is never rejection of me.',
+  ]},
+  presentation: { label: '3 · Presentation / Exposure', icon: '🎤', lines: [
+    'I present with clarity, conviction, and care.',
+    "My story is powerful because it's true.",
+    'I show up prepared, so I show up confident.',
+    "I let the message do the work — I don't have to be perfect, I have to be present.",
+  ]},
+  followup: { label: '4 · Follow-Up', icon: '🔁', lines: [
+    'The fortune is in the follow-up, and I never leave it on the table.',
+    'I follow up because I care about the outcome, not just the transaction.',
+    'Persistence is not annoying — it is professional.',
+    'I follow up until I get a decision, not until I get tired.',
+  ]},
+  faststart: { label: '5 · Fast Start', icon: '🚀', lines: [
+    'I move fast because momentum builds belief.',
+    'My first 30 days set the tone for my entire career.',
+    'I take action before I feel ready — readiness comes from doing.',
+    'Every step I complete makes the next one easier.',
+  ]},
+  duplication: { label: '6 · Duplication', icon: '🌱', lines: [
+    'What I do, my team will do — so I build habits worth copying.',
+    'I teach simply so my system can be duplicated.',
+    'My growth is measured by what continues without me, not just what I do myself.',
+    'I build leaders, not followers.',
+  ]},
+};
+const AFFIRMATIONS_SKILLS = {
+  confidence: { label: 'Confidence', icon: '💎', lines: [
+    'I am worthy of the success I am building.',
+    'My confidence comes from preparation, not perfection.',
+    'I belong in every room I walk into.',
+    'I trust myself to figure it out.',
+  ]},
+  rejection: { label: 'Overcoming Rejection', icon: '🛡️', lines: [
+    'A no today is not a no forever.',
+    'Rejection is redirection, not a verdict on my worth.',
+    "I release what isn't mine and move toward what is.",
+    'Every no brings me closer to my next yes.',
+  ]},
+  leadership: { label: 'Leadership', icon: '🧭', lines: [
+    'I lead by example before I lead by words.',
+    'My team rises to the standard I set for myself.',
+    "I develop people, I don't just direct them.",
+    'I calibrate high — I inspire rather than demand.',
+  ]},
+  recruiting: { label: 'Recruiting', icon: '🤝', lines: [
+    'I recruit people, not positions.',
+    'I see potential in others before they see it in themselves.',
+    'I build my team with intention, not urgency.',
+    "I attract the kind of people I'd be proud to develop.",
+  ]},
+  closing: { label: 'Closing', icon: '✍️', lines: [
+    'I ask for the decision because I believe in what I am offering.',
+    'Closing is a service, not a sale.',
+    'I am comfortable with silence after I ask the question.',
+    'My job is to help people decide, not to convince them.',
+  ]},
+  discipline: { label: 'Consistency & Discipline', icon: '⏱️', lines: [
+    "I do the work on the days I don't feel like it — that's what makes it work.",
+    'Small daily actions compound into extraordinary results.',
+    'Discipline is choosing what I want most over what I want now.',
+    "I show up whether I'm motivated or not.",
+  ]},
+};
+let affirmView = 'steps';
+let affirmCategory = 'prospecting';
+
+function switchAffirmView(view) {
+  affirmView = view;
+  affirmCategory = view === 'steps' ? 'prospecting' : 'confidence';
+  document.getElementById('affirm-tab-steps').classList.toggle('active', view === 'steps');
+  document.getElementById('affirm-tab-skills').classList.toggle('active', view === 'skills');
+  renderAffirmCategories();
+}
+
+function renderAffirmCategories() {
+  const set = affirmView === 'steps' ? AFFIRMATIONS_STEPS : AFFIRMATIONS_SKILLS;
+  const btnWrap = document.getElementById('affirm-category-buttons');
+  btnWrap.innerHTML = Object.entries(set).map(([key, cat]) =>
+    `<button class="ws-period-tab ${key===affirmCategory?'active':''}" onclick="selectAffirmCategory('${key}')" style="font-size:11px;">${cat.icon} ${cat.label}</button>`
+  ).join('');
+  renderAffirmDisplay();
+}
+
+function selectAffirmCategory(key) {
+  affirmCategory = key;
+  renderAffirmCategories();
+}
+
+function renderAffirmDisplay() {
+  const set = affirmView === 'steps' ? AFFIRMATIONS_STEPS : AFFIRMATIONS_SKILLS;
+  const cat = set[affirmCategory];
+  const el = document.getElementById('affirm-display');
+  if (!cat) { el.innerHTML = ''; return; }
+  el.innerHTML = `<div class="ws-declaration">${cat.lines.map(l => `<div style="margin-bottom:10px;">"${l}"</div>`).join('')}</div>`;
+}
+renderAffirmCategories();
+
 function toast(msg) {
   let el = document.getElementById('dba-toast');
   if (!el) {
@@ -1623,11 +1764,28 @@ function toast(msg) {
   el._t = setTimeout(() => el.style.opacity = '0', 2400);
 }
 
+// The tab bar scrolls horizontally on narrow screens (there are 12 tabs —
+// more than fit on a phone), but with no visible scrollbar there was
+// nothing telling people that. This hides the "more tabs" arrow once
+// they've actually scrolled to the end, and hides it entirely if
+// everything already fits on screen.
+function updateTabScrollHint() {
+  const bar = document.getElementById('training-tab-bar');
+  const hint = document.getElementById('tab-scroll-hint');
+  if (!bar || !hint) return;
+  const atEnd = bar.scrollLeft + bar.clientWidth >= bar.scrollWidth - 4;
+  const overflowing = bar.scrollWidth > bar.clientWidth + 4;
+  hint.classList.toggle('hidden', atEnd || !overflowing);
+}
+window.addEventListener('resize', updateTabScrollHint);
+document.addEventListener('DOMContentLoaded', updateTabScrollHint);
+
 function switchTab(id, el) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.getElementById('panel-'+id).classList.add('active');
   el.classList.add('active');
+  el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
   if (id === 'bookclub') renderBookClub();
   if (id === 'weeklystrategy') initWeeklyStrategy();
   if (id === 'perfectweek') initPerfectWeek();

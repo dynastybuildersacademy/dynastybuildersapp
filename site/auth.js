@@ -1161,12 +1161,64 @@ function getToolGrantsFor(agentId) {
   const all = getAllToolGrants();
   return all[agentId] || [];
 }
+
+// ── SHARED STORAGE FOR GRANTS — Monday.com ────────────────────────
+// localStorage alone never leaves the device that set it, so a grant an
+// MD makes on their own laptop was invisible to the agent it was meant
+// for, opening the app on their own phone or computer. One item per
+// grant on a shared board, named "<agentId>__<page>", is the source of
+// truth; the localStorage map above is just a same-device cache of it.
+const TOOL_GRANTS_BOARD_KEY = 'dba_tool_grants_board_id';
+let _toolGrantsRefreshed = false;
+
+async function refreshToolGrantsFromMonday() {
+  const boardId = localStorage.getItem(TOOL_GRANTS_BOARD_KEY);
+  if (!boardId || typeof AUTH === 'undefined' || !AUTH.getMondayKey?.()) return false;
+  try {
+    const res = await mondayQuery(`{ boards(ids:${boardId}) { items_page(limit:500) { items { id name } } } }`);
+    const items = res?.data?.boards?.[0]?.items_page?.items || [];
+    const rebuilt = {};
+    items.forEach(it => {
+      const sep = it.name.indexOf('__');
+      if (sep < 0) return;
+      const agentId = it.name.slice(0, sep);
+      const page = it.name.slice(sep + 2);
+      if (!rebuilt[agentId]) rebuilt[agentId] = [];
+      if (!rebuilt[agentId].includes(page)) rebuilt[agentId].push(page);
+    });
+    localStorage.setItem(TOOL_GRANTS_KEY, JSON.stringify(rebuilt));
+    return true;
+  } catch(e) {
+    console.warn('Tool grants: could not sync from Monday:', e.message);
+    return false;
+  }
+}
+
+async function syncGrantToMonday(agentId, page, granted) {
+  const boardId = localStorage.getItem(TOOL_GRANTS_BOARD_KEY);
+  if (!boardId || typeof AUTH === 'undefined' || !AUTH.getMondayKey?.()) return;
+  const itemName = `${agentId}__${page}`;
+  try {
+    const res = await mondayQuery(`{ boards(ids:${boardId}) { items_page(limit:500) { items { id name } } } }`);
+    const items = res?.data?.boards?.[0]?.items_page?.items || [];
+    const existing = items.find(it => it.name === itemName);
+    if (granted && !existing) {
+      await mondayQuery(`mutation { create_item(board_id:${boardId}, item_name:"${itemName}") { id } }`);
+    } else if (!granted && existing) {
+      await mondayQuery(`mutation { delete_item(item_id:${existing.id}) { id } }`);
+    }
+  } catch(e) {
+    console.warn('Tool grants: could not sync to Monday:', e.message);
+  }
+}
+
 function setToolGrant(agentId, page, granted) {
   const all = getAllToolGrants();
   const current = new Set(all[agentId] || []);
   if (granted) current.add(page); else current.delete(page);
   if (current.size) all[agentId] = [...current]; else delete all[agentId];
   try { localStorage.setItem(TOOL_GRANTS_KEY, JSON.stringify(all)); } catch(e) {}
+  syncGrantToMonday(agentId, page, granted); // fire-and-forget — this device's cache is already updated above
 }
 
 const PAGE_ACCESS = {
@@ -1386,14 +1438,26 @@ const AUTH = {
     const s = AUTH.getSession();
     if (!s) { window.location.href = 'index.html'; return false; }
     const required = PAGE_ACCESS[page] ?? 0;
-    if (s.level < required && !getToolGrantsFor(s.agentId).includes(page)) {
-      window.location.href = 'hub.html';
-      return false;
-    }
+    if (s.level >= required) return true; // fast path — no grant check needed at all
+
+    if (getToolGrantsFor(s.agentId).includes(page)) return true; // already cached on this device
+
+    // Not enough by rank, and nothing cached locally yet — this may just
+    // mean an MD granted it from a different device and this one hasn't
+    // heard about it. Let the page render optimistically while a live
+    // check runs in the background; only redirect if that check confirms
+    // there's genuinely no grant. Real Monday.com data always wins over
+    // whatever's (or isn't) cached here.
+    refreshToolGrantsFromMonday().then(() => {
+      if (!getToolGrantsFor(s.agentId).includes(page)) {
+        window.location.href = 'hub.html';
+      }
+    });
     return true;
   },
   getToolGrants: getToolGrantsFor,
   setToolGrant: setToolGrant,
+  refreshToolGrants: refreshToolGrantsFromMonday,
   GRANTABLE_TOOLS: GRANTABLE_TOOLS,
 
   logout() {
