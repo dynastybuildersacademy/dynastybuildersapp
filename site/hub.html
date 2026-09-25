@@ -913,6 +913,22 @@ function checkNotifications(session) {
 
   // Render
   renderHub(session);
+
+  // Pull fresh tool grants from Monday.com — this device's local cache
+  // may be stale or empty even though an MD granted access from a
+  // different device. Without this, moduleEligible() only ever sees
+  // whatever's already cached here, which on a brand-new device (or one
+  // that hasn't opened a restricted page yet) is nothing at all — so the
+  // wizard and hero badges would never reflect a real, current grant.
+  if (typeof AUTH.refreshToolGrants === 'function') {
+    AUTH.refreshToolGrants().then(refreshed => {
+      if (!refreshed) return;
+      updateHeroBadges(session, getActiveModules(session));
+      renderHub(session);
+      const wizardOpen = document.getElementById('wizard-overlay')?.style.display !== 'none';
+      if (wizardOpen) openWizard(); // re-render with the refreshed eligibility
+    });
+  }
 })();
 </script>
 </body>
