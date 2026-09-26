@@ -90,6 +90,15 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);m
       <button class="tab-btn active" id="tabbtn-top25" onclick="showTab('top25')">📝 Add to Top 25</button>
       <button class="tab-btn" id="tabbtn-appt" onclick="showTab('appt')">📅 Add Appointment</button>
       <button class="tab-btn" id="tabbtn-activity" onclick="showTab('activity')">📞 Log Activity</button>
+      <button class="tab-btn" id="tabbtn-tree" onclick="showTab('tree')">🌳 Downline Tree</button>
+    </div>
+
+    <!-- DOWNLINE TREE -->
+    <div class="tab-panel" id="tab-tree">
+      <div class="card">
+        <div class="card-title">🌳 <span id="tree-agent-name-label"></span>'s Downline</div>
+        <div id="mentor-tree" style="max-height:480px;overflow-y:auto;background:var(--s1,#fff);border:1px solid var(--border);border-radius:8px;padding:10px;"></div>
+      </div>
     </div>
 
     <!-- ADD TO TOP 25 -->
@@ -244,6 +253,46 @@ function getPromoStats(agentId) {
 }
 
 // ── SELECT AGENT ──────────────────────────────────────────────
+// ── DOWNLINE TREE (read-only view of the selected agent's own downline) ──
+function renderMentorTree() {
+  const tree = document.getElementById('mentor-tree');
+  if (!tree || !currentAgent) return;
+  document.getElementById('tree-agent-name-label').textContent = currentAgent.name;
+
+  const members = typeof getFullDownline === 'function' ? getFullDownline(currentAgent.id) : [currentAgent];
+  const childMap = {};
+  members.forEach(a => {
+    const pid = a.uplineId || '__root__';
+    if (!childMap[pid]) childMap[pid] = [];
+    childMap[pid].push(a);
+  });
+
+  function renderNode(agent, depth) {
+    const children = childMap[agent.id] || [];
+    const indent = depth * 18;
+    const roleColor = ROLES[agent.role]?.color || '#6B7C93';
+    return `
+      <div style="display:flex;align-items:center;gap:8px;padding:7px 8px;
+        border-bottom:1px solid rgba(10,10,10,.04);margin-left:${indent}px;
+        background:${depth===0?'rgba(201,168,76,.06)':'transparent'};
+        border-radius:${depth===0?'6px':'0'};">
+        <span style="font-size:12px;flex-shrink:0;">${children.length ? '▾' : '·'}</span>
+        <div style="flex:1;min-width:0;">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;
+            white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${agent.name}</div>
+          <div style="font-size:10px;color:${roleColor};">${ROLES[agent.role]?.label || agent.role || 'Trainee'}</div>
+        </div>
+        <span style="font-family:'DM Mono',monospace;font-size:10px;color:#6B7C93;flex-shrink:0;">${children.length > 0 ? children.length+'↓' : ''}</span>
+      </div>
+      ${children.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(c => renderNode(c, depth+1)).join('')}
+    `;
+  }
+
+  tree.innerHTML = members.length
+    ? renderNode(currentAgent, 0)
+    : '<div style="padding:20px;text-align:center;color:var(--slate);font-size:13px;">No downline on file for this agent yet.</div>';
+}
+
 function selectAgent(agentId) {
   if (!agentId) { document.getElementById('agent-panel').style.display = 'none'; return; }
   currentAgent = downline.find(a => a.id === agentId);
@@ -275,13 +324,19 @@ function selectAgent(agentId) {
   document.getElementById('appt-status').textContent = '';
   document.getElementById('activity-status').textContent = '';
   loadUpcomingAppts();
+
+  // Keep the tree in sync if it's the tab currently showing when the
+  // agent switches — otherwise it would keep displaying the previous
+  // agent's downline until someone happens to click the tab again.
+  if (document.getElementById('tab-tree')?.classList.contains('active')) renderMentorTree();
 }
 
 function showTab(name) {
-  ['top25','appt','activity'].forEach(t => {
+  ['top25','appt','activity','tree'].forEach(t => {
     document.getElementById('tab-'+t).classList.toggle('active', t===name);
     document.getElementById('tabbtn-'+t).classList.toggle('active', t===name);
   });
+  if (name === 'tree') renderMentorTree();
 }
 
 // ── ADD TO TOP 25 ─────────────────────────────────────────────
