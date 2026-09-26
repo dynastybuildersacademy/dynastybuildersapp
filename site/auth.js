@@ -1150,6 +1150,7 @@ const GRANTABLE_TOOLS = [
   { page: 'licensing.html',     label: 'Licensing Tracker' },
   { page: 'recognitions.html',  label: 'Thankful Thursday' },
   { page: 'contest-tracker.html', label: 'Contest & Recognition' },
+  { page: 'monthly-contest.html', label: 'Monthly Contest' },
   { page: 'bom.html',           label: 'BOM Tracker' },
   { page: 'cft-matcher.html',   label: 'CFT Matcher' },
   { page: 'reminders.html',     label: 'Team Reminders' },

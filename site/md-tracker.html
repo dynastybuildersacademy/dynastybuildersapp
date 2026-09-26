@@ -327,6 +327,35 @@ body::before{content:"";position:fixed;inset:0;
   </div>
 </div>
 
+<!-- EDIT RUN PERIOD (admin and up) -->
+<div class="modal-bg" id="edit-period-modal">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title">📅 Edit Run Period</div>
+      <button class="modal-close" onclick="closeEditPeriodModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="field"><label>Run Start</label><input type="date" id="ep-start"></div>
+      <div class="field"><label>Duration (months)</label>
+        <select id="ep-duration" onchange="updateEditPeriodWarning()">
+          <option value="1">1 Month</option>
+          <option value="2">2 Months</option>
+          <option value="3">3 Months</option>
+          <option value="4">4 Months</option>
+          <option value="5">5 Months</option>
+          <option value="6">6 Months</option>
+        </select>
+      </div>
+      <div id="ep-warning" style="display:none;font-family:'DM Mono',monospace;font-size:11px;color:#E67E22;background:rgba(230,126,34,.08);border:1px solid rgba(230,126,34,.3);border-radius:6px;padding:10px 12px;margin-top:4px;line-height:1.6;"></div>
+      <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-top:10px;">New end date: <strong id="ep-end-preview">—</strong></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeEditPeriodModal()">Cancel</button>
+      <button class="btn-create" onclick="saveRunPeriod()">✓ Save Period</button>
+    </div>
+  </div>
+</div>
+
 <div class="topbar">
   <div class="brand">
     <div class="brand-hex">⬡</div>
@@ -381,6 +410,7 @@ body::before{content:"";position:fixed;inset:0;
       <button class="act-btn" onclick="document.getElementById('import-modal').classList.add('open')" style="border-color:rgba(52,152,219,.3);color:var(--blue);">⬆ Import Data</button>
       <button class="act-btn" onclick="openEditTeamModal()" style="border-color:rgba(155,89,182,.3);color:#9b59b6;">👥 Edit Team</button>
       <button class="act-btn" onclick="syncToMonday()" id="sync-btn" style="border-color:rgba(45,202,115,.3);color:var(--green);">⬡ Sync to Monday</button>
+      <button class="act-btn" id="edit-period-btn" onclick="openEditPeriodModal()" style="display:none;border-color:rgba(201,168,76,.3);color:var(--gold);">📅 Edit Dates</button>
       <button class="act-btn danger" onclick="deleteRun()">✕ Delete Run</button>
     </div>
 
@@ -732,6 +762,84 @@ function createRun(){
   });
 }
 
+// ── EDIT RUN PERIOD (admin and up) ───────────────────────────────
+// Lets an admin correct a run's start date or extend/shorten its
+// duration after the fact, without recreating the whole run and losing
+// its entered recruits/apps history. Shrinking the duration is the only
+// destructive case — data already entered for the dropped months would
+// be lost — so that path requires an explicit confirmation naming
+// exactly what would be removed.
+function openEditPeriodModal(){
+  const run = runs.find(r=>r.id===activeId);
+  if(!run){toast("Select a run first");return;}
+  document.getElementById("ep-start").value = run.startDate;
+  document.getElementById("ep-duration").value = String(run.months);
+  updateEditPeriodWarning();
+  document.getElementById("edit-period-modal").classList.add("open");
+}
+function closeEditPeriodModal(){
+  document.getElementById("edit-period-modal").classList.remove("open");
+}
+function computePeriodEnd(startStr, months){
+  const sd = new Date(startStr+"T12:00:00");
+  const ed = new Date(sd);
+  ed.setMonth(ed.getMonth()+months); ed.setDate(ed.getDate()-1);
+  const lbls=[];
+  for(let i=0;i<months;i++){ const d=new Date(sd); d.setMonth(d.getMonth()+i); lbls.push(d.toLocaleString("en-US",{month:"long",year:"numeric"})); }
+  return { endDate: ed.toISOString().slice(0,10), monthLabels: lbls };
+}
+function updateEditPeriodWarning(){
+  const run = runs.find(r=>r.id===activeId);
+  if(!run) return;
+  const start = document.getElementById("ep-start").value || run.startDate;
+  const months = parseInt(document.getElementById("ep-duration").value)||run.months;
+  const { endDate } = computePeriodEnd(start, months);
+  document.getElementById("ep-end-preview").textContent = fmtDate(endDate);
+
+  const warnEl = document.getElementById("ep-warning");
+  if (months < run.months) {
+    const droppedMonths = run.monthLabels.slice(months);
+    const droppedRecruits = run.recruits.slice(months).reduce((s,a)=>s+a.length,0);
+    const droppedApps = run.apps.slice(months).reduce((s,a)=>s+a.length,0);
+    warnEl.style.display = "block";
+    warnEl.textContent = `⚠ Shortening to ${months} month${months===1?"":"s"} will permanently remove ${droppedMonths.join(", ")} — ${droppedRecruits} recruit entr${droppedRecruits===1?"y":"ies"} and ${droppedApps} application entr${droppedApps===1?"y":"ies"} recorded there.`;
+  } else {
+    warnEl.style.display = "none";
+  }
+}
+function saveRunPeriod(){
+  const run = runs.find(r=>r.id===activeId);
+  if(!run){toast("Select a run first");return;}
+  const start = document.getElementById("ep-start").value;
+  const months = parseInt(document.getElementById("ep-duration").value)||run.months;
+  if(!start){toast("Set a start date");return;}
+
+  if (months < run.months) {
+    const ok = confirm(document.getElementById("ep-warning").textContent.replace("⚠ ","")+"\n\nContinue?");
+    if(!ok) return;
+  }
+
+  const { endDate, monthLabels } = computePeriodEnd(start, months);
+  // Resize recruits/apps arrays to the new month count, preserving
+  // existing entries for months that still exist.
+  const resize = (arr) => {
+    const next = Array.from({length:months}, (_,i)=> arr[i] || []);
+    return next;
+  };
+  run.startDate = start;
+  run.endDate = endDate;
+  run.months = months;
+  run.monthLabels = monthLabels;
+  run.recruits = resize(run.recruits);
+  run.apps = resize(run.apps);
+  if (run.currentMonth >= months) run.currentMonth = months - 1;
+
+  save();
+  closeEditPeriodModal();
+  renderBar(); renderAll();
+  toast("Run period updated for "+run.agentName);
+}
+
 function renderBar(){
   const bar=document.getElementById("run-bar");
   const session = AUTH.getSession ? AUTH.getSession() : null;
@@ -780,6 +888,13 @@ function renderAllBase(){
   const session2 = AUTH.getSession ? AUTH.getSession() : null;
   const isAdmin2 = session2 && (session2.role==="admin"||session2.role==="agency_builder"||session2.role==="marketing_director");
   const viewingOther = isAdmin2 && run.agentId !== session2?.agentId;
+  // "Edit Dates" uses the unified admin-tier system (admin/super_admin/
+  // super_user) rather than this file's older role-name check above, so
+  // an agent given the "admin" tier (even below Marketing Director rank)
+  // can still edit run periods, matching how Tool Access grants work.
+  const canEditPeriod = session2 && (session2.level >= 60 || !!(typeof getAdminTier === 'function' && getAdminTier(session2)));
+  const editPeriodBtn = document.getElementById('edit-period-btn');
+  if (editPeriodBtn) editPeriodBtn.style.display = canEditPeriod ? 'inline-block' : 'none';
   document.getElementById("th-role").innerHTML =
     (viewingOther ? `<span style="font-size:9px;padding:2px 8px;border-radius:5px;background:rgba(52,152,219,.12);color:#5dade2;border:1px solid rgba(52,152,219,.2);font-family:DM Mono,monospace;letter-spacing:.06em;margin-right:8px;">ADMIN VIEW</span>` : "") +
     run.level.toUpperCase()+" · PROMOTION RUN";

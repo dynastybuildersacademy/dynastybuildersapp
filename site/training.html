@@ -162,6 +162,50 @@ select option{background:var(--navy-mid);}
 <div class="panel" id="panel-sales">
   <div class="page-title">Sales Mastery</div>
   <div class="page-sub">The 5-step presentation process from connect to close. Practice until it flows naturally.</div>
+
+  <div class="rp-card" style="margin-bottom:20px;background:rgba(201,168,76,.08);display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;">
+    <div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;color:var(--gold);">🎮 Test Your Objection Handling — Live Kahoot</div>
+      <div style="font-size:12px;color:var(--slate);margin-top:2px;">Play along on your phone at <strong>kahoot.it</strong> with game PIN <strong>424542</strong></div>
+    </div>
+    <a href="https://kahoot.it/424542" target="_blank" style="display:inline-block;background:linear-gradient(135deg,#C9A84C,#E8C97A);color:#F5F1E8;font-weight:700;font-family:'Barlow Condensed',sans-serif;font-size:14px;letter-spacing:.03em;padding:10px 20px;border-radius:6px;text-decoration:none;white-space:nowrap;">▶ Join Game</a>
+  </div>
+
+  <div class="rp-card" style="margin-bottom:20px;">
+    <div class="rp-card-title">🎯 Object the Objections — Handling &amp; Closing Mastery</div>
+    <p style="font-size:12.5px;color:var(--slate);margin-bottom:16px;line-height:1.7;">Top producers ask 3x more questions than they make statements. This is the full pattern behind every objection you'll hear — learn the pattern once, and you can handle all of them.</p>
+
+    <label class="field-label">The Language of Trust — Words to Swap</label>
+    <div style="overflow-x:auto;margin-bottom:16px;">
+      <table style="width:100%;border-collapse:collapse;font-size:12.5px;">
+        <tr style="border-bottom:1px solid var(--border);"><td style="padding:7px 10px;font-weight:700;color:var(--gold);">Avoid</td><td style="padding:7px 10px;font-weight:700;color:var(--gold);">Use Instead</td></tr>
+        <tr style="border-bottom:1px solid rgba(0,0,0,.06);"><td style="padding:7px 10px;">Cost / Fees</td><td style="padding:7px 10px;color:var(--slate);">Investment</td></tr>
+        <tr style="border-bottom:1px solid rgba(0,0,0,.06);"><td style="padding:7px 10px;">Appointment / Meeting</td><td style="padding:7px 10px;color:var(--slate);">Get together / drop-by / pop-by</td></tr>
+        <tr style="border-bottom:1px solid rgba(0,0,0,.06);"><td style="padding:7px 10px;">Started a new job</td><td style="padding:7px 10px;color:var(--slate);">Took a position with</td></tr>
+        <tr style="border-bottom:1px solid rgba(0,0,0,.06);"><td style="padding:7px 10px;">Upline / leader</td><td style="padding:7px 10px;color:var(--slate);">Mentor / Broker / Coach</td></tr>
+        <tr style="border-bottom:1px solid rgba(0,0,0,.06);"><td style="padding:7px 10px;">Presentation</td><td style="padding:7px 10px;color:var(--slate);">Overview</td></tr>
+        <tr style="border-bottom:1px solid rgba(0,0,0,.06);"><td style="padding:7px 10px;">Sell</td><td style="padding:7px 10px;color:var(--slate);">Teach</td></tr>
+        <tr style="border-bottom:1px solid rgba(0,0,0,.06);"><td style="padding:7px 10px;">Make money off of</td><td style="padding:7px 10px;color:var(--slate);">Earn a bonus on your agents</td></tr>
+        <tr style="border-bottom:1px solid rgba(0,0,0,.06);"><td style="padding:7px 10px;">Joined</td><td style="padding:7px 10px;color:var(--slate);">Got started</td></tr>
+        <tr><td style="padding:7px 10px;">Downline</td><td style="padding:7px 10px;color:var(--slate);">Partners / Agents / Team</td></tr>
+      </table>
+    </div>
+
+    <div class="ws-declaration" style="margin-bottom:16px;">People decide emotionally and justify logically. Ask questions that uncover why something matters to them, or how it makes them feel — not just what they think.</div>
+
+    <label class="field-label">The Master Pattern — A.C.E.</label>
+    <div class="ws-grid3" style="margin-bottom:16px;">
+      <div class="ws-compare-item"><div class="wc-label">A · Acknowledge</div><div style="font-size:11.5px;color:var(--slate);margin-top:6px;">Repeat what they said. Make them feel heard.</div></div>
+      <div class="ws-compare-item"><div class="wc-label">C · Connect</div><div style="font-size:11.5px;color:var(--slate);margin-top:6px;">Tie it to a value they've already agreed to.</div></div>
+      <div class="ws-compare-item"><div class="wc-label">E · Explore → Close</div><div style="font-size:11.5px;color:var(--slate);margin-top:6px;">Ask a question that reframes it, then tie down or alternate of choice.</div></div>
+    </div>
+
+    <label class="field-label">16 Objections — Using the Pattern</label>
+    <div id="objection-accordion"></div>
+
+    <div class="ws-declaration" style="margin-top:16px;text-align:center;font-weight:700;">The person with the most conviction always wins. Believe it. Speak it. Close it.</div>
+  </div>
+
   <div id="sales-modules"></div>
 </div>
 
@@ -1749,6 +1793,73 @@ function renderAffirmDisplay() {
   el.innerHTML = `<div class="ws-declaration">${cat.lines.map(l => `<div style="margin-bottom:10px;">"${l}"</div>`).join('')}</div>`;
 }
 renderAffirmCategories();
+
+// ── OBJECTION HANDLING — 16 OBJECTIONS (A.C.E. pattern) ──────────
+const OBJECTIONS_16 = [
+  { obj:"I don't have time.", move:"Make the lack of time the cost — not the excuse.",
+    ack:"If you don't make any changes, will you achieve your goals in the time frame you want to?",
+    explore:"If not having the time stops you from achieving your goals, are you willing to adjust your schedule?" },
+  { obj:'"How much do you make?"', move:"Pivot from your number to their opportunity.",
+    ack:"I've made ____, but it's my intention to make ____ this month, and ____ this year.",
+    explore:"The last family we helped, I made ____ in ____ (time). Are you open to extra income part time?" },
+  { obj:'"I want to do research."', move:"Build trust on the spot — don't send them home alone.",
+    ack:"Show a video, prior speakers, other earners, other stories, and the companies we represent.",
+    explore:"Wouldn't it make sense to get your license first, so you really learn the process, the products, and the industry?" },
+  { obj:'"I want to think about it."', move:'"Think about it" is a stall. Make them name it.',
+    ack:"What would make you say YES or NO, so we can process it together and help you make a decision?",
+    explore:"It usually means one of three things: Fit, Function, or Finance. Walk through each one and get a commitment — most often it's the money, and they will tell you." },
+  { obj:'"I don\'t like sales."', move:'Replace "sales" with "teaching." That\'s the truth.',
+    ack:"It was probably more about how much money we could make vs how much we can help. Head vs Heart. This is a crusade.",
+    explore:"Honestly, salespeople don't do well with us. Our best agents come from backgrounds like yours where they help people. We all need someone to teach us, right?" },
+  { obj:'"Is this an MLM?"', move:"Educate, then schedule. Don't defend.",
+    ack:"We help our agents get their state license and teach people about insurance and retirement products. Some agents produce. Some become brokers and recruit agents — like real estate.",
+    explore:"What's better for you, later today or tomorrow?" },
+  { obj:'"I already own a business."', move:"Multiple income streams is the language of the rich.",
+    ack:"Do you know any successful business people or investors that have multiple businesses? If you could increase your revenue, wouldn't you want to?",
+    explore:"So, what's better for you — a weekday or weekend?" },
+  { obj:'"I already have two jobs."', move:"Two jobs = motive. Use it.",
+    ack:"Wouldn't the reason for having two jobs be because you need to earn more? So, if you could, are you open?",
+    explore:"What's better for you — a weekday or weekend?" },
+  { obj:'"Why do I have to pay?"', move:"Anchor to the cost of college. $199 is a deal at any answer.",
+    ack:'Qualify first: "Have you done any college?"',
+    explore:"Either way: you know people pay to get an education and a degree, right? So wouldn't it make sense to get an education and a license at a fraction of the cost?" },
+  { obj:'"I already have an agent / plan."', move:"Qualify, then reframe around getting a second opinion.",
+    ack:'Qualify: "Is this the first guy you\'ve worked with?"',
+    explore:"If yes: you've never had an opinion on your plan, right? Would you want more than one? If no: he improved what you had before — wouldn't you agree there's a chance you could improve it again?" },
+  { obj:'"Let me talk to my spouse."', move:"Don't fight the spouse. Schedule with them.",
+    ack:"Smart — your spouse should be in this. They'll have questions too.",
+    explore:"Let's make it easy and give them a couple options. Weekday or weekend? Saturday or Sunday? Afternoon or evening?" },
+  { obj:'"I\'m not sure."', move:"Almost always Fit, Function, or Finance. Find out which.",
+    ack:"You do want coverage for your family, right? You wanted something permanent, with savings and living benefits, right?",
+    explore:"Since you want coverage and the product has everything you want, it's just about finding a comfortable number. Walk through each — most often it's finance, and they'll tell you." },
+  { obj:'"Everything is good."', move:"Fill the blanks before the appointment with their dreams from the warm-up.",
+    ack:"If you could ____, ____, and ____ — wouldn't you want to?",
+    explore:"Great — what's better for you?" },
+  { obj:'"Life insurance is too expensive."', move:"Compare the price of insuring a car to the price of insuring a life.",
+    ack:"How much do you pay for car insurance? What would it cost to replace your car today? What would it cost to replace your income for 10 years?",
+    explore:"If it makes sense to have insurance to replace a car worth ____, wouldn't it make sense to have insurance to replace ____?" },
+  { obj:'"Someone I know tried this and didn\'t do well."', move:"Move blame off the model and onto the experience.",
+    ack:"I'm sure that company has successful people, right? So was it the company, the agent, or the person training them that didn't work out?",
+    explore:"Wouldn't you agree we don't know what's for us until we try it? What's better for you — ____ or ____?" },
+  { obj:'"Can you email me something?"', move:"Don't email. Sell the value of the meeting itself.",
+    ack:"It won't be as complete as if we sat down. People don't want to waste time or be sold something.",
+    explore:"Would it be worth 15–20 minutes if we could help educate you how to retire 5–10 years sooner or have 5–10% more at retirement? So, is ____ or ____ better?" },
+];
+
+function renderObjectionAccordion() {
+  const el = document.getElementById('objection-accordion');
+  if (!el) return;
+  el.innerHTML = OBJECTIONS_16.map((o, i) => `
+    <details style="background:var(--navy);border:1px solid var(--border);border-radius:6px;margin-bottom:8px;">
+      <summary style="padding:10px 14px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;color:rgba(20,16,8,.9);">${i+1}. ${o.obj}</summary>
+      <div style="padding:0 14px 14px;font-size:12.5px;line-height:1.7;color:var(--slate);">
+        <div style="color:var(--gold);font-weight:700;margin-bottom:4px;">KEY MOVE: ${o.move}</div>
+        <div><strong>Acknowledge/Reframe:</strong> ${o.ack}</div>
+        <div style="margin-top:4px;"><strong>Explore → Close:</strong> ${o.explore}</div>
+      </div>
+    </details>`).join('');
+}
+renderObjectionAccordion();
 
 function toast(msg) {
   let el = document.getElementById('dba-toast');

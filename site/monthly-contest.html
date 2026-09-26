@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Thankful Thursday · DBA</title>
+<title>Monthly Contest · DBA</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&family=Playfair+Display:wght@700;800;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="auth.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -285,11 +285,11 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);o
 <div class="topnav">
   <div class="topnav-left">
     <div class="shield">🙏</div>
-    <div class="label">Thankful Thursday</div>
+    <div class="label">Monthly Contest</div>
   </div>
   <div class="topnav-right">
     <div class="week-pill"><span class="dot"></span><span id="week-range-text">Loading...</span></div>
-    <span id="admin-upload-btn" style="display:none;"><button class="btn btn-gold" style="padding:7px 14px;font-size:12px;" onclick="openUploadModal()">📂 Upload Week Files</button></span>
+    <span id="admin-upload-btn" style="display:none;"><button class="btn btn-gold" style="padding:7px 14px;font-size:12px;" onclick="openUploadModal()">📂 Upload Month Files</button></span>
     <span id="admin-monday-btn" style="display:none;"><button style="padding:7px 12px;font-size:12px;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.3);color:var(--gold);border-radius:3px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-weight:700;" onclick="openMondayConfig()">⚙ Monday Board</button></span>
     <span id="monday-sync-status" style="font-size:11px;color:var(--slate);display:none;"></span>
     <a href="hub.html">← Hub</a>
@@ -332,7 +332,7 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);o
   <div class="modal">
     <h3>Golf Score Board Settings</h3>
     <p style="font-size:12px;color:var(--slate);line-height:1.6;margin-bottom:8px;">
-      Dynasty Builder of the Week is calculated automatically from each agent's
+      Dynasty Builder of the Month is calculated automatically from each agent's
       <strong style="color:var(--cream);">highest total score across all 4 categories</strong> wins.
       1st place earns the most points (= field size), each lower rank earns one fewer.
       Not entering a category scores 0. Best all-around performer takes the crown.
@@ -347,10 +347,10 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);o
   </div>
 </div>
 
-<!-- WEEKLY MULTI-FILE UPLOAD MODAL -->
+<!-- MONTHLY MULTI-FILE UPLOAD MODAL -->
 <div class="modal-bg" id="upload-modal">
   <div class="modal" style="max-width:540px;">
-    <h3>📂 Upload This Week's Files</h3>
+    <h3>📂 Upload This Month's Files</h3>
     <p style="font-size:12px;color:var(--slate);line-height:1.6;margin-bottom:14px;">
       Drop all three category files at once. Category is detected from the filename automatically
       (e.g. "Submitted Points", "Paid Points", "Cash Flow") — or use the category selector per file.
@@ -371,7 +371,7 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);o
     <div id="multi-upload-preview" style="font-size:12px;color:var(--slate);max-height:160px;overflow-y:auto;margin-bottom:10px;"></div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeUploadModal()">Cancel</button>
-      <button class="btn btn-gold" id="upload-confirm-btn" onclick="confirmMultiUpload()" disabled>Apply to Week</button>
+      <button class="btn btn-gold" id="upload-confirm-btn" onclick="confirmMultiUpload()" disabled>Apply to Month</button>
     </div>
   </div>
 </div>
@@ -381,9 +381,9 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);o
   <div class="modal" style="max-width:400px;">
     <h3>Monday.com Board</h3>
     <p style="font-size:12px;color:var(--slate);line-height:1.6;margin-bottom:12px;">
-      Paste the ID of your Thankful Thursday winners board. Each week's winners will be created
-      as a new item (one per week) with columns for each category winner and the overall
-      Dynasty Builder of the Week. Leave blank to disable Monday sync.
+      Paste the ID of your Monthly Contest winners board. Each month's winners will be created
+      as a new item (one per month) with columns for each category winner and the overall
+      Dynasty Builder of the Month. Leave blank to disable Monday sync.
     </p>
     <label>Board ID</label>
     <input type="text" id="monday-board-id-input" placeholder="e.g. 18421234567" style="width:100%;background:rgba(10,10,10,.06);border:1px solid var(--border);color:var(--cream);font-size:14px;padding:10px 12px;border-radius:6px;outline:none;margin-bottom:6px;">
@@ -398,30 +398,29 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);o
 <script>
 const session = AUTH.getSession();
 const isAdmin = session && (session.level >= 60 || !!getAdminTier(session));
-const STORAGE_KEY = 'dba_thankful_thursday';
+const STORAGE_KEY = 'dba_monthly_contest';
 
 if (isAdmin) {
   document.getElementById('admin-upload-btn').style.display = 'inline';
   document.getElementById('admin-monday-btn').style.display = 'inline';
 }
 
-// ── WEEK CALCULATION (Thursday → Wednesday) ──────────────────
+// ── MONTH CALCULATION (calendar month) ───────────────────────
+// This is a duplicate of Thankful Thursday's weekly engine, adapted to
+// track one calendar month per period instead of one Thu–Wed week. The
+// internal names below (weekKey, currentWeekKey, data.weeks) were kept
+// as-is rather than renamed throughout — they now hold month periods,
+// not week periods, but renaming every reference risked introducing
+// bugs for zero user-visible benefit, since none of this is shown to
+// the person using the page.
 function getCurrentWeekRange() {
   const now = new Date();
-  const day = now.getDay(); // 0=Sun … 6=Sat
-  // Find the most recent Thursday
-  const daysSinceThu = (day - 4 + 7) % 7;
-  const thu = new Date(now);
-  thu.setDate(now.getDate() - daysSinceThu);
-  thu.setHours(0,0,0,0);
-  // Thankful Thursday celebrates the PAST week (Thu–Wed that just ended).
-  // So always step back one full week from the most-recent Thursday.
-  thu.setDate(thu.getDate() - 7);
-  const wed = new Date(thu);
-  wed.setDate(thu.getDate() + 6);
-  return { start: thu, end: wed };
+  const start = new Date(now.getFullYear(), now.getMonth(), 1);
+  const end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  end.setHours(23,59,59,999);
+  return { start, end };
 }
-function weekKey(date) { return date.toISOString().slice(0,10); }
+function weekKey(date) { return date.toISOString().slice(0,7); } // YYYY-MM
 function fmtDate(d) { return d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }); }
 
 const currentWeek = getCurrentWeekRange();
@@ -452,10 +451,10 @@ function seedDemoData() {
 seedDemoData();
 
 const CATEGORIES = [
-  { key:'producers',  title:'Top Personal Producers', sub:"This Week's Submitted Points", threshold:'1K+ Sub Points', icon:'🏆', bg:'bg-gold' },
-  { key:'paidpoints', title:'Top Personal Paid Points', sub:"This Week's Paid Production", threshold:'1K+ Paid Points', icon:'⚡', bg:'bg-blue' },
-  { key:'cashflow',   title:'Top Cash Flow', sub:'Comma Checks This Week', threshold:'$1,000+', icon:'💰', bg:'bg-green' },
-  { key:'recruits',   title:'Top Personal Recruits', sub:"This Week's New Recruits", threshold:'1+ Recruit', icon:'🤝', bg:'bg-purple' },
+  { key:'producers',  title:'Top Personal Producers', sub:"This Month's Submitted Points", threshold:'1K+ Sub Points', icon:'🏆', bg:'bg-gold' },
+  { key:'paidpoints', title:'Top Personal Paid Points', sub:"This Month's Paid Production", threshold:'1K+ Paid Points', icon:'⚡', bg:'bg-blue' },
+  { key:'cashflow',   title:'Top Cash Flow', sub:'Comma Checks This Month', threshold:'$1,000+', icon:'💰', bg:'bg-green' },
+  { key:'recruits',   title:'Top Personal Recruits', sub:"This Month's New Recruits", threshold:'1+ Recruit', icon:'🤝', bg:'bg-purple' },
 ];
 const RANK_EMOJI = { 1:'🥇', 2:'🥈', 3:'🥉' };
 
@@ -517,8 +516,10 @@ function buildSlides() {
   // SLIDE 0: Intro
   slides.push({ type:'intro' });
 
-  // ── ANNOUNCEMENT FLYERS — Thankful Thursday first ───────────
-  slides.push({ type:'thankfultraining' });
+  // ── ANNOUNCEMENT FLYERS ──────────────────────────────────────
+  // (Thankful Thursday's own weekly-meeting flyer is intentionally left
+  // out here — it announces a specific weekly Zoom training, unrelated
+  // to this monthly contest's results.)
   slides.push({ type:'1kearners' });
   slides.push({ type:'miami2026' });
   slides.push({ type:'wealthexperience' });
@@ -532,7 +533,7 @@ function buildSlides() {
     if (first) slides.push({ type:'spotlight', cat, winner: first });
   });
 
-  // Dynasty Builder of the Week
+  // Dynasty Builder of the Month
   slides.push({ type:'dynasty', result: calcDynastyBuilder() });
 
   // ── CLOSING SLIDES ───────────────────────────────────────────
@@ -550,13 +551,13 @@ function buildSlides() {
 function renderSlideHTML(slide, idx) {
   if (slide.type === 'intro') {
     return `<div class="slide bg-spotlight" data-idx="${idx}">
-      <div class="intro-badge">Weekly Recognition</div>
-      <div class="intro-title">Thankful <span>Thursday</span></div>
-      <div class="intro-sub">Celebrating the agents who moved the needle this week. New winners announced every Thursday.</div>
+      <div class="intro-badge">Monthly Recognition</div>
+      <div class="intro-title">Monthly <span>Contest</span></div>
+      <div class="intro-sub">Celebrating the agents who moved the needle this month. New winners announced every month.</div>
       <div class="intro-week">${fmtDate(currentWeek.start)} \u2192 ${fmtDate(currentWeek.end)}</div>
       <div class="intro-cats">
         ${CATEGORIES.map(c => `<div class="intro-cat-chip">${c.icon} ${c.title}</div>`).join('')}
-        <div class="intro-cat-chip">\u26f3 Dynasty Builder of the Week</div>
+        <div class="intro-cat-chip">\u26f3 Dynasty Builder of the Month</div>
       </div>
     </div>`;
   }
@@ -607,9 +608,9 @@ function renderSlideHTML(slide, idx) {
     const { result } = slide;
     if (!result) {
       return `<div class="slide bg-dynasty" data-idx="${idx}">
-        <div class="dynasty-eyebrow">\u26f3 Dynasty Builder of the Week</div>
+        <div class="dynasty-eyebrow">\u26f3 Dynasty Builder of the Month</div>
         <div class="dynasty-trophy">\ud83c\udfc6</div>
-        <div class="empty-msg">Add winners to the categories above to calculate this week's Dynasty Builder.</div>
+        <div class="empty-msg">Add winners to the categories above to calculate this month's Dynasty Builder.</div>
       </div>`;
     }
     const chips = CATEGORIES.map(c => {
@@ -623,9 +624,9 @@ function renderSlideHTML(slide, idx) {
       </div>`;
     }).join('');
     return `<div class="slide bg-dynasty" data-idx="${idx}">
-      <div class="dynasty-eyebrow">\u26f3 Dynasty Builder of the Week</div>
+      <div class="dynasty-eyebrow">\u26f3 Dynasty Builder of the Month</div>
       <div class="dynasty-trophy">\ud83c\udfc6</div>
-      <div class="dynasty-title">This Week's Champion</div>
+      <div class="dynasty-title">This Month's Champion</div>
       <div class="dynasty-name">${result.name}</div>
       <div class="dynasty-score-row">${chips}</div>
       <div class="dynasty-total">Total Score: ${result.total} (lowest wins)</div>
@@ -960,7 +961,7 @@ function closeConfigModal() { document.getElementById('config-modal').classList.
 
 // ── EXCEL UPLOAD ──────────────────────────────────────────────
 // ── MONDAY CONFIG ─────────────────────────────────────────────
-const MONDAY_BOARD_KEY = 'dba_thankful_thursday_board_id';
+const MONDAY_BOARD_KEY = 'dba_monthly_contest_board_id';
 function getMondayBoardId() { return localStorage.getItem(MONDAY_BOARD_KEY) || ''; }
 function openMondayConfig() {
   document.getElementById('monday-board-id-input').value = getMondayBoardId();
@@ -986,7 +987,7 @@ const NAME_HEADER_HINTS = ['name','agent','producer'];
 
 // ── DBA TEAM FILTER ───────────────────────────────────────────
 // Only agents whose Upline MD Name matches one of these are shown
-// in Thankful Thursday recognition slides.
+// in Monthly Contest recognition slides.
 const DBA_UPLINE_MDS = [
   'blessing ikejemba',
   'obi & jennifer iroezi', 'obi and jennifer iroezi',
@@ -1164,14 +1165,14 @@ function confirmMultiUpload() {
   // Auto-save to Monday.com if board configured
   const boardId = getMondayBoardId();
   if (boardId && AUTH.getMondayKey()) saveWeekToMonday(boardId);
-  else toast(`Applied ${count} categor${count===1?'y':'ies'} for this week`);
+  else toast(`Applied ${count} categor${count===1?'y':'ies'} for this month`);
 }
 
 // ── MONDAY.COM WRITE ─────────────────────────────────────────
-// Creates/updates one item per week on the configured board.
-// Item name = week range. Columns written:
+// Creates/updates one item per month on the configured board.
+// Item name = month range. Columns written:
 //   "Producers Winner", "Paid Points Winner", "Cashflow Winner", "Dynasty Builder"
-//   each as text (name + value). Existing items for this week are updated if found.
+//   each as text (name + value). Existing items for this month are updated if found.
 async function saveWeekToMonday(boardId) {
   const statusEl = document.getElementById('monday-sync-status');
   statusEl.style.display = 'inline';
@@ -1179,7 +1180,7 @@ async function saveWeekToMonday(boardId) {
   try {
     const wkObj = data.weeks[currentWeekKey];
     const label = document.getElementById('week-range-text').textContent;
-    const itemName = `Thankful Thursday — ${label}`;
+    const itemName = `Monthly Contest — ${label}`;
 
     // Build column text values
     const colTexts = {};
@@ -1190,7 +1191,7 @@ async function saveWeekToMonday(boardId) {
     const db = calcDynastyBuilder();
     colTexts['Dynasty Builder'] = db ? db.name : '';
 
-    // Check if an item already exists for this week
+    // Check if an item already exists for this month
     const searchRes = await mondayQuery(`{
       boards(ids:${boardId}) {
         items_page(limit:50) {
@@ -1224,7 +1225,7 @@ async function saveWeekToMonday(boardId) {
     setTimeout(() => { statusEl.style.display='none'; }, 4000);
   } catch(err) {
     statusEl.textContent = '⚠ Monday sync failed';
-    console.error('[Thankful Thursday] Monday error:', err);
+    console.error('[Monthly Contest] Monday error:', err);
     setTimeout(() => { statusEl.style.display='none'; }, 5000);
   }
 }
@@ -1247,12 +1248,12 @@ renderAll();
   <div style="background:#FFFFFF;border:1px solid rgba(201,168,76,.3);border-radius:16px;
     padding:24px;max-width:480px;width:94%;max-height:90vh;overflow-y:auto;">
     <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;
-      color:#E8C97A;margin-bottom:4px;">&#11015; Export Thankful Thursday PowerPoint</div>
+      color:#E8C97A;margin-bottom:4px;">&#11015; Export Monthly Contest PowerPoint</div>
     <div style="font-family:'DM Mono',monospace;font-size:10px;color:#6B7C93;margin-bottom:18px;">
-      Generates a ready-to-present .pptx using this week's entered winners.
+      Generates a ready-to-present .pptx using this month's entered winners.
     </div>
 
-    <!-- Week selector -->
+    <!-- Month selector -->
     <div style="margin-bottom:14px;">
       <div style="font-family:'DM Mono',monospace;font-size:10px;color:#2DCA73;
         background:rgba(45,202,115,.08);border:1px solid rgba(45,202,115,.2);
@@ -1261,7 +1262,7 @@ renderAll();
         Blessing Ikejemba · Obi &amp; Jennifer Iroezi · Nkem &amp; Calista · CherryJane · Mayra · Emrin · Gbenga
       </div>
       <label style="font-family:'DM Mono',monospace;font-size:10px;color:#6B7C93;
-        display:block;margin-bottom:5px;">WEEK</label>
+        display:block;margin-bottom:5px;">MONTH</label>
       <select id="pptx-week-select" style="width:100%;background:#ECE6D6;border:1px solid rgba(201,168,76,.25);
         color:#182238;border-radius:8px;padding:7px 12px;font-family:'DM Mono',monospace;font-size:12px;"></select>
     </div>
@@ -1279,10 +1280,10 @@ renderAll();
         font-family:'DM Mono',monospace;font-size:10px;padding:4px 12px;cursor:pointer;">+ Add Earner</button>
     </div>
 
-    <!-- Dynasty Builder of the Week -->
+    <!-- Dynasty Builder of the Month -->
     <div style="margin-bottom:14px;">
       <div style="font-family:'DM Mono',monospace;font-size:10px;color:#E8C97A;
-        text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Dynasty Builder of the Week</div>
+        text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Dynasty Builder of the Month</div>
       <input id="pptx-dynasty-name" type="text" placeholder="Winner name"
         style="width:100%;background:#ECE6D6;border:1px solid rgba(201,168,76,.25);color:#182238;
           border-radius:8px;padding:7px 12px;font-family:'DM Mono',monospace;font-size:12px;margin-bottom:5px;">
@@ -1323,7 +1324,7 @@ renderAll();
 
 <script>
 // ══════════════════════════════════════════════════════════════
-// THANKFUL THURSDAY — PPTX EXPORT ENGINE
+// MONTHLY CONTEST — PPTX EXPORT ENGINE
 // Reads live weekly data from localStorage and generates a
 // fully-populated PowerPoint using pptxgenjs (CDN).
 // ══════════════════════════════════════════════════════════════
@@ -1447,7 +1448,7 @@ function openPptxModal() {
   const modal = document.getElementById('pptx-modal');
   modal.style.display = 'flex';
 
-  // Populate week selector
+  // Populate month selector
   const sel = document.getElementById('pptx-week-select');
   sel.innerHTML = '';
   const weeks = Object.keys(data.weeks).sort().reverse();
@@ -1455,7 +1456,7 @@ function openPptxModal() {
     const w = data.weeks[k];
     const opt = document.createElement('option');
     opt.value = k;
-    opt.textContent = 'Week of ' + new Date(w.start || k).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    opt.textContent = 'Month of ' + new Date(w.start || k).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
     if(k === currentWeekKey) opt.selected = true;
     sel.appendChild(opt);
   });
@@ -1463,7 +1464,7 @@ function openPptxModal() {
   refreshPptxPreview();
 
   // Populate 1K earners from last saved list in localStorage
-  const saved = JSON.parse(localStorage.getItem('tt_earners_v1') || '[]');
+  const saved = JSON.parse(localStorage.getItem('mc_earners_v1') || '[]');
   const earnerDefaults = saved.length ? saved : [
     'Tornike & Tea Tsagareishvili','Goodluck Nwaka','Stella Udoh','Jacinta Abanobi'
   ];
@@ -1483,7 +1484,7 @@ function refreshPptxPreview() {
   ];
   const prev = document.getElementById('pptx-preview');
   if(!prev) return;
-  prev.innerHTML = `<div style="font-family:'DM Mono',monospace;font-size:10px;color:#E8C97A;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">This Week's Data</div>` +
+  prev.innerHTML = `<div style="font-family:'DM Mono',monospace;font-size:10px;color:#E8C97A;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">This Month's Data</div>` +
     cats.map(cat => {
       const list = (wk[cat.key]||[]).sort((a,b)=>a.rank-b.rank);
       const top3 = list.slice(0,3);
@@ -1496,7 +1497,7 @@ function refreshPptxPreview() {
         ${rows}${more}</div>`;
     }).join('');
 
-  // Auto-fill Dynasty Builder of the Week from the same calculation the
+  // Auto-fill Dynasty Builder of the Month from the same calculation the
   // main page uses — previously these fields just started blank, so the
   // export defaulted to "[Winner Name]" unless someone happened to
   // retype the winner by hand. Recomputed for whichever week is selected
@@ -1533,12 +1534,12 @@ async function generatePptx() {
   try {
     const key = document.getElementById('pptx-week-select')?.value || currentWeekKey;
     const wk = data.weeks[key] || {};
-    const weekLabel = 'Week of ' + new Date(wk.start||key).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    const weekLabel = 'Month of ' + new Date(wk.start||key).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
 
     // Gather earner names
     const earnerInputs = document.querySelectorAll('#pptx-earners-rows input');
     const earners = [...earnerInputs].map(i=>i.value.trim()).filter(Boolean);
-    localStorage.setItem('tt_earners_v1', JSON.stringify(earners));
+    localStorage.setItem('mc_earners_v1', JSON.stringify(earners));
 
     // Dynasty Builder inputs
     const dynastyName  = document.getElementById('pptx-dynasty-name')?.value.trim();
@@ -1608,12 +1609,12 @@ async function generatePptx() {
       });
     }
 
-    // Dynasty Builder of the Week
+    // Dynasty Builder of the Month
     {
       const slide = pres.addSlide();
       pbg(slide, PC.navy3);
       pgoldBar(slide);
-      slide.addText('⛳  DYNASTY BUILDER OF THE WEEK', {
+      slide.addText('⛳  DYNASTY BUILDER OF THE MONTH', {
         x:0,y:0.28,w:PW,h:0.44,align:'center',
         fontFace:PF.h,fontSize:18,bold:true,color:PC.gold,isTextBox:true,margin:0,charSpacing:2,
       });
@@ -1627,7 +1628,7 @@ async function generatePptx() {
         fontFace:PF.h,fontSize:34,bold:true,
         color: dynastyName ? PC.gold2 : '4A6080', isTextBox:true,margin:0,
       });
-      slide.addText('Lowest Combined Rank This Week',{
+      slide.addText('Lowest Combined Rank This Month',{
         x:0,y:2.56,w:PW,h:0.32,align:'center',
         fontFace:PF.b,fontSize:12,color:PC.muted,isTextBox:true,margin:0,
       });
@@ -1686,7 +1687,7 @@ async function generatePptx() {
 
     // Write file
     const weekSlug = weekLabel.replace(/[^a-zA-Z0-9]/g,'_').replace(/_+/g,'_');
-    const fileName = 'TT_Recognition_' + weekSlug + '.pptx';
+    const fileName = 'MonthlyContest_' + weekSlug + '.pptx';
     await pres.writeFile({ fileName });
     status.textContent = '✓ Download started — ' + fileName;
     status.style.color = '#2DCA73';

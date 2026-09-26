@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Retirement Readiness Survey — Dynasty Builders Academy</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="auth.js"></script>
+<style>
+:root{
+  --navy:#F5F1E8;--navy-mid:#FFFFFF;--navy-light:#ECE6D6;
+  --gold:#C9A84C;--gold-light:#E8C97A;--gold-pale:#F5E8C0;
+  --cream:#1E1A10;--success:#27AE60;--warn:#E67E22;--danger:#C0392B;
+  --slate:#6B7C93;--border:rgba(201,168,76,0.22);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--cream);min-height:100vh;}
+
+/* ── LAYOUT ── */
+.wrap{max-width:680px;margin:0 auto;padding:32px 20px 80px;}
+
+/* ── HEADER ── */
+.logo-row{display:flex;align-items:center;gap:12px;margin-bottom:36px;}
+.shield{width:36px;height:42px;background:linear-gradient(160deg,var(--gold) 0%,#7a5c14 100%);clip-path:polygon(50% 0%,100% 18%,100% 65%,50% 100%,0% 65%,0% 18%);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+.logo-row h1{font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--gold);font-weight:700;}
+.logo-row p{font-size:11px;color:var(--slate);text-transform:uppercase;letter-spacing:0.08em;}
+
+/* ── PROGRESS ── */
+.progress-wrap{margin-bottom:28px;}
+.progress-label{display:flex;justify-content:space-between;font-size:11px;color:var(--slate);margin-bottom:6px;letter-spacing:0.06em;text-transform:uppercase;}
+.progress-bar{height:4px;background:rgba(201,168,76,0.15);border-radius:2px;overflow:hidden;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--gold) 0%,var(--gold-light) 100%);border-radius:2px;transition:width 0.5s ease;}
+
+/* ── STEP PANEL ── */
+.step{display:none;animation:fadeIn 0.35s ease;}
+.step.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+
+.step-number{font-size:11px;color:var(--gold);letter-spacing:0.12em;text-transform:uppercase;font-family:'DM Mono',monospace;margin-bottom:8px;}
+.step h2{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:700;line-height:1.2;margin-bottom:8px;}
+.step .sub{font-size:14px;color:var(--slate);margin-bottom:24px;line-height:1.6;}
+
+/* ── FORM ELEMENTS ── */
+.field{margin-bottom:18px;}
+label{display:block;font-size:12px;font-weight:600;color:var(--gold-pale);letter-spacing:0.07em;text-transform:uppercase;margin-bottom:7px;}
+input,select,textarea{
+  width:100%;background:var(--navy-mid);border:1px solid var(--border);
+  color:var(--cream);font-family:'DM Sans',sans-serif;font-size:14px;
+  padding:12px 14px;border-radius:4px;transition:border-color 0.2s;
+}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--gold);}
+textarea{resize:vertical;min-height:80px;}
+select option{background:var(--navy-mid);}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media(max-width:480px){.field-row{grid-template-columns:1fr;}}
+
+/* ── OPTIONS (radio/check style) ── */
+.options{display:flex;flex-direction:column;gap:8px;margin-bottom:18px;}
+.opt-label{
+  display:flex;align-items:center;gap:12px;padding:13px 16px;
+  border:1.5px solid var(--border);border-radius:4px;cursor:pointer;
+  transition:all 0.18s;background:var(--navy-mid);
+}
+.opt-label:hover{border-color:var(--gold);}
+.opt-label input{width:auto;background:transparent;border:none;padding:0;accent-color:var(--gold);width:16px;height:16px;flex-shrink:0;}
+.opt-label span{font-size:14px;}
+.opt-label.selected{border-color:var(--gold);background:rgba(201,168,76,0.09);}
+.options-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px;}
+@media(max-width:500px){.options-grid{grid-template-columns:1fr;}}
+
+/* ── NAV BUTTONS ── */
+.btn-row{display:flex;gap:12px;margin-top:28px;}
+.btn{padding:14px 28px;border-radius:4px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s;border:none;}
+.btn-primary{background:linear-gradient(135deg,var(--gold) 0%,#a07020 100%);color:var(--navy);flex:1;}
+.btn-primary:hover{opacity:0.88;}
+.btn-secondary{background:transparent;color:var(--slate);border:1px solid var(--border);}
+.btn-secondary:hover{color:var(--cream);border-color:var(--cream);}
+
+/* ── CONTEXT BADGE ── */
+.context-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.3);border-radius:20px;padding:5px 14px;font-size:12px;color:var(--gold-light);margin-bottom:20px;}
+
+/* ── THANK YOU / RESULTS ── */
+.thankyou{text-align:center;padding:20px 0;}
+.thankyou .check{font-size:56px;margin-bottom:18px;}
+.thankyou h2{font-family:'Cormorant Garamond',serif;font-size:32px;color:var(--gold);margin-bottom:10px;}
+.thankyou p{color:var(--slate);font-size:15px;line-height:1.6;max-width:480px;margin:0 auto 28px;}
+
+/* ── EDUCATION CARDS ── */
+.edu-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:22px;}
+@media(max-width:560px){.edu-grid{grid-template-columns:1fr;}}
+.edu-card{border:1.5px solid var(--border);border-radius:6px;padding:16px;background:var(--navy-mid);}
+.edu-card .edu-title{font-family:'DM Mono',monospace;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px;}
+.edu-card .edu-head{font-size:15px;font-weight:600;margin-bottom:8px;}
+.edu-card p{font-size:12.5px;color:var(--slate);line-height:1.6;}
+.edu-card.blue .edu-title{color:#2C5AA0;}
+.edu-card.red .edu-title{color:#C0392B;}
+.edu-card.green .edu-title{color:#1E7A46;}
+
+.reason-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:22px;}
+@media(max-width:500px){.reason-grid{grid-template-columns:1fr;}}
+.reason-card{display:flex;gap:10px;padding:12px 14px;border:1px solid var(--border);border-radius:6px;background:var(--navy-mid);}
+.reason-check{width:20px;height:20px;border-radius:50%;background:var(--gold);color:var(--navy-mid);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;}
+.reason-card .r-title{font-size:13px;font-weight:600;margin-bottom:2px;}
+.reason-card .r-sub{font-size:11.5px;color:var(--slate);line-height:1.4;}
+
+/* ── RESULTS SNAPSHOT ── */
+.readiness-badge{display:inline-block;padding:8px 20px;border-radius:20px;font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;margin-bottom:16px;}
+.readiness-badge.strong{background:rgba(39,174,96,.15);color:#1E7A46;border:1px solid rgba(39,174,96,.35);}
+.readiness-badge.moderate{background:rgba(230,126,34,.15);color:#B8620F;border:1px solid rgba(230,126,34,.35);}
+.readiness-badge.gaps{background:rgba(192,57,43,.12);color:#A93226;border:1px solid rgba(192,57,43,.3);}
+.finding-row{display:flex;gap:10px;text-align:left;padding:12px 14px;border:1px solid var(--border);border-radius:6px;background:var(--navy-mid);margin-bottom:10px;}
+.finding-row .f-icon{font-size:16px;flex-shrink:0;}
+.finding-row .f-text{font-size:13px;color:var(--cream);line-height:1.5;}
+.agent-card{border:1px solid var(--border);border-radius:8px;padding:18px;margin-top:24px;text-align:left;background:var(--navy-mid);}
+.agent-card .a-name{font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--gold);font-weight:700;}
+.agent-card .a-title{font-size:12px;color:var(--slate);margin-bottom:12px;}
+.disclosure{font-size:10.5px;color:var(--slate);line-height:1.6;margin-top:28px;padding-top:16px;border-top:1px solid var(--border);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="logo-row">
+    <div class="shield">🏆</div>
+    <div>
+      <h1>Dynasty Builders Academy</h1>
+      <p>Retirement Readiness Survey</p>
+    </div>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-label"><span id="step-label">Step 1 of 7</span><span id="pct-label">0%</span></div>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+  </div>
+
+  <!-- STEP 0: INTRO -->
+  <div class="step active" id="step-0">
+    <div class="step-number">Welcome</div>
+    <h2>Where should your money work?</h2>
+    <p class="sub">Different accounts offer different combinations of liquidity, risk, tax treatment, and income. This short survey walks through the key ideas and helps identify where you may have gaps — takes about 3 minutes.</p>
+    <div class="btn-row"><button class="btn btn-primary" onclick="nextStep()">Get Started →</button></div>
+  </div>
+
+  <!-- STEP 1: EDUCATION — Fixed / Variable / Indexed -->
+  <div class="step" id="step-1">
+    <div class="step-number">Step 1 of 7</div>
+    <h2>Where should your money work?</h2>
+    <p class="sub">Every account type is a different combination of liquidity, risk, tax treatment, and income.</p>
+    <div class="edu-grid">
+      <div class="edu-card blue"><div class="edu-title">Fixed</div><div class="edu-head">Predictability</div><p>A stated or declared rate for a period of time. Lower direct market exposure; terms and liquidity vary by product.</p></div>
+      <div class="edu-card red"><div class="edu-title">Variable</div><div class="edu-head">Market Exposure</div><p>Value is tied to investment subaccounts. Offers upside potential, but account value can decline with the market.</p></div>
+      <div class="edu-card green"><div class="edu-title">Indexed</div><div class="edu-head">Protected Growth Potential</div><p>Interest is credited using an index formula. You're not directly invested in the index; caps, participation rates, or spreads may apply.</p></div>
+    </div>
+    <label>Which of these best describes most of your retirement savings today?</label>
+    <div class="options" id="q-account-type">
+      <label class="opt-label"><input type="radio" name="accountType" value="Fixed"><span>Mostly fixed (savings, CDs, fixed annuities)</span></label>
+      <label class="opt-label"><input type="radio" name="accountType" value="Variable"><span>Mostly variable / market-invested (401k, brokerage, mutual funds)</span></label>
+      <label class="opt-label"><input type="radio" name="accountType" value="Indexed"><span>Mostly indexed (indexed annuities, indexed universal life)</span></label>
+      <label class="opt-label"><input type="radio" name="accountType" value="Mix"><span>A mix of all three</span></label>
+      <label class="opt-label"><input type="radio" name="accountType" value="NotSure"><span>Not sure</span></label>
+    </div>
+    <div class="btn-row"><button class="btn btn-secondary" onclick="prevStep()">Back</button><button class="btn btn-primary" onclick="nextStep()">Continue →</button></div>
+  </div>
+
+  <!-- STEP 2: EDUCATION — Tax Timing -->
+  <div class="step" id="step-2">
+    <div class="step-number">Step 2 of 7</div>
+    <h2>Think about tax timing.</h2>
+    <p class="sub">Where your money sits today determines when — and whether — you'll owe taxes on it later.</p>
+    <div class="edu-grid">
+      <div class="edu-card blue"><div class="edu-title">Tax Now</div><div class="edu-head">Bank interest / CDs</div><p>Taxable investments. Taxes may be due as income or gains are realized.</p></div>
+      <div class="edu-card red"><div class="edu-title">Tax Later</div><div class="edu-head">401(k) / 403(b)</div><p>Traditional IRA, annuities. Growth is generally tax-deferred until distribution.</p></div>
+      <div class="edu-card green"><div class="edu-title">Potentially Tax-Advantaged</div><div class="edu-head">Roth IRA</div><p>Qualified distributions, properly structured life insurance access. Rules and eligibility requirements apply.</p></div>
+    </div>
+    <label>Is most of your retirement money in accounts that will be taxed later (401k, traditional IRA)?</label>
+    <div class="options" id="q-tax-mix">
+      <label class="opt-label"><input type="radio" name="taxMix" value="AllTaxLater"><span>Yes — almost all of it is tax-deferred</span></label>
+      <label class="opt-label"><input type="radio" name="taxMix" value="SomeMix"><span>Some mix of tax-now, tax-later, and tax-advantaged</span></label>
+      <label class="opt-label"><input type="radio" name="taxMix" value="MostlyRoth"><span>Mostly Roth / tax-advantaged already</span></label>
+      <label class="opt-label"><input type="radio" name="taxMix" value="NotSure"><span>Not sure</span></label>
+    </div>
+    <div class="btn-row"><button class="btn btn-secondary" onclick="prevStep()">Back</button><button class="btn btn-primary" onclick="nextStep()">Continue →</button></div>
+  </div>
+
+  <!-- STEP 3: SURVEY — Timeline, vehicles, rollovers -->
+  <div class="step" id="step-3">
+    <div class="step-number">Step 3 of 7</div>
+    <h2>Your current picture.</h2>
+    <p class="sub">A few quick questions about where things stand today.</p>
+    <label>How many years until you plan to retire?</label>
+    <div class="options" id="q-timeline">
+      <label class="opt-label"><input type="radio" name="timeline" value="0-5"><span>0–5 years</span></label>
+      <label class="opt-label"><input type="radio" name="timeline" value="6-15"><span>6–15 years</span></label>
+      <label class="opt-label"><input type="radio" name="timeline" value="16+"><span>16+ years</span></label>
+      <label class="opt-label"><input type="radio" name="timeline" value="Retired"><span>Already retired</span></label>
+    </div>
+    <label>Do you have an old 401(k) or retirement account from a previous employer that isn't being actively managed?</label>
+    <div class="options" id="q-rollover">
+      <label class="opt-label"><input type="radio" name="rollover" value="Yes"><span>Yes</span></label>
+      <label class="opt-label"><input type="radio" name="rollover" value="No"><span>No</span></label>
+      <label class="opt-label"><input type="radio" name="rollover" value="NotSure"><span>Not sure</span></label>
+    </div>
+    <div class="btn-row"><button class="btn btn-secondary" onclick="prevStep()">Back</button><button class="btn btn-primary" onclick="nextStep()">Continue →</button></div>
+  </div>
+
+  <!-- STEP 4: EDUCATION — Fixed Indexed Annuity + reasons -->
+  <div class="step" id="step-4">
+    <div class="step-number">Step 4 of 7</div>
+    <h2>Protect. Grow. Create income.</h2>
+    <p class="sub">A simple guide to fixed indexed annuities — designed to show how one might fit into a retirement strategy.</p>
+    <div class="edu-card blue" style="margin-bottom:10px;"><div class="edu-head">1. Protection</div><p>Your contract is not directly invested in the stock market. Negative index performance generally does not create a negative index credit, although withdrawals, surrender charges, and other contract charges can reduce value.</p></div>
+    <div class="edu-card blue" style="margin-bottom:10px;"><div class="edu-head">2. Growth Potential</div><p>Interest may be credited based on the performance of a market index. Caps, participation rates, spreads, and crediting periods determine how much interest is credited.</p></div>
+    <div class="edu-card blue" style="margin-bottom:18px;"><div class="edu-head">3. Retirement Income</div><p>Annuities can be used to create a predictable income stream. Lifetime income options may be available through annuitization or optional income riders.</p></div>
+
+    <label style="margin-bottom:10px;">Common reasons people consider annuities</label>
+    <div class="reason-grid">
+      <div class="reason-card"><div class="reason-check">✓</div><div><div class="r-title">Income that can last</div><div class="r-sub">Lifetime income options may help address longevity risk.</div></div></div>
+      <div class="reason-card"><div class="reason-check">✓</div><div><div class="r-title">Predictable cash flow</div><div class="r-sub">Create scheduled income for retirement expenses.</div></div></div>
+      <div class="reason-card"><div class="reason-check">✓</div><div><div class="r-title">Tax-deferred growth</div><div class="r-sub">Earnings compound tax-deferred until withdrawn.</div></div></div>
+      <div class="reason-card"><div class="reason-check">✓</div><div><div class="r-title">Limited direct market risk</div><div class="r-sub">Index declines do not directly reduce index crediting.</div></div></div>
+    </div>
+    <div class="btn-row"><button class="btn btn-secondary" onclick="prevStep()">Back</button><button class="btn btn-primary" onclick="nextStep()">Continue →</button></div>
+  </div>
+
+  <!-- STEP 5: SURVEY — Risk comfort, income plan, concerns -->
+  <div class="step" id="step-5">
+    <div class="step-number">Step 5 of 7</div>
+    <h2>Risk and income planning.</h2>
+    <label>If the market dropped 20% next year, how would that affect your retirement plans?</label>
+    <div class="options" id="q-risk">
+      <label class="opt-label"><input type="radio" name="risk" value="NoImpact"><span>Not at all — I have protection in place</span></label>
+      <label class="opt-label"><input type="radio" name="risk" value="SomeStress"><span>Some stress, but I'd be okay</span></label>
+      <label class="opt-label"><input type="radio" name="risk" value="Significant"><span>Significant impact on my plans</span></label>
+      <label class="opt-label"><input type="radio" name="risk" value="DontKnow"><span>I honestly don't know</span></label>
+    </div>
+    <label>Do you have a plan for guaranteed income you can't outlive?</label>
+    <div class="options" id="q-income-plan">
+      <label class="opt-label"><input type="radio" name="incomePlan" value="Yes"><span>Yes</span></label>
+      <label class="opt-label"><input type="radio" name="incomePlan" value="No"><span>No</span></label>
+      <label class="opt-label"><input type="radio" name="incomePlan" value="NotSure"><span>Not sure</span></label>
+    </div>
+    <label>What worries you most about retirement?</label>
+    <div class="options" id="q-worry">
+      <label class="opt-label"><input type="radio" name="worry" value="RunningOut"><span>Running out of money</span></label>
+      <label class="opt-label"><input type="radio" name="worry" value="MarketCrash"><span>A market crash right before or during retirement</span></label>
+      <label class="opt-label"><input type="radio" name="worry" value="Taxes"><span>Taxes eating into my savings</span></label>
+      <label class="opt-label"><input type="radio" name="worry" value="NoIncome"><span>Not having enough guaranteed income</span></label>
+      <label class="opt-label"><input type="radio" name="worry" value="Prepared"><span>Nothing — I feel prepared</span></label>
+    </div>
+    <div class="btn-row"><button class="btn btn-secondary" onclick="prevStep()">Back</button><button class="btn btn-primary" onclick="nextStep()">Continue →</button></div>
+  </div>
+
+  <!-- STEP 6: CONTACT INFO -->
+  <div class="step" id="step-6">
+    <div class="step-number">Step 6 of 7</div>
+    <h2>Almost done.</h2>
+    <p class="sub">Where should your results and a follow-up go?</p>
+    <div class="field-row">
+      <div class="field"><label>First Name</label><input type="text" id="f-first"></div>
+      <div class="field"><label>Last Name</label><input type="text" id="f-last"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Phone</label><input type="tel" id="f-phone"></div>
+      <div class="field"><label>Email</label><input type="email" id="f-email"></div>
+    </div>
+    <div class="field"><label>Best time to follow up</label>
+      <select id="f-timing">
+        <option value="">Select…</option>
+        <option>Morning</option><option>Afternoon</option><option>Evening</option><option>Weekend</option>
+      </select>
+    </div>
+    <div class="btn-row"><button class="btn btn-secondary" onclick="prevStep()">Back</button><button class="btn btn-primary" onclick="submitSurvey()">See My Results →</button></div>
+  </div>
+
+  <!-- STEP DONE: RESULTS -->
+  <div class="step" id="step-done">
+    <div class="thankyou">
+      <div class="check">📊</div>
+      <h2>Your Retirement Readiness Snapshot</h2>
+      <div id="readiness-badge-wrap"></div>
+      <div id="findings-wrap" style="max-width:480px;margin:0 auto;"></div>
+      <p style="margin-top:20px;">This is educational, not personalized advice — a licensed professional can help you apply it to your specific situation.</p>
+      <div class="agent-card" id="agent-card">
+        <div class="a-name" id="agent-name">Your Dynasty Builders Agent</div>
+        <div class="a-title" id="agent-title">Insurance &amp; Retirement Broker</div>
+        <div style="font-size:13px;color:var(--cream);">Ready for a retirement strategy review? Ask your licensed professional which options fit your goals, time horizon, liquidity needs, and risk tolerance.</div>
+      </div>
+      <div class="disclosure">
+        Product availability, features, and carrier relationships vary by state and licensing. Fixed indexed annuities are insurance products and are not direct investments in an index. Guarantees are backed by the claims-paying ability of the issuing insurer. Withdrawals may be subject to surrender charges and taxes; withdrawals before age 59½ may also be subject to a federal tax penalty. Optional riders may have additional charges. Rollover decisions should consider fees, investment choices, services, creditor protection, and tax consequences. This survey is for educational purposes only and is not tax or legal advice. Consult your tax or legal professional for individual advice.
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const _rrParams = new URLSearchParams(location.search);
+const _agentId = _rrParams.get('agent') || '';
+const _agentDisplay = _agentId ? decodeURIComponent(_agentId) : '';
+
+let stepHistory = [0];
+const totalSteps = 7; // steps 0-6, step-done is the 7th/"complete" state
+
+function nextStep() {
+  const cur = stepHistory[stepHistory.length - 1];
+  const next = cur + 1;
+  showStep(next);
+  stepHistory.push(next);
+}
+function prevStep() {
+  if (stepHistory.length <= 1) return;
+  stepHistory.pop();
+  showStep(stepHistory[stepHistory.length - 1]);
+}
+function showStep(n) {
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  document.getElementById('step-' + n)?.classList.add('active');
+  window.scrollTo({top:0, behavior:'smooth'});
+  updateProgress(n);
+}
+function updateProgress(n) {
+  const pct = Math.round((n / (totalSteps - 1)) * 100);
+  document.getElementById('progress-fill').style.width = Math.min(pct,100) + '%';
+  document.getElementById('pct-label').textContent = Math.min(pct,100) + '%';
+  document.getElementById('step-label').textContent = n < totalSteps
+    ? `Step ${n} of ${totalSteps - 1}`
+    : 'Complete';
+}
+
+// Highlight selected radio options visually
+document.querySelectorAll('.options').forEach(group => {
+  group.addEventListener('change', () => {
+    group.querySelectorAll('.opt-label').forEach(l => l.classList.remove('selected'));
+    const checked = group.querySelector('input:checked');
+    if (checked) checked.closest('.opt-label').classList.add('selected');
+  });
+});
+
+function collectData() {
+  const val = (name) => document.querySelector(`input[name="${name}"]:checked`)?.value || '';
+  return {
+    accountType: val('accountType'),
+    taxMix: val('taxMix'),
+    timeline: val('timeline'),
+    rollover: val('rollover'),
+    risk: val('risk'),
+    incomePlan: val('incomePlan'),
+    worry: val('worry'),
+    firstName: document.getElementById('f-first')?.value || '',
+    lastName: document.getElementById('f-last')?.value || '',
+    phone: document.getElementById('f-phone')?.value || '',
+    email: document.getElementById('f-email')?.value || '',
+    timing: document.getElementById('f-timing')?.value || '',
+    agentRef: _agentId || '',
+    submittedAt: new Date().toISOString(),
+  };
+}
+
+// Scores 0 (biggest gaps) to higher (more prepared). Purely a rough,
+// non-clinical signal to guide the conversation — not a financial rating.
+function scoreReadiness(d) {
+  let score = 0;
+  const findings = [];
+
+  if (d.taxMix === 'AllTaxLater') { findings.push({icon:'⚠️', text:"Nearly all your retirement money is tax-deferred — you'll owe tax on all of it later. Tax diversification (a mix of tax-now, tax-later, and tax-advantaged) is worth exploring."}); }
+  else if (d.taxMix === 'SomeMix' || d.taxMix === 'MostlyRoth') { score += 2; }
+
+  if (d.incomePlan === 'No') { findings.push({icon:'⚠️', text:"You don't currently have a plan for guaranteed income you can't outlive — this is one of the most common gaps a retirement strategy review can address."}); }
+  else if (d.incomePlan === 'Yes') { score += 2; findings.push({icon:'✓', text:"You already have a plan for guaranteed income — that's a strong foundation."}); }
+
+  if (d.risk === 'Significant' || d.risk === 'DontKnow') { findings.push({icon:'⚠️', text:"A market drop would meaningfully affect your plans, or you're not sure how it would — protected-growth options may be worth a look."}); }
+  else if (d.risk === 'NoImpact') { score += 2; }
+
+  if (d.rollover === 'Yes') { findings.push({icon:'📋', text:"You mentioned an old employer retirement account that isn't being actively managed — rollover options are worth reviewing."}); }
+
+  if (d.worry === 'Prepared') { score += 1; }
+  else if (d.worry) { findings.push({icon:'💬', text:"Your top concern — " + ({RunningOut:'running out of money', MarketCrash:'a market crash near retirement', Taxes:'taxes eating into savings', NoIncome:'not having enough guaranteed income'}[d.worry] || d.worry) + " — is exactly the kind of thing a strategy review is built to address."}); }
+
+  if (findings.length === 0) findings.push({icon:'✓', text:"Your answers suggest a solid foundation — a review can confirm nothing's been missed as your situation changes."});
+
+  let tier = 'gaps';
+  if (score >= 5) tier = 'strong';
+  else if (score >= 2) tier = 'moderate';
+  return { tier, findings };
+}
+
+function renderResults(d) {
+  const { tier, findings } = scoreReadiness(d);
+  const labels = { strong: 'Well-Positioned', moderate: 'Good Foundation — Some Gaps', gaps: "Let's Build Your Plan" };
+  document.getElementById('readiness-badge-wrap').innerHTML =
+    `<div class="readiness-badge ${tier}">${labels[tier]}</div>`;
+  document.getElementById('findings-wrap').innerHTML =
+    findings.map(f => `<div class="finding-row"><div class="f-icon">${f.icon}</div><div class="f-text">${f.text}</div></div>`).join('');
+
+  const agentName = _agentDisplay || 'Your Dynasty Builders Agent';
+  document.getElementById('agent-name').textContent = agentName;
+}
+
+async function submitSurvey() {
+  const data = collectData();
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  document.getElementById('step-done').classList.add('active');
+  document.getElementById('progress-fill').style.width = '100%';
+  document.getElementById('pct-label').textContent = '100%';
+  document.getElementById('step-label').textContent = 'Complete';
+  renderResults(data);
+
+  // Sync to Monday.com if a board is configured — mirrors the pattern
+  // used by survey.html. Silent no-op if Monday isn't set up yet, so the
+  // person never sees an error over something that doesn't affect them.
+  const boardId = localStorage.getItem('dba_retirement_readiness_board_id');
+  if (boardId && typeof AUTH !== 'undefined' && AUTH.getMondayKey?.()) {
+    try {
+      const res = await mondayQuery(`{ boards(ids: ${boardId}) { columns { id title } } }`);
+      const cols = res?.data?.boards?.[0]?.columns || [];
+      const find = (...kws) => cols.find(c => kws.some(k => c.title.toLowerCase().includes(k)))?.id || null;
+      const colIds = {
+        phone: find('phone'), email: find('email'), agent: find('agent'),
+        accountType: find('account type'), taxMix: find('tax'), timeline: find('timeline','years'),
+        rollover: find('rollover'), risk: find('risk'), incomePlan: find('income plan','guaranteed'),
+        worry: find('worry','concern'), timing: find('timing','follow'),
+      };
+      const cv = {};
+      if (colIds.phone) cv[colIds.phone] = data.phone;
+      if (colIds.email) cv[colIds.email] = { email: data.email, text: data.email };
+      if (colIds.agent) cv[colIds.agent] = data.agentRef;
+      if (colIds.accountType) cv[colIds.accountType] = data.accountType;
+      if (colIds.taxMix) cv[colIds.taxMix] = data.taxMix;
+      if (colIds.timeline) cv[colIds.timeline] = data.timeline;
+      if (colIds.rollover) cv[colIds.rollover] = data.rollover;
+      if (colIds.risk) cv[colIds.risk] = data.risk;
+      if (colIds.incomePlan) cv[colIds.incomePlan] = data.incomePlan;
+      if (colIds.worry) cv[colIds.worry] = data.worry;
+      if (colIds.timing) cv[colIds.timing] = data.timing;
+      const itemName = `${data.firstName} ${data.lastName}`.trim() || 'Retirement Readiness Lead';
+      await mondayQuery(`mutation { create_item(board_id:${boardId}, item_name:"${itemName.replace(/"/g,"'")}", column_values: ${JSON.stringify(JSON.stringify(cv))}, create_labels_if_missing:true) { id } }`);
+    } catch(e) {
+      console.warn('Retirement Readiness: Monday sync failed:', e.message);
+    }
+  }
+}
+</script>
+</body>
+</html>
