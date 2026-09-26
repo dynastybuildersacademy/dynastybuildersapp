@@ -13,6 +13,14 @@
   --green:#2DCA73;--red:#C0392B;--orange:#E67E22;--blue:#3498DB;
   --text:#1E1A10;--muted:#6B7C93;--border:rgba(201,168,76,.2);
 }
+/* Adapts to the viewer's system light/dark setting — see the matching
+   comment in retirement-readiness.html for why this exists. */
+@media (prefers-color-scheme: dark){
+  :root{
+    --navy:#15130D;--navy2:#211E15;--navy3:#2A2619;
+    --text:#F5F1E8;--muted:#A9B7CC;--border:rgba(201,168,76,.3);
+  }
+}
 body{background:var(--navy);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh;display:flex;flex-direction:column;}
 body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(201,168,76,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(201,168,76,.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
 
@@ -163,7 +171,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
   </div>
 </div>
 
-<div class="progress-strip" id="progress-strip" style="display:none;">
+<div class="progress-strip" id="progress-strip">
   <div class="step-dots" id="step-dots"></div>
   <div class="prog-bar-wrap"><div class="prog-bar-fill" id="prog-fill" style="width:0%"></div></div>
   <span class="step-label" id="step-label-text">Step 1 of 8</span>
@@ -171,19 +179,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
 
 <div class="shell"><div class="card">
 
-<!-- LEAD GATE -->
-<div class="section active" id="lead-gate">
-  <div class="sec-eyebrow">Before We Start</div>
-  <div class="sec-title">Let's find the right fit for you.</div>
-  <div class="sec-sub">Enter your email and phone so we can send your personalized recommendation.</div>
-  <div class="field" style="margin-bottom:14px;"><label style="display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;">Email</label><input type="email" id="gate-email" style="width:100%;background:var(--navy3);border:1px solid var(--border);border-radius:6px;padding:12px 14px;color:var(--text);font-size:14px;"></div>
-  <div class="field" style="margin-bottom:14px;"><label style="display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;">Phone</label><input type="tel" id="gate-phone" style="width:100%;background:var(--navy3);border:1px solid var(--border);border-radius:6px;padding:12px 14px;color:var(--text);font-size:14px;"></div>
-  <div id="gate-error" style="display:none;color:var(--red);font-size:12.5px;margin-bottom:12px;">Please enter both an email and a phone number to continue.</div>
-  <button onclick="passGate()" style="width:100%;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#1E1A10;border:none;padding:13px;border-radius:6px;font-weight:700;font-size:14px;cursor:pointer;">Continue →</button>
-</div>
-
 <!-- STEP 1: GOAL -->
-<div class="section" id="step-1">
+<div class="section active" id="step-1">
   <div class="sec-eyebrow">Step 1 of 8 · Coverage Goal</div>
   <div class="sec-title">What's the <span>main reason</span> you want life insurance?</div>
   <div class="sec-sub">Select all that apply. This determines which products fit your situation best.</div>
@@ -478,6 +475,10 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
     <div class="ct-label">Recommended Coverage</div>
     <div class="ct-val" id="ct-total">$80,000</div>
   </div>
+  <div class="divider"></div>
+  <div class="field" style="margin-bottom:14px;"><label style="display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;">Email *</label><input type="email" id="f-email" style="width:100%;background:var(--navy3);border:1px solid var(--border);border-radius:6px;padding:12px 14px;color:var(--text);font-size:14px;"></div>
+  <div class="field" style="margin-bottom:14px;"><label style="display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;">Phone (optional)</label><input type="tel" id="f-phone" style="width:100%;background:var(--navy3);border:1px solid var(--border);border-radius:6px;padding:12px 14px;color:var(--text);font-size:14px;"></div>
+  <div id="contact-error" style="display:none;color:var(--red);font-size:12.5px;margin-bottom:12px;">Please enter an email address to see your results.</div>
   <div class="nav-row">
     <button class="btn-back" onclick="goBack(8)">← Back</button>
     <button class="btn-next" onclick="showResult()">See My Results →</button>
@@ -516,29 +517,6 @@ function updateProgress(step) {
     const c = i+1 < step ? 'done' : i+1 === step ? 'active' : '';
     return `<div class="sdot ${c}"></div>`;
   }).join('');
-}
-
-let _gateEmail = '';
-let _gatePhone = '';
-function passGate() {
-  const email = document.getElementById('gate-email').value.trim();
-  const phone = document.getElementById('gate-phone').value.trim();
-  if (!email || !phone) {
-    document.getElementById('gate-error').style.display = 'block';
-    return;
-  }
-  _gateEmail = email;
-  _gatePhone = phone;
-  if (typeof fireTrigger === 'function') {
-    fireTrigger('survey_lead', {
-      email, phone,
-      source: 'Client Questionnaire — Started',
-      status: 'started',
-    });
-  }
-  document.getElementById('lead-gate').classList.remove('active');
-  document.getElementById('step-1').classList.add('active');
-  document.getElementById('progress-strip').style.display = 'block';
 }
 
 function showSection(id) {
@@ -730,15 +708,20 @@ function getRecommendations() {
 }
 
 function showResult() {
+  const email = document.getElementById('f-email').value.trim();
+  const phone = document.getElementById('f-phone').value.trim();
+  if (!email) {
+    document.getElementById('contact-error').style.display = 'block';
+    return;
+  }
+  document.getElementById('contact-error').style.display = 'none';
+
   const recs = getRecommendations();
   const top = recs[0];
 
-  // Fires the completed lead, now with full answers — separate from the
-  // "started" trigger passGate() already fired, same dedupe-on-email
-  // behavior as the other surveys.
   if (typeof fireTrigger === 'function') {
     fireTrigger('survey_lead', {
-      email: _gateEmail, phone: _gatePhone,
+      email, phone,
       source: 'Client Questionnaire — Completed',
       status: 'completed',
       goals: S.goals, age: S.age, gender: S.gender, state: S.stateName,
