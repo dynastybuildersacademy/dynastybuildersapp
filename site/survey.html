@@ -125,7 +125,7 @@ input[type=range]::-webkit-slider-thumb{
     </div>
   </div>
 
-  <div class="progress-wrap">
+  <div class="progress-wrap" id="progress-wrap" style="display:none;">
     <div class="progress-label">
       <span id="step-label">Step 1 of 5</span>
       <span id="pct-label">0%</span>
@@ -133,8 +133,19 @@ input[type=range]::-webkit-slider-thumb{
     <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
   </div>
 
+  <!-- LEAD GATE — collected before any survey content -->
+  <div class="step active" id="lead-gate">
+    <div class="step-number">Before We Start</div>
+    <h2>Let's personalize this for you.</h2>
+    <div class="sub">Enter your email and phone so we can send your results and follow up with tailored guidance.</div>
+    <div class="field"><label>Email</label><input type="email" id="gate-email"></div>
+    <div class="field"><label>Phone</label><input type="tel" id="gate-phone"></div>
+    <div id="gate-error" style="display:none;color:var(--red);font-size:12.5px;margin-bottom:10px;">Please enter both an email and a phone number to continue.</div>
+    <div class="btn-row"><button class="btn-primary" onclick="passGate()">Continue →</button></div>
+  </div>
+
   <!-- ══ STEP 0: SELECT PROFILE ══ -->
-  <div class="step active" id="step-0">
+  <div class="step" id="step-0">
     <div class="step-number">Step 01</div>
     <h2>What best describes you?</h2>
     <div class="sub">We'll customize this survey to your specific situation so we can provide the most relevant financial guidance.</div>
@@ -474,6 +485,29 @@ const PROFILES = {
 };
 
 // ─── PROFILE SELECTION ───────────────────────────────────────
+let _gateEmail = '';
+let _gatePhone = '';
+function passGate() {
+  const email = document.getElementById('gate-email').value.trim();
+  const phone = document.getElementById('gate-phone').value.trim();
+  if (!email || !phone) {
+    document.getElementById('gate-error').style.display = 'block';
+    return;
+  }
+  _gateEmail = email;
+  _gatePhone = phone;
+  if (typeof fireTrigger === 'function') {
+    fireTrigger('survey_lead', {
+      email, phone,
+      source: 'Financial Needs Survey — Started',
+      status: 'started',
+    });
+  }
+  document.getElementById('lead-gate').classList.remove('active');
+  document.getElementById('step-0').classList.add('active');
+  document.getElementById('progress-wrap').style.display = 'block';
+}
+
 function selectProfile(card) {
   document.querySelectorAll('.prof-card').forEach(c => c.classList.remove('selected'));
   card.classList.add('selected');
@@ -537,6 +571,12 @@ function showStep(n) {
   document.getElementById('step-' + n)?.classList.add('active');
   window.scrollTo({top:0,behavior:'smooth'});
   updateProgress(n);
+  // Pre-fill contact fields with whatever the lead gate already
+  // collected, wherever they land in the form — no reason to ask twice.
+  const emailEl = document.getElementById('f-email');
+  const phoneEl = document.getElementById('f-phone');
+  if (emailEl && !emailEl.value && _gateEmail) emailEl.value = _gateEmail;
+  if (phoneEl && !phoneEl.value && _gatePhone) phoneEl.value = _gatePhone;
 }
 
 function updateProgress(n) {

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Monthly Contest · DBA</title>
+<title>Dynasty Monthly Contest · DBA</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&family=Playfair+Display:wght@700;800;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="auth.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -70,11 +70,17 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);o
 .dynasty-eyebrow{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;letter-spacing:.35em;text-transform:uppercase;color:var(--gold);margin-bottom:14px;}
 .dynasty-trophy{font-size:4.5rem;margin-bottom:14px;filter:drop-shadow(0 6px 20px rgba(201,168,76,.45));}
 .dynasty-title{font-family:'Playfair Display',serif;font-weight:900;font-size:clamp(1.6rem,4vw,2.6rem);color:var(--gold2);text-align:center;margin-bottom:8px;letter-spacing:.02em;}
-.dynasty-name{font-family:'Playfair Display',serif;font-weight:900;font-size:clamp(3rem,8vw,5.6rem);color:var(--cream);text-align:center;line-height:1.05;margin:14px 0 28px;text-shadow:0 4px 30px rgba(201,168,76,.3);}
+.dynasty-name{font-family:'Playfair Display',serif;font-weight:900;font-size:clamp(3rem,8vw,5.6rem);color:#F5F1E8;text-align:center;line-height:1.05;margin:14px 0 28px;text-shadow:0 4px 30px rgba(201,168,76,.3);}
 .dynasty-score-row{display:flex;gap:18px;flex-wrap:wrap;justify-content:center;margin-bottom:30px;}
-.dynasty-score-chip{background:rgba(10,10,10,.04);border:1px solid var(--border);border-radius:10px;padding:14px 22px;text-align:center;min-width:140px;}
-.dynasty-score-chip .lbl{font-size:9px;color:var(--slate);text-transform:uppercase;letter-spacing:.1em;font-family:'Barlow Condensed',sans-serif;font-weight:700;margin-bottom:4px;}
+.dynasty-score-chip{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:14px 22px;text-align:center;min-width:140px;}
+.dynasty-score-chip .lbl{font-size:9px;color:#A9B7CC;text-transform:uppercase;letter-spacing:.1em;font-family:'Barlow Condensed',sans-serif;font-weight:700;margin-bottom:4px;}
 .dynasty-score-chip .val{font-family:'DM Mono',monospace;font-size:1.4rem;color:var(--gold2);}
+.lb-list{width:100%;max-width:520px;display:flex;flex-direction:column;gap:6px;}
+.lb-row{display:flex;align-items:center;gap:14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:9px 16px;}
+.lb-row.lb-lead{background:rgba(201,168,76,.16);border-color:rgba(201,168,76,.45);}
+.lb-rank{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:14px;color:var(--gold2);width:26px;flex-shrink:0;}
+.lb-name{flex:1;font-size:13px;color:#F5F1E8;}
+.lb-score{font-family:'DM Mono',monospace;font-size:12px;color:#A9B7CC;}
 .dynasty-total{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--cream);background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--navy);padding:10px 28px;border-radius:30px;}
 .dynasty-explain{font-size:11px;color:var(--slate);text-align:center;max-width:440px;margin-top:24px;line-height:1.7;}
 
@@ -285,7 +291,7 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);o
 <div class="topnav">
   <div class="topnav-left">
     <div class="shield">🙏</div>
-    <div class="label">Monthly Contest</div>
+    <div class="label">Dynasty Monthly Contest</div>
   </div>
   <div class="topnav-right">
     <div class="week-pill"><span class="dot"></span><span id="week-range-text">Loading...</span></div>
@@ -381,7 +387,7 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);o
   <div class="modal" style="max-width:400px;">
     <h3>Monday.com Board</h3>
     <p style="font-size:12px;color:var(--slate);line-height:1.6;margin-bottom:12px;">
-      Paste the ID of your Monthly Contest winners board. Each month's winners will be created
+      Paste the ID of your Dynasty Monthly Contest winners board. Each month's winners will be created
       as a new item (one per month) with columns for each category winner and the overall
       Dynasty Builder of the Month. Leave blank to disable Monday sync.
     </p>
@@ -440,9 +446,16 @@ if (!data.weeks[currentWeekKey]) {
   data.weeks[currentWeekKey] = {
     start: currentWeek.start.toISOString(), end: currentWeek.end.toISOString(),
     producers: [], paidpoints: [], cashflow: [], recruits: [],
+    finalized: false, finalizedWinner: null,
   };
   saveData(data);
 }
+// Older months saved before "finalized" existed default to false/null so
+// they behave the same way (running leaderboard) rather than crashing.
+Object.values(data.weeks).forEach(wk => {
+  if (wk.finalized === undefined) wk.finalized = false;
+  if (wk.finalizedWinner === undefined) wk.finalizedWinner = null;
+});
 
 // ── SEED DEMO DATA ────────────────────────────────────────────
 function seedDemoData() {
@@ -506,6 +519,39 @@ function calcDynastyBuilder(weekKey) {
   };
 }
 
+// ── FINALIZE / REOPEN THE MONTH ──────────────────────────────────
+// Locks in whoever is currently #1 on the running leaderboard as the
+// month's Dynasty Builder. A snapshot is stored (not just a flag) so
+// that correcting category data afterward never silently changes an
+// already-announced winner — reopening the month is a deliberate,
+// separate action.
+function finalizeWinner() {
+  const wk = data.weeks[currentWeekKey];
+  if (!wk) return;
+  const result = calcDynastyBuilder(currentWeekKey);
+  if (!result) { toast('Add category winners before finalizing.'); return; }
+  const ok = confirm(`Finalize ${result.name} as this month's Dynasty Builder?\n\nTotal score: ${result.total}. This locks in the result — you can reopen the month later if needed.`);
+  if (!ok) return;
+  wk.finalized = true;
+  wk.finalizedWinner = { ...result, finalizedAt: new Date().toISOString() };
+  saveData(data);
+  renderAll();
+  goToSlide(slides.findIndex(s => s.type === 'dynasty'));
+  toast(`✓ ${result.name} finalized as Dynasty Builder of the Month`);
+}
+function unfinalizeWinner() {
+  const wk = data.weeks[currentWeekKey];
+  if (!wk || !wk.finalized) return;
+  const ok = confirm('Reopen this month? The leaderboard will show again instead of the finalized winner, until you finalize again.');
+  if (!ok) return;
+  wk.finalized = false;
+  wk.finalizedWinner = null;
+  saveData(data);
+  renderAll();
+  goToSlide(slides.findIndex(s => s.type === 'dynasty'));
+  toast('Month reopened — showing the running leaderboard again.');
+}
+
 // ── BUILD SLIDES ──────────────────────────────────────────────
 let slides = [];
 
@@ -533,8 +579,9 @@ function buildSlides() {
     if (first) slides.push({ type:'spotlight', cat, winner: first });
   });
 
-  // Dynasty Builder of the Month
-  slides.push({ type:'dynasty', result: calcDynastyBuilder() });
+  // Dynasty Builder of the Month — running leaderboard until finalized,
+  // then the locked-in celebration slide.
+  slides.push({ type:'dynasty', result: calcDynastyBuilder(), wk });
 
   // ── CLOSING SLIDES ───────────────────────────────────────────
   slides.push({ type:'contest' });
@@ -552,7 +599,7 @@ function renderSlideHTML(slide, idx) {
   if (slide.type === 'intro') {
     return `<div class="slide bg-spotlight" data-idx="${idx}">
       <div class="intro-badge">Monthly Recognition</div>
-      <div class="intro-title">Monthly <span>Contest</span></div>
+      <div class="intro-title">Dynasty Monthly <span>Contest</span></div>
       <div class="intro-sub">Celebrating the agents who moved the needle this month. New winners announced every month.</div>
       <div class="intro-week">${fmtDate(currentWeek.start)} \u2192 ${fmtDate(currentWeek.end)}</div>
       <div class="intro-cats">
@@ -605,32 +652,59 @@ function renderSlideHTML(slide, idx) {
   }
 
   if (slide.type === 'dynasty') {
-    const { result } = slide;
-    if (!result) {
+    const { result, wk: slideWk } = slide;
+    const finalized = slideWk?.finalized;
+    const locked = slideWk?.finalizedWinner;
+
+    // ── FINALIZED: show the locked-in winner, not a live recalculation ──
+    // Once finalized, the celebration slide uses the snapshot taken at
+    // finalize time — if category data gets corrected afterward, the
+    // announced winner doesn't silently change underneath the post.
+    if (finalized && locked) {
+      const chips = CATEGORIES.map(c => {
+        const entry = locked.breakdown[c.key];
+        const display = !entry
+          ? '<span style="color:var(--slate);font-size:.8rem;">not entered</span>'
+          : (RANK_EMOJI[entry.rank] || '#'+entry.rank) + ' \u2014 ' + entry.pts + ' pt' + (entry.pts!==1?'s':'');
+        return `<div class="dynasty-score-chip" style="${!entry?'opacity:.5;':''}">
+          <div class="lbl">${c.icon} ${c.title}</div>
+          <div class="val">${display}</div>
+        </div>`;
+      }).join('');
       return `<div class="slide bg-dynasty" data-idx="${idx}">
-        <div class="dynasty-eyebrow">\u26f3 Dynasty Builder of the Month</div>
+        ${isAdmin?`<div class="spotlight-edit" onclick="unfinalizeWinner()">Reopen Month</div>`:''}
+        <div class="dynasty-eyebrow">\u26f3 Dynasty Builder of the Month \u2014 FINAL</div>
         <div class="dynasty-trophy">\ud83c\udfc6</div>
-        <div class="empty-msg">Add winners to the categories above to calculate this month's Dynasty Builder.</div>
+        <div class="dynasty-title">This Month's Champion</div>
+        <div class="dynasty-name">${locked.name}</div>
+        <div class="dynasty-score-row">${chips}</div>
+        <div class="dynasty-total">Total Score: ${locked.total} (highest wins)</div>
+        <div class="dynasty-explain">Scored across all 4 categories — 1st place earns the most points (equal to field size), each lower rank earns one fewer. Highest total wins. Not entering a category scores 0. Finalized ${locked.finalizedAt ? fmtDate(new Date(locked.finalizedAt)) : ''}.</div>
       </div>`;
     }
-    const chips = CATEGORIES.map(c => {
-      const entry = result.breakdown[c.key];
-      const display = !entry
-        ? '<span style="color:var(--slate);font-size:.8rem;">not entered</span>'
-        : (RANK_EMOJI[entry.rank] || '#'+entry.rank) + ' \u2014 ' + entry.pts + ' pt' + (entry.pts!==1?'s':'');
-      return `<div class="dynasty-score-chip" style="${!entry?'opacity:.5;':''}">
-        <div class="lbl">${c.icon} ${c.title}</div>
-        <div class="val">${display}</div>
+
+    // ── NOT YET FINALIZED: running Top 25 leaderboard, no winner named ──
+    if (!result) {
+      return `<div class="slide bg-dynasty" data-idx="${idx}">
+        <div class="dynasty-eyebrow">\u26f3 Dynasty Builder of the Month \u2014 Running Leaderboard</div>
+        <div class="dynasty-trophy">\ud83c\udfc6</div>
+        <div class="empty-msg">Add winners to the categories above to start this month's leaderboard.</div>
       </div>`;
-    }).join('');
+    }
+    const board = Object.entries(result.allTotals)
+      .sort((a,b) => b[1].score - a[1].score)
+      .slice(0, 25);
+    const rows = board.map(([name, s], i) => `
+      <div class="lb-row${i===0?' lb-lead':''}">
+        <div class="lb-rank">${i+1}</div>
+        <div class="lb-name">${name}</div>
+        <div class="lb-score">${s.score} pts</div>
+      </div>`).join('');
     return `<div class="slide bg-dynasty" data-idx="${idx}">
-      <div class="dynasty-eyebrow">\u26f3 Dynasty Builder of the Month</div>
-      <div class="dynasty-trophy">\ud83c\udfc6</div>
-      <div class="dynasty-title">This Month's Champion</div>
-      <div class="dynasty-name">${result.name}</div>
-      <div class="dynasty-score-row">${chips}</div>
-      <div class="dynasty-total">Total Score: ${result.total} (lowest wins)</div>
-      <div class="dynasty-explain">Scored across all 4 categories — 1st place earns the most points (equal to field size), each lower rank earns one fewer. Highest total wins. Not entering a category scores 0.</div>
+      <div class="dynasty-eyebrow">\u26f3 Dynasty Builder of the Month \u2014 Running Leaderboard</div>
+      <div class="dynasty-sub" style="font-size:12px;color:var(--slate);margin-bottom:14px;">Updates live as category winners are entered. No winner is named until the month is finalized.</div>
+      <div class="lb-list">${rows}</div>
+      ${isAdmin ? `<button class="btn btn-outline" style="margin-top:20px;" onclick="finalizeWinner()">\ud83c\udfc1 Finalize This Month's Winner</button>` : ''}
     </div>`;
   }
 
@@ -987,7 +1061,7 @@ const NAME_HEADER_HINTS = ['name','agent','producer'];
 
 // ── DBA TEAM FILTER ───────────────────────────────────────────
 // Only agents whose Upline MD Name matches one of these are shown
-// in Monthly Contest recognition slides.
+// in Dynasty Monthly Contest recognition slides.
 const DBA_UPLINE_MDS = [
   'blessing ikejemba',
   'obi & jennifer iroezi', 'obi and jennifer iroezi',
@@ -1162,6 +1236,18 @@ function confirmMultiUpload() {
   closeUploadModal();
   renderAll();
 
+  // Fires once winners are actually finalized for the month.
+  if (typeof fireTrigger === 'function') {
+    const db = calcDynastyBuilder(currentWeekKey);
+    fireTrigger('recognition', {
+      period: 'Dynasty Monthly Contest',
+      monthOf: currentWeekKey,
+      dynastyBuilder: db?.name || '',
+      categoryWinners: CATEGORIES.map(c => ({ category: c.title, winner: (wk[c.key]||[]).find(w=>w.rank===1)?.name || '' })),
+      source: 'Dynasty Monthly Contest',
+    });
+  }
+
   // Auto-save to Monday.com if board configured
   const boardId = getMondayBoardId();
   if (boardId && AUTH.getMondayKey()) saveWeekToMonday(boardId);
@@ -1180,7 +1266,7 @@ async function saveWeekToMonday(boardId) {
   try {
     const wkObj = data.weeks[currentWeekKey];
     const label = document.getElementById('week-range-text').textContent;
-    const itemName = `Monthly Contest — ${label}`;
+    const itemName = `Dynasty Monthly Contest — ${label}`;
 
     // Build column text values
     const colTexts = {};
@@ -1225,7 +1311,7 @@ async function saveWeekToMonday(boardId) {
     setTimeout(() => { statusEl.style.display='none'; }, 4000);
   } catch(err) {
     statusEl.textContent = '⚠ Monday sync failed';
-    console.error('[Monthly Contest] Monday error:', err);
+    console.error('[Dynasty Monthly Contest] Monday error:', err);
     setTimeout(() => { statusEl.style.display='none'; }, 5000);
   }
 }
@@ -1248,7 +1334,7 @@ renderAll();
   <div style="background:#FFFFFF;border:1px solid rgba(201,168,76,.3);border-radius:16px;
     padding:24px;max-width:480px;width:94%;max-height:90vh;overflow-y:auto;">
     <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;
-      color:#E8C97A;margin-bottom:4px;">&#11015; Export Monthly Contest PowerPoint</div>
+      color:#E8C97A;margin-bottom:4px;">&#11015; Export Dynasty Monthly Contest PowerPoint</div>
     <div style="font-family:'DM Mono',monospace;font-size:10px;color:#6B7C93;margin-bottom:18px;">
       Generates a ready-to-present .pptx using this month's entered winners.
     </div>
@@ -1687,7 +1773,7 @@ async function generatePptx() {
 
     // Write file
     const weekSlug = weekLabel.replace(/[^a-zA-Z0-9]/g,'_').replace(/_+/g,'_');
-    const fileName = 'MonthlyContest_' + weekSlug + '.pptx';
+    const fileName = 'DynastyMonthlyContest_' + weekSlug + '.pptx';
     await pres.writeFile({ fileName });
     status.textContent = '✓ Download started — ' + fileName;
     status.style.color = '#2DCA73';

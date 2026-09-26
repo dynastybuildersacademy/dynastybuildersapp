@@ -332,6 +332,7 @@ function buildFunnelCards() {
 
 // ── SURVEY PAGES CONFIG ────────────────────────────────────────
 const SURVEY_PAGES = [
+  { id:'retirement-readiness', icon:'💰', title:'Retirement Readiness Survey', desc:'Education + a scored survey on tax diversification, market risk, and income planning — ends with a personalized readiness snapshot and consultation CTA.', file:'retirement-readiness.html', audience:'Clients', color:'#2C5AA0', badge:'Survey' },
   { id:'world-cup-hub',     icon:'⚽', title:'World Cup Financial Hub',     desc:'Landing page with financial tips tied to the 2026 World Cup, links to the quiz, and a downloadable personalized flyer.', file:'world-cup.html', audience:'Both', color:'#2DCA73', badge:'Landing Page' },
   { id:'world-cup-survey',  icon:'🏆', title:'World Cup Game Plan Quiz',    desc:'10-question trivia + financial literacy quiz tied to the World Cup. Scores the lead and shows a personalized result.', file:'world-cup-survey.html', audience:'Both', color:'#2DCA73', badge:'Quiz' },
   { id:'iul-brochure',      icon:'📊', title:'Employer vs IUL Guide',       desc:'Side-by-side comparison brochure: employer/union group term vs. personal IUL with living benefits.', file:'employer-vs-iul-brochure.html', audience:'Clients', color:'#C9A84C', badge:'Brochure' },
@@ -364,6 +365,7 @@ function buildSurveyCards() {
 
 // ── AUDIENCES ─────────────────────────────────────────────────
 const AUDIENCES = [
+  { id:'retirement', icon:'🎯', name:'Retirement Readiness Leads', ages:'Ages 45+ · Nearing retirement' },
   { id:'family', icon:'👨‍👩‍👧', name:'Growing Families', ages:'Ages 25–44 · Kids · Mortgage' },
   { id:'peak',   icon:'💼', name:'Peak Earner Couples', ages:'Ages 45–54 · High income' },
   { id:'boomer', icon:'🌿', name:'Baby Boomers',         ages:'Ages 55–70 · Pre-retirement' },
@@ -387,6 +389,17 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 const CAMPAIGNS = {
+  retirement: {
+    captions: [
+      { platform:'📸 Instagram', text:`Quick question: if the market dropped 20% next year, would your retirement plan survive it? 📉\n\nMost people have never actually run the numbers.\n\nI built a free 3-minute Retirement Readiness Survey that walks through:\n✅ Where your money sits today (tax now vs. tax later vs. tax-free)\n✅ How exposed you are to a market drop\n✅ Whether you have guaranteed income you can't outlive\n\nNo cost, no obligation — just clarity.\n\nLink in bio, or DM me "READY" and I'll send it straight to you. 👇\n\n#RetirementPlanning #FinancialWellness #DynastyBuilders` },
+      { platform:'📘 Facebook', text:`Here's a question I ask everyone over 45: do you have a plan for income you literally cannot outlive?\n\nMost people say "I'll figure it out with my 401k" — but that comes with market risk, timing risk, and tax exposure you may not have accounted for.\n\nI put together a free, 3-minute Retirement Readiness Survey. It's not a sales pitch — it's a quick way to see where your gaps actually are.\n\nComment "SURVEY" below and I'll send you the link.` },
+      { platform:'💼 LinkedIn', text:`Most retirement conversations start with "how much have you saved?" — the more useful question is "how is it structured?"\n\nTax-deferred, tax-now, and tax-advantaged accounts each behave completely differently once you actually start drawing income.\n\nI built a short Retirement Readiness Survey that walks through account structure, market-risk exposure, and guaranteed-income planning — takes about 3 minutes and gives an immediate personalized snapshot.\n\nHappy to send the link to anyone who wants a clearer picture before a real planning conversation.` },
+    ],
+    emails: [
+      { subject:'A 3-minute check on your retirement plan', body: `Hi {{name}},\n\nI want to ask you something most people have never actually sat down and calculated:\n\nIf the market dropped 20% the year before you retired, would your plan still work?\n\nI put together a short Retirement Readiness Survey — takes about 3 minutes — that walks through where your money sits today, how exposed you are to market risk, and whether you have a source of guaranteed income you can't outlive.\n\nAt the end, you'll get a personalized readiness snapshot, no cost and no obligation.\n\nHere's the link: {{survey_link}}\n\n— {{agent_name}}\nDynasty Builders Academy | PHP Agency\n{{phone}}` },
+      { subject:'Following up — your retirement readiness snapshot', body: `Hi {{name}},\n\nJust following up in case my last note got buried.\n\nThe survey takes about 3 minutes, and most people are surprised by at least one thing it surfaces — usually either how much of their savings is tax-deferred, or how little guaranteed income they actually have lined up.\n\nHere's the link again: {{survey_link}}\n\nOnce you've completed it, I'd love to walk through the results together — would [Day] or [Day] work for a quick call?\n\n— {{agent_name}}` },
+    ]
+  },
   family: {
     captions: [
       { platform:'📸 Instagram', text:`Most parents have life insurance. Very few have the kind that pays you while you're ALIVE.\n\nIf you had a heart attack tomorrow:\n– Your mortgage doesn't pause ❌\n– Your kids' school doesn't pause ❌\n– Your grocery bill doesn't pause ❌\n\nBut your policy COULD pay you a lump sum to cover all of it. 💰\n\nThis is called living benefits — and most families don't know they exist.\n\nDM me "FAMILY" to learn what your family could have. 👇\n\n#LifeInsurance #LivingBenefits #FinancialProtection #DynastyBuilders` },
@@ -448,7 +461,7 @@ function renderCampaign(id) {
     html += `<div class="email-card">
       <div class="email-subject">Subject Line</div>
       <div class="email-subj-val" id="subj-${id}-${i}">${e.subject}</div>
-      <div class="email-body" id="body-${id}-${i}">${e.body.replace(/{{agent_name}}/g, session.name).replace(/{{phone}}/g, '')}</div>
+      <div class="email-body" id="body-${id}-${i}">${e.body.replace(/{{agent_name}}/g, session.name).replace(/{{phone}}/g, '').replace(/{{survey_link}}/g, `${getBaseUrl()}/retirement-readiness.html?agent=${getAgentParam()}`)}</div>
       <div style="margin-top:12px;display:flex;gap:8px;">
         <button class="copy-btn" onclick="copyText('subj-${id}-${i}')">Copy Subject</button>
         <button class="copy-btn" onclick="copyText('body-${id}-${i}')">Copy Email</button>

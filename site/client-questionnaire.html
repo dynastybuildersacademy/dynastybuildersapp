@@ -163,7 +163,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
   </div>
 </div>
 
-<div class="progress-strip">
+<div class="progress-strip" id="progress-strip" style="display:none;">
   <div class="step-dots" id="step-dots"></div>
   <div class="prog-bar-wrap"><div class="prog-bar-fill" id="prog-fill" style="width:0%"></div></div>
   <span class="step-label" id="step-label-text">Step 1 of 8</span>
@@ -171,8 +171,19 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
 
 <div class="shell"><div class="card">
 
+<!-- LEAD GATE -->
+<div class="section active" id="lead-gate">
+  <div class="sec-eyebrow">Before We Start</div>
+  <div class="sec-title">Let's find the right fit for you.</div>
+  <div class="sec-sub">Enter your email and phone so we can send your personalized recommendation.</div>
+  <div class="field" style="margin-bottom:14px;"><label style="display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;">Email</label><input type="email" id="gate-email" style="width:100%;background:var(--navy3);border:1px solid var(--border);border-radius:6px;padding:12px 14px;color:var(--text);font-size:14px;"></div>
+  <div class="field" style="margin-bottom:14px;"><label style="display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;">Phone</label><input type="tel" id="gate-phone" style="width:100%;background:var(--navy3);border:1px solid var(--border);border-radius:6px;padding:12px 14px;color:var(--text);font-size:14px;"></div>
+  <div id="gate-error" style="display:none;color:var(--red);font-size:12.5px;margin-bottom:12px;">Please enter both an email and a phone number to continue.</div>
+  <button onclick="passGate()" style="width:100%;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#1E1A10;border:none;padding:13px;border-radius:6px;font-weight:700;font-size:14px;cursor:pointer;">Continue →</button>
+</div>
+
 <!-- STEP 1: GOAL -->
-<div class="section active" id="step-1">
+<div class="section" id="step-1">
   <div class="sec-eyebrow">Step 1 of 8 · Coverage Goal</div>
   <div class="sec-title">What's the <span>main reason</span> you want life insurance?</div>
   <div class="sec-sub">Select all that apply. This determines which products fit your situation best.</div>
@@ -507,6 +518,29 @@ function updateProgress(step) {
   }).join('');
 }
 
+let _gateEmail = '';
+let _gatePhone = '';
+function passGate() {
+  const email = document.getElementById('gate-email').value.trim();
+  const phone = document.getElementById('gate-phone').value.trim();
+  if (!email || !phone) {
+    document.getElementById('gate-error').style.display = 'block';
+    return;
+  }
+  _gateEmail = email;
+  _gatePhone = phone;
+  if (typeof fireTrigger === 'function') {
+    fireTrigger('survey_lead', {
+      email, phone,
+      source: 'Client Questionnaire — Started',
+      status: 'started',
+    });
+  }
+  document.getElementById('lead-gate').classList.remove('active');
+  document.getElementById('step-1').classList.add('active');
+  document.getElementById('progress-strip').style.display = 'block';
+}
+
 function showSection(id) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
@@ -698,6 +732,21 @@ function getRecommendations() {
 function showResult() {
   const recs = getRecommendations();
   const top = recs[0];
+
+  // Fires the completed lead, now with full answers — separate from the
+  // "started" trigger passGate() already fired, same dedupe-on-email
+  // behavior as the other surveys.
+  if (typeof fireTrigger === 'function') {
+    fireTrigger('survey_lead', {
+      email: _gateEmail, phone: _gatePhone,
+      source: 'Client Questionnaire — Completed',
+      status: 'completed',
+      goals: S.goals, age: S.age, gender: S.gender, state: S.stateName,
+      health: S.health, tobacco: S.tobacco, coverageAmount: S.coverageAmount,
+      duration: S.duration, priority: S.priority,
+      topRecommendation: top ? top.name : null,
+    });
+  }
   const colorMap = {green:'rcard-green',gold:'rcard-gold',orange:'rcard-orange',blue:'rcard-navy',red:'rcard-red'};
   const titleMap  = {green:'green',gold:'gold',orange:'orange',blue:'muted',red:'red'};
 

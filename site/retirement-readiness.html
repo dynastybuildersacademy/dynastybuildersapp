@@ -128,13 +128,24 @@ select option{background:var(--navy-mid);}
     </div>
   </div>
 
-  <div class="progress-wrap">
+  <div class="progress-wrap" id="progress-wrap" style="display:none;">
     <div class="progress-label"><span id="step-label">Step 1 of 7</span><span id="pct-label">0%</span></div>
     <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
   </div>
 
+  <!-- LEAD GATE — collected before any survey content, so a lead exists even if the survey is abandoned partway -->
+  <div class="step active" id="lead-gate">
+    <div class="step-number">Before We Start</div>
+    <h2>Where should your money work?</h2>
+    <p class="sub">Different accounts offer different combinations of liquidity, risk, tax treatment, and income. This short survey walks through the key ideas and helps identify where you may have gaps — takes about 3 minutes. We'll text or email your results.</p>
+    <div class="field"><label>Email</label><input type="email" id="gate-email"></div>
+    <div class="field"><label>Phone</label><input type="tel" id="gate-phone"></div>
+    <div id="gate-error" style="display:none;color:var(--danger);font-size:12.5px;margin-bottom:8px;">Please enter both an email and a phone number to continue.</div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="passGate()">Continue →</button></div>
+  </div>
+
   <!-- STEP 0: INTRO -->
-  <div class="step active" id="step-0">
+  <div class="step" id="step-0">
     <div class="step-number">Welcome</div>
     <h2>Where should your money work?</h2>
     <p class="sub">Different accounts offer different combinations of liquidity, risk, tax treatment, and income. This short survey walks through the key ideas and helps identify where you may have gaps — takes about 3 minutes.</p>
@@ -301,11 +312,51 @@ const _agentDisplay = _agentId ? decodeURIComponent(_agentId) : '';
 let stepHistory = [0];
 const totalSteps = 7; // steps 0-6, step-done is the 7th/"complete" state
 
+let _gateEmail = '';
+let _gatePhone = '';
+function passGate() {
+  const email = document.getElementById('gate-email').value.trim();
+  const phone = document.getElementById('gate-phone').value.trim();
+  if (!email || !phone) {
+    document.getElementById('gate-error').style.display = 'block';
+    return;
+  }
+  _gateEmail = email;
+  _gatePhone = phone;
+
+  // Fire the lead the moment contact info exists — even if this person
+  // never finishes the survey, the lead isn't lost. submitSurvey() at the
+  // end still fires survey_lead again with the full answer set; Zapier/
+  // HubSpot dedupe on email, so this doesn't create two separate contacts.
+  if (typeof fireTrigger === 'function') {
+    fireTrigger('survey_lead', {
+      email, phone,
+      profile: 'Retirement Readiness',
+      referredBy: _agentDisplay || _agentId || '',
+      source: 'Retirement Readiness Survey — Started',
+      status: 'started',
+    });
+  }
+
+  document.getElementById('lead-gate').classList.remove('active');
+  document.getElementById('step-0').classList.add('active');
+  document.getElementById('progress-wrap').style.display = 'block';
+  stepHistory = [0];
+}
+
 function nextStep() {
   const cur = stepHistory[stepHistory.length - 1];
   const next = cur + 1;
   showStep(next);
   stepHistory.push(next);
+  // Pre-fill the contact step with what the gate already collected —
+  // no reason to ask for the same email/phone twice.
+  if (next === 6) {
+    const emailEl = document.getElementById('f-email');
+    const phoneEl = document.getElementById('f-phone');
+    if (emailEl && !emailEl.value) emailEl.value = _gateEmail;
+    if (phoneEl && !phoneEl.value) phoneEl.value = _gatePhone;
+  }
 }
 function prevStep() {
   if (stepHistory.length <= 1) return;
@@ -404,6 +455,22 @@ async function submitSurvey() {
   document.getElementById('pct-label').textContent = '100%';
   document.getElementById('step-label').textContent = 'Complete';
   renderResults(data);
+
+  // Fires the same server-side automation trigger survey.html uses —
+  // this is what actually reaches Zapier/HubSpot (via the ZAPIER_* env
+  // vars already configured on this app's backend), not a client-side
+  // webhook. Whatever's wired to 'survey_lead' picks up both surveys.
+  if (typeof fireTrigger === 'function') {
+    fireTrigger('survey_lead', {
+      name:       `${data.firstName} ${data.lastName}`.trim(),
+      phone:      data.phone || '',
+      email:      data.email || '',
+      profile:    'Retirement Readiness',
+      referredBy: _agentDisplay || _agentId || '',
+      source:     'Retirement Readiness Survey',
+      answers:    data,
+    });
+  }
 
   // Sync to Monday.com if a board is configured — mirrors the pattern
   // used by survey.html. Silent no-op if Monday isn't set up yet, so the

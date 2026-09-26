@@ -98,7 +98,18 @@ input[type=radio]{display:none;}
 </style>
 </head>
 <body>
-<script>AUTH.require('prequal.html');</script>
+
+<div id="lead-gate-overlay" style="position:fixed;inset:0;background:var(--navy);z-index:999;display:flex;align-items:center;justify-content:center;padding:20px;">
+  <div style="max-width:420px;width:100%;text-align:center;">
+    <div style="font-size:32px;margin-bottom:10px;">📋</div>
+    <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700;color:var(--gold);margin-bottom:8px;">Before We Start</div>
+    <div style="font-size:14px;color:var(--muted);margin-bottom:22px;line-height:1.6;">Enter your email and phone so we can send your personalized recommendation.</div>
+    <input type="email" id="gate-email" placeholder="Email" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:12px 14px;color:var(--text);font-size:14px;margin-bottom:10px;">
+    <input type="tel" id="gate-phone" placeholder="Phone" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:12px 14px;color:var(--text);font-size:14px;margin-bottom:10px;">
+    <div id="gate-error" style="display:none;color:var(--red);font-size:12.5px;margin-bottom:10px;">Please enter both an email and a phone number to continue.</div>
+    <button onclick="passGate()" style="width:100%;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#1E1A10;border:none;padding:13px;border-radius:6px;font-weight:700;font-size:14px;cursor:pointer;">Continue →</button>
+  </div>
+</div>
 
 <div class="topbar">
   <div class="tb-title">📋 Client Pre-Qualification</div>
@@ -545,7 +556,27 @@ input[type=radio]{display:none;}
 </div><!-- /form-wrap -->
 
 <script>
-AUTH.require('prequal.html');
+let _gateEmail = '';
+let _gatePhone = '';
+function passGate() {
+  const email = document.getElementById('gate-email').value.trim();
+  const phone = document.getElementById('gate-phone').value.trim();
+  if (!email || !phone) {
+    document.getElementById('gate-error').style.display = 'block';
+    return;
+  }
+  _gateEmail = email;
+  _gatePhone = phone;
+  if (typeof fireTrigger === 'function') {
+    fireTrigger('survey_lead', {
+      email, phone,
+      profile: 'Client Pre-Qualification',
+      source: 'Prequal Calculators — Started',
+      status: 'started',
+    });
+  }
+  document.getElementById('lead-gate-overlay').style.display = 'none';
+}
 
 function showProduct(id) {
   document.querySelectorAll('.product-panel').forEach(p => p.classList.remove('active'));

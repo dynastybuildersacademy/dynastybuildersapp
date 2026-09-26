@@ -376,9 +376,10 @@ AUTH.require('roster-admin.html');
       </div>
       <div class="agent-table-wrap">
         <table class="agent-table">
-          <thead><tr><th>Agent</th><th>Licensed</th><th>Certified Field Trainer</th><th>Meetings Attended</th><th>Last Attended</th></tr></thead>
+          <thead><tr><th>Agent</th><th>Licensed</th><th>Certified Field Trainer</th><th>Meetings Attended</th><th>Last Attended</th><th>Submitted Pts</th><th>Paid Pts</th></tr></thead>
           <tbody id="attend-tbody"></tbody>
         </table>
+        <div style="font-size:11px;color:var(--muted);margin-top:8px;">Submitted/Paid Points here are a manual override — usable for any agent, licensed or not, since production data doesn't always flow in automatically before someone's appointed. Editing takes effect immediately on save.</div>
       </div>
     </div>
   </div>
@@ -888,6 +889,24 @@ function addAgent() {
 
   toast(`✓ ${agent.name} ${isNew ? 'added' : 'updated'} — ID: ${agent.id}`);
   renderRoster();
+
+  // Fires the new-agent onboarding trigger only for a genuinely new
+  // agent (not an edit) — matches the fireTrigger pattern already used
+  // for BOM guests, surveys, and licensing stage changes. Whatever's
+  // wired to 'new_agent' server-side (e.g. a HubSpot workflow) is what
+  // actually sends the welcome email sequence.
+  if (isNew && typeof fireTrigger === 'function') {
+    fireTrigger('new_agent', {
+      name:      agent.name,
+      email:     agent.email || '',
+      phone:     agent.phone || '',
+      role:      agent.role,
+      uplineId:  agent.uplineId || '',
+      agentId:   agent.id,
+      source:    'Roster Admin — Add Agent',
+    });
+  }
+
   cancelEdit(); // resets form + edit-mode state (keeps the result panel above intact)
 }
 
@@ -1432,12 +1451,25 @@ function renderAttendanceSummary() {
   grid.innerHTML = stats.map(s => `<div class="attend-stat-item"><div class="as-val">${s.val}</div><div class="as-label">${s.label}</div></div>`).join('');
 }
 
+function getManualPoints() {
+  try { return JSON.parse(localStorage.getItem('dba_manual_points') || '{}'); } catch(e) { return {}; }
+}
+function setManualPoints(agentId, field, value) {
+  const all = getManualPoints();
+  if (!all[agentId]) all[agentId] = {};
+  const num = parseInt(value, 10);
+  all[agentId][field] = isNaN(num) ? 0 : num;
+  try { localStorage.setItem('dba_manual_points', JSON.stringify(all)); } catch(e) {}
+  if (typeof toast === 'function') toast(`✓ ${field === 'subPts' ? 'Submitted' : 'Paid'} points updated`);
+}
+
 function renderAttendanceTable() {
   const tbody = document.getElementById('attend-tbody');
   if (!tbody) return;
   const search = (document.getElementById('attend-search')?.value || '').toLowerCase();
   const records = getAttendanceRecords();
   const cftIds = getCftIds();
+  const manualPoints = getManualPoints();
 
   // Group attendance by agentId for a fast lookup while rendering rows.
   const byAgent = {};
@@ -1455,12 +1487,15 @@ function renderAttendanceTable() {
     const isCft = cftIds.has(a.id);
     const attended = byAgent[a.id] || [];
     const lastDate = attended.length ? attended.map(r => r.date).sort().reverse()[0] : '—';
+    const pts = manualPoints[a.id] || {};
     return `<tr>
       <td><strong>${a.name}</strong><br><span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);">${a.id}</span></td>
       <td>${licensed ? '<span style="color:#2DCA73;">✓ Licensed</span>' : '<span style="color:var(--muted);">—</span>'}</td>
       <td><label style="display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" ${isCft?'checked':''} onchange="toggleCFT('${a.id}')"> ${isCft ? '✓ CFT' : 'Not certified'}</label></td>
       <td>${attended.length}</td>
       <td>${lastDate}</td>
+      <td><input type="number" min="0" value="${pts.subPts || 0}" style="width:90px;background:var(--s2);border:1px solid var(--border);border-radius:4px;padding:5px 8px;color:var(--text);font-size:12px;" onchange="setManualPoints('${a.id}','subPts',this.value)"></td>
+      <td><input type="number" min="0" value="${pts.paidPts || 0}" style="width:90px;background:var(--s2);border:1px solid var(--border);border-radius:4px;padding:5px 8px;color:var(--text);font-size:12px;" onchange="setManualPoints('${a.id}','paidPts',this.value)"></td>
     </tr>`;
   }).join('');
 }
