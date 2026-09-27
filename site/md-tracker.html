@@ -496,6 +496,13 @@ const COL = {
   status:      "color_mm6mdt7b",
   notes:       "long_text_mm6mm4hz",
   lastSynced:  "date_mm6mrw0k",
+  // Milestone dates — added so Monday's own native automations (Board >
+  // Automate > "X days before this date, notify...") can fire the Day 14
+  // check-in, Day 30 review, and final-push nudge without needing a
+  // Zapier task for something that never leaves Monday.
+  day14:       "date_mm7j1e7j",
+  day30:       "date_mm7jvpsm",
+  finalPush:   "date_mm7j1j0v",
 };
 
 // Group IDs (months 0-indexed, plus summary group)
@@ -2717,6 +2724,21 @@ async function syncToMonday() {
 
     const today = new Date().toISOString().slice(0,10);
 
+    // Milestone dates, computed from the run's own start/end — this is
+    // exactly what a Monday "X days before this date" automation needs
+    // to fire the Day 14 check-in, Day 30 review, and final-push nudge
+    // natively, without a Zapier task for something that stays inside
+    // Monday. Recomputed on every sync, so editing a run's period (via
+    // Edit Dates) automatically keeps these correct.
+    const addDays = (dateStr, n) => {
+      const d = new Date(dateStr + "T12:00:00");
+      d.setDate(d.getDate() + n);
+      return d.toISOString().slice(0,10);
+    };
+    const day14Date     = addDays(run.startDate, 14);
+    const day30Date     = addDays(run.startDate, 30);
+    const finalPushDate = addDays(run.endDate, -14);
+
     // Build column values for the summary row
     const cv = {
       [COL.agent]:      run.agentName,
@@ -2724,6 +2746,9 @@ async function syncToMonday() {
       [COL.level]:      run.level,
       [COL.runStart]:   { date: run.startDate },
       [COL.runEnd]:     { date: run.endDate },
+      [COL.day14]:      { date: day14Date },
+      [COL.day30]:      { date: day30Date },
+      [COL.finalPush]:  { date: finalPushDate },
       [COL.curMonth]:   (run.currentMonth || 0) + 1,
       [COL.recruits]:   tot.recruits,
       [COL.recruitsT]:  t.r || 0,

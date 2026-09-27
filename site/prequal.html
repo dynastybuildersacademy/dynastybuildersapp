@@ -10,7 +10,8 @@
 *{box-sizing:border-box;margin:0;padding:0;}
 :root{
   --navy:#F5F1E8;--navy2:#FFFFFF;--s1:#FFFFFF;--s2:#ECE6D6;
-  --gold:#C9A84C;--gold2:#E8C97A;--text:#182238;--muted:#6B7C93;
+  --gold:#C9A84C;--gold2:#E8C97A;--label-gold:#7A5C14;
+  --text:#182238;--muted:#4A5568;
   --border:rgba(201,168,76,.15);--green:#2DCA73;--red:#E74C3C;
   --blue:#3498DB;--purple:#9B59B6;--orange:#E67E22;
 }
@@ -20,6 +21,7 @@
   :root{
     --navy:#15130D;--navy2:#211E15;--s1:#211E15;--s2:#2A2619;
     --text:#F5F1E8;--muted:#A9B7CC;--border:rgba(201,168,76,.3);
+    --label-gold:#F5E8C0;
   }
 }
 body{background:var(--navy);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh;}
@@ -42,7 +44,7 @@ body{background:var(--navy);color:var(--text);font-family:'Barlow',sans-serif;mi
 .form-wrap{max-width:600px;margin:0 auto;padding:20px 16px 80px;}
 .product-header{background:var(--navy2);border:1px solid var(--border);border-radius:14px;
   padding:20px;margin-bottom:20px;}
-.ph-tag{font-family:'DM Mono',monospace;font-size:10px;color:var(--gold);font-weight:700;
+.ph-tag{font-family:'DM Mono',monospace;font-size:10px;color:var(--label-gold);font-weight:700;
   letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px;}
 .ph-title{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:900;color:var(--gold2);line-height:1.1;}
 .ph-company{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-top:3px;}
@@ -71,7 +73,7 @@ select.field-input option{background:var(--s2);}
 .knockout-q{background:rgba(231,76,60,.06);border:1px solid rgba(231,76,60,.2);border-radius:8px;
   padding:12px 14px;margin-bottom:8px;}
 .knockout-q:last-child{margin-bottom:0;}
-.kq-text{font-size:13px;color:var(--text);line-height:1.6;margin-bottom:8px;}
+.kq-text{font-size:14px;color:var(--text);line-height:1.6;margin-bottom:8px;}
 .radio-row{display:flex;gap:10px;}
 .radio-opt{flex:1;text-align:center;padding:8px;background:var(--s1);border:1px solid var(--border);
   border-radius:8px;cursor:pointer;font-family:'DM Mono',monospace;font-size:12px;
@@ -374,7 +376,7 @@ input[type=radio]{display:none;}
         </select>
       </div>
       <div class="section" style="margin-top:14px;background:rgba(201,168,76,.06);border-color:rgba(201,168,76,.2);">
-        <div class="section-title" style="color:var(--gold);">ℹ Important Client Disclosures</div>
+        <div class="section-title" style="color:var(--label-gold);">ℹ Important Client Disclosures</div>
         <p style="font-size:12px;color:rgba(20,16,8,.8);line-height:1.8;">
           • <strong>2-year waiting period:</strong> If client passes in years 1–2, beneficiary receives return of premiums paid + 10% interest.<br>
           • <strong>Full benefit</strong> applies after 2 years from policy date.<br>
@@ -604,6 +606,10 @@ function showResult(id, type, icon, title, desc, next) {
       <div id="result-contact-error" style="display:none;color:var(--red);font-size:12px;margin-bottom:8px;">Please enter an email address.</div>
       <button onclick="sendResult('${title.replace(/'/g,"\\'")}')" style="background:linear-gradient(135deg,var(--gold),var(--gold2));color:#1E1A10;border:none;padding:10px 20px;border-radius:6px;font-weight:700;font-size:13px;cursor:pointer;">Send My Results</button>
       <span id="result-sent-msg" style="display:none;color:var(--green);font-size:13px;margin-left:10px;">✓ Sent — thank you!</span>
+      <div id="result-brochure-cta" style="display:none;margin-top:14px;padding:14px 16px;background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:8px;">
+        <div style="font-size:12.5px;font-weight:700;color:#1E1A10;margin-bottom:6px;">🎁 Free Bonus — Your Financial Independence Number</div>
+        <a href="financial-independence-number.html" style="display:inline-block;background:#1E1A10;color:#F5F1E8;padding:8px 16px;border-radius:6px;font-weight:700;font-size:12.5px;text-decoration:none;">Read It Now →</a>
+      </div>
     </div>`;
   el.scrollIntoView({behavior:'smooth', block:'nearest'});
 }
@@ -625,6 +631,7 @@ function sendResult(resultTitle) {
     });
   }
   document.getElementById('result-sent-msg').style.display = 'inline';
+  document.getElementById('result-brochure-cta').style.display = 'block';
 }
 
 // ── LIVING PROMISE QUESTIONS ───────────────────────────────────

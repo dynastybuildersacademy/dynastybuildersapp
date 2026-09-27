@@ -193,8 +193,8 @@ textarea{resize:vertical;min-height:80px;}
 
 <!-- LINKEDIN PROSPECTING -->
 <div class="panel" id="panel-linkedin">
-  <div class="page-title">LinkedIn Prospecting</div>
-  <div class="page-sub">Connect your LinkedIn account, then paste a prospect's profile to generate a personalized, human-sounding outreach message.</div>
+  <div class="page-title">Connect Your Accounts</div>
+  <div class="page-sub">Connect LinkedIn for personalized outreach messages, and add your Instagram/Facebook so captions and links across this Marketing Hub use your real handles.</div>
 
   <div class="li-connect-box" id="li-connect-box">
     <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;color:var(--gold);letter-spacing:0.05em;margin-bottom:4px;">Your LinkedIn Account</div>
@@ -203,6 +203,25 @@ textarea{resize:vertical;min-height:80px;}
       <span>in</span> Connect LinkedIn Account
     </button>
     <div class="li-note">Connecting verifies it's really you and personalizes messages with your name. LinkedIn does not allow third-party apps to send connection requests or messages automatically — you'll still copy the generated message and paste it into LinkedIn yourself.</div>
+  </div>
+
+  <div class="li-connect-box" id="ig-connect-box" style="margin-top:14px;">
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;color:var(--gold);letter-spacing:0.05em;margin-bottom:4px;">📸 Your Instagram</div>
+    <div id="ig-status-line" style="font-size:12px;color:var(--slate);margin-bottom:12px;">Not added yet.</div>
+    <div id="ig-form" style="display:flex;gap:8px;flex-wrap:wrap;">
+      <input type="text" id="ig-handle-input" placeholder="@yourhandle" style="flex:1;min-width:180px;">
+      <button class="li-btn" onclick="saveSocialHandle('ig')">Save</button>
+    </div>
+    <div class="li-note">Instagram (and Facebook below) don't offer a simple sign-in like LinkedIn's — posting there requires Meta business app approval. Adding your handle here just means captions and share links across this Marketing Hub automatically use your real account instead of a placeholder.</div>
+  </div>
+
+  <div class="li-connect-box" id="fb-connect-box" style="margin-top:14px;">
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;color:var(--gold);letter-spacing:0.05em;margin-bottom:4px;">📘 Your Facebook Page</div>
+    <div id="fb-status-line" style="font-size:12px;color:var(--slate);margin-bottom:12px;">Not added yet.</div>
+    <div id="fb-form" style="display:flex;gap:8px;flex-wrap:wrap;">
+      <input type="text" id="fb-handle-input" placeholder="facebook.com/yourpage" style="flex:1;min-width:180px;">
+      <button class="li-btn" onclick="saveSocialHandle('fb')">Save</button>
+    </div>
   </div>
 
   <div class="ai-card">
@@ -365,6 +384,7 @@ function buildSurveyCards() {
 
 // ── AUDIENCES ─────────────────────────────────────────────────
 const AUDIENCES = [
+  { id:'newagent', icon:'🚀', name:'New Agent Starter Kit', ages:'Recruits + Clients · First 90 days' },
   { id:'retirement', icon:'🎯', name:'Retirement Readiness Leads', ages:'Ages 45+ · Nearing retirement' },
   { id:'family', icon:'👨‍👩‍👧', name:'Growing Families', ages:'Ages 25–44 · Kids · Mortgage' },
   { id:'peak',   icon:'💼', name:'Peak Earner Couples', ages:'Ages 45–54 · High income' },
@@ -389,6 +409,19 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 const CAMPAIGNS = {
+  newagent: {
+    captions: [
+      { platform:'🎯 Recruiting — Instagram', text:`I'm building a team, and I'm looking for a few people who are done wondering "what if."\n\nNo insurance experience needed — I was in the exact same spot not long ago.\n\nWhat I can offer:\n✅ A real system, not "figure it out yourself"\n✅ Mentorship from people who've actually done it\n✅ Flexible schedule — build this around your life, not instead of it\n\nIf you've ever thought about building something of your own, send me a DM with "TEAM" and let's talk.\n\n#BuildYourOwn #NewOpportunity #DynastyBuilders` },
+      { platform:'💰 Client — Instagram', text:`Quick one: do you know where your money currently sits — tax-now, tax-later, or tax-free? 🤔\n\nMost people have never actually mapped it out.\n\nI help families and individuals get a clear picture of their financial protection and retirement options — no pressure, no obligation, just clarity.\n\nDrop a "YES" below or DM me if you want a free, no-cost review.\n\n#FinancialWellness #DynastyBuilders` },
+      { platform:'🎯 Recruiting — Facebook', text:`To anyone who's ever said "there has to be more than this" about their 9-to-5 —\n\nI recently started building something of my own in financial services, and I'm looking for a few people to bring onto the team.\n\nYou don't need experience. You need to be coachable and willing to put in real effort. I'll teach you everything else.\n\nComment "INFO" or send me a message if you want to hear more about it — zero pressure, just a conversation.` },
+      { platform:'💰 Client — Facebook', text:`Free offer for anyone in my network: I'll take 20 minutes to walk through your current financial protection and retirement setup — no cost, no obligation.\n\nMost people find at least one gap they didn't know they had.\n\nComment below or send me a message if you'd like to grab a time.` },
+      { platform:'💼 LinkedIn — Either Audience', text:`Two kinds of conversations I'm always open to right now:\n\n1) If you're exploring a career change and want more ownership over your time and income, I'd love to share what building a financial services practice with the right support system actually looks like.\n\n2) If you simply want a second look at your own financial protection and retirement strategy, I offer complimentary reviews — no obligation either way.\n\nFeel free to reach out or comment below.` },
+    ],
+    emails: [
+      { subject: 'A conversation worth having', body: `Hi {{name}},\n\nI wanted to reach out personally rather than just post about this.\n\nI've recently started building my own practice in financial services with Dynasty Builders Academy / PHP Agency, and I'm looking to connect with a few people who might be open to either:\n\n1. Exploring what building something of their own could look like — no experience necessary, full training and mentorship provided.\n2. Getting a free, no-obligation second look at their own financial protection and retirement setup.\n\nEither conversation takes about 20 minutes, no pressure either way.\n\nWould you be open to a quick call this week?\n\n— {{agent_name}}\nDynasty Builders Academy | PHP Agency\n{{phone}}` },
+      { subject: 'Following up', body: `Hi {{name}},\n\nJust following up on my last note in case it got buried.\n\nWhether you're curious about the business side or just want a free look at your own financial picture, I'm happy to carve out 20 minutes — {{survey_link}} is a good place to start if you'd rather look at it on your own first.\n\nLet me know what works best.\n\n— {{agent_name}}` },
+    ]
+  },
   retirement: {
     captions: [
       { platform:'📸 Instagram', text:`Quick question: if the market dropped 20% next year, would your retirement plan survive it? 📉\n\nMost people have never actually run the numbers.\n\nI built a free 3-minute Retirement Readiness Survey that walks through:\n✅ Where your money sits today (tax now vs. tax later vs. tax-free)\n✅ How exposed you are to a market drop\n✅ Whether you have guaranteed income you can't outlive\n\nNo cost, no obligation — just clarity.\n\nLink in bio, or DM me "READY" and I'll send it straight to you. 👇\n\n#RetirementPlanning #FinancialWellness #DynastyBuilders` },
@@ -772,7 +805,51 @@ function copyLinkedInMessage() { copyText('li-output'); }
     const nameInput = document.getElementById('li-my-name');
     if (nameInput && !nameInput.value) nameInput.value = session.name;
   }
+  renderSocialHandle('ig');
+  renderSocialHandle('fb');
 })();
+
+// ── INSTAGRAM / FACEBOOK — lightweight "add your handle" ──────────
+// Meta's Graph API requires business-app review before any posting or
+// even basic profile access, so there's no equivalent of LinkedIn's
+// simple sign-in available here. This just stores the agent's own
+// handle/page so captions and share links elsewhere in the Marketing
+// Hub can reference their real account instead of a placeholder.
+const SOCIAL_KEY = (platform) => `dba_social_${platform}_` + (session?.agentId || 'guest');
+
+function getSocialHandle(platform) {
+  try { return localStorage.getItem(SOCIAL_KEY(platform)) || ''; } catch(e) { return ''; }
+}
+
+function saveSocialHandle(platform) {
+  const input = document.getElementById(platform + '-handle-input');
+  const value = input.value.trim();
+  if (!value) return;
+  try { localStorage.setItem(SOCIAL_KEY(platform), value); } catch(e) {}
+  renderSocialHandle(platform);
+  toast(`✓ ${platform === 'ig' ? 'Instagram' : 'Facebook'} saved`);
+}
+
+function disconnectSocialHandle(platform) {
+  try { localStorage.removeItem(SOCIAL_KEY(platform)); } catch(e) {}
+  renderSocialHandle(platform);
+}
+
+function renderSocialHandle(platform) {
+  const handle = getSocialHandle(platform);
+  const statusLine = document.getElementById(platform + '-status-line');
+  const form = document.getElementById(platform + '-form');
+  if (!statusLine || !form) return;
+  if (handle) {
+    statusLine.innerHTML = `<span style="color:var(--success);font-weight:700;">✓ Added:</span> ${handle}`;
+    form.innerHTML = `<button class="li-btn" style="background:transparent;border:1px solid var(--border);color:var(--slate);" onclick="disconnectSocialHandle('${platform}')">Remove</button>`;
+  } else {
+    statusLine.textContent = 'Not added yet.';
+    form.innerHTML = `
+      <input type="text" id="${platform}-handle-input" placeholder="${platform === 'ig' ? '@yourhandle' : 'facebook.com/yourpage'}" style="flex:1;min-width:180px;">
+      <button class="li-btn" onclick="saveSocialHandle('${platform}')">Save</button>`;
+  }
+}
 </script>
 </body>
 </html>

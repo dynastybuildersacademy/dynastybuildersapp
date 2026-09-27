@@ -9,8 +9,20 @@
 :root{
   --navy:#F5F1E8;--navy-mid:#FFFFFF;--navy-light:#ECE6D6;
   --gold:#C9A84C;--gold-light:#E8C97A;--gold-pale:#F5E8C0;
+  --label-gold:#7A5C14;
   --cream:#1E1A10;--success:#27AE60;--warn:#E67E22;--danger:#C0392B;
-  --slate:#6B7C93;--border:rgba(201,168,76,0.22);
+  --slate:#4A5568;--border:rgba(201,168,76,0.22);
+}
+/* Adapts to the viewer's system light/dark setting. In bright ambient
+   light a light background needs genuinely dark text for contrast; on
+   an OS dark-mode device the same dark text would nearly disappear
+   against a dark background, so it flips to light there instead. */
+@media (prefers-color-scheme: dark){
+  :root{
+    --navy:#15130D;--navy-mid:#211E15;--navy-light:#2A2619;
+    --cream:#F5F1E8;--border:rgba(201,168,76,0.3);--slate:#A9B7CC;
+    --label-gold:#F5E8C0;
+  }
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--cream);min-height:100vh;}
@@ -21,7 +33,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--cream);
 /* ── HEADER ── */
 .logo-row{display:flex;align-items:center;gap:12px;margin-bottom:36px;}
 .shield{width:36px;height:42px;background:linear-gradient(160deg,var(--gold) 0%,#7a5c14 100%);clip-path:polygon(50% 0%,100% 18%,100% 65%,50% 100%,0% 65%,0% 18%);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
-.logo-row h1{font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--gold);font-weight:700;}
+.logo-row h1{font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--label-gold);font-weight:700;}
 .logo-row p{font-size:11px;color:var(--slate);text-transform:uppercase;letter-spacing:0.08em;}
 
 /* ── PROGRESS ── */
@@ -35,9 +47,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--cream);
 .step.active{display:block;}
 @keyframes fadeIn{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
 
-.step-number{font-size:11px;color:var(--gold);letter-spacing:0.12em;text-transform:uppercase;font-family:'DM Mono',monospace;margin-bottom:8px;}
+.step-number{font-size:11px;color:var(--label-gold);letter-spacing:0.12em;text-transform:uppercase;font-family:'DM Mono',monospace;margin-bottom:8px;}
 .step h2{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:700;line-height:1.2;margin-bottom:8px;}
-.step .sub{font-size:14px;color:var(--slate);margin-bottom:24px;line-height:1.6;}
+.step .sub{font-size:15px;color:var(--slate);margin-bottom:24px;line-height:1.6;}
 
 /* ── PROFESSION GRID ── */
 .prof-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:12px;margin-bottom:28px;}
@@ -53,7 +65,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--cream);
 
 /* ── FORM ELEMENTS ── */
 .field{margin-bottom:18px;}
-label{display:block;font-size:12px;font-weight:600;color:var(--gold-pale);letter-spacing:0.07em;text-transform:uppercase;margin-bottom:7px;}
+label{display:block;font-size:12px;font-weight:600;color:var(--label-gold);letter-spacing:0.07em;text-transform:uppercase;margin-bottom:7px;}
 input,select,textarea{
   width:100%;background:var(--navy-mid);border:1px solid var(--border);
   color:var(--cream);font-family:'DM Sans',sans-serif;font-size:14px;
@@ -109,7 +121,7 @@ input[type=range]::-webkit-slider-thumb{
 /* ── THANK YOU ── */
 .thankyou{text-align:center;padding:40px 20px;}
 .thankyou .check{font-size:56px;margin-bottom:18px;}
-.thankyou h2{font-family:'Cormorant Garamond',serif;font-size:32px;color:var(--gold);margin-bottom:10px;}
+.thankyou h2{font-family:'Cormorant Garamond',serif;font-size:32px;color:var(--label-gold);margin-bottom:10px;}
 .thankyou p{color:var(--slate);font-size:15px;line-height:1.6;max-width:420px;margin:0 auto 28px;}
 </style>
 <script src="auth.js"></script>
@@ -125,7 +137,7 @@ input[type=range]::-webkit-slider-thumb{
     </div>
   </div>
 
-  <div class="progress-wrap" id="progress-wrap" style="display:none;">
+  <div class="progress-wrap" id="progress-wrap">
     <div class="progress-label">
       <span id="step-label">Step 1 of 5</span>
       <span id="pct-label">0%</span>
@@ -133,19 +145,8 @@ input[type=range]::-webkit-slider-thumb{
     <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
   </div>
 
-  <!-- LEAD GATE — collected before any survey content -->
-  <div class="step active" id="lead-gate">
-    <div class="step-number">Before We Start</div>
-    <h2>Let's personalize this for you.</h2>
-    <div class="sub">Enter your email and phone so we can send your results and follow up with tailored guidance.</div>
-    <div class="field"><label>Email</label><input type="email" id="gate-email"></div>
-    <div class="field"><label>Phone</label><input type="tel" id="gate-phone"></div>
-    <div id="gate-error" style="display:none;color:var(--red);font-size:12.5px;margin-bottom:10px;">Please enter both an email and a phone number to continue.</div>
-    <div class="btn-row"><button class="btn-primary" onclick="passGate()">Continue →</button></div>
-  </div>
-
   <!-- ══ STEP 0: SELECT PROFILE ══ -->
-  <div class="step" id="step-0">
+  <div class="step active" id="step-0">
     <div class="step-number">Step 01</div>
     <h2>What best describes you?</h2>
     <div class="sub">We'll customize this survey to your specific situation so we can provide the most relevant financial guidance.</div>
@@ -195,9 +196,10 @@ input[type=range]::-webkit-slider-thumb{
       <div class="field"><label>Last Name *</label><input type="text" id="f-last" placeholder="Last name"></div>
     </div>
     <div class="field-row">
-      <div class="field"><label>Phone *</label><input type="tel" id="f-phone" placeholder="(555) 555-5555"></div>
-      <div class="field"><label>Email</label><input type="email" id="f-email" placeholder="email@example.com"></div>
+      <div class="field"><label>Email *</label><input type="email" id="f-email" placeholder="email@example.com"></div>
+      <div class="field"><label>Phone (optional)</label><input type="tel" id="f-phone" placeholder="(555) 555-5555"></div>
     </div>
+    <div id="contact-error" style="display:none;color:var(--red);font-size:12.5px;margin-bottom:10px;">Please enter an email address to continue.</div>
     <div class="field-row">
       <div class="field"><label>Date of Birth</label><input type="date" id="f-dob"></div>
       <div class="field"><label>Marital Status</label>
@@ -355,7 +357,12 @@ input[type=range]::-webkit-slider-thumb{
         <div style="font-size:12px;color:var(--slate);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;">Your Summary</div>
         <div id="summary-output" style="font-size:14px;line-height:1.8;"></div>
       </div>
-      <div style="margin-top:20px;font-size:13px;color:var(--slate);">Questions? Call <strong style="color:var(--gold)">310-995-6507</strong> or visit <strong style="color:var(--gold)">agent.dynastybuildersapp.com</strong></div>
+      <div style="margin-top:20px;padding:20px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border-radius:8px;text-align:left;">
+        <div style="font-size:13px;font-weight:700;color:#1E1A10;margin-bottom:4px;">🎁 Free Bonus — Your Financial Independence Number</div>
+        <div style="font-size:12.5px;color:#3a2f10;margin-bottom:12px;">A short newsletter on how to retire in 10 years or less, with more in your account than you have today.</div>
+        <a href="financial-independence-number.html" style="display:inline-block;background:#1E1A10;color:#F5F1E8;padding:10px 20px;border-radius:6px;font-weight:700;font-size:13px;text-decoration:none;">Read It Now →</a>
+      </div>
+      <div style="margin-top:20px;font-size:13px;color:var(--slate);">Questions? Call <strong style="color:var(--label-gold)">310-995-6507</strong> or visit <strong style="color:var(--label-gold)">agent.dynastybuildersapp.com</strong></div>
     </div>
   </div>
 
@@ -377,7 +384,7 @@ const _agentDisplay  = _agentId ? decodeURIComponent(_agentId) : '';
 if (_agentDisplay) {
   document.addEventListener('DOMContentLoaded', () => {
     const sub = document.querySelector('.logo-row p');
-    if (sub) sub.innerHTML = `Dynasty Builders Academy &nbsp;&middot;&nbsp; Referred by: <strong style="color:var(--gold)">${_agentDisplay}</strong>`;
+    if (sub) sub.innerHTML = `Dynasty Builders Academy &nbsp;&middot;&nbsp; Referred by: <strong style="color:var(--label-gold)">${_agentDisplay}</strong>`;
   });
 }
 
@@ -485,29 +492,6 @@ const PROFILES = {
 };
 
 // ─── PROFILE SELECTION ───────────────────────────────────────
-let _gateEmail = '';
-let _gatePhone = '';
-function passGate() {
-  const email = document.getElementById('gate-email').value.trim();
-  const phone = document.getElementById('gate-phone').value.trim();
-  if (!email || !phone) {
-    document.getElementById('gate-error').style.display = 'block';
-    return;
-  }
-  _gateEmail = email;
-  _gatePhone = phone;
-  if (typeof fireTrigger === 'function') {
-    fireTrigger('survey_lead', {
-      email, phone,
-      source: 'Financial Needs Survey — Started',
-      status: 'started',
-    });
-  }
-  document.getElementById('lead-gate').classList.remove('active');
-  document.getElementById('step-0').classList.add('active');
-  document.getElementById('progress-wrap').style.display = 'block';
-}
-
 function selectProfile(card) {
   document.querySelectorAll('.prof-card').forEach(c => c.classList.remove('selected'));
   card.classList.add('selected');
@@ -571,12 +555,6 @@ function showStep(n) {
   document.getElementById('step-' + n)?.classList.add('active');
   window.scrollTo({top:0,behavior:'smooth'});
   updateProgress(n);
-  // Pre-fill contact fields with whatever the lead gate already
-  // collected, wherever they land in the form — no reason to ask twice.
-  const emailEl = document.getElementById('f-email');
-  const phoneEl = document.getElementById('f-phone');
-  if (emailEl && !emailEl.value && _gateEmail) emailEl.value = _gateEmail;
-  if (phoneEl && !phoneEl.value && _gatePhone) phoneEl.value = _gatePhone;
 }
 
 function updateProgress(n) {
@@ -625,6 +603,13 @@ function collectData() {
 }
 
 async function submitSurvey() {
+  const email = document.getElementById('f-email').value.trim();
+  if (!email) {
+    document.getElementById('contact-error').style.display = 'block';
+    return;
+  }
+  document.getElementById('contact-error').style.display = 'none';
+
   const data = collectData();
 
   // Show thank you — set agent name dynamically (can't use template literals in static HTML)
@@ -634,13 +619,13 @@ async function submitSurvey() {
   document.getElementById('thankyou-agent-msg').innerHTML =
     `Your financial survey has been received.${agentNote} review your information and follow up at your preferred time.`;
   document.getElementById('summary-output').innerHTML = `
-    <strong style="color:var(--gold)">Name:</strong> ${data.firstName} ${data.lastName}<br>
-    <strong style="color:var(--gold)">Profile:</strong> ${data.profileLabel}<br>
-    <strong style="color:var(--gold)">Phone:</strong> ${data.phone}<br>
-    <strong style="color:var(--gold)">Email:</strong> ${data.email}<br>
-    <strong style="color:var(--gold)">Monthly Budget:</strong> $${parseInt(data.budget).toLocaleString()}/mo<br>
-    <strong style="color:var(--gold)">Primary Goals:</strong> ${data.goals || 'Not specified'}<br>
-    <strong style="color:var(--gold)">Best Follow-Up Time:</strong> ${data.timing}`;
+    <strong style="color:var(--label-gold)">Name:</strong> ${data.firstName} ${data.lastName}<br>
+    <strong style="color:var(--label-gold)">Profile:</strong> ${data.profileLabel}<br>
+    <strong style="color:var(--label-gold)">Phone:</strong> ${data.phone}<br>
+    <strong style="color:var(--label-gold)">Email:</strong> ${data.email}<br>
+    <strong style="color:var(--label-gold)">Monthly Budget:</strong> $${parseInt(data.budget).toLocaleString()}/mo<br>
+    <strong style="color:var(--label-gold)">Primary Goals:</strong> ${data.goals || 'Not specified'}<br>
+    <strong style="color:var(--label-gold)">Best Follow-Up Time:</strong> ${data.timing}`;
   document.getElementById('progress-fill').style.width = '100%';
 
   // Write to Monday.com — dedicated Financial Surveys board (created via create-survey-board.html)

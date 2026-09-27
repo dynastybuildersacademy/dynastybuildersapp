@@ -30,6 +30,19 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);o
 /* SLIDESHOW STAGE */
 .stage{position:relative;width:100%;height:calc(100vh - 47px);overflow:hidden;}
 .slide{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px;opacity:0;visibility:hidden;transform:scale(.97);transition:opacity .4s ease,transform .4s ease;overflow-y:auto;}
+/* Every slide in this carousel renders on a dark background (see the
+   .bg-* gradients below), but many of these text classes were declared
+   using var(--cream) — the color meant for the app's LIGHT sections
+   (top navbar, modals), not these dark slides. That made titles, names,
+   and quotes nearly invisible, especially in bright ambient light. This
+   scoped override wins on specificity (two classes beat one) without
+   touching --cream itself, so the navbar and modals stay correct. */
+.slide .cat-title-big,.slide .runnerup-name,.slide .spotlight-name,
+.slide .intro-title,.slide .contest-title,.slide .mansion-cat strong,
+.slide .mansion-title,.slide .book-title,.slide .book-quote,
+.slide .book-detail .bd-val,.slide .book-dt .bd-val,.slide .book-zoom,
+.slide .badge-guest,.slide .sbp-guest,.slide .topnav-left .label
+{ color:#F5F1E8; }
 .slide.active{opacity:1;visibility:visible;transform:scale(1);}
 
 /* slide backgrounds */
@@ -718,25 +731,25 @@ function renderSlideHTML(slide, idx) {
           <div class="cc-lbl">First to get</div><div class="cc-num">15</div>
           <div class="cc-lbl">Directs · 15,000 pts</div>
           <div class="cc-prize">$1,800</div>
-          <div class="cc-others">All others who hit 15 directs<br>receive <strong style="color:var(--cream);">$1,080</strong></div>
+          <div class="cc-others">All others who hit 15 directs<br>receive <strong style="color:#F5F1E8;">$1,080</strong></div>
         </div>
         <div class="contest-card cc-6">
           <div class="cc-lbl">First to get</div><div class="cc-num">6</div>
           <div class="cc-lbl">Directs · 6,000 pts</div>
           <div class="cc-prize">$750</div>
-          <div class="cc-others">All others who hit 6 directs<br>receive <strong style="color:var(--cream);">$450</strong></div>
+          <div class="cc-others">All others who hit 6 directs<br>receive <strong style="color:#F5F1E8;">$450</strong></div>
         </div>
         <div class="contest-card cc-3">
           <div class="cc-lbl">First to get</div><div class="cc-num">3</div>
           <div class="cc-lbl">Directs · 3,000 pts</div>
           <div class="cc-prize">$250</div>
-          <div class="cc-others">All others who hit 3 directs<br>receive <strong style="color:var(--cream);">$150</strong></div>
+          <div class="cc-others">All others who hit 3 directs<br>receive <strong style="color:#F5F1E8;">$150</strong></div>
         </div>
         <div class="contest-card cc-1">
           <div class="cc-lbl">First to get</div><div class="cc-num">1</div>
           <div class="cc-lbl">Direct · 1,000 pts</div>
           <div class="cc-prize">$100</div>
-          <div class="cc-others">All others who hit 1 direct<br>receive <strong style="color:var(--cream);">$60</strong></div>
+          <div class="cc-others">All others who hit 1 direct<br>receive <strong style="color:#F5F1E8;">$60</strong></div>
         </div>
       </div>
       <div class="contest-req">⚠ Must have purchased a ticket to the Next Big Event or Company Convention in August 2026</div>
