@@ -375,6 +375,65 @@ body::before{content:"";position:fixed;inset:0;
   </div>
 </div>
 
+<!-- EDIT GOALS (admin and up) -->
+<div class="modal-bg" id="edit-goals-modal">
+  <div class="modal" style="max-width:600px;max-height:90vh;overflow-y:auto;">
+    <div class="modal-hdr">
+      <div class="modal-title">🎯 Edit Promotion Goals &amp; Requirements</div>
+      <button class="modal-close" onclick="closeEditGoalsModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="field"><label>Promotion level (the rank this run is promoting from)</label>
+        <div style="display:flex;gap:8px;">
+          <select id="eg-level" style="flex:1;" onchange="egLevelChanged()"></select>
+          <button class="btn-cancel" type="button" onclick="egLoadDefaults()" style="white-space:nowrap;">↺ Load level defaults</button>
+        </div>
+        <div id="eg-level-note" style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-top:5px;line-height:1.5;"></div>
+      </div>
+
+      <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);margin:14px 0 6px;">Targets — leave blank if not required</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div class="field"><label>Recruits</label><input type="number" id="eg-r" min="0" step="1"></div>
+        <div class="field"><label>Applications</label><input type="number" id="eg-a" min="0" step="0.5"></div>
+        <div class="field"><label>Points</label><input type="number" id="eg-p" min="0" step="100"></div>
+        <div class="field"><label>Base paid points</label><input type="number" id="eg-basePts" min="0" step="1000"></div>
+        <div class="field"><label>Licensed &amp; appointed agents</label><input type="number" id="eg-lic" min="0" step="1"></div>
+        <div class="field"><label>Direct FAs</label><input type="number" id="eg-fas" min="0" step="1"></div>
+        <div class="field"><label>Direct MDs</label><input type="number" id="eg-mds" min="0" step="1"></div>
+        <div class="field"><label>Direct VPs</label><input type="number" id="eg-vps" min="0" step="1"></div>
+      </div>
+
+      <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);margin:14px 0 6px;">Rules</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div class="field"><label>Points that count</label>
+          <select id="eg-pointsType"><option value="submitted">Submitted points</option><option value="paid">Paid / inforce points</option></select></div>
+        <div class="field"><label>Whose production counts</label>
+          <select id="eg-rule"><option value="personal">Personal only</option><option value="team">Team</option><option value="super_team">Super team</option></select></div>
+        <div class="field"><label>Max share from one leg</label>
+          <select id="eg-legCap"><option value="">No cap</option><option value="0.5">50%</option><option value="0.4">40%</option><option value="0.6">60%</option></select></div>
+        <div class="field"><label>Your personal production %</label>
+          <select id="eg-personalPct"><option value="0">0% — team run</option><option value="0.4">40%</option><option value="0.45">45%</option><option value="0.5">50%</option><option value="0.6">60%</option><option value="0.7">70%</option><option value="1">100% — all personal</option></select></div>
+      </div>
+
+      <div class="field" style="margin-top:12px;"><label>Requirements note (shown on the run)</label>
+        <textarea id="eg-notes" rows="3" style="width:100%;background:var(--s2);border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-family:'Barlow',sans-serif;font-size:13px;outline:none;resize:vertical;" placeholder="e.g. 2 Direct FAs · 6 licensed agents · approval from Upline Board Council"></textarea>
+      </div>
+
+      <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);margin:14px 0 6px;">Progress you record by hand (no data feed for these)</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+        <div class="field"><label>FAs promoted</label><input type="number" id="eg-pFas" min="0" step="1"></div>
+        <div class="field"><label>MDs promoted</label><input type="number" id="eg-pMds" min="0" step="1"></div>
+        <div class="field"><label>VPs promoted</label><input type="number" id="eg-pVps" min="0" step="1"></div>
+      </div>
+      <div id="eg-warning" style="display:none;font-family:'DM Mono',monospace;font-size:11px;color:#E67E22;background:rgba(230,126,34,.08);border:1px solid rgba(230,126,34,.3);border-radius:6px;padding:10px 12px;margin-top:12px;line-height:1.6;"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeEditGoalsModal()">Cancel</button>
+      <button class="btn-create" onclick="saveRunGoals()">✓ Save Goals</button>
+    </div>
+  </div>
+</div>
+
 <div class="topbar">
   <div class="brand">
     <div class="brand-hex">⬡</div>
@@ -415,6 +474,7 @@ body::before{content:"";position:fixed;inset:0;
       <div class="promo-progress">
         <div class="pp-title">Progress toward promotion requirements</div>
         <div class="pp-bars" id="pp-bars"></div>
+        <div id="pp-notes" style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);line-height:1.6;margin-top:10px;"></div>
       </div>
     </div>
     <!-- CAREER PATH STRIP -->
@@ -430,6 +490,7 @@ body::before{content:"";position:fixed;inset:0;
       <button class="act-btn" onclick="openEditTeamModal()" style="border-color:rgba(155,89,182,.3);color:#9b59b6;">👥 Edit Team</button>
       <button class="act-btn" onclick="syncToMonday()" id="sync-btn" style="border-color:rgba(45,202,115,.3);color:var(--green);">⬡ Sync to Monday</button>
       <button class="act-btn" id="edit-period-btn" onclick="openEditPeriodModal()" style="display:none;border-color:rgba(201,168,76,.3);color:var(--gold);">📅 Edit Dates</button>
+      <button class="act-btn" id="edit-goals-btn" onclick="openEditGoalsModal()" style="display:none;border-color:rgba(201,168,76,.3);color:var(--gold);">🎯 Edit Goals</button>
       <button class="act-btn danger" onclick="deleteRun()">✕ Delete Run</button>
     </div>
 
@@ -806,6 +867,89 @@ function createRun(){
   });
 }
 
+// ── EDIT GOALS (admin and up) ────────────────────────────────────
+// Edits what this run is measured against without touching entered data.
+//   run.targets   r/a/p always numeric (0 = none, the strategy engine divides by
+//                 them); basePts/mds/lic/fas/vps are stored only when > 0.
+//   run.rules     only the rules that DIFFER from the level's defaults, so later
+//                 changes to the level table still flow through to untouched runs.
+//   run.reqNotes  optional custom requirements text.
+const EG_NUM = ["r","a","p","basePts","lic","fas","mds","vps"];
+function egLadder(label){return PROMO_LADDER.find(l=>l.label===label)||null;}
+function egFill(targets, rules, personalPct){
+  EG_NUM.forEach(k=>{const el=document.getElementById("eg-"+k); if(el) el.value=(targets&&targets[k]>0)?targets[k]:"";});
+  document.getElementById("eg-pointsType").value=rules.pointsType||"submitted";
+  document.getElementById("eg-rule").value=rules.productionRule||"team";
+  document.getElementById("eg-legCap").value=rules.legCap?String(rules.legCap):"";
+  const pp=document.getElementById("eg-personalPct");
+  const want=String(personalPct??0);
+  if(![...pp.options].some(o=>o.value===want)) pp.add(new Option(Math.round(personalPct*100)+"% (current)",want));
+  pp.value=want;
+}
+function openEditGoalsModal(){
+  const run=runs.find(r=>r.id===activeId);
+  if(!run){toast("Select a run first");return;}
+  const sel=document.getElementById("eg-level");
+  sel.innerHTML=PROMO_LADDER.filter(l=>l.months>0).map(l=>`<option value="${l.label}">${l.icon} ${l.label} → ${l.nextLabel||""}</option>`).join("");
+  if(![...sel.options].some(o=>o.value===run.level)) sel.add(new Option(run.level+" (custom)",run.level));
+  sel.value=run.level;
+  const eff=getLadderEntry(run)||{};
+  egFill(run.targets||{}, {pointsType:eff.pointsType,productionRule:eff.productionRule,legCap:eff.legCap}, run.personalPct??eff.personalPct??0.5);
+  document.getElementById("eg-notes").value=run.reqNotes||"";
+  document.getElementById("eg-pFas").value=run.promotedFas||"";
+  document.getElementById("eg-pMds").value=run.promotedMds||"";
+  document.getElementById("eg-pVps").value=run.promotedVps||"";
+  egLevelChanged(true);
+  document.getElementById("edit-goals-modal").classList.add("open");
+}
+function closeEditGoalsModal(){document.getElementById("edit-goals-modal").classList.remove("open");}
+function egLevelChanged(initial){
+  const run=runs.find(r=>r.id===activeId); if(!run) return;
+  const lbl=document.getElementById("eg-level").value, ent=egLadder(lbl);
+  const changed=lbl!==run.level;
+  document.getElementById("eg-level-note").innerHTML=ent?(ent.notes||"").replace(/</g,"&lt;"):"";
+  const w=document.getElementById("eg-warning");
+  if(changed&&!initial){
+    w.style.display="block";
+    w.textContent="⚠ Changing the level switches which rules apply (points type, personal-only vs team, leg cap). Your entered recruits and policies are kept. Click “Load level defaults” to fill in that level's standard targets and rules, or keep editing them by hand.";
+  } else w.style.display="none";
+}
+function egLoadDefaults(){
+  const ent=egLadder(document.getElementById("eg-level").value);
+  if(!ent){toast("No defaults for that level");return;}
+  egFill(ent.targets, {pointsType:ent.pointsType,productionRule:ent.productionRule,legCap:ent.legCap}, ent.personalPct??0);
+  document.getElementById("eg-notes").value="";
+  toast("Loaded "+ent.label+" defaults — Save to apply");
+}
+function saveRunGoals(){
+  const run=runs.find(r=>r.id===activeId); if(!run) return;
+  const num=id=>{const v=parseFloat(document.getElementById(id).value);return isNaN(v)||v<0?0:v;};
+  const targets={r:num("eg-r"),a:num("eg-a"),p:num("eg-p")};
+  ["basePts","lic","fas","mds","vps"].forEach(k=>{const v=num("eg-"+k); if(v>0) targets[k]=v;});
+  if(!(targets.r||targets.a||targets.p||targets.basePts||targets.lic||targets.fas||targets.mds||targets.vps)){
+    toast("Set at least one target"); return;
+  }
+  const level=document.getElementById("eg-level").value;
+  const ent=egLadder(level)||{};
+  const chosen={
+    pointsType:document.getElementById("eg-pointsType").value,
+    productionRule:document.getElementById("eg-rule").value,
+    legCap:document.getElementById("eg-legCap").value?parseFloat(document.getElementById("eg-legCap").value):null,
+  };
+  const rules={};
+  Object.keys(chosen).forEach(k=>{ if((chosen[k]??null)!==((ent[k])??null)) rules[k]=chosen[k]; });
+  run.level=level;
+  run.targets=targets;
+  if(Object.keys(rules).length) run.rules=rules; else delete run.rules;
+  run.personalPct=parseFloat(document.getElementById("eg-personalPct").value)||0;
+  const notes=document.getElementById("eg-notes").value.trim();
+  if(notes) run.reqNotes=notes; else delete run.reqNotes;
+  const cnt=id=>{const v=parseInt(document.getElementById(id).value,10);return isNaN(v)||v<0?0:v;};
+  run.promotedFas=cnt("eg-pFas"); run.promotedMds=cnt("eg-pMds"); run.promotedVps=cnt("eg-pVps");
+  save(); closeEditGoalsModal(); renderBar(); renderAll();
+  toast("Goals updated for "+run.agentName);
+}
+
 // ── EDIT RUN PERIOD (admin and up) ───────────────────────────────
 // Lets an admin correct a run's start date or extend/shorten its
 // duration after the fact, without recreating the whole run and losing
@@ -939,6 +1083,8 @@ function renderAllBase(){
   const canEditPeriod = session2 && (session2.level >= 60 || !!(typeof getAdminTier === 'function' && getAdminTier(session2)));
   const editPeriodBtn = document.getElementById('edit-period-btn');
   if (editPeriodBtn) editPeriodBtn.style.display = canEditPeriod ? 'inline-block' : 'none';
+  const editGoalsBtn = document.getElementById('edit-goals-btn');
+  if (editGoalsBtn) editGoalsBtn.style.display = canEditPeriod ? 'inline-block' : 'none';
   document.getElementById("th-role").innerHTML =
     (viewingOther ? `<span style="font-size:9px;padding:2px 8px;border-radius:5px;background:rgba(52,152,219,.12);color:#5dade2;border:1px solid rgba(52,152,219,.2);font-family:DM Mono,monospace;letter-spacing:.06em;margin-right:8px;">ADMIN VIEW</span>` : "") +
     run.level.toUpperCase()+" · PROMOTION RUN";
@@ -954,10 +1100,13 @@ function renderAllBase(){
 
   // Progress bars
   const t=run.targets;
-  const bars=[{l:"Recruits",v:totR,m:t.r,c:"recruits"}];
+  const bars=[];
+  if(t.r>0)bars.push({l:"Recruits",v:totR,m:t.r,c:"recruits"});
   if(t.a>0)bars.push({l:"Apps",v:totA,m:t.a,c:"apps"});
   if(t.p>0)bars.push({l:"Points",v:totP,m:t.p,c:"points"});
-  document.getElementById("pp-bars").innerHTML=bars.map(b=>{
+  const ppNotes=document.getElementById("pp-notes");
+  if(ppNotes){const ent=getLadderEntry(run);const txt=run.reqNotes||ent?.notes||"";ppNotes.innerHTML=txt?("Requirements: "+txt.replace(/</g,"&lt;")+(run.reqNotes?" <span style=\"color:var(--gold);\">(customized)</span>":"")):"";}
+  document.getElementById("pp-bars").innerHTML=bars.length?bars.map(b=>{
     const pct=Math.min(100,Math.round(b.v/b.m*100));
     const done=b.v>=b.m;
     return `<div class="pp-row">
@@ -965,7 +1114,7 @@ function renderAllBase(){
       <div class="pp-track"><div class="pp-fill ${b.c}" style="width:${pct}%"></div></div>
       <span class="pp-val ${done?"done":"prog"}">${fmtPts(b.v)} / ${fmtPts(b.m)}</span>
     </div>`;
-  }).join("");
+  }).join(""):"<div style=\"font-size:11px;color:var(--muted);\">No numeric targets set — use 🎯 Edit Goals to add them.</div>";
 
   // Month tabs
   document.getElementById("month-tabs").innerHTML=run.monthLabels.map((lbl,i)=>{
@@ -2007,10 +2156,15 @@ function compressImage(file, maxDim=1400, quality=0.85) {
 
 // ── Lookup this run's ladder entry ──────────────────────────────
 function getLadderEntry(run) {
-  return PROMO_LADDER.find(l =>
+  const base = PROMO_LADDER.find(l =>
     l.label === run.level ||
     l.id === (run.level||"").toLowerCase().replace(/\s+/g,"_")
   );
+  // Per-run rule overrides (set in Edit Goals) sit on top of the level's defaults.
+  // Every calculation already reads rules through this function, so overriding
+  // here changes them all consistently without touching the level table.
+  if (run.rules && Object.keys(run.rules).length) return { ...(base||{}), ...run.rules };
+  return base;
 }
 
 // ── Raw totals (no filtering) ────────────────────────────────────
@@ -2235,6 +2389,29 @@ function renderStrategy(run) {
       color:"#FFD700", fill:"linear-gradient(90deg,#C9A84C,#FFD700)",
       sub:"Personally sponsored MDs"
     });
+  }
+
+  // Licensed & appointed agents — higher of the PHP dashboard figure and
+  // licensed recruits credited in this tracker
+  if(t.lic>0) {
+    const dashLic = run.dashboardStats?.nonMd?.metrics?.licensedAgents || 0;
+    const trkLic  = Object.values(computeContribution(run, run.monthLabels.map((_,i)=>i))).reduce((n,r)=>n+r.lic,0);
+    const haveLic = Math.max(dashLic, trkLic);
+    needs.push({
+      lbl:"Licensed & Appointed Agents", have:haveLic, need:t.lic, gap:Math.max(0,t.lic-haveLic),
+      color:"#2DCA73", fill:"linear-gradient(90deg,#2DCA73,#58d68d)",
+      sub:"Higher of PHP dashboard count and licensed recruits credited here"
+    });
+  }
+  if(t.fas>0) {
+    const haveFas = run.promotedFas || 0;
+    needs.push({ lbl:"Direct FAs", have:haveFas, need:t.fas, gap:Math.max(0,t.fas-haveFas),
+      color:"#2ECC71", fill:"linear-gradient(90deg,#2ECC71,#58d68d)", sub:"Recorded by hand in Edit Goals" });
+  }
+  if(t.vps>0) {
+    const haveVps = run.promotedVps || 0;
+    needs.push({ lbl:"Direct VPs", have:haveVps, need:t.vps, gap:Math.max(0,t.vps-haveVps),
+      color:"#E8C97A", fill:"linear-gradient(90deg,#C9A84C,#E8C97A)", sub:"Recorded by hand in Edit Goals" });
   }
 
   // Personal apps requirement (for team levels with personalPct > 0)
