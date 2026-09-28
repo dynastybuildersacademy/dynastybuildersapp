@@ -11,7 +11,10 @@
 :root{
   --bg:#08121F;--s1:#0F1E33;--s2:#172840;--s3:#1E3352;
   --gold:#C9A84C;--gold2:#E8C97A;--green:#2DCA73;--red:#E74C3C;--blue:#3498DB;
-  --text:#1E1A10;--muted:#6B7C93;--border:rgba(201,168,76,.18);
+  /* This page's surfaces are all dark navy, so text must be light. --text was
+     #1E1A10 (near-black, 1.04:1 on the cards) from the earlier light-theme
+     conversion, which left names, client rows and stat values unreadable. */
+  --text:#F5F1E8;--muted:#9FB0C6;--border:rgba(201,168,76,.18);
 }
 body{background:var(--bg);color:var(--text);font-family:"Barlow",sans-serif;min-height:100vh;}
 body::before{content:"";position:fixed;inset:0;
@@ -65,9 +68,25 @@ body::before{content:"";position:fixed;inset:0;
 .month-tab{flex:1;padding:9px;text-align:center;border-radius:9px;font-family:"Barlow Condensed",sans-serif;font-size:12px;font-weight:700;cursor:pointer;border:1px solid var(--border);background:var(--s2);color:var(--muted);transition:all .15s;}
 .month-tab.active{background:rgba(201,168,76,.1);border-color:var(--gold);color:var(--gold);}
 .mt-counts{font-family:"DM Mono",monospace;font-size:10px;margin-top:2px;display:block;}
-.tables-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;}
-@media(max-width:720px){.tables-grid{grid-template-columns:1fr;}}
-.table-card{background:var(--s1);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+/* Stacked by default: with the Agent / Recruited-by columns each table needs
+   real width, and side-by-side pushed Points and Paid off-screen. */
+.tables-grid{display:grid;grid-template-columns:1fr;gap:16px;margin-bottom:20px;}
+@media(min-width:1500px){.tables-grid{grid-template-columns:5fr 7fr;}}
+.table-card{background:var(--s1);border:1px solid var(--border);border-radius:12px;overflow-x:auto;overflow-y:hidden;}
+.ct-tbl{width:100%;border-collapse:collapse;font-size:12px;}
+.ct-tbl th{font-family:"DM Mono",monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:7px 8px;border-bottom:1px solid var(--border);text-align:right;white-space:nowrap;}
+.ct-tbl th:first-child,.ct-tbl td:first-child{text-align:left;}
+.ct-tbl td{padding:8px;border-bottom:1px solid rgba(236,230,214,.4);text-align:right;font-family:"Barlow Condensed",sans-serif;font-size:14px;font-weight:700;}
+.ct-tbl tr.ct-self td:first-child{border-left:3px solid var(--gold);}
+.ct-tbl tr.ct-total td{border-top:2px solid var(--border);background:rgba(201,168,76,.06);}
+.seg-btn{background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;}
+.seg-btn.on{background:rgba(201,168,76,.15);border-color:var(--gold);color:var(--gold);}
+.proj-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;}
+.proj-tile{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;}
+.proj-tile .pl{font-family:"DM Mono",monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;}
+.proj-tile .pv{font-family:"Barlow Condensed",sans-serif;font-size:26px;font-weight:800;line-height:1.1;}
+.proj-tile .ps{font-size:10px;color:var(--muted);margin-top:3px;line-height:1.4;}
+.proj-tile input{width:100%;margin-top:6px;background:var(--s1);border:1px solid var(--border);border-radius:5px;padding:4px 6px;color:var(--text);font-size:11px;text-align:center;}
 .tc-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--s2);}
 .tc-title{font-family:"Barlow Condensed",sans-serif;font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;}
 .tc-count{font-family:"DM Mono",monospace;font-size:10px;color:var(--gold);background:rgba(201,168,76,.1);padding:2px 8px;border-radius:8px;border:1px solid rgba(201,168,76,.2);}
@@ -421,7 +440,7 @@ body::before{content:"";position:fixed;inset:0;
           <div class="tc-count" id="r-count">0</div>
         </div>
         <table class="data-table">
-          <thead><tr><th>#</th><th>Date</th><th>Name + PHP Code</th><th></th></tr></thead>
+          <thead><tr><th>#</th><th>Date</th><th>Name + PHP Code</th><th>Recruited by</th><th>Lic.</th><th></th></tr></thead>
           <tbody id="r-tbody"></tbody>
         </table>
         <div style="display:flex;gap:6px;flex-wrap:wrap;padding:8px 0 4px;">
@@ -437,7 +456,7 @@ body::before{content:"";position:fixed;inset:0;
           <div class="tc-count" id="a-count">0</div>
         </div>
         <table class="data-table">
-          <thead><tr><th>#</th><th>Date</th><th>Policy #</th><th>Client Name</th><th>Apps</th><th>Points</th><th></th></tr></thead>
+          <thead><tr><th>#</th><th>Date</th><th>Policy #</th><th>Client Name</th><th>Agent</th><th>Apps</th><th>Points</th><th>Paid</th><th></th></tr></thead>
           <tbody id="a-tbody"></tbody>
         </table>
         <div style="display:flex;gap:6px;flex-wrap:wrap;padding:8px 0 4px;">
@@ -451,6 +470,24 @@ body::before{content:"";position:fixed;inset:0;
     <div class="summary-card">
       <div class="sc-title">3-Month Summary</div>
       <div class="sc-grid" id="sum-grid"></div>
+    </div>
+
+    <!-- PROJECTED — CURRENT MONTH -->
+    <div class="summary-card" id="proj-card">
+      <div class="sc-title" id="proj-title">Projected — This Month</div>
+      <div id="proj-body"></div>
+    </div>
+
+    <!-- TEAM CONTRIBUTION -->
+    <div class="summary-card" id="contrib-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+        <div class="sc-title" style="margin:0;">Team Contribution by Agent</div>
+        <div style="display:flex;gap:6px;">
+          <button class="seg-btn on" id="contrib-scope-run" onclick="setContribScope('run')">Whole run</button>
+          <button class="seg-btn" id="contrib-scope-month" onclick="setContribScope('month')">Selected month</button>
+        </div>
+      </div>
+      <div style="overflow-x:auto;" id="contrib-body"></div>
     </div>
 
     <!-- STRATEGY PANEL -->
@@ -940,6 +977,7 @@ function renderAllBase(){
   }).join("");
 
   renderRecruits(run);renderApps(run);renderSummary(run);
+  renderProjection(run);renderContribution(run);
 }
 
 function switchMonth(i){activeMonth=i;renderAll();}
@@ -951,6 +989,8 @@ function renderRecruits(run){
     <tr><td class="row-num">${i+1}</td>
     <td><input class="editable" value="${r.d||""}" placeholder="YYYY-MM-DD" onchange="updR(${activeMonth},${i},'d',this.value)" style="width:90px;font-family:DM Mono,monospace;font-size:10px;color:var(--muted);"></td>
     <td><input class="editable" value="${r.n||""}" placeholder="Name + PHP Code" onchange="updR(${activeMonth},${i},'n',this.value)"></td>
+    <td>${teamSelect(run, effectiveRecruit(r,run).key, `updR(${activeMonth},${i},'by',this.value)`)}</td>
+    <td style="text-align:center;"><input type="checkbox" ${effectiveRecruit(r,run).lic?"checked":""} title="Licensed" onchange="updR(${activeMonth},${i},'lic',this.checked)"></td>
     <td><button onclick="delR(${activeMonth},${i})" style="background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:2px 5px;">×</button></td>
     </tr>`).join("");
 }
@@ -984,6 +1024,9 @@ function renderApps(run){
     <td><input class="editable" value="${a.d||""}" placeholder="YYYY-MM-DD" onchange="updA(${activeMonth},${i},'d',this.value)" style="width:90px;font-family:DM Mono,monospace;font-size:10px;color:var(--muted);"></td>
     <td><input class="editable" value="${a.pol||""}" placeholder="Policy #" onchange="updA(${activeMonth},${i},'pol',this.value)" style="font-family:DM Mono,monospace;font-size:10px;color:${a.paid?'var(--gold)':'var(--muted)'};width:100px;"></td>
     <td><input class="editable" value="${a.c||""}" placeholder="Client Name" onchange="updA(${activeMonth},${i},'c',this.value)" style="${a.paid?'':'color:var(--muted);'}"></td>
+    <td>${(a.shares&&a.shares.length)
+        ? `<span style="font-size:10px;color:var(--muted);" title="Split policy (from import)">${appShares(a,run).map(s=>s.name.split(" ")[0]+(a.shares.length>1?" "+Math.round(s.frac*100)+"%":"")).join(" + ")}</span>`
+        : teamSelect(run, a.by||"", `updA(${activeMonth},${i},'by',this.value)`)}</td>
     <td><input class="editable" type="number" step="0.25" value="${a.a||""}" placeholder="1" onchange="updA(${activeMonth},${i},'a',this.value)" style="width:44px;font-family:Barlow Condensed,sans-serif;font-size:14px;font-weight:700;color:${a.paid?'var(--gold2)':'var(--muted)'};"></td>
     <td><input class="editable" type="number" value="${a.p||""}" placeholder="0" onchange="updA(${activeMonth},${i},'p',this.value)" style="width:70px;font-family:Barlow Condensed,sans-serif;font-size:13px;font-weight:700;color:${a.paid?'var(--green)':'var(--muted)'};"></td>
     <td style="text-align:center;">
@@ -1078,10 +1121,10 @@ function exportRun(){
   ];
   run.monthLabels.forEach((lbl,i)=>{
     lines.push(`=== ${lbl} ===`);
-    lines.push("DATE,RECRUITS");
-    (run.recruits[i]||[]).forEach((r,j)=>lines.push(`${r.d||""},${r.n||""}`));
-    lines.push("DATE,POLICY NUMBER,CLIENT NAME,APP COUNT,POINTS");
-    (run.apps[i]||[]).forEach(a=>lines.push(`${a.d||""},${a.pol||""},${a.c||""},${a.a||0},${a.p||0}`));
+    lines.push("DATE,RECRUITS,RECRUITED BY,LICENSED");
+    (run.recruits[i]||[]).forEach((r,j)=>{const e=effectiveRecruit(r,run);lines.push(`${r.d||""},${r.n||""},${e.key?contribName(e.key):"Unassigned"},${e.lic?"Yes":"No"}`);});
+    lines.push("DATE,POLICY NUMBER,CLIENT NAME,AGENT,APP COUNT,POINTS,PAID");
+    (run.apps[i]||[]).forEach(a=>lines.push(`${a.d||""},${a.pol||""},${a.c||""},${appShares(a,run).map(s=>s.name).join(" + ")},${a.a||0},${a.p||0},${a.paid?"Yes":"No"}`));
     lines.push("");
   });
   const blob=new Blob([lines.join("\n")],{type:"text/csv"});
@@ -1679,6 +1722,8 @@ function commitPolicyImport() {
       paidPts:row.totPts || pts,
       status: row.status || "",
       paid,
+      // Who on the team wrote it, with their split — feeds Team Contribution.
+      shares: (row.teamAgents||[]).map(x=>({name:x.name, php:x.phpCode, pct:x.splitPct})),
     });
     added++;
     monthsSynced[m] = (monthsSynced[m]||0)+1;
@@ -2528,6 +2573,250 @@ Return ONLY the JSON array. No other text.`;
 
 // ── HOOK INTO renderAll ────────────────────────────────────────
 // Patch renderAll to also call renderStrategy after existing render
+
+// ════════════════════════════════════════════════════════════════
+// TEAM CONTRIBUTION + CURRENT-MONTH PROJECTIONS
+// ════════════════════════════════════════════════════════════════
+// Attribution is stored per row and is optional/backward-compatible:
+//   recruit.by  = roster agent id who recruited them ("" = explicitly unassigned)
+//   recruit.lic = licensed flag (explicit override)
+//   app.by      = roster agent id who wrote it (manual entries)
+//   app.shares  = [{name,php,pct}] team agents on the policy (policy imports)
+// When recruit.by / recruit.lic are not set, they're derived from the roster:
+// the recruit's upline is credited as the recruiter, and licensed comes from
+// the recruit's roster license states — so most rows attribute themselves.
+let contribScope = "run";
+let contribShowInactive = false;
+
+function normName(s){return (s||"").toLowerCase().replace(/[^a-z\s]/g," ").replace(/\s+/g," ").trim();}
+function rosterAgents(){return typeof AGENTS!=="undefined"?AGENTS:[];}
+function rosterById(id){return rosterAgents().find(a=>a.id===id)||null;}
+function isLicensedAgent(a){return !!(a && (a.licenseStates||[]).length>0);}
+
+function findRosterAgent(name, php){
+  const agents=rosterAgents();
+  if(php){const hit=agents.find(a=>a.phpId&&String(a.phpId)===String(php));if(hit)return hit;}
+  const n=normName(name); if(!n) return null;
+  return agents.find(a=>normName(a.name)===n)||null;   // exact match only — no fuzzy guessing
+}
+function parseRecruitField(n){
+  const str=String(n||"");
+  const m=str.match(/\b\d{5,9}\b/);
+  const name=str.replace(/\b\d{5,9}\b/g,"").replace(/[·|]/g," ").replace(/\s[-–—]\s/g," ").replace(/\s+/g," ").trim();
+  return {name, php:m?m[0]:""};
+}
+function teamMembers(run){
+  const out=[], seen=new Set();
+  const add=a=>{if(a&&a.id&&!seen.has(a.id)){seen.add(a.id);out.push(a);}};
+  add(rosterById(run.agentId)||{id:run.agentId,name:run.agentName,phpId:run.phpId});
+  (run.downlineIds||[]).forEach(id=>add(rosterById(id)));
+  return out;
+}
+function contribName(key){
+  if(!key) return "Unassigned";
+  const a=rosterById(key); if(a) return a.name;
+  return key.startsWith("n:")?key.slice(2).replace(/\b\w/g,c=>c.toUpperCase()):key;
+}
+function effectiveRecruit(r, run){
+  const {name,php}=parseRecruitField(r.n);
+  const ra=findRosterAgent(name,php);
+  let key="";
+  if(r.by!==undefined) key=r.by;
+  else if(ra&&ra.uplineId&&teamMembers(run).some(t=>t.id===ra.uplineId)) key=ra.uplineId;
+  const lic=r.lic!==undefined?!!r.lic:isLicensedAgent(ra);
+  return {key,lic,roster:ra};
+}
+function appShares(a, run){
+  if(Array.isArray(a.shares)&&a.shares.length){
+    const tot=a.shares.reduce((n,x)=>n+(parseFloat(x.pct)||0),0)||100;
+    return a.shares.map(x=>{
+      const ag=findRosterAgent(x.name,x.php);
+      return {key:ag?ag.id:"n:"+normName(x.name), name:ag?ag.name:x.name, frac:(parseFloat(x.pct)||0)/tot};
+    });
+  }
+  if(a.by) return [{key:a.by,name:contribName(a.by),frac:1}];
+  return [{key:"",name:"Unassigned",frac:1}];
+}
+function teamSelect(run, selectedKey, onchange){
+  const opts=['<option value="">— Unassigned —</option>'].concat(teamMembers(run).map(a=>
+    `<option value="${a.id}" ${a.id===selectedKey?"selected":""}>${(a.name||a.id).replace(/</g,"&lt;")}</option>`));
+  if(selectedKey && !teamMembers(run).some(a=>a.id===selectedKey))
+    opts.push(`<option value="${selectedKey}" selected>${contribName(selectedKey)}</option>`);
+  return `<select onchange="${onchange}" style="background:var(--s2);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:10px;max-width:120px;padding:2px;">${opts.join("")}</select>`;
+}
+
+function computeContribution(run, monthIdxs){
+  const rows={};
+  const get=(key,name)=>rows[key]||(rows[key]={key,name:name||contribName(key),recruits:0,lic:0,apps:0,sub:0,paid:0});
+  monthIdxs.forEach(m=>{
+    (run.recruits[m]||[]).forEach(r=>{
+      const e=effectiveRecruit(r,run); const row=get(e.key);
+      row.recruits++; if(e.lic) row.lic++;
+    });
+    (run.apps[m]||[]).forEach(a=>{
+      const apps=parseFloat(a.a)||0, sub=parseFloat(a.p)||0;
+      const paid=a.paid?(parseFloat(a.paidPts)||sub):0;   // paid = only rows marked paid
+      appShares(a,run).forEach(sh=>{
+        const row=get(sh.key,sh.name);
+        row.apps+=apps*sh.frac; row.sub+=sub*sh.frac; row.paid+=paid*sh.frac;
+      });
+    });
+  });
+  return rows;
+}
+
+function setContribScope(scope){
+  contribScope=scope;
+  const run=runs.find(r=>r.id===activeId); if(run) renderContribution(run);
+}
+function toggleContribInactive(){
+  contribShowInactive=!contribShowInactive;
+  const run=runs.find(r=>r.id===activeId); if(run) renderContribution(run);
+}
+
+function renderContribution(run){
+  const body=document.getElementById("contrib-body"); if(!body) return;
+  document.getElementById("contrib-scope-run").classList.toggle("on",contribScope==="run");
+  const mBtn=document.getElementById("contrib-scope-month");
+  mBtn.classList.toggle("on",contribScope==="month");
+  mBtn.textContent=run.monthLabels[activeMonth]||"Selected month";
+  const idxs=contribScope==="run"?run.monthLabels.map((_,i)=>i):[activeMonth];
+  const rows=computeContribution(run,idxs);
+  const members=teamMembers(run);
+  members.forEach(a=>{ if(!rows[a.id]) rows[a.id]={key:a.id,name:a.name||a.id,recruits:0,lic:0,apps:0,sub:0,paid:0}; });
+
+  const all=Object.values(rows);
+  const tot=all.reduce((t,r)=>({recruits:t.recruits+r.recruits,lic:t.lic+r.lic,apps:t.apps+r.apps,sub:t.sub+r.sub,paid:t.paid+r.paid}),
+                       {recruits:0,lic:0,apps:0,sub:0,paid:0});
+  const active=r=>r.recruits||r.apps||r.sub||r.paid||r.key===run.agentId;
+  const shown=all.filter(r=>contribShowInactive||active(r) );
+  const hidden=all.length-shown.length;
+  shown.sort((a,b)=>{
+    if(!a.key&&b.key) return 1; if(a.key&&!b.key) return -1;       // Unassigned last
+    return (b.sub+b.paid)-(a.sub+a.paid) || a.name.localeCompare(b.name);
+  });
+  const pct=(n,d)=>d>0?Math.round(n/d*100)+"%":"—";
+  const n1=v=>v%1===0?String(v):v.toFixed(1);
+  const trs=shown.map(r=>{
+    const ag=rosterById(r.key);
+    const badge=ag?(isLicensedAgent(ag)?' <span title="Licensed" style="color:var(--green);font-size:11px;">🪪</span>':' <span title="Not licensed yet" style="color:var(--muted);font-size:11px;opacity:.6;">🪪</span>'):"";
+    const self=r.key===run.agentId;
+    return `<tr class="${self?"ct-self":""}" style="${r.key?"":"opacity:.75;"}">
+      <td style="font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;">${r.name.replace(/</g,"&lt;")}${self?' <span style="font-size:9px;color:var(--gold);">RUN AGENT</span>':""}${badge}</td>
+      <td style="color:#5dade2;">${r.lic}</td>
+      <td style="color:#5dade2;">${r.recruits}</td>
+      <td style="color:var(--gold2);">${n1(Math.round(r.apps*100)/100)}</td>
+      <td style="color:var(--green);">${fmtPts(r.sub)}</td>
+      <td style="color:var(--green);">${fmtPts(r.paid)}</td>
+      <td style="color:var(--muted);font-size:12px;">${pct(r.sub,tot.sub)}</td>
+    </tr>`;
+  }).join("");
+  const unassigned=rows[""];
+  body.innerHTML=`
+    <table class="ct-tbl">
+      <thead><tr><th>Agent</th><th>Licensed</th><th>Recruits</th><th>Apps</th><th>Submitted pts</th><th>Paid pts</th><th>Share of pts</th></tr></thead>
+      <tbody>${trs}
+        <tr class="ct-total"><td style="font-family:'DM Sans',sans-serif;font-size:12px;">Team total</td>
+          <td style="color:#5dade2;">${tot.lic}</td><td style="color:#5dade2;">${tot.recruits}</td>
+          <td style="color:var(--gold2);">${n1(Math.round(tot.apps*100)/100)}</td>
+          <td style="color:var(--green);">${fmtPts(tot.sub)}</td><td style="color:var(--green);">${fmtPts(tot.paid)}</td><td></td></tr>
+      </tbody>
+    </table>
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-top:10px;line-height:1.6;">
+      Licensed = recruits credited to that agent who are marked licensed (🪪 beside a name = that agent's own license status).
+      Paid pts count only policies marked paid. Split policies divide apps and points by each agent's split.
+      ${unassigned&&(unassigned.recruits||unassigned.apps)?`<br><span style="color:var(--orange);">⚠ ${unassigned.recruits} recruit(s) and ${n1(Math.round(unassigned.apps*100)/100)} app(s) aren't assigned to an agent yet — use the "Recruited by" / "Agent" dropdowns above.</span>`:""}
+      ${hidden>0||contribShowInactive?`<br><a href="#" onclick="toggleContribInactive();return false;" style="color:var(--gold);">${contribShowInactive?"Hide inactive team members":`Show ${hidden} team member${hidden===1?"":"s"} with no activity`}</a>`:""}
+    </div>`;
+}
+
+// ── Month window helpers (calendar-safe: Jan 31 + 1 month = Feb 28, not Mar 3) ──
+function addMonthsClamped(d,n){
+  const r=new Date(d.getFullYear(),d.getMonth()+n,1,12);
+  const last=new Date(r.getFullYear(),r.getMonth()+1,0).getDate();
+  r.setDate(Math.min(d.getDate(),last));
+  return r;
+}
+function monthWindow(run,i){
+  const start=new Date(run.startDate+"T12:00:00");
+  const s=addMonthsClamped(start,i);
+  const e=addMonthsClamped(start,i+1); e.setDate(e.getDate()-1);
+  return {s,e};
+}
+function currentMonthInfo(run){
+  const today=new Date(); today.setHours(12,0,0,0);
+  const DAY=86400000;
+  let idx=-1;
+  for(let i=0;i<run.months;i++){const w=monthWindow(run,i); if(today>=w.s&&today<=w.e){idx=i;break;}}
+  let state="active";
+  if(idx<0){
+    if(today<new Date(run.startDate+"T12:00:00")){idx=0;state="notstarted";}
+    else {idx=run.months-1;state="ended";}
+  }
+  const w=monthWindow(run,idx);
+  const totalDays=Math.round((w.e-w.s)/DAY)+1;
+  let elapsed=state==="active"?Math.floor((today-w.s)/DAY)+1:(state==="ended"?totalDays:0);
+  elapsed=Math.max(0,Math.min(totalDays,elapsed));
+  return {idx,state,totalDays,elapsed,label:run.monthLabels[idx]};
+}
+
+function setProjection(m,field,val){
+  const run=runs.find(r=>r.id===activeId); if(!run) return;
+  if(!run.projections) run.projections={};
+  if(!run.projections[m]) run.projections[m]={};
+  const num=parseFloat(val);
+  if(val===""||isNaN(num)) delete run.projections[m][field]; else run.projections[m][field]=num;
+  save(); renderProjection(run);
+}
+
+function renderProjection(run){
+  const body=document.getElementById("proj-body"); if(!body) return;
+  const info=currentMonthInfo(run);
+  const m=info.idx;
+  document.getElementById("proj-title").textContent="Projected — "+info.label;
+
+  const contrib=computeContribution(run,[m]);
+  const act=Object.values(contrib).reduce((t,r)=>({lic:t.lic+r.lic,recruits:t.recruits+r.recruits,apps:t.apps+r.apps,sub:t.sub+r.sub,paid:t.paid+r.paid}),
+                                          {lic:0,recruits:0,apps:0,sub:0,paid:0});
+  const factor=info.state==="ended"?1:(info.elapsed>0?info.totalDays/info.elapsed:0);
+  const pace=k=>{
+    const v=act[k]*factor;
+    if(k==="apps") return Math.round(v*10)/10;
+    if(k==="sub"||k==="paid") return Math.round(v);
+    return Math.round(v);
+  };
+  const entry=getLadderEntry(run);
+  const t=run.targets||{};
+  const mo=v=>v>0?v/run.months:null;
+  const paidTarget=entry?.pointsType==="paid";
+  const tiles=[
+    {k:"lic",     label:"Licensed",         actual:act.lic,     target:null,                              fmt:v=>v},
+    {k:"recruits",label:"Recruits",         actual:act.recruits,target:mo(t.r),                            fmt:v=>v},
+    {k:"apps",    label:"Applications",     actual:act.apps,    target:mo(t.a),                            fmt:v=>v%1===0?v:v.toFixed(1)},
+    {k:"sub",     label:"Submitted points", actual:act.sub,     target:paidTarget?null:mo(t.p),            fmt:v=>fmtPts(v)},
+    {k:"paid",    label:"Paid points",      actual:act.paid,    target:paidTarget?mo(t.p):null,            fmt:v=>fmtPts(v)},
+  ];
+  const saved=(run.projections&&run.projections[m])||{};
+  body.innerHTML=`<div class="proj-grid">${tiles.map(tl=>{
+    const paceV=pace(tl.k);
+    const manual=saved[tl.k];
+    const shown=manual!==undefined?manual:paceV;
+    let color="var(--text)";
+    if(tl.target){const r=shown/tl.target; color=r>=1?"var(--green)":r>=.7?"var(--orange)":"var(--red)";}
+    return `<div class="proj-tile">
+      <div class="pl">${tl.label}</div>
+      <div class="pv" style="color:${color};">${tl.fmt(shown)}</div>
+      <div class="ps">${manual!==undefined?"<b style='color:var(--gold);'>your projection</b><br>":""}so far <b>${tl.fmt(tl.actual)}</b> · pace <b>${tl.fmt(paceV)}</b>${tl.target?`<br>monthly goal ${tl.fmt(Math.round(tl.target*10)/10)}`:""}</div>
+      <input type="number" step="any" min="0" placeholder="override" value="${manual!==undefined?manual:""}" onchange="setProjection(${m},'${tl.k}',this.value)">
+    </div>`;}).join("")}</div>
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-top:10px;line-height:1.6;">
+      ${info.state==="notstarted"?"This run hasn't started yet — nothing to project.":
+        info.state==="ended"?"This run has ended — showing final results for its last month.":
+        `Day ${info.elapsed} of ${info.totalDays}. Pace = month-to-date × (${info.totalDays} ÷ ${info.elapsed}).${info.elapsed<7?" <span style='color:var(--orange);'>Early in the month, so this is a rough estimate.</span>":""}`}
+      Type a number in any tile to set your own projection; clear it to go back to pace.
+    </div>`;
+}
+
 function renderAll(){
   renderAllBase();
   const run = runs.find(r=>r.id===activeId);
@@ -3571,7 +3860,7 @@ function handlePolicyCSV(evt) {
     previews.forEach(p => {
       const month = detectMonthForDate(p.date, run) || activeMonth;
       if (!run.apps[month]) run.apps[month] = [];
-      run.apps[month].push({ d:p.date, pol:p.pol, c:p.client, a:p.apps, pts:p.pts, p:p.paid?1:0 });
+      run.apps[month].push({ d:p.date, pol:p.pol, c:p.client, a:p.apps, p:p.pts, pts:p.pts, paid:p.paid, paidPts:p.paid?p.pts:0 });
       imported++;
     });
 
