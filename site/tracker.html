@@ -362,6 +362,20 @@ input:focus,select:focus{outline:none;border-color:var(--gold);}
     <div class="ws"><div class="ws-val" id="w-pts">$0</div><div class="ws-label">Session ATP</div></div>
   </div>
 
+  <!-- CONVERSION RATIOS -->
+  <div class="card" style="margin-bottom:14px;">
+    <div class="card-title">📈 Conversion Ratios
+      <select id="ratio-period" onchange="renderRatios()" style="margin-left:auto;background:var(--navy);border:1px solid var(--border);color:var(--cream);border-radius:4px;padding:4px 8px;font-size:12px;">
+        <option value="1">Today</option>
+        <option value="7" selected>Last 7 days</option>
+        <option value="30">Last 30 days</option>
+        <option value="365">Last 12 months</option>
+      </select>
+    </div>
+    <div id="ratio-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;"></div>
+    <div id="ratio-note" style="font-size:11.5px;color:var(--slate);margin-top:10px;line-height:1.5;"></div>
+  </div>
+
   <!-- ══ SCHEDULED APPOINTMENTS ══ -->
 <div class="card" style="margin-bottom:14px;">
   <div class="card-title">
@@ -519,7 +533,7 @@ async function getColIds() {
 
   // 2. Cached from a previous session
   try {
-    const stored = localStorage.getItem('dba_col_ids_v2');
+    const stored = localStorage.getItem('dba_col_ids_v3');
     if (stored) { _resolvedCols = JSON.parse(stored); return _resolvedCols; }
   } catch {}
 
@@ -541,6 +555,9 @@ async function getColIds() {
       date:         find('reporting date', 'date', 'session date'),
       week:         find('week'),
       // Official weekly reporting spreadsheet fields
+      approaches:   find('approaches', 'approach'),
+      phones:       find('phone #s obtained', 'phone numbers obtained', 'phone #s', 'phone numbers'),
+      clients:      find('new clients', 'clients closed', 'clients'),
       prospects:    find('prospects'),
       calls:        find('calls', 'call'),
       invites:      find('weekly personal invites', 'personal invites', 'invites'),
@@ -565,7 +582,7 @@ async function getColIds() {
     };
 
     // Cache for next session
-    localStorage.setItem('dba_col_ids_v2', JSON.stringify(_resolvedCols));
+    localStorage.setItem('dba_col_ids_v3', JSON.stringify(_resolvedCols));
     console.log('[Tracker] Column IDs resolved:', _resolvedCols);
     return _resolvedCols;
   } catch(e) {
@@ -578,6 +595,8 @@ async function getColIds() {
 // Weekly goals below are the official targets from that spreadsheet.
 const COUNTER_CONFIG = [
   // ── Daily Activity ─────────────────────────────────────────
+  { id:'approaches', label:'Approaches',                     emoji:'🤝', goal:100, desc:'People approached to ask for a phone number',    group:'activity' },
+  { id:'phones',     label:'Phone #s Obtained',                emoji:'📱', goal:25,  desc:'Phone numbers actually collected',               group:'activity' },
   { id:'prospects', label:'Prospects',                        emoji:'🎯', goal:25,  desc:'New prospects identified',                      group:'activity' },
   { id:'calls',     label:'Calls',                             emoji:'📞', goal:250, desc:'Outbound calls dialed',                         group:'activity' },
   { id:'invites',   label:'Weekly Personal Invites',           emoji:'📣', goal:10,  desc:'Personal invites sent this week',               group:'activity' },
@@ -587,6 +606,7 @@ const COUNTER_CONFIG = [
   { id:'ri',        label:'Recruiting Interviews',             emoji:'🎯', goal:10,  desc:'Recruiting Interviews conducted',               group:'appts' },
   { id:'ft',        label:'Field Trainings',                   emoji:'💼', goal:6,   desc:'Field Training appointments run',               group:'appts' },
   { id:'fs',        label:'Faststarts Ran',                    emoji:'🚀', goal:4,   desc:'Fast Start appointments run',                   group:'appts' },
+  { id:'clients',   label:'New Clients Closed',                emoji:'💰', goal:3,   desc:'Clients who bought (used for appointment-to-client and points-per-client)', group:'appts' },
   // ── Captain System (Personal BOM Guests) ───────────────────
   { id:'pers_gc',   label:'Pers Guests Confirmed on Captains', emoji:'✅', goal:10,  desc:'Your personal guests confirmed under a captain', group:'captains' },
   { id:'pers_ga',   label:'Personal Guests That Showed',       emoji:'🏢', goal:3,   desc:'Your personal guests who showed up at BOM',      group:'captains' },
@@ -595,7 +615,7 @@ const COUNTER_CONFIG = [
 // Legacy/internal-only counters (not shown in the UI, but still tracked in the
 // background so the appointment scheduler and other pages don't break):
 // appts, shows, gi, gc, ga, gag, rec_inv, contacts
-let counts = { prospects:0, calls:0, invites:0, recruits:0, hours:0, ri:0, ft:0, fs:0, pers_gc:0, pers_ga:0,
+let counts = { approaches:0, phones:0, clients:0, prospects:0, calls:0, invites:0, recruits:0, hours:0, ri:0, ft:0, fs:0, pers_gc:0, pers_ga:0,
                contacts:0, appts:0, shows:0, gi:0, gc:0, ga:0, gag:0, rec_inv:0 };
 let policies  = []; // array of submitted policy entries
 let prospects = [];
@@ -604,7 +624,7 @@ let prospects = [];
 const session = AUTH.getSession();
 if (!session) { window.location.href = 'index.html'; }
 
-// Clear old stale column ID cache (old key was dba_col_ids, new is dba_col_ids_v2)
+// Clear old stale column ID cache (old key was dba_col_ids, new is dba_col_ids_v3)
 try { localStorage.removeItem('dba_col_ids'); } catch {}
 
 const params    = new URLSearchParams(location.search);
@@ -822,6 +842,64 @@ function updateWeekly() {
   document.getElementById('w-recruits').textContent  = counts.recruits;
   document.getElementById('w-pts').textContent       = '$' + total.toLocaleString();
   updateApptsRan();
+  renderRatios();
+}
+
+// ── CONVERSION RATIOS ─────────────────────────────────────────
+// Sums the saved daily records (dba_tracker_<agent>_<date>) for the chosen
+// window so ratios rest on real volume — a single day's numbers swing too
+// much to mean anything. Today's live, unsaved counts are always included.
+function getRatioTotals(days) {
+  const t = { approaches:0, phones:0, appts:0, recruits:0, clients:0, pts:0, daysWithData:0 };
+  const todayStr = new Date().toISOString().slice(0,10);
+  for (let i = 0; i < days; i++) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    const dateStr = d.toISOString().slice(0,10);
+    let raw = null;
+    if (dateStr === todayStr) {
+      const sp = parseInt(document.getElementById('personal-sp')?.value) || 0;
+      raw = { counts, policies, sp };
+    } else {
+      try { raw = JSON.parse(localStorage.getItem(`dba_tracker_${agentId}_${dateStr}`) || 'null'); } catch {}
+    }
+    if (!raw || !raw.counts) continue;
+    const c = raw.counts;
+    const dayAppts = (c.ri||0) + (c.ft||0) + (c.fs||0);
+    const dayAtp = (raw.policies || []).reduce((n,p) => n + (p.atp||0), 0);
+    if (!(c.approaches||c.phones||dayAppts||c.recruits||c.clients||raw.sp||dayAtp)) continue;
+    t.daysWithData++;
+    t.approaches += c.approaches||0; t.phones += c.phones||0; t.appts += dayAppts;
+    t.recruits += c.recruits||0; t.clients += c.clients||0;
+    // Per day: entered submitted points if there are any, otherwise that day's policy ATP
+    t.pts += raw.sp || dayAtp;
+  }
+  return t;
+}
+
+function renderRatios() {
+  const grid = document.getElementById('ratio-grid');
+  if (!grid) return;
+  const days = parseInt(document.getElementById('ratio-period')?.value) || 7;
+  const t = getRatioTotals(days);
+  const pts = t.pts;
+  const pct = (n, d) => d > 0 ? Math.round((n / d) * 100) + '%' : '—';
+  const oneIn = (n, d) => (d > 0 && n > 0) ? `1 in ${parseFloat((d / n).toFixed(1))}` : (d > 0 ? 'none yet' : 'no data');
+  const cards = [
+    { label:'Approach → Phone #',   val: pct(t.phones, t.approaches),   sub: oneIn(t.phones, t.approaches),   detail:`${t.phones} phone #s / ${t.approaches} approaches` },
+    { label:'Phone # → Appointment',val: pct(t.appts, t.phones),        sub: oneIn(t.appts, t.phones),        detail:`${t.appts} appts / ${t.phones} phone #s` },
+    { label:'Appointment → Recruit',val: pct(t.recruits, t.appts),      sub: oneIn(t.recruits, t.appts),      detail:`${t.recruits} recruits / ${t.appts} appts` },
+    { label:'Appointment → Client', val: pct(t.clients, t.appts),       sub: oneIn(t.clients, t.appts),       detail:`${t.clients} clients / ${t.appts} appts` },
+    { label:'Points per Client',    val: t.clients > 0 && pts > 0 ? '$' + Math.round(pts / t.clients).toLocaleString() : '—', sub: t.clients > 0 ? '' : 'log a client first', detail:`$${pts.toLocaleString()} points / ${t.clients} clients` },
+  ];
+  grid.innerHTML = cards.map(c => `
+    <div style="background:var(--navy);border:1px solid var(--border);border-radius:6px;padding:12px;text-align:center;">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">${c.label}</div>
+      <div style="font-family:'DM Mono',monospace;font-size:1.5rem;font-weight:700;color:var(--cream);">${c.val}</div>
+      <div style="font-size:11px;color:var(--slate);min-height:14px;">${c.sub}</div>
+      <div style="font-size:10px;color:var(--slate);margin-top:3px;">${c.detail}</div>
+    </div>`).join('');
+  document.getElementById('ratio-note').textContent =
+    `Based on ${t.daysWithData} day${t.daysWithData===1?'':'s'} of saved activity. "Appointments" = Recruiting Interviews + Field Trainings + Faststarts. Ratios only mean something with enough volume — a longer window is steadier than a single day.`;
 }
 
 // ── APPOINTMENTS RAN (derived total: RI + FT + FS vs. official goal of 20) ──
@@ -991,7 +1069,9 @@ function renderProspects() {
 function getTodayKey() { return `dba_tracker_${agentId}_${new Date().toISOString().slice(0,10)}`; }
 function saveTodayData() {
   const reportDate = document.getElementById('report-date')?.value || '';
-  try { localStorage.setItem(getTodayKey(), JSON.stringify({ counts, policies, prospects, reportDate })); } catch {}
+  const sp = parseInt(document.getElementById('personal-sp')?.value) || 0;
+  const pp = parseInt(document.getElementById('personal-pp')?.value) || 0;
+  try { localStorage.setItem(getTodayKey(), JSON.stringify({ counts, policies, prospects, reportDate, sp, pp })); } catch {}
 }
 function loadTodayData() {
   try {
@@ -1001,6 +1081,8 @@ function loadTodayData() {
       policies  = d.policies  || policies;
       prospects = d.prospects || prospects;
       if (d.reportDate) { const el = document.getElementById('report-date'); if (el) el.value = d.reportDate; }
+      const spEl = document.getElementById('personal-sp'); if (spEl && d.sp && !spEl.value) spEl.value = d.sp;
+      const ppEl = document.getElementById('personal-pp'); if (ppEl && d.pp && !ppEl.value) ppEl.value = d.pp;
     }
   } catch {}
   // Sync loaded counts into input fields (rendered before this call)
@@ -1170,6 +1252,9 @@ async function saveSession() {
     reportingDate,
     date,
     week,
+    approaches:              counts.approaches || 0,
+    phoneNumbersObtained:    counts.phones     || 0,
+    clientsClosed:           counts.clients    || 0,
     prospects:               counts.prospects || 0,
     calls:                   counts.calls     || 0,
     weeklyPersonalInvites:   counts.invites   || 0,
@@ -1233,6 +1318,9 @@ async function saveSession() {
         if (resolvedCols.week)         cv[resolvedCols.week]         = week;
         if (resolvedCols.date)         cv[resolvedCols.date]         = { date: reportingDate };
         // Official weekly reporting spreadsheet fields
+        if (resolvedCols.approaches)   cv[resolvedCols.approaches]   = counts.approaches;
+        if (resolvedCols.phones)       cv[resolvedCols.phones]       = counts.phones;
+        if (resolvedCols.clients)      cv[resolvedCols.clients]      = counts.clients;
         if (resolvedCols.prospects)    cv[resolvedCols.prospects]    = counts.prospects;
         if (resolvedCols.calls)        cv[resolvedCols.calls]        = counts.calls;
         if (resolvedCols.invites)      cv[resolvedCols.invites]      = counts.invites;
