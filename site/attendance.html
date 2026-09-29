@@ -276,6 +276,56 @@ let attendRecord = {};     // { agentId: 'present'|'absent'|'confirmed'|'' }
 let allAgents    = [];     // from AGENTS in auth.js
 let filteredAgents = [];
 
+// ── ACTIVE / INACTIVE ────────────────────────────────────────────
+// Mirrors the same computation in roster-admin.html's Attendance &
+// Certifications tab (same localStorage keys, so an MD's override there
+// applies here too). See the comment there for why this is a best-effort
+// suggestion rather than a guaranteed-accurate answer, and why an
+// explicit MD override always wins over it.
+const AGENT_ACTIVE_OVERRIDE_KEY = 'dba_agent_active_overrides';
+const SIX_MONTHS_MS = 183 * 24 * 60 * 60 * 1000;
+
+function getActiveOverrides() {
+  try { return JSON.parse(localStorage.getItem(AGENT_ACTIVE_OVERRIDE_KEY) || '{}'); } catch(e) { return {}; }
+}
+function hasAttendedRecently(agentId) {
+  const now = Date.now();
+  // Flat imported records (roster-admin's CSV import)
+  try {
+    const flat = JSON.parse(localStorage.getItem('dba_attendance_records') || '[]');
+    if (flat.some(r => r.agentId === agentId && (now - new Date(r.date).getTime()) < SIX_MONTHS_MS)) return true;
+  } catch(e) {}
+  // Live event history from this page (event.date + attendance[agentId])
+  try {
+    const events = JSON.parse(localStorage.getItem('dba_attendance_events') || '[]');
+    if (events.some(h => {
+      const status = h.attendance?.[agentId];
+      const when = h.event?.datetime || h.savedAt;
+      return (status === 'present' || status === 'confirmed') && when && (now - new Date(when).getTime()) < SIX_MONTHS_MS;
+    })) return true;
+  } catch(e) {}
+  return false;
+}
+function computeSuggestedActive(agent) {
+  const now = Date.now();
+  if (agent.enrollmentDate && (now - new Date(agent.enrollmentDate).getTime()) < SIX_MONTHS_MS) return true;
+  if (hasAttendedRecently(agent.id)) return true;
+  const roster = (typeof AGENTS !== 'undefined' ? AGENTS : []);
+  const gotRecruit = roster.some(a =>
+    a.uplineId === agent.id && a.enrollmentDate && (now - new Date(a.enrollmentDate).getTime()) < SIX_MONTHS_MS);
+  if (gotRecruit) return true;
+  try {
+    const pts = JSON.parse(localStorage.getItem('dba_manual_points') || '{}')[agent.id] || {};
+    if ((pts.subPts || 0) > 0 || (pts.paidPts || 0) > 0) return true;
+  } catch(e) {}
+  return false;
+}
+function isAgentActive(agent) {
+  const overrides = getActiveOverrides();
+  if (agent.id in overrides) return overrides[agent.id];
+  return computeSuggestedActive(agent);
+}
+
 // ════════════════════════════════════════════════════════════════
 // INIT
 // ════════════════════════════════════════════════════════════════
@@ -284,9 +334,12 @@ function init() {
   const newBtn = document.getElementById('new-event-btn');
   if (newBtn && isAdmin) newBtn.style.display = 'block';
 
-  // Build agent list from AGENTS roster
+  // Build agent list from AGENTS roster — excludes agents an MD has marked
+  // (or the system has suggested) inactive, per isAgentActive() below, so
+  // the check-off list only shows people actually worth taking roll for.
   allAgents = (typeof AGENTS !== 'undefined' ? AGENTS : [])
     .filter(a => a.id !== 'dba000' && a.level !== 100 || a.id === session?.agentId)
+    .filter(a => isAgentActive(a) || a.id === session?.agentId)
     .sort((a,b) => a.name.localeCompare(b.name));
 
   // Restore active event if exists

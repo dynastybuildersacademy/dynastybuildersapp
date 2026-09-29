@@ -376,7 +376,7 @@ AUTH.require('roster-admin.html');
       </div>
       <div class="agent-table-wrap">
         <table class="agent-table">
-          <thead><tr><th>Agent</th><th>Licensed</th><th>Certified Field Trainer</th><th>Meetings Attended</th><th>Last Attended</th><th>Submitted Pts</th><th>Paid Pts</th></tr></thead>
+          <thead><tr><th>Agent</th><th>Active</th><th>Licensed</th><th>Certified Field Trainer</th><th>Meetings Attended</th><th>Last Attended</th><th>Submitted Pts</th><th>Paid Pts</th></tr></thead>
           <tbody id="attend-tbody"></tbody>
         </table>
         <div style="font-size:11px;color:var(--muted);margin-top:8px;">Submitted/Paid Points here are a manual override — usable for any agent, licensed or not, since production data doesn't always flow in automatically before someone's appointed. Editing takes effect immediately on save.</div>
@@ -1543,14 +1543,88 @@ function toggleCFT(agentId) {
   renderAttendanceSummary();
 }
 
+// ── ACTIVE / INACTIVE ────────────────────────────────────────────
+// "Active" per the MD's own definition: attended a meeting in the last 6
+// months, submitted a policy, or got a recruit. This app has no single
+// live database everyone's activity flows through — attendance records
+// and points live in this browser's own storage, so a fully automatic,
+// always-correct answer isn't something this page can honestly promise.
+// Instead this computes a best-effort SUGGESTION from whatever signals
+// are actually available here, and the MD's own explicit mark (via the
+// checkbox below) always wins over the suggestion once they've made one.
+const ACTIVE_OVERRIDE_KEY = 'dba_agent_active_overrides';
+const SIX_MONTHS_MS = 183 * 24 * 60 * 60 * 1000;
+
+function getActiveOverrides() {
+  try { return JSON.parse(localStorage.getItem(ACTIVE_OVERRIDE_KEY) || '{}'); } catch(e) { return {}; }
+}
+function setActiveOverride(agentId, isActive) {
+  const o = getActiveOverrides();
+  o[agentId] = isActive;
+  try { localStorage.setItem(ACTIVE_OVERRIDE_KEY, JSON.stringify(o)); } catch(e) {}
+}
+function getManualPointsFor(agentId) {
+  try {
+    const all = JSON.parse(localStorage.getItem('dba_manual_points') || '{}');
+    return all[agentId] || {};
+  } catch(e) { return {}; }
+}
+function computeSuggestedActive(agent) {
+  const now = Date.now();
+  // Grace period: an agent enrolled within the last 6 months hasn't had a
+  // chance to build a 6-month track record yet, so they default active
+  // rather than being suggested inactive on day one.
+  if (agent.enrollmentDate && (now - new Date(agent.enrollmentDate).getTime()) < SIX_MONTHS_MS) return true;
+  // Attended a meeting in the last 6 months? Checks both the flat imported
+  // records this tab manages AND the live event history attendance.html
+  // writes on its own, so a check-in from either source counts.
+  const attended = getAttendanceRecords().some(r =>
+    r.agentId === agent.id && (now - new Date(r.date).getTime()) < SIX_MONTHS_MS);
+  if (attended) return true;
+  try {
+    const events = JSON.parse(localStorage.getItem('dba_attendance_events') || '[]');
+    const liveAttended = events.some(h => {
+      const status = h.attendance?.[agent.id];
+      const when = h.event?.datetime || h.savedAt;
+      return (status === 'present' || status === 'confirmed') && when && (now - new Date(when).getTime()) < SIX_MONTHS_MS;
+    });
+    if (liveAttended) return true;
+  } catch(e) {}
+  // Got a recruit in the last 6 months? (anyone in the roster whose upline is this agent)
+  const gotRecruit = agentList.some(a =>
+    a.uplineId === agent.id && a.enrollmentDate && (now - new Date(a.enrollmentDate).getTime()) < SIX_MONTHS_MS);
+  if (gotRecruit) return true;
+  // Submitted a policy — this only sees whatever's been entered as manual
+  // points on this device, as a running total with no date attached, so
+  // it can't be checked against the 6-month window specifically. Treated
+  // as a weaker "has ever produced" signal rather than a dated one.
+  const pts = getManualPointsFor(agent.id);
+  if ((pts.subPts || 0) > 0 || (pts.paidPts || 0) > 0) return true;
+  return false;
+}
+function isAgentActive(agent) {
+  const overrides = getActiveOverrides();
+  if (agent.id in overrides) return overrides[agent.id];
+  return computeSuggestedActive(agent);
+}
+function toggleActive(agentId) {
+  const agent = agentList.find(a => a.id === agentId);
+  if (!agent) return;
+  setActiveOverride(agentId, !isAgentActive(agent));
+  renderAttendanceTable();
+  renderAttendanceSummary();
+}
+
 function renderAttendanceSummary() {
   const grid = document.getElementById('attend-summary-grid');
   if (!grid) return;
   const records = getAttendanceRecords();
   const cftIds = getCftIds();
   const licensedCount = agentList.filter(a => (a.licenseStates || []).length > 0).length;
+  const activeCount = agentList.filter(a => isAgentActive(a)).length;
   const stats = [
     { label: 'Total Agents', val: agentList.length },
+    { label: 'Active', val: activeCount },
     { label: 'Licensed', val: licensedCount },
     { label: 'Certified Field Trainers', val: cftIds.size },
     { label: 'Attendance Records', val: records.length },
@@ -1595,8 +1669,11 @@ function renderAttendanceTable() {
     const attended = byAgent[a.id] || [];
     const lastDate = attended.length ? attended.map(r => r.date).sort().reverse()[0] : '—';
     const pts = manualPoints[a.id] || {};
+    const active = isAgentActive(a);
+    const isOverridden = a.id in getActiveOverrides();
     return `<tr>
       <td><strong>${a.name}</strong><br><span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);">${a.id}</span></td>
+      <td><label style="display:flex;align-items:center;gap:6px;cursor:pointer;" title="${isOverridden?'Set by an MD':'Suggested — no MD override yet'}"><input type="checkbox" ${active?'checked':''} onchange="toggleActive('${a.id}')"> ${active ? '✓ Active' : 'Inactive'}${!isOverridden?' <span style="opacity:.5;">(auto)</span>':''}</label></td>
       <td>${licensed ? '<span style="color:#2DCA73;">✓ Licensed</span>' : '<span style="color:var(--muted);">—</span>'}</td>
       <td><label style="display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" ${isCft?'checked':''} onchange="toggleCFT('${a.id}')"> ${isCft ? '✓ CFT' : 'Not certified'}</label></td>
       <td>${attended.length}</td>
