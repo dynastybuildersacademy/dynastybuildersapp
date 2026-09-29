@@ -254,7 +254,7 @@ input:focus,select:focus{border-color:rgba(201,168,76,.4);}
       <label>Notes</label>
       <textarea id="ev-notes" rows="2" placeholder="Any notes for this event…" style="resize:none;"></textarea>
     </div>
-    <button class="btn btn-gold" style="width:100%;margin-top:4px;" onclick="createEvent()">📋 Open Attendance Sheet</button>
+    <button class="btn btn-gold" style="width:100%;margin-top:4px;" onclick="createTrainingEvent()">📋 Open Attendance Sheet</button>
   </div>
 </div>
 
@@ -354,7 +354,14 @@ function updateEventDefaults() {
   document.getElementById('ev-name').value = defaults[type] || '';
 }
 
-function createEvent() {
+// Renamed from createEvent() — that name collides with the native
+// Document.createEvent() DOM method. Inline onclick="" handlers resolve
+// bare names through an implicit with(document){ with(this){ ... } }
+// wrapper, so document's own createEvent was shadowing this function even
+// though window.createEvent correctly held the real one — the button
+// called the native method instead, which requires an argument this call
+// never passed. Renaming sidesteps the collision entirely.
+function createTrainingEvent() {
   const type     = document.getElementById('ev-type').value;
   const name     = document.getElementById('ev-name').value.trim() || type;
   const datetime = document.getElementById('ev-datetime').value;

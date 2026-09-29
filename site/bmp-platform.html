@@ -994,9 +994,18 @@ async function gql(query,variables={}){
   throw new Error(`No data: ${JSON.stringify(j).slice(0,150)}`);
 }
 async function fetchAllBoards(){
-  // Limit to 100 boards max to avoid timeouts
+  // Was capped at 100 boards total ("to avoid timeouts") — Monday returns
+  // boards newest-first, so once an account passes 100 boards, everything
+  // older than the 100th silently never loads here, with no error and no
+  // indication anything was left out. That's what made the New DBA Client
+  // List board (and its subitems board) disappear from this picker even
+  // though they still exist and are shared normally.
+  // Now paginates until Monday itself returns an empty page, i.e. every
+  // board actually gets loaded. The 2000 ceiling is just a safety stop
+  // against an infinite loop if the API ever returned something
+  // unexpected — no real account should ever come close to it.
   let all=[], page=1;
-  while(all.length < 100){
+  while(all.length < 2000){
     const d=await gql(`query($p:Int!){boards(limit:50,page:$p,order_by:created_at){id name workspace{id name}}}`,{p:page});
     const b=d.boards||[];
     all=all.concat(b.map(x=>({id:x.id,name:x.name,workspaceName:x.workspace?.name||''})));
