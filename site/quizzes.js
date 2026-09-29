@@ -13,7 +13,7 @@ const QUIZ_BANK = {
     questions: [
       { q: 'What is the first thing you should set up within 48 hours of enrolling?', options: ['Your social media page','PHP Bamboo account','Your Top 25 list','Business cards'], answer: 1, explain: 'Bamboo is your business command center. Everything flows through it — PHP Quest, license prep, activity tracking.' },
       { q: 'How many names should be in your Top 25 at all times?', options: ['10 names','20 names','25 names','As many as possible'], answer: 2, explain: 'Your Top 25 is a living list — never let it drop below 25 active prospects. Replace cold contacts weekly.' },
-      { q: 'What is the Captain System rule for BOM invites?', options: ['Invite 5, expect 1 to show','Invite 10, confirm 3-5, expect 1-2 to show','Invite 20, expect 5 to show','Only invite warm market'], answer: 1, explain: 'Volume is the key. Invite 10 for every BOM — expect 3-5 confirmations and 1-2 to actually show up.' },
+      { q: 'What is the Captain System rule for BOM invites?', options: ['Invite 5, expect 1 to show','Invite 10 — about 3 show up and 1 gets started','Invite 20, expect 5 to show','Only invite warm market'], answer: 1, explain: 'The Captain\'s System runs on 10 / 3 / 1: 10 invites, about 3 show up, and about 1 gets started. Knowing the ratio lets you plan your invites instead of hoping.' },
       { q: 'Within how many days of enrollment should you target getting licensed?', options: ['7 days','14 days','30 days','60 days'], answer: 2, explain: '30 days is the goal. Every day unlicensed is a day you cannot earn commission.' },
       { q: 'What should you send a prospect BEFORE every 1-on-1 appointment?', options: ['A business card','The financial survey','A product brochure','Nothing — surprise them'], answer: 1, explain: 'The financial survey lets them do the discovery for you. People who fill it out show up and buy.' },
     ]
@@ -223,6 +223,26 @@ const QUIZ_BANK = {
     ]
   },
 
+
+  // ── Captain's Training ─────────────────────────────────────
+  captains_system: {
+    id: 'captains_system',
+    title: "Captain's System — Run It & Earn With It",
+    questions: [
+      { q: 'According to the Captain\'s System guide, when are you considered a "captain"?', options: ['When you have 10 or more invites to a given BOM','When you personally recruit 10 agents in a month','When you run the BOM presentation','When you reach Director'], answer: 0, explain: 'If you have 10 or more invites to any given BOM, you are considered a captain.' },
+      { q: 'In the 10 / 3 / 1 model, what happens with 10 invitations?', options: ['1 shows up and none get started','About 3 show up and about 1 gets started','About 5 show up and 2 get started','All 10 show up and 3 get started'], answer: 1, explain: '10 invites → 3 show up → 1 gets started. That ratio is what makes the business predictable.' },
+      { q: '250 invitations means about how many people showing up and getting started?', options: ['25 show, 10 start','50 show, 15 start','75 show, 25 start','100 show, 40 start'], answer: 2, explain: '250 invitations → 75 people showing up → 25 people getting started (the same 10 / 3 / 1 ratio, scaled).' },
+      { q: 'When should you submit your guest list on the captain\'s form?', options: ['A day before, or by noon on the day of the BOM','Right after the BOM ends','The following Monday','Only if you have 20+ guests'], answer: 0, explain: 'Submit your guest list a day before or by noon the day of the BOM so every guest can be confirmed.' },
+      { q: 'What is the goal for Monday night Phone Zone?', options: ['5 confirmations','10 confirmations','25+ confirmations','100 confirmations'], answer: 2, explain: 'Monday night Phone Zone (6:00–9:00 PM): call for your team with a goal of 25+ confirmations. During the day, the goal is 10+ confirmations by Phone Zone.' },
+      { q: 'What do the call-note codes C, LM and F/U stand for?', options: ['Confirmed, Left Message, Follow-Up','Called, Left Money, Follow-Up','Client, Lead, Finished','Confirmed, Late, Friday'], answer: 0, explain: 'C = Confirmed · LM = Left Message · F/U = Follow-Up. Record one on every call so nobody is lost.' },
+      { q: 'After the BOM, how do you highlight the Captain\'s List?', options: ['Green = NAA, Yellow = Showed, Pink = Do Not Follow Up','Red = Showed, Blue = NAA, Green = Do Not Follow Up','Yellow = NAA, Pink = Showed, Green = Do Not Follow Up','Highlight everyone the same color'], answer: 0, explain: 'Green = NAA · Yellow = Showed · Pink = Do Not Follow Up. Comparing the Captain\'s List with the Guest Sign-In Sheet tells you exactly who needs a call.' },
+      { q: 'When do you call guests on the Captain\'s List who did not attend?', options: ['Wednesday morning','During the BOM','After a month has passed','Never — they missed their chance'], answer: 0, explain: 'Follow-up happens Wednesday morning. The goal is a one-on-one appointment or an invite to the next BOM — and in most cases a one-on-one comes before another BOM invitation.' },
+      { q: 'After completing the NAA, how soon should the Fast Start appointment be scheduled?', options: ['Within 24–48 hours','Within a week','Within two weeks','Within 30 days'], answer: 0, explain: 'Complete the NAA on Wednesday or Thursday, then schedule the Fast Start appointment within 24–48 hours — and challenge them to bring five guests to the next BOM.' },
+      { q: 'Which agent counts as a true "direct" when you measure going wide?', options: ['Anyone who has an agent code','An agent who wrote at least one policy last month','Anyone you spoke with this month','Only agents licensed in three or more states'], answer: 1, explain: 'A direct only counts if they actually wrote business — at least one policy last month. Having a code is not the same as going wide.' },
+      { q: 'On the printed Captain model (1,000 base points per application, 25% override, 1 application per recruit per month), $100K a year is about how many new recruits a month?', options: ['About 10','About 33','About 75','About 100'], answer: 1, explain: '$100K a year is about $8,333 a month. Each recruit is worth 1 × 1,000 × 25% = $250 a month, so you need roughly 33 recruits a month — about 333 confirmed invites at a 30% show rate and 1 in 3 getting started.' },
+    ]
+  },
+
 };
 
 // ── Map module IDs to quiz IDs ────────────────────────────────
@@ -231,6 +251,7 @@ const QUIZ_MAP = {
   'sales-modules':  ['sales_closing', 'objections'],
   'rec-modules':    ['calls_scripts', 'recruiting'],
   'lead-modules':   ['md_track'],
+  'captain-modules':['captains_system'],
   'prod-modules':   ['cft_program'],
   'mindset-modules':['book_3feet'],
   // Academy weeks

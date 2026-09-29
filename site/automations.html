@@ -344,6 +344,73 @@ input:focus{border-color:rgba(201,168,76,.4);}
     </div>
   </div>
 
+  <div class="card" id="seq-recognition">
+    <div class="seq-header">
+      <div class="seq-icon">🏆</div>
+      <div>
+        <div class="seq-name">Recognition — Thankful Thursday &amp; Monthly Contest</div>
+        <div class="seq-desc">Fires when a category winner or Dynasty Builder of the Week/Month is set in either recognition tool. Good hook for a congratulations email or a shout-out post.</div>
+        <div class="seq-trigger">Trigger: <code>recognition</code> · Fields: category, winnerName, value, period, source</div>
+      </div>
+    </div>
+    <div class="steps-list">
+      <div class="step-row"><div class="step-num">1</div><div class="step-body"><div class="step-name">Congratulations Email</div><div class="step-detail">Email the winner: "Congrats on [category] this [week/month] — [value]! Proud of you." via HubSpot or Gmail.</div><div class="step-delay">⏱ Immediately on save</div></div></div>
+      <div class="step-row"><div class="step-num">2</div><div class="step-body"><div class="step-name">Team Announcement</div><div class="step-detail">Post to Slack/Team channel: "🏆 [winnerName] — [category] — [value]."</div><div class="step-delay">⏱ Immediately on save</div></div></div>
+    </div>
+    <div style="margin-top:12px;">
+      <label style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);display:block;margin-bottom:5px;">Zapier Webhook URL</label>
+      <input type="url" id="hook-recognition" placeholder="https://hooks.zapier.com/hooks/catch/…">
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button class="btn btn-gold" style="flex:2" onclick="saveHook('recognition')">Save &amp; Test</button>
+        <button class="btn btn-ghost" style="flex:1" onclick="clearHook('recognition')">Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" id="seq-team_communication">
+    <div class="seq-header">
+      <div class="seq-icon">📣</div>
+      <div>
+        <div class="seq-name">Team Communication</div>
+        <div class="seq-desc">Fires whenever a reminder/announcement is sent from Team Reminders — separate from that tool's own direct team webhook (Slack/SMS), this is for org-wide logging or a parallel email copy.</div>
+        <div class="seq-trigger">Trigger: <code>team_communication</code> · Fields: type, message, teamName</div>
+      </div>
+    </div>
+    <div class="steps-list">
+      <div class="step-row"><div class="step-num">1</div><div class="step-body"><div class="step-name">Log to Comms Sheet</div><div class="step-detail">Auto-append to a Google Sheet: date, type, team, message — a running record of every team communication sent.</div><div class="step-delay">⏱ Immediately on send</div></div></div>
+    </div>
+    <div style="margin-top:12px;">
+      <label style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);display:block;margin-bottom:5px;">Zapier Webhook URL</label>
+      <input type="url" id="hook-team_communication" placeholder="https://hooks.zapier.com/hooks/catch/…">
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button class="btn btn-gold" style="flex:2" onclick="saveHook('team_communication')">Save &amp; Test</button>
+        <button class="btn btn-ghost" style="flex:1" onclick="clearHook('team_communication')">Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" id="seq-welcome_email">
+    <div class="seq-header">
+      <div class="seq-icon">📧</div>
+      <div>
+        <div class="seq-name">Welcome Email</div>
+        <div class="seq-desc">Fires when an admin sends a new-agent welcome email from Roster Admin. The email itself opens in the admin's own mail app first for review — this is for logging or a parallel automation, not the send itself.</div>
+        <div class="seq-trigger">Trigger: <code>welcome_email</code> · Fields: to, subject</div>
+      </div>
+    </div>
+    <div class="steps-list">
+      <div class="step-row"><div class="step-num">1</div><div class="step-body"><div class="step-name">Log New Agent Onboarded</div><div class="step-detail">Auto-append to a Google Sheet or CRM: date, agent email, subject — a record of who's been welcomed and when.</div><div class="step-delay">⏱ Immediately on send</div></div></div>
+    </div>
+    <div style="margin-top:12px;">
+      <label style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);display:block;margin-bottom:5px;">Zapier Webhook URL</label>
+      <input type="url" id="hook-welcome_email" placeholder="https://hooks.zapier.com/hooks/catch/…">
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button class="btn btn-gold" style="flex:2" onclick="saveHook('welcome_email')">Save &amp; Test</button>
+        <button class="btn btn-ghost" style="flex:1" onclick="clearHook('welcome_email')">Clear</button>
+      </div>
+    </div>
+  </div>
+
 </div><!-- end page -->
 
 <div class="toast" id="toast"></div>

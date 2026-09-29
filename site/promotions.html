@@ -6,17 +6,22 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700&family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="auth.js"></script>
 <style>
-:root{--navy:#F5F1E8;--navy-mid:#FFFFFF;--navy-light:#ECE6D6;--gold:#C9A84C;--gold-light:#E8C97A;--cream:#1E1A10;--php-red:#C0392B;--success:#27AE60;--warn:#E67E22;--slate:#6B7C93;--border:rgba(201,168,76,0.22);}
+:root{--navy:#F5F1E8;--navy-mid:#FFFFFF;--navy-light:#ECE6D6;--gold:#C9A84C;--gold-light:#E8C97A;--label-gold:#7A5C14;--cream:#1E1A10;--php-red:#C0392B;--success:#27AE60;--warn:#E67E22;--slate:#4A5568;--border:rgba(201,168,76,0.22);--red-text:#8E2A20;}
+/* Same page, adapts to the viewer's system light/dark setting — see the
+   matching comment in the survey tools for why this exists. */
+@media (prefers-color-scheme: dark){
+  :root{--navy:#15130D;--navy-mid:#211E15;--navy-light:#2A2619;--cream:#F5F1E8;--slate:#A9B7CC;--border:rgba(201,168,76,.3);--label-gold:#F5E8C0;--red-text:#FF9A8F;}
+}
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);min-height:100vh;}
 .header{background:rgba(245,241,232,0.97);border-bottom:1px solid var(--border);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
 .header-left{display:flex;align-items:center;gap:12px;}
 .shield{width:30px;height:34px;background:linear-gradient(160deg,var(--gold) 0%,#7a5c14 100%);clip-path:polygon(50% 0%,100% 18%,100% 65%,50% 100%,0% 65%,0% 18%);display:flex;align-items:center;justify-content:center;font-size:12px;}
-.header h1{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--gold);}
+.header h1{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--label-gold);}
 .back-btn{font-size:12px;color:var(--gold);text-decoration:none;border:1px solid var(--border);padding:6px 12px;border-radius:3px;}
 .tab-bar{display:flex;border-bottom:1px solid var(--border);background:var(--navy-mid);overflow-x:auto;padding:0 22px;}
 .tab{padding:13px 18px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;cursor:pointer;border-bottom:2px solid transparent;color:var(--slate);transition:all 0.2s;white-space:nowrap;}
-.tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+.tab.active{color:var(--label-gold);border-bottom-color:var(--gold);}
 .content{padding:22px 24px;max-width:1000px;margin:0 auto;}
 .panel{display:none;animation:fadeIn 0.3s ease;}
 .panel.active{display:block;}
@@ -32,7 +37,7 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);m
 .level-card.mine::after{content:'YOU';position:absolute;top:8px;right:8px;font-size:8px;background:var(--gold);color:var(--navy);padding:2px 5px;border-radius:2px;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:0.08em;}
 .lc-php{font-size:9px;color:var(--slate);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px;font-family:'Barlow Condensed',sans-serif;font-weight:600;}
 .lc-name{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:var(--cream);line-height:1.2;margin-bottom:6px;}
-.lc-comm{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:800;color:var(--gold-light);line-height:1;}
+.lc-comm{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:800;color:var(--label-gold);line-height:1;}
 .lc-bonus{font-size:10px;color:var(--slate);margin-top:2px;}
 .lc-timeframe{font-size:10px;color:var(--warn);margin-top:6px;font-weight:600;}
 
@@ -62,7 +67,7 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);m
 .req-vals{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
 .req-cur{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;}
 .req-cur.done{color:var(--success);}
-.req-cur.todo{color:var(--gold-light);}
+.req-cur.todo{color:var(--label-gold);}
 .req-goal{font-size:12px;color:var(--slate);}
 .prog-bar{height:6px;background:rgba(201,168,76,0.1);border-radius:3px;overflow:hidden;}
 .prog-fill{height:6px;border-radius:3px;transition:width 0.7s ease;}
@@ -541,7 +546,7 @@ function importClientCSV(event) {
     <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:4px;">
       <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--gold);">⚽ June 2026 MD Promotion Push</div>
       <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;">
-        <div style="font-size:11px;background:rgba(192,57,43,0.15);border:1px solid rgba(192,57,43,0.4);color:#E8A0A0;padding:3px 10px;border-radius:3px;font-weight:700;">⏰ ${daysLeft1} day${daysLeft1===1?'':'s'} left · Recruits/Apps/Submitted Pts due ${campaign.deadline}</div>
+        <div style="font-size:11px;background:rgba(192,57,43,0.15);border:1px solid rgba(192,57,43,0.4);color:var(--red-text);padding:3px 10px;border-radius:3px;font-weight:700;">⏰ ${daysLeft1} day${daysLeft1===1?'':'s'} left · Recruits/Apps/Submitted Pts due ${campaign.deadline}</div>
         <div style="font-size:11px;background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.35);color:var(--gold);padding:3px 10px;border-radius:3px;font-weight:700;">⏰ ${daysLeft2} days left · Paid Points due ${campaign.paidPtsDeadline}</div>
       </div>
     </div>

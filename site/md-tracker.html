@@ -108,18 +108,25 @@ body::before{content:"";position:fixed;inset:0;
 .sc-title{font-family:"Barlow Condensed",sans-serif;font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);margin-bottom:14px;}
 .sc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;}
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(6px);}
+@media(max-height:700px){.modal-bg{align-items:flex-start;padding-top:16px;}}
 .modal-bg.open{display:flex;}
-.modal{background:var(--s1);border:1px solid var(--border);border-radius:14px;width:100%;max-width:520px;overflow:hidden;}
-.modal-hdr{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.modal{background:var(--s1);border:1px solid var(--border);border-radius:14px;width:100%;max-width:520px;max-height:90vh;display:flex;flex-direction:column;}
+.modal-hdr{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
 .modal-title{font-family:"Barlow Condensed",sans-serif;font-size:16px;font-weight:800;color:var(--gold);}
 .modal-close{background:transparent;border:none;color:var(--muted);font-size:22px;cursor:pointer;line-height:1;}
-.modal-body{padding:20px;display:flex;flex-direction:column;gap:12px;}
+.modal-body{padding:20px;display:flex;flex-direction:column;gap:12px;overflow-y:auto;min-height:0;}
+.paste-box{background:rgba(201,168,76,.06);border:1px dashed rgba(201,168,76,.4);border-radius:8px;padding:10px 12px;}
+.paste-box>label{display:block;font-family:'DM Mono',monospace;font-size:11px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.05em;}
+.paste-box #nr-paste-inner,.paste-box #eg-paste-inner{margin-top:8px;display:flex;flex-direction:column;gap:8px;}
+.paste-box.collapsed #nr-paste-inner,.paste-box.collapsed #eg-paste-inner{display:none;}
+.paste-box textarea{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:8px 10px;color:var(--text);font-family:'Barlow',sans-serif;font-size:12.5px;resize:vertical;}
+
 .field label{display:block;font-family:"DM Mono",monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;}
 .field input,.field select{width:100%;background:var(--s2);border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-family:"Barlow",sans-serif;font-size:13px;outline:none;}
 .field input:focus,.field select:focus{border-color:var(--gold);}
 .field select option{background:var(--s1);}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-.modal-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:10px;}
+.modal-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:10px;flex-shrink:0;}
 .btn-create{flex:1;padding:11px;border-radius:8px;border:none;background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--bg);font-family:"Barlow Condensed",sans-serif;font-size:14px;font-weight:800;cursor:pointer;}
 .btn-cancel{padding:11px 16px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:"Barlow Condensed",sans-serif;font-size:13px;font-weight:700;cursor:pointer;}
 .empty-state{text-align:center;padding:60px 20px;color:var(--muted);}
@@ -272,6 +279,16 @@ body::before{content:"";position:fixed;inset:0;
       <button class="modal-close" onclick="closeModal()">×</button>
     </div>
     <div class="modal-body">
+      <div class="paste-box" id="nr-paste-box">
+        <label style="cursor:pointer;" onclick="togglePasteBox('nr')">💬 Paste the info instead <span id="nr-paste-caret">▾</span></label>
+        <div id="nr-paste-inner">
+          <textarea id="nr-paste-text" rows="3" placeholder="e.g. Deisy Garcia, Associate to Field Associate, starting Oct 1 for 3 months, needs 15 recruits, 15 apps, 30,000 points, I'm in month 2"></textarea>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <button type="button" class="btn-cancel" style="flex:0;white-space:nowrap;" onclick="extractRunInfo('nr')">✨ Fill In Fields</button>
+            <span id="nr-paste-status" style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);"></span>
+          </div>
+        </div>
+      </div>
       <div class="field"><label id="nr-agent-label">Agent</label>
         <select id="nr-agent" onchange="preselectDownline(this.value)"><option value="">Select agent…</option></select></div>
       <div class="field"><label>Current Level</label>
@@ -377,12 +394,22 @@ body::before{content:"";position:fixed;inset:0;
 
 <!-- EDIT GOALS (admin and up) -->
 <div class="modal-bg" id="edit-goals-modal">
-  <div class="modal" style="max-width:600px;max-height:90vh;overflow-y:auto;">
+  <div class="modal" style="max-width:600px;">
     <div class="modal-hdr">
       <div class="modal-title">🎯 Edit Promotion Goals &amp; Requirements</div>
       <button class="modal-close" onclick="closeEditGoalsModal()">×</button>
     </div>
     <div class="modal-body">
+      <div class="paste-box" id="eg-paste-box">
+        <label style="cursor:pointer;" onclick="togglePasteBox('eg')">💬 Paste the info instead <span id="eg-paste-caret">▾</span></label>
+        <div id="eg-paste-inner">
+          <textarea id="eg-paste-text" rows="3" placeholder="e.g. Switch this to Director level, 40 recruits, 40 apps, base 80000 paid points, 6 licensed agents, personal production 40%, note: needs Board Council sign off"></textarea>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <button type="button" class="btn-cancel" style="flex:0;white-space:nowrap;" onclick="extractRunInfo('eg')">✨ Fill In Fields</button>
+            <span id="eg-paste-status" style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);"></span>
+          </div>
+        </div>
+      </div>
       <div class="field"><label>Promotion level (the rank this run is promoting from)</label>
         <div style="display:flex;gap:8px;">
           <select id="eg-level" style="flex:1;" onchange="egLevelChanged()"></select>
@@ -778,7 +805,12 @@ function populateAgents(){
   const agentLabel=document.getElementById("nr-agent-label");
   if(typeof AGENTS==="undefined") return;
   const session = AUTH.getSession ? AUTH.getSession() : null;
-  const isAdmin = session && (session.role==="admin"||session.role==="agency_builder"||session.role==="marketing_director");
+  // Same role-string check used to have no idea about senior_md, directors
+  // with an admin tier, etc. — anyone outside those 3 exact literal role
+  // strings got locked to only running their own promotion, with no way to
+  // start a run for anyone on their team. Uses the same unified check
+  // already relied on for Edit Dates / Edit Goals on this page.
+  const isAdmin = session && (session.level >= 60 || !!(typeof getAdminTier === "function" && getAdminTier(session)) || session.role==="admin"||session.role==="agency_builder"||session.role==="marketing_director");
 
   if(isAdmin){
     // Admin: full dropdown of all agents, grouped by role
@@ -875,6 +907,144 @@ function createRun(){
 //                 changes to the level table still flow through to untouched runs.
 //   run.reqNotes  optional custom requirements text.
 const EG_NUM = ["r","a","p","basePts","lic","fas","mds","vps"];
+
+// ── PASTE-TEXT FILL-IN (New Run + Edit Goals) ─────────────────────
+// Sends whatever someone pastes — a text message, a note, a Slack copy —
+// to the same /api/claude proxy the screenshot-extraction feature uses,
+// and asks for one flexible JSON shape covering every field either modal
+// has. Nothing gets submitted automatically: this only fills in fields,
+// so the person still reviews and clicks Save/Start Run themselves.
+function togglePasteBox(prefix) {
+  const box = document.getElementById(prefix + '-paste-box');
+  const caret = document.getElementById(prefix + '-paste-caret');
+  const collapsed = box.classList.toggle('collapsed');
+  caret.textContent = collapsed ? '▸' : '▾';
+}
+
+async function extractRunInfo(prefix) {
+  const text = document.getElementById(prefix + '-paste-text').value.trim();
+  const status = document.getElementById(prefix + '-paste-status');
+  if (!text) { status.textContent = 'Paste some text first'; return; }
+  status.textContent = '⟳ Reading…';
+
+  const ENDPOINT = location.hostname === 'localhost' ? null : '/api/claude';
+  if (!ENDPOINT) { status.textContent = '⚠ Claude proxy not available on localhost'; return; }
+
+  const system = `You extract structured info from a short, informal note about a PHP Agency / Dynasty Builders promotion run. Return ONLY this exact JSON shape, no other text. Use null for anything not mentioned — never guess a number that wasn't stated.
+{
+  "agentName": "<full name mentioned, or null>",
+  "level": "<one of: Trainee, Associate, Field Associate, Director, Producing Marketing Director, Marketing Director, Senior Marketing Director, Executive Marketing Director, Senior Vice President, Executive Vice President, President Council, Chairman Council, Board Council, Senior Board Council, Executive Board Council, Senior Executive Board Council — pick the level being promoted FROM, or null>",
+  "startDate": "<YYYY-MM-DD if a start date is mentioned, or null>",
+  "months": <1, 2, or 3 if a duration is mentioned, or null>,
+  "currentMonth": <0-based month index if they say what month they're in, e.g. "month 2" = 1, or null>,
+  "personalPct": <decimal 0-1 if a personal production percent is mentioned e.g. "50%" = 0.5, or null>,
+  "targets": {
+    "r": <recruit target number, or null>, "a": <application target number, or null>, "p": <points target number, or null>,
+    "basePts": <base paid points target, or null>, "lic": <licensed agents target, or null>,
+    "fas": <direct FA target, or null>, "mds": <direct MD target, or null>, "vps": <direct VP target, or null>
+  },
+  "pointsType": "<'submitted' or 'paid' if mentioned, or null>",
+  "productionRule": "<'personal', 'team', or 'super_team' if mentioned, or null>",
+  "legCap": <decimal 0-1 if a max-share-from-one-leg is mentioned, or null>,
+  "notes": "<any requirements/approval note mentioned as free text, or null>",
+  "promotedFas": <number of FAs already promoted, if mentioned, or null>,
+  "promotedMds": <number of MDs already promoted, if mentioned, or null>,
+  "promotedVps": <number of VPs already promoted, if mentioned, or null>
+}`;
+
+  try {
+    const res = await fetch(ENDPOINT, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6', max_tokens: 600, system,
+        messages: [{ role: 'user', content: text }],
+      }),
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status + ': ' + (await res.text()).slice(0, 200));
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
+    const textBlock = (data?.content || []).find(b => b.type === 'text');
+    if (!textBlock?.text) throw new Error('No text in response');
+    const raw = textBlock.text.replace(/```json|```/g, '').trim();
+    const jsonMatch = raw.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error('No JSON found in response');
+    const parsed = JSON.parse(jsonMatch[0]);
+
+    const filled = prefix === 'nr' ? applyParsedToNewRun(parsed) : applyParsedToEditGoals(parsed);
+    status.textContent = filled.length ? `✓ Filled in: ${filled.join(', ')}` : '⚠ Nothing recognizable in that text — try adding more detail';
+  } catch (e) {
+    console.error('extractRunInfo error:', e);
+    status.textContent = '✗ ' + e.message;
+  }
+}
+
+function findAgentByName(name) {
+  if (!name || typeof AGENTS === 'undefined') return null;
+  const norm = s => (s || '').toLowerCase().replace(/[^a-z\s]/g, ' ').replace(/\s+/g, ' ').trim();
+  const n = norm(name);
+  if (!n) return null;
+  return AGENTS.find(a => norm(a.name) === n) || AGENTS.find(a => norm(a.name).includes(n) || n.includes(norm(a.name))) || null;
+}
+
+function applyParsedToNewRun(p) {
+  const filled = [];
+  if (p.agentName) {
+    const ag = findAgentByName(p.agentName);
+    if (ag && [...document.getElementById('nr-agent').options].some(o => o.value === ag.id)) {
+      document.getElementById('nr-agent').value = ag.id;
+      preselectDownline(ag.id);
+      filled.push('agent');
+    }
+  }
+  if (p.level && egLadder(p.level)) {
+    document.getElementById('nr-level').value = p.level;
+    onLevelChange(p.level);
+    filled.push('level');
+  }
+  if (p.startDate) { document.getElementById('nr-start').value = p.startDate; filled.push('start date'); }
+  if (p.months && [1,2,3].includes(p.months)) { document.getElementById('nr-duration').value = String(p.months); filled.push('duration'); }
+  if (p.targets?.r != null) { document.getElementById('nr-tr').value = p.targets.r; filled.push('recruits target'); }
+  if (p.targets?.a != null) { document.getElementById('nr-ta').value = p.targets.a; filled.push('apps target'); }
+  if (p.targets?.p != null) { document.getElementById('nr-tp').value = p.targets.p; filled.push('points target'); }
+  if (p.currentMonth != null && p.currentMonth >= 0 && p.currentMonth <= 2) { document.getElementById('nr-current-month').value = String(p.currentMonth); filled.push('current month'); }
+  if (p.personalPct != null) {
+    const sel = document.getElementById('nr-personal-pct');
+    const want = String(p.personalPct);
+    if (![...sel.options].some(o => o.value === want)) sel.add(new Option(Math.round(p.personalPct*100)+'%', want));
+    sel.value = want; filled.push('personal %');
+  }
+  return filled;
+}
+
+function applyParsedToEditGoals(p) {
+  const filled = [];
+  if (p.level && egLadder(p.level)) {
+    document.getElementById('eg-level').value = p.level;
+    egLevelChanged();
+    filled.push('level');
+  }
+  const numField = (key, id, label) => { if (p.targets?.[key] != null) { document.getElementById(id).value = p.targets[key]; filled.push(label); } };
+  numField('r','eg-r','recruits'); numField('a','eg-a','apps'); numField('p','eg-p','points');
+  numField('basePts','eg-basePts','base points'); numField('lic','eg-lic','licensed'); numField('fas','eg-fas','FAs');
+  numField('mds','eg-mds','MDs'); numField('vps','eg-vps','VPs');
+  if (p.pointsType) { document.getElementById('eg-pointsType').value = p.pointsType; filled.push('points type'); }
+  if (p.productionRule) { document.getElementById('eg-rule').value = p.productionRule; filled.push('production rule'); }
+  if (p.legCap != null) {
+    const sel = document.getElementById('eg-legCap'); const want = String(p.legCap);
+    if ([...sel.options].some(o => o.value === want)) { sel.value = want; filled.push('leg cap'); }
+  }
+  if (p.personalPct != null) {
+    const sel = document.getElementById('eg-personalPct'); const want = String(p.personalPct);
+    if (![...sel.options].some(o => o.value === want)) sel.add(new Option(Math.round(p.personalPct*100)+'%', want));
+    sel.value = want; filled.push('personal %');
+  }
+  if (p.notes) { document.getElementById('eg-notes').value = p.notes; filled.push('notes'); }
+  if (p.promotedFas != null) { document.getElementById('eg-pFas').value = p.promotedFas; filled.push('FAs promoted'); }
+  if (p.promotedMds != null) { document.getElementById('eg-pMds').value = p.promotedMds; filled.push('MDs promoted'); }
+  if (p.promotedVps != null) { document.getElementById('eg-pVps').value = p.promotedVps; filled.push('VPs promoted'); }
+  return filled;
+}
+
 function egLadder(label){return PROMO_LADDER.find(l=>l.label===label)||null;}
 function egFill(targets, rules, personalPct){
   EG_NUM.forEach(k=>{const el=document.getElementById("eg-"+k); if(el) el.value=(targets&&targets[k]>0)?targets[k]:"";});

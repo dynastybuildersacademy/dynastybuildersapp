@@ -422,6 +422,27 @@ AUTH.require('roster-admin.html');
   </div>
 </div>
 
+<!-- WELCOME EMAIL MODAL -->
+<div id="welcome-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:400;align-items:center;justify-content:center;padding:16px;">
+  <div style="background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:22px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;">
+    <div class="card-title">📧 Welcome Email — <span id="wm-agent-name"></span></div>
+    <p style="font-size:11.5px;color:var(--muted);margin-bottom:14px;line-height:1.6;">This opens in your own email app so you can review before it sends. The PIN is real login info — only send it to the agent's own address.</p>
+    <label style="display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px;">To</label>
+    <input id="wm-to" type="email" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:9px 11px;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;margin-bottom:12px;">
+    <label style="display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px;">Subject</label>
+    <input id="wm-subject" type="text" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:9px 11px;color:var(--text);font-size:13px;margin-bottom:12px;">
+    <label style="display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px;">Message</label>
+    <textarea id="wm-body" rows="14" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:9px 11px;color:var(--text);font-family:'Barlow',sans-serif;font-size:12.5px;line-height:1.6;resize:vertical;margin-bottom:6px;"></textarea>
+    <div id="wm-warning" style="display:none;font-size:11.5px;color:var(--orange);background:rgba(230,126,34,.08);border:1px solid rgba(230,126,34,.3);border-radius:6px;padding:8px 10px;margin-bottom:10px;"></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn btn-ghost" style="flex:1;min-width:110px;" onclick="document.getElementById('welcome-modal').style.display='none';">Cancel</button>
+      <button class="btn btn-ghost" style="flex:1;min-width:110px;" onclick="copyWelcomeEmail()">📋 Copy Text</button>
+      <button class="btn btn-gold" style="flex:2;min-width:140px;" onclick="sendWelcomeEmail()">📧 Open in Email App</button>
+    </div>
+    <div id="wm-status" style="font-size:11px;color:var(--muted);margin-top:8px;"></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -611,6 +632,7 @@ function renderRoster() {
       <td>
         <button class="btn btn-ghost" style="padding:4px 10px;font-size:11px;" onclick="editAgent('${a.id}')">✏ Edit</button>
         <button class="btn btn-ghost" style="padding:4px 10px;font-size:11px;" onclick="viewDownlineFor('${a.id}')" title="View this agent's downline tree">🌳</button>
+        <button class="btn btn-ghost" style="padding:4px 10px;font-size:11px;" onclick="openWelcomeEmailModal('${a.id}')" title="Draft a welcome email with site access &amp; PIN">📧</button>
       </td>
     </tr>`;
   }).join('');
@@ -628,6 +650,91 @@ function viewDownlineFor(agentId) {
   const rootSel = document.getElementById('gene-root');
   if (rootSel) rootSel.value = agentId;
   renderGenealogy();
+}
+
+// ── WELCOME EMAIL ─────────────────────────────────────────────
+// Drafts the email and opens it in the admin's own email app via mailto:
+// rather than sending it silently from here — there's no backend on this
+// site that can send mail on its own, and a PIN is real login info, so
+// whoever sends it should see exactly what's going out before it does.
+const SITE_BASE_URL = 'https://agent.dynastybuildersapp.com';
+
+function composeWelcomeEmail(agent) {
+  const firstName = (agent.name || '').split(' ')[0] || agent.name;
+  const subject = `Welcome to Dynasty Builders Academy — your login info`;
+  const body =
+`Hi ${firstName},
+
+Welcome to Dynasty Builders Academy! Here's everything you need to get into your agent portal:
+
+Site: ${SITE_BASE_URL}
+Agent ID: ${agent.id}
+PIN: ${agent.pin || '(ask your upline to set one — see note below)'}
+
+How to log in:
+1. Go to ${SITE_BASE_URL}
+2. Enter your Agent ID and PIN above
+3. You'll land on your Hub — that's home base for everything: training, your activity tracker, recruiting tools, and your promotion path
+
+A few places worth starting:
+• Training Hub → Fast Track — your first 30 days, step by step
+• My Numbers → Activity Log — log your calls and contacts daily
+• Recruiting & Production → Top 25 — build your list of who to reach out to first
+
+Keep your PIN private — it's your own login, just like a password.
+
+Questions? Reach out to your upline any time.
+
+Welcome to the team!`;
+  return { subject, body };
+}
+
+function openWelcomeEmailModal(agentId) {
+  const agent = agentList.find(a => a.id === agentId) || (typeof AGENTS !== 'undefined' ? AGENTS.find(a => a.id === agentId) : null);
+  if (!agent) { toast('Agent not found'); return; }
+  const { subject, body } = composeWelcomeEmail(agent);
+  document.getElementById('wm-agent-name').textContent = agent.name;
+  document.getElementById('wm-to').value = agent.email || '';
+  document.getElementById('wm-subject').value = subject;
+  document.getElementById('wm-body').value = body;
+  document.getElementById('wm-status').textContent = '';
+  const warn = document.getElementById('wm-warning');
+  if (!agent.email) {
+    warn.style.display = 'block';
+    warn.textContent = '⚠ No email on file for this agent — add one in Edit, or type it in below before sending.';
+  } else if (!agent.pin) {
+    warn.style.display = 'block';
+    warn.textContent = '⚠ This agent has no PIN set yet — set one in Edit first, or the email will go out without login info.';
+  } else {
+    warn.style.display = 'none';
+  }
+  document.getElementById('welcome-modal').style.display = 'flex';
+}
+
+function copyWelcomeEmail() {
+  const text = document.getElementById('wm-subject').value + '\n\n' + document.getElementById('wm-body').value;
+  const status = document.getElementById('wm-status');
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(
+      () => { status.textContent = '✓ Copied'; },
+      () => { status.textContent = '⚠ Could not copy — select and copy manually.'; }
+    );
+  } else {
+    status.textContent = '⚠ Clipboard not available — select and copy manually.';
+  }
+}
+
+function sendWelcomeEmail() {
+  const to = document.getElementById('wm-to').value.trim();
+  if (!to) { document.getElementById('wm-status').textContent = '⚠ Add an email address first.'; return; }
+  const subject = document.getElementById('wm-subject').value;
+  const body = document.getElementById('wm-body').value;
+  const mailto = `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  window.location.href = mailto;
+  document.getElementById('wm-status').textContent = '✓ Opening your email app…';
+  if (typeof fireTrigger === 'function') {
+    try { fireTrigger('welcome_email', { to, subject }); } catch(e) {}
+  }
 }
 
 // ── BOARD TABLE ───────────────────────────────────────────────
