@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Business Card — Dynasty Builders Academy</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- auth.js is intentionally NOT loaded: this page is public, and auth.js
+     carries the full agent roster including login PINs. -->
+<script src="card-styles.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg,#F5F1E8);color:var(--text,#1E1A10);min-height:100vh;padding:20px 14px 40px;}
+.card{max-width:440px;margin:0 auto;background:var(--card);border-radius:18px;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,.12);}
+.hdr{background:var(--header);padding:30px 22px 64px;text-align:center;color:var(--headerText);}
+.hdr .org{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;}
+.photo-wrap{margin:-56px auto 0;width:112px;height:112px;border-radius:50%;border:4px solid var(--card);overflow:hidden;background:var(--bg);display:flex;align-items:center;justify-content:center;position:relative;}
+.photo-wrap img{width:100%;height:100%;object-fit:cover;}
+.photo-wrap .initials{font-size:38px;font-weight:700;color:var(--accent);font-family:var(--font);}
+.body{padding:14px 22px 24px;text-align:center;}
+.name{font-family:var(--font);font-size:28px;font-weight:700;line-height:1.15;color:var(--text);}
+.tagline{font-size:13.5px;color:var(--muted);margin-top:4px;}
+.actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:18px 0;}
+.act{display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 4px;border-radius:12px;background:var(--btn);color:var(--btnText);text-decoration:none;font-size:12px;font-weight:700;border:none;cursor:pointer;font-family:inherit;}
+.act span{font-size:20px;}
+.save-btn{display:block;width:100%;padding:14px;border-radius:12px;border:2px solid var(--btn);background:transparent;color:var(--text);font-size:14.5px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:18px;}
+.info{text-align:left;border-top:1px solid rgba(128,128,128,.2);padding-top:14px;}
+.row{display:flex;gap:12px;align-items:flex-start;padding:9px 0;font-size:14px;color:var(--text);word-break:break-word;}
+.row .ico{width:22px;flex-shrink:0;text-align:center;}
+.row a{color:var(--accent);text-decoration:none;font-weight:600;}
+.bio{font-size:14px;line-height:1.65;color:var(--text);text-align:left;margin-top:14px;white-space:pre-line;}
+.section-title{font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:var(--accent);margin:22px 0 10px;text-align:left;}
+.socials{display:flex;flex-wrap:wrap;gap:8px;}
+.soc{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:20px;border:1.5px solid var(--accent);color:var(--accent);text-decoration:none;font-size:12.5px;font-weight:700;}
+.mat{display:flex;gap:12px;align-items:center;padding:12px;border-radius:12px;border:1px solid rgba(128,128,128,.25);text-decoration:none;color:var(--text);margin-bottom:8px;text-align:left;}
+.mat .mi{font-size:22px;flex-shrink:0;}
+.mat .mt{font-weight:700;font-size:13.5px;}
+.mat .md{font-size:12px;color:var(--muted);margin-top:2px;}
+.mat .arrow{margin-left:auto;color:var(--accent);font-weight:700;}
+.share{margin-top:22px;padding-top:16px;border-top:1px solid rgba(128,128,128,.2);}
+.share-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.sh{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;border-radius:10px;border:1.5px solid rgba(128,128,128,.3);background:transparent;color:var(--text);text-decoration:none;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;}
+.sh span{font-size:18px;}
+.qr-box{margin:18px auto 0;background:#FFFFFF;padding:12px;border-radius:12px;display:inline-block;}
+.foot{text-align:center;font-size:10.5px;color:var(--muted);margin-top:16px;}
+.state{max-width:440px;margin:60px auto;text-align:center;font-size:15px;color:#4A5568;background:#fff;padding:30px;border-radius:14px;}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1E1A10;color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;display:none;}
+</style>
+</head>
+<body>
+<div id="root"><div class="state">Loading card…</div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const PROXY = '/api/monday';
+const params = new URLSearchParams(location.search);
+const agentId = (params.get('a') || params.get('agent') || '').trim();
+let CARD = null;
+
+function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.style.display='block'; setTimeout(()=>t.style.display='none',2200); }
+function applyStyle(style){
+  const r=document.documentElement.style, b=document.body.style;
+  ['bg','card','header','headerText','text','muted','accent','btn','btnText','font'].forEach(k=>{ r.setProperty('--'+k, style[k]); b.setProperty('--'+k, style[k]); });
+}
+function digits(p){ return String(p||'').replace(/[^\d+]/g,''); }
+function initials(n){ return String(n||'').split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0].toUpperCase()).join(''); }
+function cardUrl(){ return location.origin + location.pathname + '?a=' + encodeURIComponent(agentId); }
+function shareText(){ return `Here's ${CARD.name}'s contact card — ${CARD.tagline ? CARD.tagline + ' · ' : ''}Dynasty Builders Academy: ${cardUrl()}`; }
+
+// Links carry the agent so any lead from a featured material credits them.
+function materialUrl(m){ return `${m.file}?agent=${encodeURIComponent(agentId)}&campaign=business_card`; }
+
+function render(){
+  const c = CARD, style = getCardStyle(c.style);
+  applyStyle(style);
+  document.title = `${c.name} — Dynasty Builders Academy`;
+  const phoneDigits = digits(c.phone);
+  const photoOk = /^data:image\/(jpeg|png|webp);base64,/.test(c.photo);
+  const socials = CARD_SOCIALS.map(s => ({...s, url: safeUrl(c.social?.[s.id])})).filter(s => s.url);
+  const mats = CARD_MATERIALS.filter(m => (c.materials||[]).includes(m.id));
+
+  document.getElementById('root').innerHTML = `
+  <div class="card">
+    <div class="hdr"><div class="org">Dynasty Builders Academy</div></div>
+    <div class="photo-wrap">${photoOk ? `<img src="${c.photo}" alt="${escHtml(c.name)}">` : `<div class="initials">${escHtml(initials(c.name))}</div>`}</div>
+    <div class="body">
+      <div class="name">${escHtml(c.name)}</div>
+      ${c.tagline ? `<div class="tagline">${escHtml(c.tagline)}</div>` : ''}
+      <div class="actions">
+        ${phoneDigits ? `<a class="act" href="tel:${phoneDigits}"><span>📞</span>Call</a><a class="act" href="sms:${phoneDigits}"><span>💬</span>Text</a>` : ''}
+        ${c.email ? `<a class="act" href="mailto:${escHtml(c.email)}"><span>✉️</span>Email</a>` : ''}
+      </div>
+      <button class="save-btn" onclick="saveContact()">⬇ Save to Contacts</button>
+      <div class="info">
+        ${c.phone ? `<div class="row"><span class="ico">📞</span><a href="tel:${phoneDigits}">${escHtml(formatPhone(c.phone))}</a></div>` : ''}
+        ${c.email ? `<div class="row"><span class="ico">✉️</span><a href="mailto:${escHtml(c.email)}">${escHtml(c.email)}</a></div>` : ''}
+        ${c.address ? `<div class="row"><span class="ico">📍</span><a href="https://maps.google.com/?q=${encodeURIComponent(c.address)}" target="_blank" rel="noopener">${escHtml(c.address)}</a></div>` : ''}
+      </div>
+      ${c.bio ? `<div class="section-title">About</div><div class="bio">${escHtml(c.bio)}</div>` : ''}
+      ${socials.length ? `<div class="section-title">Connect</div><div class="socials">${socials.map(s=>`<a class="soc" href="${escHtml(s.url)}" target="_blank" rel="noopener">${s.icon} ${escHtml(s.label)}</a>`).join('')}</div>` : ''}
+      ${mats.length ? `<div class="section-title">Free Resources</div>${mats.map(m=>`<a class="mat" href="${materialUrl(m)}" target="_blank" rel="noopener"><span class="mi">${m.icon}</span><div><div class="mt">${escHtml(m.title)}</div><div class="md">${escHtml(m.desc)}</div></div><span class="arrow">→</span></a>`).join('')}` : ''}
+      <div class="share">
+        <div class="section-title" style="margin-top:0;">Share This Card</div>
+        <div class="share-grid">
+          <a class="sh" id="sh-sms"><span>💬</span>Text</a>
+          <a class="sh" id="sh-wa" target="_blank" rel="noopener"><span>🟢</span>WhatsApp</a>
+          <a class="sh" id="sh-email"><span>✉️</span>Email</a>
+          <button class="sh" onclick="copyLink()"><span>🔗</span>Copy</button>
+        </div>
+        <div class="qr-box" id="qr"></div>
+      </div>
+      <div class="foot">Dynasty Builders Academy · PHP Agency</div>
+    </div>
+  </div>`;
+
+  const txt = shareText();
+  // "sms:?&body=" is the form both iOS and Android Messages accept for a
+  // prefilled body with no recipient chosen yet.
+  document.getElementById('sh-sms').href = 'sms:?&body=' + encodeURIComponent(txt);
+  document.getElementById('sh-wa').href = 'https://wa.me/?text=' + encodeURIComponent(txt);
+  document.getElementById('sh-email').href = 'mailto:?subject=' + encodeURIComponent(`${c.name} — Contact Card`) + '&body=' + encodeURIComponent(txt);
+  if (typeof QRCode !== 'undefined') {
+    new QRCode(document.getElementById('qr'), { text: cardUrl(), width: 150, height: 150, colorDark: '#000000', colorLight: '#FFFFFF' });
+  } else { document.getElementById('qr').style.display = 'none'; }
+}
+
+function copyLink(){
+  const u = cardUrl();
+  if (navigator.clipboard) navigator.clipboard.writeText(u).then(()=>toast('✓ Link copied'),()=>prompt('Copy this link:',u));
+  else prompt('Copy this link:',u);
+}
+
+// vCard 3.0 — the format both iPhone and Android contacts import directly.
+function vcardEscape(s){ return String(s||'').replace(/\\/g,'\\\\').replace(/\n/g,'\\n').replace(/,/g,'\\,').replace(/;/g,'\\;'); }
+function saveContact(){
+  const c = CARD; const parts = String(c.name||'').trim().split(/\s+/);
+  const last = parts.length > 1 ? parts.pop() : ''; const first = parts.join(' ');
+  const lines = ['BEGIN:VCARD','VERSION:3.0',
+    `N:${vcardEscape(last)};${vcardEscape(first)};;;`, `FN:${vcardEscape(c.name)}`,
+    'ORG:Dynasty Builders Academy'];
+  if (c.tagline) lines.push(`TITLE:${vcardEscape(c.tagline)}`);
+  if (c.phone) lines.push(`TEL;TYPE=CELL:${digits(c.phone)}`);
+  if (c.email) lines.push(`EMAIL;TYPE=INTERNET:${vcardEscape(c.email)}`);
+  if (c.address) lines.push(`ADR;TYPE=WORK:;;${vcardEscape(c.address)};;;;`);
+  lines.push(`URL:${cardUrl()}`);
+  const m = /^data:image\/(jpeg|png);base64,(.+)$/.exec(c.photo||'');
+  if (m) lines.push(`PHOTO;ENCODING=b;TYPE=${m[1].toUpperCase()}:${m[2]}`);
+  if (c.bio) lines.push(`NOTE:${vcardEscape(c.bio.slice(0,500))}`);
+  lines.push('END:VCARD');
+  const blob = new Blob([lines.join('\r\n')], { type:'text/vcard' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = (c.name||'contact').replace(/[^\w\s-]/g,'').trim().replace(/\s+/g,'_') + '.vcf';
+  document.body.appendChild(a); a.click(); a.remove();
+}
+
+async function init(){
+  const root = document.getElementById('root');
+  if (!agentId) { root.innerHTML = '<div class="state">This link is missing an agent. Ask for a fresh card link.</div>'; return; }
+  try {
+    CARD = await fetchCardFromMonday(agentId, PROXY);
+  } catch (e) {
+    console.error(e);
+    root.innerHTML = '<div class="state">Couldn\'t load this card right now. Please try again in a moment.</div>'; return;
+  }
+  if (!CARD) { root.innerHTML = '<div class="state">This business card hasn\'t been set up yet.</div>'; return; }
+  render();
+}
+init();
+</script>
+</body>
+</html>

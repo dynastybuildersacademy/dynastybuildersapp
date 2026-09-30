@@ -9,19 +9,30 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 :root{
-  --bg:#08121F;--s1:#0F1E33;--s2:#172840;--s3:#1E3352;
+  /* This page used to be the one holdout on a permanently-dark navy theme
+     while every other page in the app (Hub, Promotions, Roster Admin, the
+     surveys) uses a light cream/gold theme that adapts to the viewer's own
+     system dark-mode setting. Converted to match: same variable names, so
+     nothing that references them needed to change, just what they resolve
+     to. Gold is never used as text anywhere in this file (only borders,
+     backgrounds and small accent badges), so there's no repeat of the
+     gold-on-light contrast issue fixed on the other pages. */
+  --bg:#F5F1E8;--s1:#FFFFFF;--s2:#ECE6D6;--s3:#E4DBC4;
   --gold:#C9A84C;--gold2:#E8C97A;--green:#2DCA73;--red:#E74C3C;--blue:#3498DB;
-  /* This page's surfaces are all dark navy, so text must be light. --text was
-     #1E1A10 (near-black, 1.04:1 on the cards) from the earlier light-theme
-     conversion, which left names, client rows and stat values unreadable. */
-  --text:#F5F1E8;--muted:#9FB0C6;--border:rgba(201,168,76,.18);
+  --text:#1E1A10;--muted:#4A5568;--border:rgba(201,168,76,.22);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#15130D;--s1:#211E15;--s2:#2A2619;--s3:#332C1E;
+    --text:#F5F1E8;--muted:#A9B7CC;--border:rgba(201,168,76,.3);
+  }
 }
 body{background:var(--bg);color:var(--text);font-family:"Barlow",sans-serif;min-height:100vh;}
 body::before{content:"";position:fixed;inset:0;
   background-image:linear-gradient(rgba(201,168,76,.025) 1px,transparent 1px),
     linear-gradient(90deg,rgba(201,168,76,.025) 1px,transparent 1px);
   background-size:40px 40px;pointer-events:none;z-index:0;}
-.topbar{background:rgba(8,18,31,.97);border-bottom:1px solid var(--border);padding:0 20px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:100;backdrop-filter:blur(14px);}
+.topbar{background:var(--s1);border-bottom:1px solid var(--border);padding:0 20px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:100;backdrop-filter:blur(14px);}
 .brand{display:flex;align-items:center;gap:9px;padding:12px 16px 12px 0;border-right:1px solid var(--border);}
 .brand-hex{width:28px;height:28px;background:linear-gradient(135deg,var(--gold),var(--gold2));clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:var(--bg);}
 .brand-name{font-family:"Barlow Condensed",sans-serif;font-size:15px;font-weight:900;}
@@ -669,7 +680,10 @@ const PROMO_LADDER = [
     icon: "⚡", comm: "50%", color: "#2ECC71",
     months: 3,
     targets: { r:30, a:30, p:60000 },
-    personalPct: 0.0, pointsType: "submitted", productionRule: "team", legCap: null,
+    // Team-based from here on, but the strategy is still 30-50% personal —
+    // someone still personally recruiting and writing business, not
+    // riding entirely on downline production. 0.4 (40%) is the midpoint.
+    personalPct: 0.4, pointsType: "submitted", productionRule: "team", legCap: null,
     notes: "2 Direct FAs or 1 FA + 2 Direct Associates · 6 Licensed & Appointed Agents · 30 Base Recruits · 30 Submitted Applications · 60,000 Submitted Points (90 days)"
   },
   // ── L4 DIRECTOR → L5 PRODUCING MD ───────────────────────────
@@ -687,7 +701,7 @@ const PROMO_LADDER = [
     icon: "📈", comm: "70%", color: "#C9A84C",
     months: 3,
     targets: { fas:3, lic:15, r:50, a:50, basePts:70000 },
-    personalPct: 0.0, pointsType: "submitted", productionRule: "super_team", legCap: null,
+    personalPct: 0.4, pointsType: "submitted", productionRule: "super_team", legCap: null,
     notes: "3 Direct FAs · 15 Licensed & Appointed Agents · 50 Super Team Recruits · 50 Submitted Applications · 70,000 Super Team Paid Points (90 days)"
   },
   // ── L6 MARKETING DIRECTOR → L7 SENIOR MD ───────────────────
@@ -696,7 +710,7 @@ const PROMO_LADDER = [
     icon: "🏆", comm: "75%", color: "#C9A84C",
     months: 3,
     targets: { mds:2, lic:60, r:100, a:100, basePts:140000 },
-    personalPct: 0.0, pointsType: "submitted", productionRule: "super_team", legCap: null,
+    personalPct: 0.4, pointsType: "submitted", productionRule: "super_team", legCap: null,
     notes: "2 Direct MDs · 60 Licensed & Appointed Agents · 100 Super Team Recruits · 100 Super Team Submitted Applications · 140,000 Super Team Paid Points (90 days)"
   },
   // ── L7 SENIOR MD → L8 EXECUTIVE MD ─────────────────────────
@@ -705,7 +719,7 @@ const PROMO_LADDER = [
     icon: "🌟", comm: "77%", color: "#9B59B6",
     months: 3,
     targets: { mds:4, lic:120, r:200, a:200, basePts:200000 },
-    personalPct: 0.0, pointsType: "submitted", productionRule: "super_team", legCap: null,
+    personalPct: 0.4, pointsType: "submitted", productionRule: "super_team", legCap: null,
     notes: "4 Direct MDs · 120 Licensed & Appointed Agents · 200 Super Team Recruits · 200 Super Team Submitted Applications · 200,000 Super Team Paid Points (90 days)"
   },
   // ── L8 EXECUTIVE MD → L9 SENIOR VP ─────────────────────────
@@ -714,7 +728,7 @@ const PROMO_LADDER = [
     icon: "💎", comm: "78%", color: "#E74C3C",
     months: 3,
     targets: { mds:6, lic:180, r:400, a:300, basePts:400000 },
-    personalPct: 0.0, pointsType: "submitted", productionRule: "super_team", legCap: null,
+    personalPct: 0.4, pointsType: "submitted", productionRule: "super_team", legCap: null,
     notes: "6 Direct MDs · 180 Licensed & Appointed Agents · 400 Super Team Recruits · 300 Super Team Submitted Applications · 400,000 Super Team Paid Points (90 days)"
   },
   // ── L9 SENIOR VP → L10 EXECUTIVE VP ────────────────────────
@@ -723,7 +737,7 @@ const PROMO_LADDER = [
     icon: "🦅", comm: "79%", color: "#1ABC9C",
     months: 3,
     targets: { mds:8, lic:240, r:400, a:400, basePts:600000 },
-    personalPct: 0.0, pointsType: "submitted", productionRule: "super_team", legCap: null,
+    personalPct: 0.4, pointsType: "submitted", productionRule: "super_team", legCap: null,
     notes: "8 Direct MDs · 240 Licensed & Appointed Agents · 400 Super Team Recruits · 400 Super Team Submitted Applications · 600,000 Super Team Paid Points (90 days)"
   },
   // ── L10 EXECUTIVE VP → L11 PRESIDENT COUNCIL ───────────────
@@ -732,7 +746,7 @@ const PROMO_LADDER = [
     icon: "👑", comm: "80%", color: "#E8C97A",
     months: 3,
     targets: { mds:10, lic:300, r:500, a:500, basePts:800000 },
-    personalPct: 0.0, pointsType: "submitted", productionRule: "super_team", legCap: null,
+    personalPct: 0.4, pointsType: "submitted", productionRule: "super_team", legCap: null,
     notes: "10 Direct MDs · 300 Licensed & Appointed Agents · 500 Super Team Recruits · 500 Super Team Submitted Applications · 800,000 Super Team Paid Points (90 days)"
   },
   // ── L11 PRESIDENT COUNCIL → L12 CHAIRMAN COUNCIL ───────────
@@ -741,7 +755,7 @@ const PROMO_LADDER = [
     icon: "🔱", comm: "81%", color: "#E8C97A",
     months: 3,
     targets: { mds:12, lic:400, r:600, a:600, basePts:1000000 },
-    personalPct: 0.0, pointsType: "submitted", productionRule: "super_team", legCap: null,
+    personalPct: 0.4, pointsType: "submitted", productionRule: "super_team", legCap: null,
     notes: "12 Direct MDs · 400 Licensed & Appointed Agents · 600 Super Team Recruits · 600 Super Team Submitted Applications · 1,000,000 Super Team Paid Points (90 days)"
   },
   // ── L12 CHAIRMAN COUNCIL → L13 BOARD COUNCIL ───────────────
@@ -750,7 +764,7 @@ const PROMO_LADDER = [
     icon: "⬡", comm: "82%", color: "#FFD700",
     months: 3,
     targets: { mds:20, lic:1500, r:1500, a:1500, basePts:2000000 },
-    personalPct: 0.0, pointsType: "submitted", productionRule: "super_team", legCap: null,
+    personalPct: 0.4, pointsType: "submitted", productionRule: "super_team", legCap: null,
     notes: "20 Direct MDs · 1,500 Licensed & Appointed Agents · 1,500 Super Team Recruits · 1,500 Super Team Submitted Applications · 2,000,000 Super Team Paid Points (90 days)"
   },
   // ── L13 BOARD COUNCIL → L14 SENIOR BOARD COUNCIL ───────────
@@ -759,7 +773,7 @@ const PROMO_LADDER = [
     icon: "🏛", comm: "82.5%", color: "#FFD700",
     months: 3,
     targets: { vps:6, lic:3000, r:3000, a:3000, basePts:4000000 },
-    personalPct: 0.0, pointsType: "submitted", productionRule: "super_team", legCap: null,
+    personalPct: 0.4, pointsType: "submitted", productionRule: "super_team", legCap: null,
     notes: "6 Direct Vice-Presidents · 3,000 Licensed & Appointed Agents · 3,000 Super Team Recruits · 3,000 Super Team Submitted Applications · 4,000,000 Super Team Paid Points (90 days)"
   },
   // ── L14 SENIOR BC → L15 EXECUTIVE BC ───────────────────────
@@ -768,7 +782,7 @@ const PROMO_LADDER = [
     icon: "🏛", comm: "83%", color: "#FFD700",
     months: 3,
     targets: { vps:8, lic:6000, r:6000, a:6000, basePts:8000000 },
-    personalPct: 0.0, pointsType: "submitted", productionRule: "super_team", legCap: null,
+    personalPct: 0.4, pointsType: "submitted", productionRule: "super_team", legCap: null,
     notes: "8 Direct Vice-Presidents · 6,000 Licensed & Appointed Agents · 6,000 Super Team Recruits · 6,000 Super Team Submitted Applications · 8,000,000 Super Team Paid Points (90 days)"
   },
   // ── L15 EXECUTIVE BC → L16 SENIOR EXECUTIVE BC ─────────────
@@ -777,7 +791,7 @@ const PROMO_LADDER = [
     icon: "🏛", comm: "83.5%", color: "#FFD700",
     months: 3,
     targets: { vps:10, lic:12000, r:12000, a:12000, basePts:16000000 },
-    personalPct: 0.0, pointsType: "submitted", productionRule: "super_team", legCap: null,
+    personalPct: 0.4, pointsType: "submitted", productionRule: "super_team", legCap: null,
     notes: "10 Direct Vice-Presidents · 12,000 Licensed & Appointed Agents · 12,000 Super Team Recruits · 12,000 Super Team Submitted Applications · 16,000,000 Super Team Paid Points (90 days)"
   },
   // ── L16 SENIOR EXECUTIVE BOARD COUNCIL ─────────────────────
@@ -785,7 +799,7 @@ const PROMO_LADDER = [
     id: "senior_executive_board_council", label: "Senior Executive Board Council", nextLabel: null, phpLevel: 16,
     icon: "🌐", comm: "84%", color: "#FFD700",
     months: 0, targets: {},
-    personalPct: 0.0, pointsType: "submitted", productionRule: "super_team", legCap: null,
+    personalPct: 0.4, pointsType: "submitted", productionRule: "super_team", legCap: null,
     notes: "Top tier — First to receive $100,000 Jet Card & $500,000 Rolls Royce"
   },
 ];
@@ -870,7 +884,7 @@ function createRun(){
   // Look up from PROMO_LADDER first, fall back to TARGETS
   const ladderEntry = PROMO_LADDER.find(l => l.label === level || l.id === level.toLowerCase().replace(/\s+/g,"_"));
   const tDef = ladderEntry ? ladderEntry.targets : (TARGETS[level]||{r:3,a:3,p:3000});
-  const defaultPersonalPct = ladderEntry?.personalPct || 0.5;
+  const defaultPersonalPct = ladderEntry?.personalPct ?? 0.5;
   const defaultMonths = ladderEntry?.months || 3;
   const run={
     id:Date.now().toString(),
@@ -880,7 +894,7 @@ function createRun(){
              a:parseFloat(document.getElementById("nr-ta").value)||tDef.a,
              p:parseInt(document.getElementById("nr-tp").value)||tDef.p},
     currentMonth:parseInt(document.getElementById("nr-current-month").value)||0,
-    personalPct:parseFloat(document.getElementById("nr-personal-pct").value)||0.5,
+    personalPct:parseFloat(document.getElementById("nr-personal-pct").value) ?? 0.5,
     downlineIds:[...selectedDownline],
     recruits:Array.from({length:months},()=>[]),
     apps:Array.from({length:months},()=>[]),
@@ -3994,10 +4008,20 @@ function onLevelChange(level) {
   const dur = document.getElementById("nr-duration");
   if(dur && entry.months) dur.value = Math.min(entry.months, 3);
 
-  // Update personal %
+  // Update personal % — was "if(entry.personalPct)", which silently did
+  // nothing for any level whose value was legitimately 0, since 0 is
+  // falsy in JS. That's exactly why Field Associate and every level above
+  // it never updated this dropdown at all when selected.
+  // Also matches by parsed float rather than a direct .value assignment:
+  // this dropdown's options are formatted "0.40", "0.50" etc., so setting
+  // .value to the plain number 0.4 silently matched nothing (JS renders
+  // it as the string "0.4", not "0.40") and left whatever was previously
+  // selected in place instead of switching to this level's real value.
   const pct = document.getElementById("nr-personal-pct");
-  if(pct && entry.personalPct) {
-    pct.value = entry.personalPct;
+  if(pct && entry.personalPct != null) {
+    const match = [...pct.options].find(o => parseFloat(o.value) === entry.personalPct);
+    if (match) { pct.value = match.value; }
+    else { pct.add(new Option(Math.round(entry.personalPct*100)+'%', String(entry.personalPct))); pct.value = String(entry.personalPct); }
   }
 
   // Show notes with points type and rule badges

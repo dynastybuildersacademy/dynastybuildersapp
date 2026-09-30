@@ -435,6 +435,7 @@ function buildFunnelCards() {
 
 // ── SURVEY PAGES CONFIG ────────────────────────────────────────
 const SURVEY_PAGES = [
+  { id:'business-card', icon:'🪪', title:'My Digital Business Card', desc:'Your personal card with photo, contact info, social links and the resources you pick. Edit it, then share by text, WhatsApp, email or QR.', file:'business-card-editor.html', shareFile:'card.html', audience:'Both', color:'#C9A84C', badge:'Card' },
   { id:'adversity-assessment', icon:'🌱', title:'Adversity Response Assessment', desc:'A 3-minute self-assessment of how someone pauses, owns, finds meaning, and acts when things go wrong — ends with a focus area, a weekly practice, and affirmations. Good for prospects, recruits, and your own team.', file:'adversity-assessment.html', audience:'Both', color:'#2DCA73', badge:'Assessment' },
   { id:'retirement-readiness', icon:'💰', title:'Retirement Readiness Survey', desc:'Education + a scored survey on tax diversification, market risk, and income planning — ends with a personalized readiness snapshot and consultation CTA.', file:'retirement-readiness.html', audience:'Clients', color:'#2C5AA0', badge:'Survey' },
   { id:'world-cup-hub',     icon:'⚽', title:'World Cup Financial Hub',     desc:'Landing page with financial tips tied to the 2026 World Cup, links to the quiz, and a downloadable personalized flyer.', file:'world-cup.html', audience:'Both', color:'#2DCA73', badge:'Landing Page' },
@@ -447,7 +448,10 @@ function buildSurveyCards() {
   const grid = document.getElementById('survey-cards-grid');
   if (!grid) return;
   const base = getBaseUrl(); const agent = getAgentParam();
-  grid.innerHTML = SURVEY_PAGES.map(p => `
+  // "Open" goes to the page itself; "Copy" copies what a prospect should
+  // receive. Those differ for the business card: agents open the (login)
+  // editor, but share the public card.
+  grid.innerHTML = SURVEY_PAGES.map(p => { const shareUrl = p.shareFile ? `${base}/${p.shareFile}?a=${agent}` : `${base}/${p.file}?agent=${agent}`; return `
     <div style="background:var(--navy-mid);border:1px solid var(--border);border-radius:6px;overflow:hidden;transition:border-color 0.2s;" onmouseover="this.style.borderColor='rgba(201,168,76,0.4)'" onmouseout="this.style.borderColor='var(--border)'">
       <div style="height:3px;background:${p.color};opacity:0.7;"></div>
       <div style="padding:16px 18px;">
@@ -461,10 +465,10 @@ function buildSurveyCards() {
         <p style="font-size:12px;color:var(--slate);line-height:1.6;margin-bottom:14px;">${p.desc}</p>
         <div style="display:flex;gap:8px;">
           <a href="${base}/${p.file}?agent=${agent}" target="_blank" style="flex:1;background:var(--gold);color:var(--navy);text-align:center;padding:8px;border-radius:3px;font-family:\'Barlow Condensed\',sans-serif;font-size:12px;font-weight:700;text-decoration:none;">Open ↗</a>
-          <button onclick="copyLink('${base}/${p.file}?agent=${agent}',this)" style="background:transparent;border:1px solid var(--border);color:var(--slate);padding:8px 14px;border-radius:3px;cursor:pointer;font-family:\'Barlow Condensed\',sans-serif;font-size:12px;font-weight:700;">Copy</button>
+          <button onclick="copyLink('${shareUrl}',this)" style="background:transparent;border:1px solid var(--border);color:var(--slate);padding:8px 14px;border-radius:3px;cursor:pointer;font-family:\'Barlow Condensed\',sans-serif;font-size:12px;font-weight:700;">Copy</button>
         </div>
       </div>
-    </div>`).join('');
+    </div>`; }).join('');
 }
 
 // ── AUDIENCES ─────────────────────────────────────────────────

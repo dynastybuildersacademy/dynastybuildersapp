@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Business Card — Dynasty Builders Academy</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="auth.js"></script>
+<script src="card-styles.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root{--navy:#F5F1E8;--s1:#FFFFFF;--s2:#ECE6D6;--gold:#C9A84C;--gold2:#E8C97A;--label:#7A5C14;--text:#1E1A10;--muted:#4A5568;--border:rgba(201,168,76,.25);--green:#1E7A46;--red:#9B1C1C;}
+@media (prefers-color-scheme: dark){:root{--navy:#15130D;--s1:#211E15;--s2:#2A2619;--text:#F5F1E8;--muted:#A9B7CC;--border:rgba(201,168,76,.3);--label:#F5E8C0;--green:#6BE09A;--red:#FF9A8F;}}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--text);min-height:100vh;}
+.topbar{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;background:var(--s1);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50;}
+.topbar h1{font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--label);}
+.back{color:var(--muted);text-decoration:none;font-size:13px;border:1px solid var(--border);padding:6px 12px;border-radius:6px;}
+.layout{max-width:1100px;margin:0 auto;padding:20px;display:grid;grid-template-columns:1fr 380px;gap:22px;align-items:start;}
+@media(max-width:900px){.layout{grid-template-columns:1fr;}.preview-col{order:-1;}}
+.panel{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:16px;}
+.panel h2{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--label);margin-bottom:12px;font-weight:700;}
+label.f{display:block;font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:10px 0 5px;}
+input[type=text],input[type=tel],input[type=email],input[type=url],textarea{width:100%;background:var(--navy);border:1.5px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;font-family:inherit;}
+textarea{resize:vertical;min-height:90px;}
+input:focus,textarea:focus{outline:none;border-color:var(--gold);}
+.hint{font-size:11.5px;color:var(--muted);margin-top:4px;}
+.photo-row{display:flex;gap:16px;align-items:center;flex-wrap:wrap;}
+.photo-prev{width:96px;height:96px;border-radius:50%;background:var(--s2);border:3px solid var(--gold);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:30px;color:var(--label);font-weight:700;flex-shrink:0;}
+.photo-prev img{width:100%;height:100%;object-fit:cover;}
+.photo-btns{display:flex;flex-direction:column;gap:6px;flex:1;min-width:180px;}
+.btn{padding:10px 14px;border-radius:8px;border:1.5px solid var(--border);background:var(--navy);color:var(--text);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;text-align:left;}
+.btn:hover{border-color:var(--gold);}
+.btn.primary{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#1E1A10;border:none;text-align:center;font-size:15px;padding:14px;}
+.btn.small{padding:6px 10px;font-size:12px;}
+.style-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
+@media(max-width:520px){.style-grid{grid-template-columns:repeat(2,1fr);}}
+.sw{border:2px solid var(--border);border-radius:10px;overflow:hidden;cursor:pointer;background:none;padding:0;font-family:inherit;}
+.sw.on{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,168,76,.35);}
+.sw .top{height:34px;}
+.sw .bot{padding:6px 4px;font-size:10.5px;font-weight:700;text-align:center;}
+.mat-item,.soc-item{display:flex;gap:10px;align-items:center;padding:9px 10px;border:1px solid var(--border);border-radius:8px;margin-bottom:6px;cursor:pointer;}
+.mat-item input{width:17px;height:17px;accent-color:var(--gold);flex-shrink:0;}
+.mat-item .t{font-weight:700;font-size:13px;}
+.mat-item .d{font-size:11.5px;color:var(--muted);}
+.soc-item{cursor:default;}
+.soc-item span{width:110px;flex-shrink:0;font-size:12.5px;font-weight:700;}
+.status{font-size:12.5px;margin-top:8px;min-height:18px;}
+.status.ok{color:var(--green);} .status.err{color:var(--red);}
+/* preview */
+.pv{border-radius:16px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,.15);background:var(--pcard);position:sticky;top:76px;}
+.pv .ph{background:var(--pheader);padding:18px 14px 46px;text-align:center;color:var(--pheaderText);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;}
+.pv .pp{margin:-40px auto 0;width:80px;height:80px;border-radius:50%;border:3px solid var(--pcard);overflow:hidden;background:var(--pbg);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700;color:var(--paccent);}
+.pv .pp img{width:100%;height:100%;object-fit:cover;}
+.pv .pb{padding:10px 16px 18px;text-align:center;color:var(--ptext);}
+.pv .pn{font-family:var(--pfont);font-size:22px;font-weight:700;}
+.pv .pt{font-size:12px;color:var(--pmuted);margin-top:2px;}
+.pv .pbtns{display:flex;gap:6px;justify-content:center;margin:12px 0;}
+.pv .pbtns div{background:var(--pbtn);color:var(--pbtnText);padding:7px 12px;border-radius:8px;font-size:11px;font-weight:700;}
+.pv .pl{font-size:11.5px;text-align:left;color:var(--ptext);padding:3px 0;word-break:break-word;}
+.pv .pa{color:var(--paccent);font-weight:700;}
+.pv .psec{font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:var(--paccent);text-align:left;margin:12px 0 6px;}
+.pv .pbio{font-size:11.5px;text-align:left;line-height:1.55;white-space:pre-line;}
+.pv .pchip{display:inline-block;border:1.5px solid var(--paccent);color:var(--paccent);border-radius:14px;padding:3px 9px;font-size:10.5px;font-weight:700;margin:2px;}
+.pv .pmat{border:1px solid rgba(128,128,128,.25);border-radius:8px;padding:7px 9px;font-size:11px;font-weight:700;text-align:left;margin-bottom:5px;}
+.share-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px;}
+.share-grid a,.share-grid button{display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 4px;border:1.5px solid var(--border);border-radius:8px;background:var(--navy);color:var(--text);text-decoration:none;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;}
+.link-box{font-family:'DM Mono',monospace;font-size:11px;background:var(--navy);border:1px solid var(--border);border-radius:6px;padding:8px 10px;word-break:break-all;}
+.qr-wrap{background:#FFFFFF;padding:12px;border-radius:10px;display:inline-block;margin-top:10px;}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;z-index:200;padding:16px;}
+.modal-bg.open{display:flex;}
+.modal{background:var(--s1);border-radius:12px;padding:16px;max-width:420px;width:100%;text-align:center;}
+.modal video{width:100%;border-radius:10px;background:#000;transform:scaleX(-1);}
+.drop{border:2px dashed var(--border);border-radius:10px;padding:10px;text-align:center;font-size:11.5px;color:var(--muted);margin-top:8px;}
+.drop.over{border-color:var(--gold);background:rgba(201,168,76,.08);}
+</style>
+</head>
+<body>
+<script>AUTH.require('business-card-editor.html', 10);</script>
+<div class="topbar"><h1>🪪 My Digital Business Card</h1><a class="back" href="hub.html">← Hub</a></div>
+
+<div class="layout">
+<div>
+  <div class="panel">
+    <h2>Profile Photo</h2>
+    <div class="photo-row">
+      <div class="photo-prev" id="photo-prev">?</div>
+      <div class="photo-btns">
+        <button class="btn" onclick="takePhoto()">📷 Take a Photo</button>
+        <button class="btn" onclick="document.getElementById('in-gallery').click()">🖼️ Choose from Photos</button>
+        <button class="btn" onclick="document.getElementById('in-file').click()">📁 Upload a File</button>
+        <button class="btn small" id="rm-photo" onclick="removePhoto()" style="display:none;">Remove photo</button>
+      </div>
+    </div>
+    <div class="drop" id="drop">…or drag an image here</div>
+    <input type="file" id="in-camera" accept="image/*" capture="user" style="display:none" onchange="onPick(this)">
+    <input type="file" id="in-gallery" accept="image/*" style="display:none" onchange="onPick(this)">
+    <input type="file" id="in-file" accept="image/jpeg,image/png,image/webp,image/*" style="display:none" onchange="onPick(this)">
+    <div class="hint">Photos are cropped square and compressed so your card loads fast anywhere.</div>
+    <div class="status" id="photo-status"></div>
+  </div>
+
+  <div class="panel">
+    <h2>Your Details</h2>
+    <label class="f" for="f-name">Name on card</label><input type="text" id="f-name" maxlength="80">
+    <label class="f" for="f-tagline">Title / tagline</label><input type="text" id="f-tagline" maxlength="90" placeholder="e.g. Financial Educator · Life Insurance & Retirement">
+    <label class="f" for="f-phone">Phone</label><input type="tel" id="f-phone" maxlength="20">
+    <label class="f" for="f-email">Email</label><input type="email" id="f-email" maxlength="120">
+    <label class="f" for="f-address">Business address</label><input type="text" id="f-address" maxlength="160" placeholder="e.g. 3415 S Sepulveda Blvd, Los Angeles, CA">
+    <label class="f" for="f-bio">About you</label><textarea id="f-bio" maxlength="1000" placeholder="A few sentences about who you help and why."></textarea>
+    <div class="hint"><span id="bio-count">0</span>/1000</div>
+  </div>
+
+  <div class="panel">
+    <h2>Card Style</h2>
+    <div class="style-grid" id="style-grid"></div>
+  </div>
+
+  <div class="panel">
+    <h2>Social &amp; Links</h2>
+    <div id="soc-list"></div>
+    <div class="hint">Leave blank to hide. Only web links (http/https) are shown on your card.</div>
+  </div>
+
+  <div class="panel">
+    <h2>Free Resources to Feature</h2>
+    <div class="hint" style="margin:-4px 0 10px;">Anyone who opens these from your card is credited to you.</div>
+    <div id="mat-list"></div>
+  </div>
+
+  <button class="btn primary" id="save-btn" onclick="saveCard()" style="width:100%;">💾 Save My Card</button>
+  <div class="status" id="save-status"></div>
+
+  <div class="panel" id="share-panel" style="margin-top:16px;display:none;">
+    <h2>Share Your Card</h2>
+    <div class="link-box" id="card-link"></div>
+    <div class="share-grid">
+      <a id="sh-sms">💬<span>Text</span></a>
+      <a id="sh-wa" target="_blank" rel="noopener">🟢<span>WhatsApp</span></a>
+      <a id="sh-email">✉️<span>Email</span></a>
+      <button onclick="copyLink()">🔗<span>Copy</span></button>
+    </div>
+    <div style="text-align:center;">
+      <div class="qr-wrap" id="qr"></div>
+      <div style="margin-top:8px;display:flex;gap:6px;justify-content:center;flex-wrap:wrap;">
+        <button class="btn small" onclick="downloadQR()">⬇ Download QR</button>
+        <a class="btn small" id="open-card" target="_blank" rel="noopener" style="text-decoration:none;">👁 Open my card</a>
+      </div>
+    </div>
+    <div class="hint" style="margin-top:8px;">When someone scans this QR code, your card opens with buttons to text, WhatsApp, or email it on to someone else.</div>
+  </div>
+</div>
+
+<div class="preview-col">
+  <div class="panel" style="padding:12px;"><h2 style="margin-bottom:8px;">Live Preview</h2><div class="pv" id="pv"></div></div>
+</div>
+</div>
+
+<div class="modal-bg" id="cam-modal">
+  <div class="modal">
+    <video id="cam-video" autoplay playsinline muted></video>
+    <div style="display:flex;gap:8px;margin-top:10px;">
+      <button class="btn" style="flex:1;text-align:center;" onclick="closeCamera()">Cancel</button>
+      <button class="btn primary" style="flex:2;" onclick="snap()">📸 Capture</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const session = AUTH.getSession();
+const ME = (typeof AGENTS !== 'undefined' ? AGENTS.find(a => a.id === session.agentId) : null) || { id: session.agentId, name: session.name };
+const MAX_PHOTO_CHARS = 42000;   // leaves headroom inside Monday's ~64KB per-item text budget
+const state = { itemId:null, photo:'', style:DEFAULT_CARD_STYLE, social:{}, materials:['retirement-readiness','fin-number'] };
+const $ = id => document.getElementById(id);
+
+function initials(n){ return String(n||'').split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0].toUpperCase()).join('') || '?'; }
+function cardUrl(){ return `${location.origin}${location.pathname.replace(/[^/]*$/,'')}card.html?a=${encodeURIComponent(ME.id)}`; }
+function setStatus(id, msg, kind){ const e=$(id); e.textContent=msg; e.className='status'+(kind?' '+kind:''); }
+
+// ── PHOTO ────────────────────────────────────────────────────────
+// On phones, capture="user" opens the front camera directly. On desktop
+// that attribute is ignored, so a live webcam view is used instead.
+function takePhoto(){
+  const touch = window.matchMedia('(pointer:coarse)').matches;
+  if (touch || !navigator.mediaDevices?.getUserMedia) { $('in-camera').click(); return; }
+  navigator.mediaDevices.getUserMedia({ video:{ facingMode:'user', width:{ideal:720}, height:{ideal:720} } })
+    .then(stream => { $('cam-video').srcObject = stream; $('cam-modal').classList.add('open'); })
+    .catch(() => { setStatus('photo-status','Camera not available — allow camera access, or choose a photo instead.','err'); $('in-camera').click(); });
+}
+function closeCamera(){
+  const v=$('cam-video'); (v.srcObject?.getTracks()||[]).forEach(t=>t.stop()); v.srcObject=null; $('cam-modal').classList.remove('open');
+}
+function snap(){
+  const v=$('cam-video'); const c=document.createElement('canvas');
+  c.width=v.videoWidth; c.height=v.videoHeight;
+  const ctx=c.getContext('2d'); ctx.translate(c.width,0); ctx.scale(-1,1); ctx.drawImage(v,0,0);   // un-mirror
+  closeCamera(); processImageSrc(c.toDataURL('image/jpeg',0.92));
+}
+function onPick(input){
+  const f=input.files?.[0]; input.value='';
+  if (!f) return;
+  if (f.size > 25*1024*1024) { setStatus('photo-status','That file is over 25 MB — please choose a smaller photo.','err'); return; }
+  const r=new FileReader(); r.onload=()=>processImageSrc(r.result); r.readAsDataURL(f);
+}
+// Center-crops to a square and re-encodes as JPEG, stepping quality and
+// size down until it fits the storage budget.
+function processImageSrc(src){
+  setStatus('photo-status','Processing…');
+  const img=new Image();
+  img.onload=()=>{
+    const side=Math.min(img.naturalWidth,img.naturalHeight);
+    const sx=(img.naturalWidth-side)/2, sy=(img.naturalHeight-side)/2;
+    let out='';
+    for (const size of [320,260,200,160]) {
+      const c=document.createElement('canvas'); c.width=c.height=size;
+      const ctx=c.getContext('2d'); ctx.fillStyle='#FFFFFF'; ctx.fillRect(0,0,size,size);
+      ctx.drawImage(img,sx,sy,side,side,0,0,size,size);
+      for (let q=0.85; q>=0.45; q-=0.1) { out=c.toDataURL('image/jpeg',q); if (out.length<=MAX_PHOTO_CHARS) break; }
+      if (out.length<=MAX_PHOTO_CHARS) break;
+    }
+    if (out.length>MAX_PHOTO_CHARS) { setStatus('photo-status','Couldn\'t shrink that photo enough — try a different one.','err'); return; }
+    state.photo=out; renderPhoto(); renderPreview();
+    setStatus('photo-status',`✓ Photo ready (${Math.round(out.length/1024)} KB) — remember to save.`,'ok');
+  };
+  img.onerror=()=>setStatus('photo-status','That image format isn\'t supported here (HEIC photos from some iPhones can\'t be read by this browser). Try a JPG or PNG, or take a new photo.','err');
+  img.src=src;
+}
+function removePhoto(){ state.photo=''; renderPhoto(); renderPreview(); setStatus('photo-status','Photo removed — remember to save.'); }
+function renderPhoto(){
+  $('photo-prev').innerHTML = state.photo ? `<img src="${state.photo}" alt="">` : escHtml(initials($('f-name').value));
+  $('rm-photo').style.display = state.photo ? 'block' : 'none';
+}
+const drop=$('drop');
+['dragover','dragenter'].forEach(e=>drop.addEventListener(e,ev=>{ev.preventDefault();drop.classList.add('over');}));
+['dragleave','drop'].forEach(e=>drop.addEventListener(e,ev=>{ev.preventDefault();drop.classList.remove('over');}));
+drop.addEventListener('drop',ev=>{ const f=ev.dataTransfer.files?.[0]; if(f){ const r=new FileReader(); r.onload=()=>processImageSrc(r.result); r.readAsDataURL(f);} });
+
+// ── STYLE / SOCIAL / MATERIALS ───────────────────────────────────
+function renderStyles(){
+  $('style-grid').innerHTML = CARD_STYLES.map(s => `
+    <button class="sw ${s.id===state.style?'on':''}" onclick="pickStyle('${s.id}')" aria-pressed="${s.id===state.style}" title="${s.name}">
+      <div class="top" style="background:${s.header};"></div>
+      <div class="bot" style="background:${s.card};color:${s.text};">${s.name}</div>
+    </button>`).join('');
+}
+function pickStyle(id){ state.style=id; renderStyles(); renderPreview(); }
+function renderSocialInputs(){
+  $('soc-list').innerHTML = CARD_SOCIALS.map(s => `
+    <div class="soc-item"><span>${s.icon} ${s.label}</span>
+      <input type="url" data-soc="${s.id}" placeholder="${s.placeholder}" value="${escHtml(state.social[s.id]||'')}" maxlength="200"></div>`).join('');
+  document.querySelectorAll('[data-soc]').forEach(i => i.addEventListener('input', () => { state.social[i.dataset.soc]=i.value.trim(); renderPreview(); }));
+}
+function renderMaterials(){
+  $('mat-list').innerHTML = CARD_MATERIALS.map(m => `
+    <label class="mat-item"><input type="checkbox" value="${m.id}" ${state.materials.includes(m.id)?'checked':''}>
+      <span style="font-size:20px;">${m.icon}</span><div><div class="t">${m.title}</div><div class="d">${m.desc}</div></div></label>`).join('');
+  document.querySelectorAll('#mat-list input').forEach(cb => cb.addEventListener('change', () => {
+    state.materials = [...document.querySelectorAll('#mat-list input:checked')].map(x=>x.value); renderPreview();
+  }));
+}
+
+// ── PREVIEW (same style tokens as the public card) ────────────────
+function renderPreview(){
+  const s=getCardStyle(state.style), pv=$('pv');
+  ['bg','card','header','headerText','text','muted','accent','btn','btnText','font'].forEach(k=>pv.style.setProperty('--p'+k, s[k]));
+  const name=$('f-name').value.trim()||'Your Name', tag=$('f-tagline').value.trim(), ph=$('f-phone').value.trim(),
+        em=$('f-email').value.trim(), ad=$('f-address').value.trim(), bio=$('f-bio').value.trim();
+  const socs=CARD_SOCIALS.filter(x=>safeUrl(state.social[x.id]));
+  const mats=CARD_MATERIALS.filter(m=>state.materials.includes(m.id));
+  pv.innerHTML = `
+    <div class="ph">Dynasty Builders Academy</div>
+    <div class="pp">${state.photo?`<img src="${state.photo}" alt="">`:escHtml(initials(name))}</div>
+    <div class="pb">
+      <div class="pn">${escHtml(name)}</div>${tag?`<div class="pt">${escHtml(tag)}</div>`:''}
+      <div class="pbtns">${ph?'<div>📞 Call</div><div>💬 Text</div>':''}${em?'<div>✉️ Email</div>':''}</div>
+      ${ph?`<div class="pl">📞 <span class="pa">${escHtml(formatPhone(ph))}</span></div>`:''}
+      ${em?`<div class="pl">✉️ <span class="pa">${escHtml(em)}</span></div>`:''}
+      ${ad?`<div class="pl">📍 <span class="pa">${escHtml(ad)}</span></div>`:''}
+      ${bio?`<div class="psec">About</div><div class="pbio">${escHtml(bio)}</div>`:''}
+      ${socs.length?`<div class="psec">Connect</div><div style="text-align:left;">${socs.map(x=>`<span class="pchip">${x.icon} ${x.label}</span>`).join('')}</div>`:''}
+      ${mats.length?`<div class="psec">Free Resources</div>${mats.map(m=>`<div class="pmat">${m.icon} ${escHtml(m.title)}</div>`).join('')}`:''}
+    </div>`;
+  $('bio-count').textContent = $('f-bio').value.length;
+}
+['f-name','f-tagline','f-phone','f-email','f-address','f-bio'].forEach(id => $(id).addEventListener('input', () => { renderPreview(); if(id==='f-name') renderPhoto(); }));
+
+// ── MONDAY ───────────────────────────────────────────────────────
+function buildColumnValues(){
+  const digits=$('f-phone').value.replace(/\D/g,''), email=$('f-email').value.trim();
+  const social={}; CARD_SOCIALS.forEach(s=>{ const u=safeUrl(state.social[s.id]); if(u) social[s.id]=u; });
+  return {
+    name: $('f-name').value.trim() || ME.name,
+    [CARD_COLS.agentId]: ME.id,
+    [CARD_COLS.tagline]: $('f-tagline').value.trim(),
+    [CARD_COLS.phone]: digits ? { phone: digits.length===10 ? '1'+digits : digits, countryShortName:'US' } : null,
+    [CARD_COLS.email]: email ? { email, text: email } : null,
+    [CARD_COLS.address]: $('f-address').value.trim(),
+    [CARD_COLS.bio]: { text: $('f-bio').value.trim().slice(0,1000) },
+    [CARD_COLS.social]: { text: JSON.stringify(social) },
+    [CARD_COLS.photo]: state.photo || '',
+    [CARD_COLS.materials]: { text: JSON.stringify(state.materials) },
+    [CARD_COLS.style]: state.style,
+  };
+}
+async function saveCard(){
+  const email=$('f-email').value.trim();
+  if (!$('f-name').value.trim()) { setStatus('save-status','Add your name first.','err'); return; }
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setStatus('save-status','That email address doesn\'t look right.','err'); return; }
+  const cv=buildColumnValues();
+  const size=JSON.stringify(cv).length;
+  if (size>60000) { setStatus('save-status','Your card is too large to save — try a smaller photo or shorter bio.','err'); return; }
+  $('save-btn').disabled=true; setStatus('save-status','Saving…');
+  try {
+    let r;
+    if (state.itemId) {
+      r = await mondayQuery(`mutation($b:ID!,$i:ID!,$v:JSON!){change_multiple_column_values(board_id:$b,item_id:$i,column_values:$v){id}}`,
+        { b:String(CARD_BOARD_ID), i:String(state.itemId), v:JSON.stringify(cv) });
+    } else {
+      const { name, ...rest } = cv;
+      r = await mondayQuery(`mutation($b:ID!,$n:String!,$v:JSON!){create_item(board_id:$b,item_name:$n,column_values:$v){id}}`,
+        { b:String(CARD_BOARD_ID), n:name, v:JSON.stringify(rest) });
+      state.itemId = r?.data?.create_item?.id || null;
+    }
+    if (r.errors) throw new Error(r.errors[0]?.message || 'Monday rejected the save');
+    try { localStorage.setItem('dba_card_draft_'+ME.id, JSON.stringify({ ...cv, itemId:state.itemId })); } catch(e){}
+    setStatus('save-status','✓ Saved — your card is live.','ok');
+    showShare();
+  } catch(e) {
+    console.error(e);
+    setStatus('save-status','✗ Couldn\'t save: '+e.message+'. Your edits are still here — try again.','err');
+  } finally { $('save-btn').disabled=false; }
+}
+async function loadCard(){
+  $('f-name').value=ME.name||''; $('f-phone').value=ME.phone||''; $('f-email').value=ME.email||'';
+  try {
+    const c=await fetchCardFromMonday(ME.id, MONDAY_PROXY);
+    if (c) {
+      state.itemId=c.itemId; state.photo=/^data:image\//.test(c.photo)?c.photo:''; state.style=getCardStyle(c.style).id;
+      state.social=c.social||{}; state.materials=Array.isArray(c.materials)?c.materials:[];
+      $('f-name').value=c.name||ME.name||''; $('f-tagline').value=c.tagline; $('f-phone').value=formatPhone(c.phone||ME.phone||'');
+      $('f-email').value=c.email||ME.email||''; $('f-address').value=c.address; $('f-bio').value=c.bio;
+      showShare();
+    }
+  } catch(e) { setStatus('save-status','Couldn\'t load your saved card ('+e.message+'). You can still edit and save.','err'); }
+  renderStyles(); renderSocialInputs(); renderMaterials(); renderPhoto(); renderPreview();
+}
+
+// ── SHARE ────────────────────────────────────────────────────────
+function showShare(){
+  const url=cardUrl(), name=$('f-name').value.trim()||ME.name;
+  const txt=`Here's my contact card — ${name}, Dynasty Builders Academy: ${url}`;
+  $('share-panel').style.display='block'; $('card-link').textContent=url; $('open-card').href=url;
+  $('sh-sms').href='sms:?&body='+encodeURIComponent(txt);
+  $('sh-wa').href='https://wa.me/?text='+encodeURIComponent(txt);
+  $('sh-email').href='mailto:?subject='+encodeURIComponent(name+' — Contact Card')+'&body='+encodeURIComponent(txt);
+  const q=$('qr'); q.innerHTML='';
+  if (typeof QRCode!=='undefined') new QRCode(q,{ text:url, width:180, height:180, colorDark:'#000000', colorLight:'#FFFFFF' });
+  else q.textContent='QR unavailable — use the link above.';
+}
+function copyLink(){ const u=cardUrl(); navigator.clipboard?.writeText(u).then(()=>setStatus('save-status','✓ Link copied','ok'),()=>prompt('Copy:',u)); }
+function downloadQR(){
+  const src=$('qr').querySelector('canvas')?.toDataURL('image/png') || $('qr').querySelector('img')?.src;
+  if(!src) return;
+  const a=document.createElement('a'); a.href=src; a.download=`business-card-qr-${ME.id}.png`; a.click();
+}
+loadCard();
+</script>
+</body>
+</html>
