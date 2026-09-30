@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Research Analysis — Greater LA Financial Education Survey</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600,700&family=Barlow+Condensed:wght@600;700;800&family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="auth.js"></script>
+<style>
+:root{
+  --navy:#F5F1E8;--navy-mid:#FFFFFF;--navy-light:#ECE6D6;
+  --gold:#C9A84C;--gold-light:#E8C97A;--label-gold:#7A5C14;
+  --text:#1E1A10;--muted:#4A5568;--border:rgba(201,168,76,0.22);
+  --green:#1E7A46;--orange:#B8620F;--red:#8E2A20;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --navy:#15130D;--navy-mid:#211E15;--navy-light:#2A2619;--text:#F5F1E8;--muted:#A9B7CC;--border:rgba(201,168,76,.3);--label-gold:#F5E8C0;--green:#6BE09A;--orange:#FFB35C;--red:#FF9A8F; }
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--text);}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border);background:var(--navy-mid);flex-wrap:wrap;gap:10px;}
+.brand{display:flex;align-items:center;gap:10px;}
+.brand h1{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--label-gold);font-weight:700;}
+.brand p{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;}
+.back-btn{background:var(--navy);border:1px solid var(--border);color:var(--muted);padding:7px 14px;border-radius:6px;text-decoration:none;font-size:12px;}
+.wrap{max-width:1100px;margin:0 auto;padding:20px;}
+.sample-banner{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;background:var(--navy-mid);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin-bottom:18px;}
+.sample-banner .n{font-family:'Barlow Condensed',sans-serif;font-size:32px;font-weight:800;color:var(--label-gold);}
+.sample-banner .n-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;}
+.early-flag{font-size:12px;color:var(--orange);background:rgba(230,126,34,.1);border:1px solid rgba(230,126,34,.3);padding:6px 12px;border-radius:6px;}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;}
+.btn{background:var(--navy);border:1px solid var(--border);color:var(--text);padding:8px 14px;border-radius:6px;font-size:12px;cursor:pointer;font-weight:600;}
+.btn.gold{background:linear-gradient(135deg,var(--gold),var(--gold-light));color:#1E1A10;border:none;}
+.filter-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;}
+.filter-bar select{background:var(--navy-mid);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:6px;font-size:12.5px;}
+.section{background:var(--navy-mid);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:16px;}
+.section h2{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;letter-spacing:.03em;color:var(--label-gold);text-transform:uppercase;margin-bottom:4px;}
+.section .sub{font-size:11.5px;color:var(--muted);margin-bottom:14px;}
+.bar-row{margin-bottom:10px;}
+.bar-head{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px;}
+.bar-head b{font-weight:600;}
+.bar-track{height:9px;background:var(--navy-light);border-radius:5px;overflow:hidden;}
+.bar-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold-light));border-radius:5px;}
+.gap-row{display:flex;align-items:center;gap:10px;margin-bottom:9px;}
+.gap-rank{font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);width:20px;flex-shrink:0;}
+.gap-name{flex:0 0 190px;font-size:12.5px;font-weight:600;}
+.gap-track{flex:1;height:10px;background:var(--navy-light);border-radius:5px;overflow:hidden;}
+.gap-fill{height:100%;border-radius:5px;}
+.gap-score{font-family:'DM Mono',monospace;font-size:12px;width:32px;text-align:right;flex-shrink:0;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media(max-width:720px){.grid2{grid-template-columns:1fr;}}
+.stat-tile{background:var(--navy);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center;}
+.stat-tile .v{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:800;color:var(--label-gold);}
+.stat-tile .l{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-top:2px;}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:14px;}
+.quote-card{background:var(--navy);border-left:3px solid var(--gold);border-radius:4px;padding:10px 14px;margin-bottom:8px;font-size:13px;line-height:1.6;font-style:italic;}
+.quote-meta{font-size:10.5px;color:var(--muted);font-style:normal;margin-top:4px;}
+.empty-state{text-align:center;padding:60px 20px;color:var(--muted);}
+.empty-state .ei{font-size:40px;margin-bottom:10px;}
+textarea.import-box{width:100%;background:var(--navy);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:10px;font-family:'DM Mono',monospace;font-size:11px;min-height:90px;margin-bottom:8px;}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:none;align-items:flex-start;justify-content:center;padding:20px;}
+.modal-bg.open{display:flex;}
+.modal{background:var(--navy-mid);border:1px solid var(--border);border-radius:10px;padding:20px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <span style="font-size:22px;">🏙️</span>
+    <div><h1>Research Analysis</h1><p>Greater LA Financial Education Survey</p></div>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <a href="marketing.html" class="back-btn">← Marketing Hub</a>
+    <a href="hub.html" class="back-btn">← Hub</a>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="sample-banner">
+    <div>
+      <span class="n" id="sample-n">0</span>
+      <div class="n-label">Survey Responses (this device)</div>
+    </div>
+    <div id="early-flag-wrap"></div>
+    <div class="toolbar">
+      <button class="btn" onclick="openImportModal()">⬆ Import Responses</button>
+      <button class="btn" onclick="exportCSV()">⬇ Export CSV</button>
+      <button class="btn" onclick="exportJSON()">⬇ Export JSON</button>
+    </div>
+  </div>
+
+  <div class="filter-bar" id="filter-bar" style="display:none;">
+    <select id="f-region" onchange="renderAll()"><option value="">All Regions</option></select>
+    <select id="f-community" onchange="renderAll()"><option value="">All Communities</option></select>
+    <select id="f-age" onchange="renderAll()"><option value="">All Ages</option></select>
+    <button class="btn" onclick="clearFilters()">Clear Filters</button>
+  </div>
+
+  <div id="empty-state" class="empty-state" style="display:none;">
+    <div class="ei">📊</div>
+    <div style="font-size:15px;font-weight:700;margin-bottom:6px;">No responses yet on this device</div>
+    <div style="font-size:12.5px;max-width:420px;margin:0 auto;">Responses save to the browser that completed the survey. If people are taking it on other devices, use <b>Import Responses</b> above to bring their data in — each survey submission can also show an export snippet for exactly this.</div>
+  </div>
+
+  <div id="dashboard" style="display:none;">
+
+    <div class="section">
+      <h2>Who Responded</h2>
+      <div class="sub">Self-reported, voluntary. Used only in aggregate — never to decide what any individual is offered.</div>
+      <div class="grid2">
+        <div><div style="font-size:12px;font-weight:700;margin-bottom:8px;">Region</div><div id="bars-region"></div></div>
+        <div><div style="font-size:12px;font-weight:700;margin-bottom:8px;">Age</div><div id="bars-age"></div></div>
+      </div>
+      <div style="margin-top:14px;"><div style="font-size:12px;font-weight:700;margin-bottom:8px;">Community / Ethnicity (self-selected, multi-select)</div><div id="bars-community"></div></div>
+      <div style="margin-top:14px;"><div style="font-size:12px;font-weight:700;margin-bottom:8px;">Preferred Language for Financial Topics</div><div id="bars-language"></div></div>
+    </div>
+
+    <div class="section">
+      <h2>Education Gap Score</h2>
+      <div class="sub">High interest + low knowledge = high priority. Score = (% who want to learn it) × (6 − avg. knowledge score), normalized 0–100.</div>
+      <div id="gap-list"></div>
+    </div>
+
+    <div class="section">
+      <h2>Life Insurance</h2>
+      <div class="stat-grid" id="insurance-stats"></div>
+      <div style="font-size:12px;font-weight:700;margin:10px 0 8px;">Top Barriers</div>
+      <div id="bars-insurance-barriers"></div>
+    </div>
+
+    <div class="section">
+      <h2>Retirement</h2>
+      <div class="stat-grid" id="retirement-stats"></div>
+      <div style="font-size:12px;font-weight:700;margin:10px 0 8px;">Most Confusing Topics</div>
+      <div id="bars-retirement-confusions"></div>
+    </div>
+
+    <div class="section">
+      <h2>Marketing Perceptions</h2>
+      <div class="grid2">
+        <div><div style="font-size:12px;font-weight:700;margin-bottom:8px;">How Ads Make People Feel</div><div id="bars-marketing-feelings"></div></div>
+        <div><div style="font-size:12px;font-weight:700;margin-bottom:8px;">Problems Noticed</div><div id="bars-marketing-problems"></div></div>
+      </div>
+      <div style="font-size:12px;font-weight:700;margin:14px 0 8px;">"What should we do differently?" — sample responses</div>
+      <div id="quotes-marketing"></div>
+    </div>
+
+    <div class="section">
+      <h2>Trust &amp; Accessibility</h2>
+      <div class="grid2">
+        <div><div style="font-size:12px;font-weight:700;margin-bottom:8px;">Most Trusted Sources</div><div id="bars-trust"></div></div>
+        <div>
+          <div class="stat-grid" id="trust-stats"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>How People Want to Learn</h2>
+      <div class="grid2">
+        <div><div style="font-size:12px;font-weight:700;margin-bottom:8px;">Preferred Formats</div><div id="bars-learning"></div></div>
+        <div><div style="font-size:12px;font-weight:700;margin-bottom:8px;">Preferred Time</div><div id="bars-time"></div></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Financial-Services Career Interest</h2>
+      <div class="sub">Research/funnel stages — not employment guarantees.</div>
+      <div class="stat-grid" id="career-stats"></div>
+      <div class="grid2" style="margin-top:10px;">
+        <div><div style="font-size:12px;font-weight:700;margin-bottom:8px;">What Interests Them</div><div id="bars-career-aspects"></div></div>
+        <div><div style="font-size:12px;font-weight:700;margin-bottom:8px;">What Concerns Them</div><div id="bars-career-concerns"></div></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>"If You Could Change One Thing…"</h2>
+      <div class="sub">Final open-ended responses, most recent first. Anonymous — this survey never pairs these with a name or email.</div>
+      <div id="quotes-final"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- IMPORT MODAL -->
+<div class="modal-bg" id="import-modal">
+  <div class="modal">
+    <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:15px;color:var(--label-gold);margin-bottom:8px;">⬆ Import Responses</div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:10px;">Paste a JSON export from another device (from this same page's "Export JSON" button). Duplicate response IDs are skipped automatically.</p>
+    <textarea class="import-box" id="import-text" placeholder="Paste exported JSON here…"></textarea>
+    <div style="display:flex;gap:8px;">
+      <button class="btn" onclick="document.getElementById('import-modal').classList.remove('open')">Cancel</button>
+      <button class="btn gold" onclick="importResponses()">Import</button>
+    </div>
+    <div id="import-status" style="font-size:11.5px;color:var(--muted);margin-top:8px;"></div>
+  </div>
+</div>
+
+<script>
+AUTH.require('research-analysis.html', 60);
+
+let ALL = [];
+let FILTERED = [];
+
+function loadAll() {
+  try { ALL = JSON.parse(localStorage.getItem('dba_community_research_responses') || '[]'); } catch(e) { ALL = []; }
+}
+
+function applyFilters() {
+  const region = document.getElementById('f-region').value;
+  const community = document.getElementById('f-community').value;
+  const age = document.getElementById('f-age').value;
+  FILTERED = ALL.filter(r =>
+    (!region || r.region === region) &&
+    (!community || (r.communities||[]).includes(community)) &&
+    (!age || r.age === age)
+  );
+}
+
+function clearFilters() {
+  document.getElementById('f-region').value = '';
+  document.getElementById('f-community').value = '';
+  document.getElementById('f-age').value = '';
+  renderAll();
+}
+
+function tally(arr, key, isMulti) {
+  const counts = {};
+  arr.forEach(r => {
+    const v = r[key];
+    if (isMulti) (v||[]).forEach(x => { counts[x] = (counts[x]||0) + 1; });
+    else if (v) counts[v] = (counts[v]||0) + 1;
+  });
+  return Object.entries(counts).sort((a,b) => b[1]-a[1]);
+}
+
+function renderBars(elId, pairs, total, max) {
+  const el = document.getElementById(elId);
+  if (!pairs.length) { el.innerHTML = '<div style="font-size:12px;color:var(--muted);">No data yet.</div>'; return; }
+  const list = max ? pairs.slice(0, max) : pairs;
+  const highest = Math.max(...pairs.map(p => p[1]), 1);
+  el.innerHTML = list.map(([label, count]) => `
+    <div class="bar-row">
+      <div class="bar-head"><b>${label}</b><span>${count} · ${total ? Math.round(count/total*100) : 0}%</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.round(count/highest*100)}%"></div></div>
+    </div>`).join('');
+}
+
+function avgLikert(arr, key) {
+  const vals = arr.map(r => parseFloat(r[key])).filter(v => !isNaN(v));
+  if (!vals.length) return null;
+  return vals.reduce((a,b)=>a+b,0) / vals.length;
+}
+
+function renderGapScores() {
+  const topics = FILTERED.length ? Object.keys(FILTERED[0].financialConfidence || {}) : [];
+  if (!topics.length && FILTERED.length) {
+    // fall back: gather topic keys across all responses in case the first has gaps
+  }
+  const allTopics = new Set();
+  FILTERED.forEach(r => Object.keys(r.financialConfidence||{}).forEach(t => allTopics.add(t)));
+  const rows = [...allTopics].map(topic => {
+    const scores = FILTERED.map(r => parseFloat(r.financialConfidence?.[topic])).filter(v => !isNaN(v));
+    const avgKnowledge = scores.length ? scores.reduce((a,b)=>a+b,0)/scores.length : 3;
+    const wantCount = FILTERED.filter(r => (r.topPriorities||[]).includes(topic)).length;
+    const interestPct = FILTERED.length ? wantCount / FILTERED.length : 0;
+    const raw = interestPct * (6 - avgKnowledge);
+    return { topic, raw, avgKnowledge, interestPct };
+  });
+  const maxRaw = Math.max(...rows.map(r => r.raw), 0.0001);
+  rows.forEach(r => r.score = Math.round((r.raw / maxRaw) * 100));
+  rows.sort((a,b) => b.score - a.score);
+  const el = document.getElementById('gap-list');
+  if (!rows.length) { el.innerHTML = '<div style="font-size:12px;color:var(--muted);">Not enough data yet.</div>'; return; }
+  el.innerHTML = rows.map((r,i) => {
+    const color = r.score >= 66 ? 'var(--red)' : r.score >= 33 ? 'var(--orange)' : 'var(--green)';
+    return `<div class="gap-row">
+      <div class="gap-rank">${i+1}</div>
+      <div class="gap-name">${r.topic}</div>
+      <div class="gap-track"><div class="gap-fill" style="width:${r.score}%;background:${color};"></div></div>
+      <div class="gap-score">${r.score}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderQuotes(elId, arr, key) {
+  const el = document.getElementById(elId);
+  const withText = arr.filter(r => r[key] && r[key].trim()).sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 12);
+  if (!withText.length) { el.innerHTML = '<div style="font-size:12px;color:var(--muted);">No responses yet.</div>'; return; }
+  el.innerHTML = withText.map(r => `
+    <div class="quote-card">"${(r[key]||'').replace(/</g,'&lt;')}"
+      <div class="quote-meta">${r.region || 'Region not given'} · ${r.age || 'Age not given'}</div>
+    </div>`).join('');
+}
+
+function populateFilterOptions() {
+  const fillSelect = (id, values) => {
+    const sel = document.getElementById(id);
+    const current = sel.value;
+    sel.innerHTML = sel.options[0].outerHTML + [...values].sort().map(v => `<option value="${v}">${v}</option>`).join('');
+    sel.value = current;
+  };
+  fillSelect('f-region', new Set(ALL.map(r => r.region).filter(Boolean)));
+  fillSelect('f-community', new Set(ALL.flatMap(r => r.communities||[])));
+  fillSelect('f-age', new Set(ALL.map(r => r.age).filter(Boolean)));
+}
+
+function renderAll() {
+  applyFilters();
+  document.getElementById('sample-n').textContent = FILTERED.length;
+  const earlyWrap = document.getElementById('early-flag-wrap');
+  earlyWrap.innerHTML = FILTERED.length < 30 && FILTERED.length > 0
+    ? '<div class="early-flag">Early-stage research — not yet representative (N &lt; 30)</div>' : '';
+
+  if (!ALL.length) {
+    document.getElementById('empty-state').style.display = 'block';
+    document.getElementById('dashboard').style.display = 'none';
+    document.getElementById('filter-bar').style.display = 'none';
+    return;
+  }
+  document.getElementById('empty-state').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+  document.getElementById('filter-bar').style.display = 'flex';
+
+  const n = FILTERED.length || 1;
+  renderBars('bars-region', tally(FILTERED,'region'), n);
+  renderBars('bars-age', tally(FILTERED,'age'), n);
+  renderBars('bars-community', tally(FILTERED,'communities',true), n);
+  renderBars('bars-language', tally(FILTERED,'languages',true), n);
+
+  renderGapScores();
+
+  const hasIns = FILTERED.filter(r => r.hasInsurance === 'Yes').length;
+  const noIns = FILTERED.filter(r => r.hasInsurance === 'No').length;
+  const notSure = FILTERED.filter(r => r.hasInsurance === 'Not sure').length;
+  document.getElementById('insurance-stats').innerHTML = [
+    {v: FILTERED.length ? Math.round(hasIns/FILTERED.length*100)+'%':'—', l:'Have Coverage'},
+    {v: FILTERED.length ? Math.round(noIns/FILTERED.length*100)+'%':'—', l:'No Coverage'},
+    {v: FILTERED.length ? Math.round(notSure/FILTERED.length*100)+'%':'—', l:'Not Sure'},
+  ].map(s => `<div class="stat-tile"><div class="v">${s.v}</div><div class="l">${s.l}</div></div>`).join('');
+  renderBars('bars-insurance-barriers', tally(FILTERED,'insuranceBarriers',true), n);
+
+  const retConf = avgLikert(FILTERED, 'retirementConfidence');
+  document.getElementById('retirement-stats').innerHTML = [
+    {v: retConf ? retConf.toFixed(1)+'/5' : '—', l:'Avg. Confidence'},
+    {v: FILTERED.filter(r=>(r.retirementContributions||[]).includes('Nothing currently')).length, l:'Contributing Nothing'},
+  ].map(s => `<div class="stat-tile"><div class="v">${s.v}</div><div class="l">${s.l}</div></div>`).join('');
+  renderBars('bars-retirement-confusions', tally(FILTERED,'retirementConfusions',true), n);
+
+  renderBars('bars-marketing-feelings', tally(FILTERED,'marketingFeelings',true), n);
+  renderBars('bars-marketing-problems', tally(FILTERED,'marketingProblems',true), n);
+  renderQuotes('quotes-marketing', FILTERED, 'marketingImprovement');
+
+  renderBars('bars-trust', tally(FILTERED,'trustSources',true), n, 8);
+  const cult = avgLikert(FILTERED,'cultureImportance'), lang = avgLikert(FILTERED,'languageImportance');
+  document.getElementById('trust-stats').innerHTML = [
+    {v: cult ? cult.toFixed(1)+'/5' : '—', l:'Culture Fit Matters'},
+    {v: lang ? lang.toFixed(1)+'/5' : '—', l:'Language Access Matters'},
+  ].map(s => `<div class="stat-tile"><div class="v">${s.v}</div><div class="l">${s.l}</div></div>`).join('');
+
+  renderBars('bars-learning', tally(FILTERED,'learningFormats',true), n, 8);
+  renderBars('bars-time', tally(FILTERED,'preferredTime'), n);
+
+  const aware = FILTERED.filter(r=>r.careerAware==='Yes').length;
+  const interested = FILTERED.filter(r=>r.careerInterest==='Yes').length;
+  const maybe = FILTERED.filter(r=>r.careerInterest==='Maybe').length;
+  const workshopYes = FILTERED.filter(r=>r.careerWorkshopInterest==='Definitely').length;
+  document.getElementById('career-stats').innerHTML = [
+    {v: n ? Math.round(aware/n*100)+'%':'—', l:'Career-Aware'},
+    {v: n ? Math.round(interested/n*100)+'%':'—', l:'Definitely Interested'},
+    {v: n ? Math.round(maybe/n*100)+'%':'—', l:'Maybe Interested'},
+    {v: n ? Math.round(workshopYes/n*100)+'%':'—', l:'Would Attend Workshop'},
+  ].map(s => `<div class="stat-tile"><div class="v">${s.v}</div><div class="l">${s.l}</div></div>`).join('');
+  renderBars('bars-career-aspects', tally(FILTERED,'careerAspects',true), n);
+  renderBars('bars-career-concerns', tally(FILTERED,'careerConcerns',true), n);
+
+  renderQuotes('quotes-final', FILTERED, 'finalChange');
+}
+
+function openImportModal() { document.getElementById('import-modal').classList.add('open'); }
+function importResponses() {
+  const status = document.getElementById('import-status');
+  try {
+    const incoming = JSON.parse(document.getElementById('import-text').value.trim());
+    if (!Array.isArray(incoming)) throw new Error('Expected a JSON array');
+    const existingIds = new Set(ALL.map(r => r.id));
+    const fresh = incoming.filter(r => r.id && !existingIds.has(r.id));
+    ALL = ALL.concat(fresh);
+    localStorage.setItem('dba_community_research_responses', JSON.stringify(ALL));
+    status.textContent = `✓ Imported ${fresh.length} new response(s), skipped ${incoming.length - fresh.length} duplicate(s).`;
+    populateFilterOptions();
+    renderAll();
+  } catch(e) {
+    status.textContent = "✗ Could not parse that — make sure it's the JSON export from this same page.";
+  }
+}
+function exportJSON() {
+  const blob = new Blob([JSON.stringify(FILTERED.length ? FILTERED : ALL, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `community_research_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+}
+function exportCSV() {
+  const rows = FILTERED.length ? FILTERED : ALL;
+  if (!rows.length) return;
+  const cols = ['id','timestamp','region','age','communities','languages','hasInsurance','retirementConfidence','careerInterest','finalChange'];
+  const csv = [cols.join(',')].concat(rows.map(r => cols.map(c => {
+    let v = r[c];
+    if (Array.isArray(v)) v = v.join('; ');
+    return `"${String(v||'').replace(/"/g,'""')}"`;
+  }).join(','))).join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `community_research_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+loadAll();
+populateFilterOptions();
+renderAll();
+</script>
+</body>
+</html>

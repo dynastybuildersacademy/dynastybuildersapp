@@ -174,8 +174,8 @@ input:focus{border-color:rgba(201,168,76,.4);}
       <div class="seq-icon">📋</div>
       <div>
         <div class="seq-name">Survey / Brochure Lead</div>
-        <div class="seq-desc">Fires when someone completes the financial survey or scans an agent's brochure QR code.</div>
-        <div class="seq-trigger">Trigger: <code>survey_lead</code> · Fields: name, phone, email, profile, referredBy, answers</div>
+        <div class="seq-desc">Fires when someone completes the financial survey or scans an agent's brochure QR code. Now shared by every lead-capturing page: Retirement Readiness, the general Financial Survey, Client Pre-Qualification, the Client Questionnaire, and the Adversity Assessment.</div>
+        <div class="seq-trigger">Trigger: <code>survey_lead</code> · Fields: name, phone, email, profile, referredBy, campaign, answers. <code>campaign</code> is the Marketing Hub audience id (e.g. <code>retirement</code>, <code>newagent</code>) when the link came from a campaign, or <code>direct</code> otherwise.</div>
       </div>
     </div>
     <div class="steps-list">
@@ -407,6 +407,29 @@ input:focus{border-color:rgba(201,168,76,.4);}
       <div style="display:flex;gap:8px;margin-top:8px;">
         <button class="btn btn-gold" style="flex:2" onclick="saveHook('welcome_email')">Save &amp; Test</button>
         <button class="btn btn-ghost" style="flex:1" onclick="clearHook('welcome_email')">Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" id="seq-community_research">
+    <div class="seq-header">
+      <div class="seq-icon">🏙️</div>
+      <div>
+        <div class="seq-name">Community Research Survey</div>
+        <div class="seq-desc">Fires when someone completes the public Greater LA Financial Education Survey (region, ethnicity, age, financial education, life insurance, retirement, marketing, trust, learning preferences, and the optional career section). Every response also saves locally for the Research Analysis dashboard even if no Zapier hook is set here.</div>
+        <div class="seq-trigger">Trigger: <code>community_research</code> · Fields: age, region, communities, languages, financialConfidence, topPriorities, hasInsurance, insuranceBarriers, retirementConfidence, marketingFeelings, marketingImprovement, trustSources, learningFormats, careerInterest, finalChange, followupRequested, followupEmail, campaign, referredBy</div>
+      </div>
+    </div>
+    <div class="steps-list">
+      <div class="step-row"><div class="step-num">1</div><div class="step-body"><div class="step-name">Log to Research Board</div><div class="step-detail">Append the full response to a Monday board or spreadsheet so it's visible outside this browser too.</div><div class="step-delay">⏱ Immediately on submit</div></div></div>
+      <div class="step-row"><div class="step-num">2</div><div class="step-body"><div class="step-name">Route follow-up requests</div><div class="step-detail">If <code>followupRequested</code> is true, create a lead/task for the referring agent using the follow-up contact fields — these are the only PII in this payload.</div><div class="step-delay">⏱ Immediately, conditional</div></div></div>
+    </div>
+    <div style="margin-top:12px;">
+      <label style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);display:block;margin-bottom:5px;">Zapier Webhook URL</label>
+      <input type="url" id="hook-community_research" placeholder="https://hooks.zapier.com/hooks/catch/…">
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button class="btn btn-gold" style="flex:2" onclick="saveHook('community_research')">Save &amp; Test</button>
+        <button class="btn btn-ghost" style="flex:1" onclick="clearHook('community_research')">Clear</button>
       </div>
     </div>
   </div>

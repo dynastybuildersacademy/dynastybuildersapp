@@ -95,6 +95,7 @@ textarea{resize:vertical;min-height:80px;}
   <div class="tab" onclick="switchTab('linkedin',this)">🔗 LinkedIn Prospecting</div>
   <div class="tab" onclick="switchTab('calendar',this)">📅 Content Calendar</div>
   <div class="tab" onclick="switchTab('objections',this)">🛡️ Objection Scripts</div>
+  <div class="tab" onclick="switchTab('research',this)">🏙️ Community Research</div>
 </div>
 <div class="content">
 
@@ -254,6 +255,55 @@ textarea{resize:vertical;min-height:80px;}
   <div id="objections-content"></div>
 </div>
 
+<!-- COMMUNITY RESEARCH -->
+<div class="panel" id="panel-research">
+  <div class="page-title">Greater LA Financial Education Survey</div>
+  <div class="page-sub">A community research initiative, not a sales funnel. We're listening before we teach — this data shapes better education, better workshops, and better outreach for Greater LA communities.</div>
+
+  <div class="ai-card" style="border-left:3px solid var(--gold);margin-bottom:20px;">
+    <div class="ai-title">🎯 We Educate First. We Recommend Second.</div>
+    <p style="font-size:12.5px;color:var(--slate);line-height:1.7;">This survey asks people how they experience financial-services marketing, what they want to learn about money, life insurance, and retirement, who they trust, how they want to be taught — and, in a clearly separate optional section, whether they've ever considered a career in financial services. It is not a lead form disguised as research. Frame it that way when you share it.</p>
+  </div>
+
+  <div class="ai-card" style="margin-bottom:20px;">
+    <div class="ai-title">🔗 Your Survey Link</div>
+    <p style="font-size:12px;color:var(--slate);margin-bottom:10px;">Shareable, no login required. Carries your agent ID so responses (and any follow-up requests) trace back to you.</p>
+    <div style="display:flex;gap:10px;align-items:center;background:var(--navy);border:1px solid var(--border);border-radius:3px;padding:10px 14px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:200px;font-family:'DM Mono',monospace;font-size:11px;color:var(--slate);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" id="research-link-display"></div>
+      <button onclick="copyResearchLink()" style="flex-shrink:0;background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.3);color:var(--gold);padding:6px 14px;border-radius:3px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;">Copy</button>
+      <a id="research-link-open" href="#" target="_blank" style="flex-shrink:0;background:transparent;border:1px solid var(--border);color:var(--slate);padding:6px 12px;border-radius:3px;text-decoration:none;font-size:11px;">Open ↗</a>
+    </div>
+    <div style="margin-top:10px;">
+      <label class="field-label" style="font-size:10px;">Optional: preset a region (skips that question for the respondent)</label>
+      <select id="research-region-preset" onchange="refreshResearchLink()" style="width:100%;background:var(--navy);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:4px;font-size:12px;">
+        <option value="">No preset — let them choose</option>
+        <option>South Bay</option><option>West Los Angeles</option><option>Inglewood</option><option>South Los Angeles</option>
+        <option>Downtown Los Angeles</option><option>San Fernando Valley</option><option>San Gabriel Valley</option>
+        <option>Long Beach</option><option>Southeast Los Angeles</option><option>Pasadena Area</option>
+        <option>Glendale / Burbank</option><option>Other Greater LA</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="section-title">Scripts for Inviting People to the Survey</div>
+  <p style="font-size:12px;color:var(--slate);margin-bottom:14px;">These invite participation in research — not a pitch. Nobody should feel sold to for taking a 5-minute survey.</p>
+  <div class="caption-grid" id="research-scripts-grid"></div>
+
+  <div class="section-title" style="margin-top:24px;">Follow-Up Once Someone Completes It</div>
+  <div class="email-card">
+    <div class="email-subject">Text / DM — after they finish</div>
+    <div class="email-subj-val">Sent once you know they've submitted</div>
+    <div class="email-body" id="research-followup-text">Thank you so much for taking a few minutes on that — it genuinely helps us build better financial education for our community. If any of the topics you flagged would be useful to actually walk through together, I'm happy to grab 15 minutes whenever works for you, completely no-pressure.</div>
+    <div style="margin-top:12px;"><button class="copy-btn" onclick="copyText('research-followup-text')">Copy</button></div>
+  </div>
+
+  <div class="ai-card" style="margin-top:24px;background:linear-gradient(135deg,rgba(201,168,76,.12),rgba(201,168,76,.04));">
+    <div class="ai-title">📊 See What Greater LA Is Telling Us</div>
+    <p style="font-size:12.5px;color:var(--slate);margin-bottom:12px;">Every submission saves for analysis — education gaps, life insurance barriers, retirement confusion, trust sources, and more, broken down by region, community, and age.</p>
+    <a href="research-analysis.html" target="_blank" style="display:inline-block;background:var(--gold);color:var(--navy);padding:9px 18px;border-radius:3px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;text-decoration:none;">Open Research Analysis →</a>
+  </div>
+</div>
+
 </div>
 <div class="toast" id="toast"></div>
 
@@ -314,6 +364,40 @@ function refreshLinks() {
       </div>
       <button onclick="copyLink('${l.url}',this)" style="flex-shrink:0;background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.3);color:var(--gold);padding:6px 14px;border-radius:3px;cursor:pointer;font-family:\'Barlow Condensed\',sans-serif;font-size:11px;font-weight:700;white-space:nowrap;">Copy</button>
       <a href="${l.url}" target="_blank" style="flex-shrink:0;background:transparent;border:1px solid var(--border);color:var(--slate);padding:6px 12px;border-radius:3px;text-decoration:none;font-size:11px;">Open ↗</a>
+    </div>`).join('');
+}
+
+// ── COMMUNITY RESEARCH SURVEY ────────────────────────────────────
+function refreshResearchLink() {
+  const base = getBaseUrl(); const agent = getAgentParam();
+  const region = document.getElementById('research-region-preset')?.value || '';
+  const url = `${base}/community-research-survey.html?agent=${agent}&campaign=community_research${region ? '&region=' + encodeURIComponent(region) : ''}`;
+  const display = document.getElementById('research-link-display');
+  const open = document.getElementById('research-link-open');
+  if (display) display.textContent = url;
+  if (open) open.href = url;
+}
+function copyResearchLink() {
+  const url = document.getElementById('research-link-display').textContent;
+  navigator.clipboard.writeText(url).then(() => toast('✓ Link copied')).catch(() => toast('Copy failed'));
+}
+const RESEARCH_SCRIPTS = [
+  { platform: '📸 Instagram / Facebook', text: `Quick favor? I'm helping put together a community research project on how Greater LA families experience financial education — what's confusing, what's missing, what you actually want to learn.\n\nIt's not a pitch. Just a 5-8 minute survey, completely anonymous unless you choose to leave your info.\n\nLink in bio, or comment "SURVEY" and I'll send it your way. Your answers genuinely shape what workshops and education we build next.` },
+  { platform: '💬 Text / DM', text: `Hey! I'm part of a community research project on financial education in Greater LA — trying to understand what people actually want to learn about money, insurance, and retirement, and what's not working about how it's usually taught.\n\nWould you mind taking a quick 5-8 min anonymous survey? No sales pitch, just research: [LINK]\n\nReally appreciate it either way!` },
+  { platform: '🏘️ Community / Church Group', text: `I'm working with Dynasty Builders Academy on a research project to understand how our community experiences financial education — life insurance, retirement, money in general — and what would actually help.\n\nIf you have 5-8 minutes, I'd be grateful if you filled this out: [LINK]. It's anonymous, and there's an optional spot at the end if you'd like a follow-up conversation. This isn't a sales tool — it's genuinely to make education better for people here.` },
+  { platform: '✉️ Email', text: `Subject: A quick favor — 5 minutes on financial education in our community\n\nHi {{name}},\n\nI'm taking part in a community research project on how people in Greater LA experience financial education — life insurance, retirement planning, and financial services more broadly. The goal is simple: figure out what's confusing, what's missing, and how education could actually be more useful and accessible.\n\nWould you be willing to take a short, anonymous survey? It takes about 5-8 minutes: [LINK]\n\nThere's no sales pitch in it, and no pressure — just research that helps us build better education for people here.\n\nThanks so much,\n{{agent_name}}` },
+];
+function buildResearchScripts() {
+  const grid = document.getElementById('research-scripts-grid');
+  if (!grid) return;
+  grid.innerHTML = RESEARCH_SCRIPTS.map((s, i) => `
+    <div class="caption-card">
+      <div class="cc-platform">${s.platform}</div>
+      <div class="cc-body" id="research-script-${i}">${s.text}</div>
+      <div class="cc-foot">
+        <span style="font-size:10px;color:var(--slate);">${s.text.length} characters</span>
+        <button class="copy-btn" onclick="copyText('research-script-${i}')">Copy</button>
+      </div>
     </div>`).join('');
 }
 
@@ -407,6 +491,8 @@ document.addEventListener('DOMContentLoaded', function() {
   buildSurveyCards();
   buildCalendar();
   buildObjections();
+  refreshResearchLink();
+  buildResearchScripts();
 });
 
 const CAMPAIGNS = {
@@ -495,7 +581,7 @@ function renderCampaign(id) {
     html += `<div class="email-card">
       <div class="email-subject">Subject Line</div>
       <div class="email-subj-val" id="subj-${id}-${i}">${e.subject}</div>
-      <div class="email-body" id="body-${id}-${i}">${e.body.replace(/{{agent_name}}/g, session.name).replace(/{{phone}}/g, '').replace(/{{survey_link}}/g, `${getBaseUrl()}/retirement-readiness.html?agent=${getAgentParam()}`)}</div>
+      <div class="email-body" id="body-${id}-${i}">${e.body.replace(/{{agent_name}}/g, session.name).replace(/{{phone}}/g, '').replace(/{{survey_link}}/g, `${getBaseUrl()}/retirement-readiness.html?agent=${getAgentParam()}&campaign=${id}`)}</div>
       <div style="margin-top:12px;display:flex;gap:8px;">
         <button class="copy-btn" onclick="copyText('subj-${id}-${i}')">Copy Subject</button>
         <button class="copy-btn" onclick="copyText('body-${id}-${i}')">Copy Email</button>

@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Greater LA Financial Education Survey — Dynasty Builders Academy</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="auth.js"></script>
+<style>
+:root{
+  --navy:#F5F1E8;--navy-mid:#FFFFFF;--navy-light:#ECE6D6;
+  --gold:#C9A84C;--gold-light:#E8C97A;--label-gold:#7A5C14;
+  --cream:#1E1A10;--success:#27AE60;--warn:#E67E22;--danger:#C0392B;
+  --slate:#4A5568;--border:rgba(201,168,76,0.22);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --navy:#15130D;--navy-mid:#211E15;--navy-light:#2A2619;
+    --cream:#F5F1E8;--border:rgba(201,168,76,0.3);--slate:#A9B7CC;--label-gold:#F5E8C0;
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--cream);min-height:100vh;}
+.wrap{max-width:640px;margin:0 auto;padding:20px 20px 60px;}
+.logo-row{display:flex;align-items:center;gap:12px;margin-bottom:22px;}
+.shield{width:42px;height:48px;background:linear-gradient(160deg,var(--gold),#8a6d1f);clip-path:polygon(50% 0%,100% 18%,100% 65%,50% 100%,0% 65%,0% 18%);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.logo-row h1{font-family:'Cormorant Garamond',serif;font-size:19px;color:var(--label-gold);font-weight:700;line-height:1.15;}
+.logo-row p{font-size:10px;letter-spacing:.1em;color:var(--slate);text-transform:uppercase;}
+.progress-wrap{margin-bottom:22px;}
+.progress-label{display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:11px;color:var(--slate);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em;}
+.progress-bar{height:5px;background:var(--navy-light);border-radius:3px;overflow:hidden;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold-light));transition:width .3s;}
+.step{display:none;}
+.step.active{display:block;animation:fadein .3s;}
+@keyframes fadein{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+.step-number{font-size:11px;color:var(--label-gold);letter-spacing:0.12em;text-transform:uppercase;font-family:'DM Mono',monospace;margin-bottom:8px;}
+.step h2{font-family:'DM Sans',sans-serif;font-weight:800;font-size:clamp(22px,4.5vw,30px);line-height:1.15;margin-bottom:10px;}
+.step .sub{font-size:15px;color:var(--slate);margin-bottom:22px;line-height:1.6;}
+.q-block{margin-bottom:22px;}
+.q-text{font-size:15px;line-height:1.5;margin-bottom:10px;font-weight:600;}
+.q-hint{font-size:12px;color:var(--slate);margin-top:-6px;margin-bottom:10px;}
+.opt-grid{display:flex;flex-direction:column;gap:8px;}
+.opt-grid.cols2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+@media(max-width:480px){.opt-grid.cols2{grid-template-columns:1fr;}}
+.opt-label{display:flex;align-items:center;gap:10px;padding:12px 14px;border:1.5px solid var(--border);border-radius:6px;cursor:pointer;font-size:14px;transition:all .15s;background:var(--navy-mid);}
+.opt-label:hover{border-color:var(--gold);}
+.opt-label.selected{border-color:var(--gold);background:rgba(201,168,76,0.1);font-weight:600;}
+.opt-label input{width:16px;height:16px;accent-color:var(--gold);flex-shrink:0;}
+.likert{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;}
+@media(max-width:480px){.likert{grid-template-columns:repeat(5,1fr);gap:3px;}}
+.likert label{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:8px 2px;border:1.5px solid var(--border);border-radius:5px;cursor:pointer;background:var(--navy-mid);font-size:10px;line-height:1.3;color:var(--slate);}
+.likert label.selected{border-color:var(--gold);background:rgba(201,168,76,0.15);color:var(--cream);font-weight:700;}
+.likert input{position:absolute;opacity:0;width:0;height:0;}
+.likert .num{font-family:'DM Mono',monospace;font-size:14px;font-weight:700;color:var(--cream);margin-bottom:2px;}
+.matrix-row{margin-bottom:14px;}
+.matrix-row .mr-label{font-size:13.5px;font-weight:600;margin-bottom:6px;}
+.field{margin-bottom:16px;}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--label-gold);letter-spacing:0.07em;text-transform:uppercase;margin-bottom:7px;}
+input[type=text],input[type=email],input[type=tel],select,textarea{width:100%;background:var(--navy-mid);border:1.5px solid var(--border);border-radius:6px;padding:12px 14px;color:var(--cream);font-size:15px;font-family:'DM Sans',sans-serif;}
+textarea{resize:vertical;min-height:90px;}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--gold);}
+.btn-row{display:flex;gap:10px;margin-top:8px;}
+.btn{flex:1;padding:14px;border-radius:6px;font-weight:700;font-size:15px;border:none;cursor:pointer;text-align:center;text-decoration:none;display:inline-block;}
+.btn-primary{background:linear-gradient(135deg,var(--gold),#8a6d1f);color:#1E1A10;}
+.btn-secondary{background:transparent;border:1.5px solid var(--border);color:var(--slate);flex:0 0 auto;padding:14px 20px;}
+.step-error{display:none;color:var(--danger);font-size:13px;margin:-8px 0 12px;}
+.opt-out-box{border:1px dashed var(--border);border-radius:6px;padding:10px 14px;margin-top:6px;font-size:12.5px;color:var(--slate);}
+.career-banner{background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.35);border-radius:8px;padding:14px 16px;margin-bottom:20px;}
+.career-banner b{color:var(--label-gold);}
+.disclosure{font-size:11px;color:var(--slate);line-height:1.7;margin-top:26px;padding-top:16px;border-top:1px solid var(--border);}
+.thankyou{text-align:center;}
+.thankyou .check{font-size:48px;margin-bottom:12px;}
+.thankyou h2{font-family:'Cormorant Garamond',serif;font-size:30px;color:var(--label-gold);margin-bottom:10px;}
+.path-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:20px;}
+@media(max-width:480px){.path-grid{grid-template-columns:1fr;}}
+.path-card{background:var(--navy-mid);border:1px solid var(--border);border-radius:8px;padding:16px 12px;text-decoration:none;color:var(--cream);text-align:center;}
+.path-card:hover{border-color:var(--gold);}
+.path-card .pi{font-size:24px;margin-bottom:6px;}
+.path-card .pt{font-weight:700;font-size:13px;margin-bottom:3px;}
+.path-card .pd{font-size:11px;color:var(--slate);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="logo-row">
+    <div class="shield">🏙️</div>
+    <div>
+      <h1>Dynasty Builders Academy</h1>
+      <p>Greater LA Financial Education Survey</p>
+    </div>
+  </div>
+
+  <div class="progress-wrap" id="progress-wrap" style="display:none;">
+    <div class="progress-label"><span id="step-label">Step 1</span><span id="pct-label">0%</span></div>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+  </div>
+
+  <!-- STEP 0: INTRO -->
+  <div class="step active" id="step-0">
+    <div class="step-number">Community Research</div>
+    <h2>How can financial services better serve your community?</h2>
+    <p class="sub">We're listening before we teach. This short survey helps Dynasty Builders Academy understand what Greater LA families want to learn about money, life insurance, retirement, and financial services — and whether financial terminology, advertising, and access feel like they actually work for your community.</p>
+    <p class="sub" style="margin-top:-14px;"><strong>Takes about 5–8 minutes.</strong> Every question except your name is optional. There's a short, clearly-marked section at the end about careers in financial services — you can skip it entirely.</p>
+    <div class="btn-row"><button class="btn btn-primary" onclick="nextStep()">Start the Survey →</button></div>
+    <p class="q-hint" style="margin-top:14px;">We educate first. We recommend second. This is research, not a sales pitch — your answers won't be used to decide what to sell you.</p>
+  </div>
+
+  <div id="dynamic-steps"></div>
+
+  <!-- FOLLOW-UP (kept logically separate from research answers) -->
+  <div class="step" id="step-followup">
+    <div class="step-number">Almost done</div>
+    <h2>One last thing.</h2>
+    <p class="sub">Would you be open to a short follow-up conversation about anything you shared? Totally optional — this is asked separately from your survey answers above.</p>
+    <div class="opt-grid" id="followup-yn"></div>
+    <div id="followup-contact" style="display:none;margin-top:16px;">
+      <div class="field"><label>First Name</label><input type="text" id="fu-first"></div>
+      <div class="field"><label>Email</label><input type="email" id="fu-email"></div>
+      <div class="field"><label>Phone</label><input type="tel" id="fu-phone"></div>
+      <div class="field"><label>Preferred contact method</label>
+        <select id="fu-method"><option value="">Select…</option><option>Phone call</option><option>Text</option><option>Email</option><option>WhatsApp</option></select></div>
+      <div class="field"><label>Preferred language</label>
+        <select id="fu-lang"><option value="">Select…</option><option>English</option><option>Spanish</option><option>Other</option></select></div>
+      <label class="opt-label" style="align-items:flex-start;">
+        <input type="checkbox" id="fu-consent" style="margin-top:3px;">
+        <span style="font-size:12.5px;color:var(--slate);">I agree to be contacted about this follow-up. My contact info will be kept separate from my anonymous survey answers.</span>
+      </label>
+    </div>
+    <div class="btn-row"><button class="btn btn-secondary" onclick="prevStep()">Back</button><button class="btn btn-primary" onclick="submitSurvey()">Submit →</button></div>
+  </div>
+
+  <!-- DONE -->
+  <div class="step" id="step-done">
+    <div class="thankyou">
+      <div class="check">🙏</div>
+      <h2>Thank You — Your Voice Matters</h2>
+      <p class="sub">Your feedback will help us create clearer, more accessible, and more relevant financial education for Greater Los Angeles communities.</p>
+      <div class="path-grid">
+        <a class="path-card" href="hub.html" target="_blank"><div class="pi">📚</div><div class="pt">Learn</div><div class="pd">Explore financial education</div></a>
+        <a class="path-card" href="retirement-readiness.html" target="_blank"><div class="pi">📅</div><div class="pt">Attend</div><div class="pd">See what's next for your finances</div></a>
+        <a class="path-card" href="opportunity.html" target="_blank"><div class="pi">💼</div><div class="pt">Career</div><div class="pd">Learn about financial-services careers</div></a>
+      </div>
+      <div class="disclosure">Educational purposes only. This survey does not provide individualized investment, tax, legal, or financial advice, and your answers are not used to determine which financial products you are offered. Demographic information is voluntary and self-reported, used only in aggregate for research and to improve education, accessibility, and outreach — never to decide individual product suitability. If you asked for a follow-up, your contact info is stored separately from your survey answers.</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const _params = new URLSearchParams(location.search);
+const _agentId = _params.get('agent') || '';
+const _rosterAgent = (typeof AGENTS !== 'undefined' && _agentId) ? AGENTS.find(a => a.id === _agentId) : null;
+const _agentDisplay = _rosterAgent ? _rosterAgent.name : (_agentId ? decodeURIComponent(_agentId) : '');
+const _campaignId = _params.get('campaign') || '';
+const _presetRegion = _params.get('region') || '';
+
+// ═══════════════════════════════════════════════════════════════
+// SURVEY DEFINITION — condensed from the full community-research
+// spec to fit a genuine 5-8 minute completion time. Each section
+// below becomes one step; SECTIONS.length is used for progress math.
+// ═══════════════════════════════════════════════════════════════
+const REGIONS = ['South Bay','West Los Angeles','Inglewood','South Los Angeles','Downtown Los Angeles',
+  'San Fernando Valley','San Gabriel Valley','Long Beach','Southeast Los Angeles','Pasadena Area',
+  'Glendale / Burbank','Other Greater LA'];
+
+const COMMUNITIES = ['Hispanic / Latino','Black / African American','African','Asian','East Asian',
+  'Southeast Asian','South Asian','Middle Eastern / North African','Native American / Alaska Native',
+  'Native Hawaiian / Pacific Islander','White','Multiracial / Multiethnic','Prefer to self-describe','Prefer not to answer'];
+
+const FIN_TOPICS = ['Budgeting & emergency savings','Credit & debt management','Life insurance basics',
+  'Term vs. permanent life insurance','Retirement planning (401k, IRA)','Social Security','Investing basics',
+  'Taxes & tax-advantaged strategies','Estate & legacy planning'];
+
+const INSURANCE_BARRIERS = ['I believe it is too expensive','I do not understand it','I do not know how much I need',
+  'I do not trust insurance companies','I do not trust agents/advisors','Nobody has explained it clearly',
+  'I keep postponing it','Other financial priorities come first','Application process seems difficult',
+  'Health concerns','I believe I already have enough','Other'];
+
+const RETIREMENT_CONFUSIONS = ['How much to save','When to retire','Social Security','Taxes in retirement',
+  'Investment risk / market losses','Outliving my money','Annuities','Health-care costs','Leaving money to family','Where to start'];
+
+const MARKETING_FEELINGS = ['Trusting','Interested','Curious','Confused','Skeptical','Pressured','Ignored','Not relevant to me','Other'];
+
+const MARKETING_PROBLEMS = ['Too sales-focused','Too complicated / too much jargon',"Doesn't explain costs",
+  "Doesn't explain limitations or risks","Doesn't reflect my community","Isn't available in my preferred language",
+  "Doesn't address my real concerns","Feels too good to be true","Too focused on recruiting",
+  'Not enough financial education','Not enough follow-up',"I haven't noticed a problem",'Other'];
+
+const TRUST_SOURCES = ['Licensed financial professional','Someone from my community','CPA / accountant','Attorney',
+  'Bank / credit union','Employer','Church / faith organization','Community organization','Family / friend',
+  'Social-media educator','School / university','Government resource','Other'];
+
+const LEARNING_FORMATS = ['Short video (5 min)','Longer educational video (10-15 min)','Social media','In-person workshop',
+  'Zoom / webinar','One-on-one consultation','Community event','Church / faith-based event','Workplace seminar',
+  'Written guide','Podcast','Email','Text message','WhatsApp','Online course'];
+
+const CAREER_ASPECTS = ['Helping families','Financial education','Additional income','Career change','Flexible schedule',
+  'Entrepreneurship','Building a business','Leadership','Professional development','Learning about money','Community impact'];
+
+const CAREER_CONCERNS = ['Commission-based compensation','Finding clients','Recruiting','Licensing examination',
+  'Licensing costs','Lack of experience','Sales pressure','Income stability','Industry reputation',
+  'Not knowing where to start','Time commitment','Family concerns','Other'];
+
+function renderMulti(name, options, cols2) {
+  return `<div class="opt-grid${cols2?' cols2':''}" data-multi="${name}">` +
+    options.map((o,i) => `<label class="opt-label"><input type="checkbox" value="${o}" onchange="toggleOpt(this)"> ${o}</label>`).join('') + `</div>`;
+}
+function renderSingle(name, options, cols2) {
+  return `<div class="opt-grid${cols2?' cols2':''}" data-single="${name}">` +
+    options.map(o => `<label class="opt-label"><input type="radio" name="${name}" value="${o}" onchange="selectOpt(this)"> ${o}</label>`).join('') + `</div>`;
+}
+function renderLikert(name, lowLabel, highLabel) {
+  return `<div class="likert" data-likert="${name}">` +
+    [1,2,3,4,5].map(n => `<label><input type="radio" name="${name}" value="${n}" onchange="selectLikert(this)"><span class="num">${n}</span>${n===1?lowLabel:n===5?highLabel:''}</label>`).join('') + `</div>`;
+}
+
+const SECTIONS = [
+  { // 1
+    title: 'About You', h: 'A little about you.',
+    body: () => `
+      <div class="q-block"><div class="q-text">What age range are you in?</div>
+        ${renderSingle('age', ['18–24','25–34','35–44','45–54','55–64','65+','Prefer not to answer'], true)}</div>
+      <div class="q-block"><div class="q-text">Where in Greater LA do you live or work?</div>
+        ${renderSingle('region', REGIONS, true)}</div>
+      <div class="q-block"><div class="q-text">How do you describe your race, ethnicity, or cultural background?</div>
+        <div class="q-hint">Select all that apply. This is used only for aggregate research — never to decide what you're offered.</div>
+        ${renderMulti('communities', COMMUNITIES, true)}</div>
+      <div class="q-block"><div class="q-text">What language do you prefer for financial topics?</div>
+        ${renderMulti('languages', ['English','Spanish','Korean','Mandarin / Chinese','Vietnamese','Tagalog','Armenian','Arabic','Farsi','Other'], true)}</div>`,
+    afterRender: () => { if (_presetRegion) { const el = document.querySelector(`[data-single="region"] input[value="${_presetRegion}"]`); if (el) { el.checked = true; selectOpt(el); } } }
+  },
+  { // 2
+    title: 'Financial Education', h: 'How confident are you?',
+    body: () => `
+      <p class="q-hint" style="margin-top:-10px;">1 = know very little · 5 = understand very well</p>
+      ${FIN_TOPICS.map(t => `<div class="matrix-row"><div class="mr-label">${t}</div>${renderLikert('fin_'+FIN_TOPICS.indexOf(t), 'Know little', 'Know well')}</div>`).join('')}
+      <div class="q-block"><div class="q-text">Which THREE would you most like someone to teach you?</div>
+        <div class="q-hint">Pick up to three.</div>
+        ${renderMulti('top_priorities', FIN_TOPICS, true)}</div>`
+  },
+  { // 3
+    title: 'Life Insurance', h: 'Life insurance.',
+    body: () => `
+      <div class="q-block"><div class="q-text">Do you currently have life insurance?</div>
+        ${renderSingle('has_insurance', ['Yes','No','Not sure'], true)}</div>
+      <div class="q-block" id="ins-followup" style="display:none;">
+        <div class="q-text">Do you believe your current coverage is enough to protect your household?</div>
+        ${renderSingle('adequate_coverage', ['Yes','No','Not sure'], true)}
+      </div>
+      <div class="q-block"><div class="q-text">What has prevented you from getting (more) life insurance?</div>
+        <div class="q-hint">Skip if you feel fully covered.</div>
+        ${renderMulti('insurance_barriers', INSURANCE_BARRIERS, true)}</div>`
+  },
+  { // 4
+    title: 'Retirement', h: 'Retirement planning.',
+    body: () => `
+      <div class="q-block"><div class="q-text">How confident are you that you know how much money you'll need for retirement?</div>
+        ${renderLikert('retirement_confidence', 'Not at all', 'Very confident')}</div>
+      <div class="q-block"><div class="q-text">Do you currently contribute toward retirement?</div>
+        ${renderMulti('retirement_contributions', ['Employer retirement plan','IRA','Roth IRA','Pension','Personal investments','Annuity','Other','Nothing currently','Not sure'], true)}</div>
+      <div class="q-block"><div class="q-text">Which retirement topics confuse you most?</div>
+        ${renderMulti('retirement_confusions', RETIREMENT_CONFUSIONS, true)}</div>`
+  },
+  { // 5
+    title: 'Marketing', h: 'How financial marketing lands.',
+    body: () => `
+      <div class="q-block"><div class="q-text">When you see financial-services advertising, how does it usually make you feel?</div>
+        ${renderMulti('marketing_feelings', MARKETING_FEELINGS, true)}</div>
+      <div class="q-block"><div class="q-text">What problems have you noticed with financial-services marketing?</div>
+        ${renderMulti('marketing_problems', MARKETING_PROBLEMS, true)}</div>
+      <div class="q-block"><div class="q-text">What's ONE thing financial professionals could do differently to better serve your community?</div>
+        <textarea id="marketing_improvement" placeholder="Your thoughts…"></textarea></div>`
+  },
+  { // 6
+    title: 'Trust', h: 'Who do you trust?',
+    body: () => `
+      <div class="q-block"><div class="q-text">Who would you trust most to teach you about money?</div>
+        ${renderMulti('trust_sources', TRUST_SOURCES, true)}</div>
+      <div class="q-block"><div class="q-text">How important is it that a financial professional understands your culture or community?</div>
+        ${renderLikert('culture_importance', 'Not important', 'Very important')}</div>
+      <div class="q-block"><div class="q-text">How important is receiving education in your preferred language?</div>
+        ${renderLikert('language_importance', 'Not important', 'Very important')}</div>
+      <div class="q-block"><div class="q-text">Would you feel more comfortable learning about finances together with your spouse or family?</div>
+        ${renderSingle('family_learning', ['Yes','No','Maybe'], true)}</div>`
+  },
+  { // 7
+    title: 'How You Learn', h: 'How would you like to learn?',
+    body: () => `
+      <div class="q-block"><div class="q-text">How would you prefer to receive financial education?</div>
+        ${renderMulti('learning_formats', LEARNING_FORMATS, true)}</div>
+      <div class="q-block"><div class="q-text">Preferred time for a workshop or event?</div>
+        ${renderSingle('preferred_time', ['Weekday morning','Weekday afternoon','Weekday evening','Saturday morning','Saturday afternoon','Sunday afternoon','Sunday evening'], true)}</div>
+      <div class="q-block"><div class="q-text">What would make you attend a free financial-education workshop?</div>
+        <textarea id="workshop_motivation" placeholder="Optional…"></textarea></div>`
+  },
+  { // 8 — clearly separated optional career section
+    title: 'Career (Optional)', h: 'A few questions about financial-services careers.',
+    banner: `<div class="career-banner"><b>OPTIONAL — CAREER SECTION.</b> These questions help us understand awareness of careers in financial services. Your answers will not affect any financial-services recommendations. Skip ahead any time.</div>`,
+    body: () => `
+      <div class="q-block"><div class="q-text">Before today, did you know people can become licensed to work in financial services?</div>
+        ${renderSingle('career_aware', ['Yes','No'], true)}</div>
+      <div class="q-block"><div class="q-text">Have you ever considered a career, business, or part-time opportunity in financial services?</div>
+        ${renderSingle('career_interest', ['Yes','Maybe','No'], true)}</div>
+      <div class="q-block"><div class="q-text">Which aspects interest you?</div>
+        ${renderMulti('career_aspects', CAREER_ASPECTS, true)}</div>
+      <div class="q-block"><div class="q-text">What concerns you about this kind of career?</div>
+        ${renderMulti('career_concerns', CAREER_CONCERNS, true)}</div>
+      <div class="q-block"><div class="q-text">Would you attend a free Financial Services Career Discovery workshop?</div>
+        ${renderSingle('career_workshop', ['Definitely','Maybe','Not interested'], true)}</div>`
+  },
+  { // 9 — final open question
+    title: 'Last Question', h: 'If you could change one thing…',
+    body: () => `
+      <div class="q-block"><div class="q-text">If you could change ONE thing about how life insurance, retirement planning, or financial services are taught or marketed to your community, what would it be?</div>
+        <textarea id="final_change" rows="5" placeholder="Your thoughts…"></textarea></div>`
+  },
+];
+
+const TOTAL_STEPS = SECTIONS.length + 2; // + intro + followup
+let stepHistory = [0];
+
+document.getElementById('dynamic-steps').innerHTML = SECTIONS.map((s, i) => `
+  <div class="step" id="step-${i+1}">
+    <div class="step-number">Step ${i+1} of ${SECTIONS.length} · ${s.title}</div>
+    <h2>${s.h}</h2>
+    ${s.banner || ''}
+    ${s.body()}
+    <div class="step-error" id="err-${i+1}"></div>
+    <div class="btn-row"><button class="btn btn-secondary" onclick="prevStep()">Back</button><button class="btn btn-primary" onclick="nextStep()">Continue →</button></div>
+  </div>`).join('');
+SECTIONS.forEach((s, i) => { if (s.afterRender) s.afterRender(); });
+
+// Life-insurance conditional follow-up
+document.addEventListener('change', e => {
+  if (e.target.matches('input[name="has_insurance"]')) {
+    document.getElementById('ins-followup').style.display = e.target.value === 'Yes' ? 'block' : 'none';
+  }
+});
+
+function toggleOpt(input) { input.closest('.opt-label').classList.toggle('selected', input.checked); }
+function selectOpt(input) {
+  input.closest('[data-single]').querySelectorAll('.opt-label').forEach(l => l.classList.remove('selected'));
+  input.closest('.opt-label').classList.add('selected');
+}
+function selectLikert(input) {
+  input.closest('[data-likert]').querySelectorAll('label').forEach(l => l.classList.remove('selected'));
+  input.closest('label').classList.add('selected');
+}
+
+function showStep(n) {
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  const target = n === 'followup' ? document.getElementById('step-followup') : document.getElementById('step-' + n);
+  target.classList.add('active');
+  window.scrollTo({ top:0, behavior:'smooth' });
+  const numeric = n === 'followup' ? SECTIONS.length + 1 : n;
+  const pct = Math.round((numeric / TOTAL_STEPS) * 100);
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('pct-label').textContent = pct + '%';
+  document.getElementById('step-label').textContent = n === 'followup' ? 'Almost done' : `Step ${n} of ${SECTIONS.length}`;
+  document.getElementById('progress-wrap').style.display = n === 0 ? 'none' : 'block';
+}
+function nextStep() {
+  const cur = stepHistory[stepHistory.length - 1];
+  const next = cur === SECTIONS.length ? 'followup' : cur + 1;
+  showStep(next);
+  stepHistory.push(next);
+}
+function prevStep() {
+  if (stepHistory.length <= 1) return;
+  stepHistory.pop();
+  showStep(stepHistory[stepHistory.length - 1]);
+}
+
+// Follow-up yes/no toggle
+document.getElementById('followup-yn').innerHTML = renderSingle('followup_wants', ['Yes, reach out to me','No thanks'], true);
+document.addEventListener('change', e => {
+  if (e.target.matches('input[name="followup_wants"]')) {
+    document.getElementById('followup-contact').style.display = e.target.value.startsWith('Yes') ? 'block' : 'none';
+  }
+});
+
+function collectResponses() {
+  const getMulti = name => [...document.querySelectorAll(`[data-multi="${name}"] input:checked`)].map(i => i.value);
+  const getSingle = name => document.querySelector(`input[name="${name}"]:checked`)?.value || '';
+  const getLikert = name => document.querySelector(`input[name="${name}"]:checked`)?.value || null;
+  const fin = {}; FIN_TOPICS.forEach((t,i) => { fin[t] = getLikert('fin_'+i); });
+  return {
+    id: 'resp_' + Date.now() + '_' + Math.random().toString(36).slice(2,8),
+    timestamp: new Date().toISOString(),
+    agentId: _agentId, referredBy: _agentDisplay, campaign: _campaignId || 'direct',
+    age: getSingle('age'), region: getSingle('region'), communities: getMulti('communities'), languages: getMulti('languages'),
+    financialConfidence: fin, topPriorities: getMulti('top_priorities'),
+    hasInsurance: getSingle('has_insurance'), adequateCoverage: getSingle('adequate_coverage'), insuranceBarriers: getMulti('insurance_barriers'),
+    retirementConfidence: getLikert('retirement_confidence'), retirementContributions: getMulti('retirement_contributions'), retirementConfusions: getMulti('retirement_confusions'),
+    marketingFeelings: getMulti('marketing_feelings'), marketingProblems: getMulti('marketing_problems'), marketingImprovement: document.getElementById('marketing_improvement')?.value.trim() || '',
+    trustSources: getMulti('trust_sources'), cultureImportance: getLikert('culture_importance'), languageImportance: getLikert('language_importance'), familyLearning: getSingle('family_learning'),
+    learningFormats: getMulti('learning_formats'), preferredTime: getSingle('preferred_time'), workshopMotivation: document.getElementById('workshop_motivation')?.value.trim() || '',
+    careerAware: getSingle('career_aware'), careerInterest: getSingle('career_interest'), careerAspects: getMulti('career_aspects'), careerConcerns: getMulti('career_concerns'), careerWorkshopInterest: getSingle('career_workshop'),
+    finalChange: document.getElementById('final_change')?.value.trim() || '',
+    hasFollowupConsent: document.getElementById('fu-consent')?.checked || false,
+  };
+}
+
+function submitSurvey() {
+  const wantsFollowup = document.querySelector('input[name="followup_wants"]:checked')?.value.startsWith('Yes');
+  if (wantsFollowup && !document.getElementById('fu-consent').checked) {
+    alert('Please check the consent box, or select "No thanks" above.');
+    return;
+  }
+  const response = collectResponses();
+
+  // Save the research response — no name/email/phone in this object at all.
+  try {
+    const store = JSON.parse(localStorage.getItem('dba_community_research_responses') || '[]');
+    store.push(response);
+    localStorage.setItem('dba_community_research_responses', JSON.stringify(store));
+  } catch(e) {}
+
+  // Follow-up contact, if given, is saved to a SEPARATE store with only the
+  // response id as a link — never merged into the research data above.
+  if (wantsFollowup && document.getElementById('fu-consent').checked) {
+    try {
+      const followups = JSON.parse(localStorage.getItem('dba_research_followups') || '[]');
+      followups.push({
+        responseId: response.id, requestedAt: new Date().toISOString(),
+        firstName: document.getElementById('fu-first').value.trim(),
+        email: document.getElementById('fu-email').value.trim(),
+        phone: document.getElementById('fu-phone').value.trim(),
+        preferredContact: document.getElementById('fu-method').value,
+        preferredLanguage: document.getElementById('fu-lang').value,
+        agentId: _agentId,
+      });
+      localStorage.setItem('dba_research_followups', JSON.stringify(followups));
+    } catch(e) {}
+  }
+
+  if (typeof fireTrigger === 'function') {
+    try {
+      fireTrigger('community_research', {
+        ...response,
+        followupRequested: wantsFollowup || false,
+        followupFirstName: wantsFollowup ? document.getElementById('fu-first').value.trim() : '',
+        followupEmail: wantsFollowup ? document.getElementById('fu-email').value.trim() : '',
+        followupPhone: wantsFollowup ? document.getElementById('fu-phone').value.trim() : '',
+      });
+    } catch(e) {}
+  }
+
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  document.getElementById('step-done').classList.add('active');
+  document.getElementById('progress-fill').style.width = '100%';
+  document.getElementById('pct-label').textContent = '100%';
+  document.getElementById('step-label').textContent = 'Complete';
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+</script>
+</body>
+</html>
