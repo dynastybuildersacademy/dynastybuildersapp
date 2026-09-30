@@ -151,13 +151,14 @@ input:focus{border-color:rgba(201,168,76,.4);}
       <div>
         <div class="seq-name">Top 25 Prospect Added</div>
         <div class="seq-desc">Fires when a prospect is imported or added to an agent's Top 25 Worksheet.</div>
-        <div class="seq-trigger">Trigger: <code>top25_prospect</code> · Fields: prospectName, phone, email, status, occupation, source</div>
+        <div class="seq-trigger">Trigger: <code>top25_prospect</code> · Fields: prospectName, phone, email, note, referredBy, source</div>
       </div>
     </div>
     <div class="steps-list">
       <div class="step-row"><div class="step-num">1</div><div class="step-body"><div class="step-name">Add to CRM / Tracking Sheet</div><div class="step-detail">Auto-add to Google Sheets, HubSpot, or Monday.com contact board for pipeline tracking.</div><div class="step-delay">⏱ Immediately</div></div></div>
-      <div class="step-row"><div class="step-num">2</div><div class="step-body"><div class="step-name">Agent Reminder (Internal)</div><div class="step-detail">Slack/email to the agent: "You added [Name] to your Top 25. Have you sent your first message yet?"</div><div class="step-delay">⏱ 24 hours after add</div></div></div>
-      <div class="step-row"><div class="step-num">3</div><div class="step-body"><div class="step-name">7-Day No-Activity Nudge</div><div class="step-detail">If no status update in 7 days, send agent reminder to follow up.</div><div class="step-delay">⏱ 7 days (use Zapier filter on status)</div></div></div>
+      <div class="step-row"><div class="step-num">2</div><div class="step-body"><div class="step-name">Send Prospect a Welcome Newsletter</div><div class="step-detail">Not currently configured — this doesn't happen unless you set it up below. If <code>email</code> is present, send the prospect the <a href="financial-independence-number.html" target="_blank">Financial Independence Number newsletter</a> as a value-first first touch, before the agent ever reaches out personally.</div><div class="step-delay">⏱ Immediately, if email present</div></div></div>
+      <div class="step-row"><div class="step-num">3</div><div class="step-body"><div class="step-name">Agent Reminder (Internal)</div><div class="step-detail">Slack/email to the agent: "You added [Name] to your Top 25. Have you sent your first message yet?"</div><div class="step-delay">⏱ 24 hours after add</div></div></div>
+      <div class="step-row"><div class="step-num">4</div><div class="step-body"><div class="step-name">7-Day No-Activity Nudge</div><div class="step-detail">If no status update in 7 days, send agent reminder to follow up.</div><div class="step-delay">⏱ 7 days (use Zapier filter on status)</div></div></div>
     </div>
     <div style="margin-top:12px;">
       <label style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);display:block;margin-bottom:5px;">Zapier Webhook URL</label>

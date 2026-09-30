@@ -1851,9 +1851,14 @@ function openShareModal() {
   const canvas = document.getElementById('share-qr-canvas');
   canvas.innerHTML = '';
   if (typeof QRCode !== 'undefined') {
-    new QRCode(canvas, { text: link, width: 220, height: 220, colorDark: '#F5F1E8', colorLight: '#ffffff' });
+    // colorDark was '#F5F1E8' — a near-white cream, left over from this
+    // page's light-theme colors. Against the white background right next
+    // to it, that's almost no contrast at all, which is exactly what a QR
+    // scanner needs to tell the dark modules from the light ones. A QR
+    // code needs real black-on-white contrast to scan reliably.
+    new QRCode(canvas, { text: link, width: 220, height: 220, colorDark: '#000000', colorLight: '#ffffff' });
   } else {
-    canvas.innerHTML = `<div style="padding:40px;color:#F5F1E8;font-family:'DM Mono',monospace;font-size:11px;text-align:center;">QR library failed to load.<br>Use the link below instead.</div>`;
+    canvas.innerHTML = `<div style="padding:40px;color:#1E1A10;font-family:'DM Mono',monospace;font-size:11px;text-align:center;">QR library failed to load.<br>Use the link below instead.</div>`;
   }
 
   if (navigator.share) document.getElementById('native-share-btn').style.display = 'flex';
