@@ -17,6 +17,7 @@ const CARD_COLS = {
   photo:     'text_mm7pbkh',
   materials: 'long_text_mm7p6y32',
   style:     'text_mm7pz4w9',
+  top25:     'text_mm7pcg64',
 };
 
 // Every text/background pair below was checked for WCAG AA contrast
@@ -106,5 +107,6 @@ async function fetchCardFromMonday(agentId, proxyUrl) {
     photo: col(CARD_COLS.photo).text || '',
     materials: parseJSON(col(CARD_COLS.materials).text, []),
     style: col(CARD_COLS.style).text || DEFAULT_CARD_STYLE,
+    top25Board: col(CARD_COLS.top25).text || '',
   };
 }

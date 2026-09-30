@@ -8,6 +8,7 @@
 <!-- auth.js is intentionally NOT loaded: this page is public, and auth.js
      carries the full agent roster including login PINs. -->
 <script src="card-styles.js"></script>
+<script src="prospect-capture.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -45,6 +46,17 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg,#F5F1E8);color:var(--t
 .qr-box{margin:18px auto 0;background:#FFFFFF;padding:12px;border-radius:12px;display:inline-block;}
 .foot{text-align:center;font-size:10.5px;color:var(--muted);margin-top:16px;}
 .state{max-width:440px;margin:60px auto;text-align:center;font-size:15px;color:#4A5568;background:#fff;padding:30px;border-radius:14px;}
+.connect{margin:4px 0 18px;padding:16px;border-radius:14px;border:2px solid var(--accent);text-align:left;}
+.connect h3{font-family:var(--font);font-size:19px;color:var(--text);margin-bottom:4px;}
+.connect p{font-size:12.5px;color:var(--muted);margin-bottom:10px;}
+.connect label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:8px 0 4px;}
+.connect input,.connect textarea{width:100%;padding:11px 12px;border-radius:9px;border:1.5px solid rgba(128,128,128,.35);background:var(--bg);color:var(--text);font-size:15px;font-family:inherit;}
+.connect textarea{min-height:64px;resize:vertical;}
+.connect .two{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.connect .go{margin-top:12px;width:100%;padding:13px;border:none;border-radius:10px;background:var(--btn);color:var(--btnText);font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;}
+.connect .err{display:none;color:#B42318;background:#FEF3F2;border-radius:8px;padding:8px 10px;font-size:12.5px;margin-top:8px;}
+.connect .done{display:none;text-align:center;padding:10px 0;}
+.connect .hp{position:absolute;left:-9999px;height:0;overflow:hidden;}
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1E1A10;color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;display:none;}
 </style>
 </head>
@@ -92,6 +104,23 @@ function render(){
         ${c.email ? `<a class="act" href="mailto:${escHtml(c.email)}"><span>✉️</span>Email</a>` : ''}
       </div>
       <button class="save-btn" onclick="saveContact()">⬇ Save to Contacts</button>
+      <div class="connect" id="connect">
+        <div id="connect-form">
+          <h3>Let's stay connected</h3>
+          <p>Share your info and ${escHtml(firstName(c.name))} will reach out personally.</p>
+          <div class="two">
+            <div><label for="p-first">First name</label><input id="p-first" autocomplete="given-name"></div>
+            <div><label for="p-last">Last name</label><input id="p-last" autocomplete="family-name"></div>
+          </div>
+          <label for="p-phone">Phone</label><input id="p-phone" type="tel" autocomplete="tel">
+          <label for="p-email">Email</label><input id="p-email" type="email" autocomplete="email">
+          <label for="p-note">Anything you'd like me to know? (optional)</label><textarea id="p-note" maxlength="400"></textarea>
+          <div class="hp" aria-hidden="true"><input id="p-hp" tabindex="-1" autocomplete="off"></div>
+          <button class="go" id="p-go" onclick="submitProspect()">Send My Info →</button>
+          <div class="err" id="p-err"></div>
+        </div>
+        <div class="done" id="connect-done"><div style="font-size:30px;">✅</div><h3>You're all set!</h3><p>Thanks — ${escHtml(firstName(c.name))} will personally reach out soon.</p></div>
+      </div>
       <div class="info">
         ${c.phone ? `<div class="row"><span class="ico">📞</span><a href="tel:${phoneDigits}">${escHtml(formatPhone(c.phone))}</a></div>` : ''}
         ${c.email ? `<div class="row"><span class="ico">✉️</span><a href="mailto:${escHtml(c.email)}">${escHtml(c.email)}</a></div>` : ''}
@@ -124,6 +153,32 @@ function render(){
     new QRCode(document.getElementById('qr'), { text: cardUrl(), width: 150, height: 150, colorDark: '#000000', colorLight: '#FFFFFF' });
   } else { document.getElementById('qr').style.display = 'none'; }
 }
+
+function firstName(n){ return String(n||'').trim().split(/\s+/)[0] || 'I'; }
+// Same save path as the QR "add me" form: the prospect lands on this
+// agent's own Top 25 board (or the shared board if they don't have one).
+async function submitProspect(){
+  const v = id => document.getElementById(id).value.trim();
+  const err = document.getElementById('p-err'); err.style.display = 'none';
+  if (v('p-hp')) { showConnected(); return; }            // bot trap
+  const first=v('p-first'), last=v('p-last'), phone=v('p-phone'), email=v('p-email'), note=v('p-note');
+  if (!first && !phone && !email) { err.textContent='Please add at least your name and a phone number or email.'; err.style.display='block'; return; }
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { err.textContent='That email address doesn\'t look right.'; err.style.display='block'; return; }
+  const btn=document.getElementById('p-go'); btn.disabled=true; btn.textContent='Sending…';
+  const r = await saveProspectToTop25({ proxyUrl: PROXY, boardId: CARD.top25Board || undefined,
+    first, last, phone, email, note, source: 'Business Card', agentName: CARD.name });
+  try {
+    fetch('/api/automations', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({
+      trigger:'top25_prospect', agentId, agentName: CARD.name, timestamp:new Date().toISOString(),
+      data:{ prospectName:[first,last].filter(Boolean).join(' '), phone, email, note, referredBy: CARD.name, source:'Business Card', savedToMonday:r.ok } }) }).catch(()=>{});
+  } catch(e) {}
+  if (!r.ok) {
+    err.textContent = "Sorry — that didn't go through. Please try again" + (CARD.phone ? `, or text ${firstName(CARD.name)} at ${formatPhone(CARD.phone)}.` : '.');
+    err.style.display='block'; btn.disabled=false; btn.textContent='Send My Info →'; return;
+  }
+  showConnected();
+}
+function showConnected(){ document.getElementById('connect-form').style.display='none'; document.getElementById('connect-done').style.display='block'; }
 
 function copyLink(){
   const u = cardUrl();

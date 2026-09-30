@@ -300,6 +300,7 @@ function buildColumnValues(){
     [CARD_COLS.photo]: state.photo || '',
     [CARD_COLS.materials]: { text: JSON.stringify(state.materials) },
     [CARD_COLS.style]: state.style,
+    [CARD_COLS.top25]: ME.top25BoardId || '',
   };
 }
 async function saveCard(){
