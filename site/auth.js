@@ -197,7 +197,7 @@ const MONDAY_ORG_KEY = 'eyJhbGciOiJIUzI1NiJ9.eyJ0aWQiOjY1Nzg0OTc3NSwiYWFpIjoxMSw
 const AGENTS = [
   { id:"deigar526", phpId:"1417894", name:"Deisy Garcia", pin:"5261", role:"trainee", level:10, uplineId:"obi001", email:"deisygarcia1713@gmail.com", phone:"2133175067", enrollmentDate:"2026-06-27", adminTier:"admin" },
   { id:"obi001", phpId:"10146", name:"Obi Iroezi", pin:"1111", role:"senior_md", level:65, uplineId:"", email:"obi@yourdynastybuilder.com", phone:"3109956507", top25BoardId:"18419015866", licenseStates:["CA","TX"], enrollmentDate:"2022-01-01", adminTier:"super_user" },
-  { id:"jen001", phpId:"", name:"Jen Iroezi", pin:"1111", role:"senior_md", level:65, uplineId:"obi001", email:"jen@yourdynastybuilder.com", phone:"3109956508", top25BoardId:"8052087599", licenseStates:["CA"], enrollmentDate:"2022-01-01" },
+  { id:"jen001", phpId:"", name:"Jen Iroezi", pin:"1111", role:"senior_md", level:65, uplineId:"obi001", email:"jen@yourdynastybuilder.com", phone:"3109956508", top25BoardId:"8282492230" },
   { id:"mag001", phpId:"10200", name:"Magdalene Ibezim", pin:"1111", role:"trainee", level:20, uplineId:"obi001", email:"", phone:"", top25BoardId:"8270052654", licenseStates:["TX"], enrollmentDate:"2022-06-01" },
   { id:"sha001", phpId:"10401", name:"Shantesa Archie", pin:"1111", role:"trainee", level:20, uplineId:"chi001", email:"", phone:"", licenseStates:["TX"], enrollmentDate:"2025-01-10" },
   { id:"dba000", phpId:"", name:"DBA Super Admin", pin:"1111", role:"super_admin", level:100, uplineId:"", email:"admin@yourdynastybuilder.com", phone:"", enrollmentDate:"2022-01-01" },
