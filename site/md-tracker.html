@@ -1903,7 +1903,7 @@ function mergePolicyData() {
   showEditableImportPreview(source, run, targetMonth);
 }
 
-function showEditableImportPreview(source, run, targetMonth) {
+function showEditableImportPreview(source, run, targetMonth, sourceLabel) {
   const modal = document.getElementById("import-modal");
   const body  = modal.querySelector(".modal-body");
 
@@ -1970,6 +1970,7 @@ function showEditableImportPreview(source, run, targetMonth) {
   body.innerHTML = `
     <div style="font-family:Barlow Condensed,sans-serif;font-size:14px;font-weight:800;
       color:var(--gold);margin-bottom:4px;">Review &amp; Edit Before Importing</div>
+    ${sourceLabel ? `<div style="font-family:DM Mono,monospace;font-size:10.5px;color:var(--green);margin-bottom:6px;">${sourceLabel}</div>` : ''}
     <div style="font-family:DM Mono,monospace;font-size:10px;color:var(--muted);margin-bottom:10px;">
       Edit client names, app counts, or points. Toggle ✓ for paid. × to skip a row.
     </div>
@@ -4206,6 +4207,43 @@ function applySyncRecruits() {
   toast(`✓ Added ${added} recruit(s) from the roster`);
 }
 
+// ── IMPORT POLICIES FROM BMP PLATFORM ──────────────────────────
+// BMP Platform's production board spans the whole company, not just one
+// run's team, so everything it exports gets filtered here to just the
+// agents actually on this run before anything is shown — matching by
+// name since BMP's agent columns are plain text, not roster IDs.
+function loadBmpExport() {
+  const run = runs.find(r => r.id === activeId);
+  const status = document.getElementById('bmp-import-status');
+  if (!run) { status.textContent = '⚠ Select a run first.'; return; }
+
+  let raw = null;
+  try { raw = JSON.parse(localStorage.getItem('dba_bmp_policy_export') || 'null'); } catch(e) {}
+  if (!raw || !raw.rows?.length) {
+    status.textContent = '⚠ No export found yet. Go export from BMP Platform\'s Production Desk first, then come back and try again.';
+    return;
+  }
+
+  const norm = s => (s || '').toLowerCase().replace(/[^a-z]/g, '');
+  const teamNames = new Set([run.agentName, ...(run.downlineIds || []).map(id => contribName(id))].map(norm));
+
+  const relevant = raw.rows.filter(r =>
+    (r.teamAgents || []).some(a => teamNames.has(norm(a.name)))
+  );
+
+  const ageMin = Math.round((Date.now() - new Date(raw.exportedAt).getTime()) / 60000);
+  const summary = `Export from ${ageMin < 1 ? 'just now' : ageMin + ' min ago'}: ${raw.rows.length} total, ${relevant.length} match this run's team.`;
+
+  if (!relevant.length) {
+    // Nothing to show in a preview, so this message is the only feedback —
+    // leave it in place rather than handing off to showEditableImportPreview,
+    // which would otherwise wipe this whole pane for an empty result.
+    status.textContent = summary + ' None were written by anyone on this run — nothing to import.';
+    return;
+  }
+  showEditableImportPreview(relevant, run, activeMonth, summary);
+}
+
 function openRecruitImport() {
   document.getElementById('recruit-csv-input').click();
 }
@@ -4333,6 +4371,7 @@ function handlePolicyCSV(evt) {
         <button class="imp-tab active" onclick="switchImpTab('screenshot',this)">📸 Dashboard Screenshot</button>
         <button class="imp-tab" onclick="switchImpTab('policies',this)">📋 Policy File</button>
         <button class="imp-tab" onclick="switchImpTab('agents',this)">👥 Agents File</button>
+        <button class="imp-tab" onclick="switchImpTab('bmp',this)">🏢 From BMP Platform</button>
       </div>
 
       <!-- TAB 1: DASHBOARD SCREENSHOT OR MANUAL ENTRY -->
@@ -4450,6 +4489,14 @@ function handlePolicyCSV(evt) {
         </div>
         <div class="import-preview" id="ag-preview"></div>
         <button class="imp-merge-btn" id="ag-merge-btn" onclick="mergeAgentsData()" disabled>✓ Import Recruits to This Month</button>
+      </div>
+
+      <div class="imp-pane" id="imp-bmp">
+        <p style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.7;">
+          Open <strong>Production Desk</strong> in the BMP Platform, fetch your production data there, then click <strong>📤 Export to MD Tracker</strong>. Come back here and load it below — only policies written by someone on this run's team are shown.
+        </p>
+        <button class="btn-cancel" onclick="loadBmpExport()" style="width:100%;">🔄 Check for BMP Export</button>
+        <div id="bmp-import-status" style="font-size:11.5px;color:var(--muted);margin-top:8px;"></div>
       </div>
 
     </div>

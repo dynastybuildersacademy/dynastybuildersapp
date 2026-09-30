@@ -430,6 +430,7 @@ select option{background:#ECE6D6;}
             <option value="">All Agents</option>
           </select>
           <button class="btn btn-ghost btn-sm" onclick="fetchProductionData()">↺ Refresh</button>
+          <button class="btn btn-ghost btn-sm" onclick="exportPoliciesToMdTracker()" title="Sends what's currently loaded here to the MD Promotion Tracker's Import Data modal">📤 Export to MD Tracker</button>
         </div>
         <div class="pipe-kanban" id="pipelineKanban"></div>
       </div>
@@ -1819,6 +1820,40 @@ function buildProdMappingUI(){
   });
   const autoCount=allFields.filter(f=>prodColMap[f.key]).length;
   if(autoCount){const h=document.createElement('div');h.className='hint';h.style.marginTop='8px';h.textContent=`✨ ${autoCount} of ${allFields.length} fields auto-matched.`;body.appendChild(h);}
+}
+
+// ── EXPORT TO MD TRACKER ─────────────────────────────────────────
+// allPolicies only exists in this page's own memory while it's open — it
+// was never saved anywhere, so the MD Tracker (a separate page) had no
+// way to see it even though the data it needs (policy #, client, agent
+// split, points, status) is already sitting right here after a fetch.
+// This writes it to the one piece of storage both pages can read, in the
+// exact shape MD Tracker's own import preview already expects — so the
+// well-tested review-before-commit screen it already has just works,
+// with no separate import path to build or trust blindly.
+function exportPoliciesToMdTracker(){
+  if(!allPolicies.length){ alert('Fetch production data first.'); return; }
+  const rows = allPolicies.map(p => {
+    const teamAgents = [];
+    if(p.agent1Name) teamAgents.push({ name:p.agent1Name, phpCode:'', splitPct: p.agent1Split ? Math.round(p.agent1Split*100) : 100 });
+    if(p.agent2Name) teamAgents.push({ name:p.agent2Name, phpCode:'', splitPct: p.agent2Split ? Math.round(p.agent2Split*100) : 0 });
+    return {
+      date: p.submitDate || p.appSignedDate || '',
+      policy: p.policyNum || '',
+      client: `${p.firstName||''} ${p.lastName||''}`.trim(),
+      status: p.status || '',
+      subPts: p.pointsAwarded || 0,
+      totPts: p.pointsAwarded || 0,
+      teamApps: 1,
+      teamAgents,
+    };
+  }).filter(r => r.policy || r.client);
+  try{
+    localStorage.setItem('dba_bmp_policy_export', JSON.stringify({ exportedAt:new Date().toISOString(), rows }));
+    alert(`✓ ${rows.length} polic${rows.length!==1?'ies':'y'} ready for MD Tracker.\n\nOpen the MD Promotion Tracker → Import Data → "From BMP Platform" to bring them into a run.`);
+  }catch(e){
+    alert('Could not save export — ' + e.message);
+  }
 }
 
 async function fetchProductionData(){
