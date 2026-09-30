@@ -534,6 +534,7 @@ body::before{content:"";position:fixed;inset:0;
         <div style="display:flex;gap:6px;flex-wrap:wrap;padding:8px 0 4px;">
           <button class="add-row-btn" onclick="addRecruit()" style="flex:1;">+ Add Recruit</button>
           <button class="add-row-btn" onclick="openRecruitImport()" style="flex:1;background:rgba(93,173,226,.1);border-color:rgba(93,173,226,.3);color:#5DADE2;">⬆ Import CSV</button>
+          <button class="add-row-btn" onclick="syncRecruitsFromRoster()" style="flex:1;background:rgba(46,204,113,.1);border-color:rgba(46,204,113,.3);color:#2ECC71;" title="This run's recruit count only ever includes what's been typed or imported here — it does not automatically know about new agents added to the roster, even when they're correctly attributed to this run's team. This scans the roster and offers to add anyone missing.">🔄 Sync from Roster</button>
         </div>
         <input type="file" id="recruit-csv-input" accept=".csv,.txt" style="display:none;" onchange="handleRecruitCSV(event)">
       </div>
@@ -4105,6 +4106,106 @@ document.addEventListener("DOMContentLoaded",()=>{
 // RECRUIT CSV IMPORT
 // Expected CSV: Date, Name, PHP Code (header optional)
 // ════════════════════════════════════════════════════════════════
+// ── SYNC RECRUITS FROM ROSTER ──────────────────────────────────
+// A run's recruit count has never been anything but what's been typed or
+// imported directly into it — it has no automatic connection to the
+// roster's own uplineId chains, even though the roster is the actual
+// source of truth for who recruited whom. So a real recruit can exist in
+// the roster, correctly attributed to someone on this run's team, and
+// still never show up here simply because nobody re-typed their name
+// into this specific run. This scans the roster for exactly that gap —
+// anyone whose upline is the run agent or someone on their selected team,
+// enrolled inside the run's period — and offers to add whoever's missing.
+// It only ever adds; it never edits or removes an existing entry.
+function findMissingRosterRecruits(run) {
+  const agents = typeof AGENTS !== "undefined" ? AGENTS : [];
+  const countedIds = new Set([run.agentId, ...(run.downlineIds || [])]);
+  const runStart = new Date(run.startDate + "T00:00:00");
+  const runEnd = new Date(run.endDate + "T23:59:59");
+
+  // Build a lookup of who's already entered, by phpId AND by normalized
+  // name, since manually-typed entries won't always include a phpId.
+  const norm = s => (s || "").toLowerCase().replace(/[^a-z]/g, "");
+  const existingPhpIds = new Set();
+  const existingNames = new Set();
+  run.monthLabels.forEach((_, m) => {
+    (run.recruits[m] || []).forEach(r => {
+      const parsed = parseRecruitField(r.n);
+      if (parsed.php) existingPhpIds.add(parsed.php);
+      if (parsed.name) existingNames.add(norm(parsed.name));
+    });
+  });
+
+  const missing = [];
+  agents.forEach(a => {
+    if (!a.uplineId || !countedIds.has(a.uplineId)) return;
+    if (!a.enrollmentDate) return;
+    const enrolled = new Date(a.enrollmentDate + "T12:00:00");
+    if (enrolled < runStart || enrolled > runEnd) return;
+    if (a.phpId && existingPhpIds.has(a.phpId)) return;
+    if (existingNames.has(norm(a.name))) return;
+
+    // Which month of the run does this fall into?
+    let monthIdx = run.months - 1;
+    for (let i = 0; i < run.months; i++) {
+      const w = monthWindow(run, i);
+      if (enrolled >= w.s && enrolled <= w.e) { monthIdx = i; break; }
+    }
+    missing.push({ agent: a, month: monthIdx, uplineName: contribName(a.uplineId) });
+  });
+  return missing;
+}
+
+function syncRecruitsFromRoster() {
+  const run = runs.find(r => r.id === activeId);
+  if (!run) { toast("Select a run first"); return; }
+  const missing = findMissingRosterRecruits(run);
+  const body = document.getElementById("sync-recruits-body");
+  if (!missing.length) {
+    body.innerHTML = `<div style="padding:16px;text-align:center;color:var(--muted);font-size:12.5px;">No gaps found — every roster recruit attributed to this run's team during its dates is already entered here.</div>`;
+  } else {
+    body.innerHTML = `
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">Found ${missing.length} recruit(s) in the roster that aren't in this run yet:</div>
+      <div style="max-height:320px;overflow-y:auto;">
+        ${missing.map((m, i) => `
+          <label style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-bottom:1px solid var(--border);cursor:pointer;">
+            <input type="checkbox" class="sync-recruit-cb" data-idx="${i}" checked>
+            <div style="flex:1;">
+              <div style="font-weight:700;font-size:13px;">${m.agent.name.replace(/</g,"&lt;")}</div>
+              <div style="font-size:10.5px;color:var(--muted);">Recruited by ${m.uplineName} · enrolled ${m.agent.enrollmentDate} · ${run.monthLabels[m.month]}</div>
+            </div>
+          </label>`).join("")}
+      </div>`;
+  }
+  document.getElementById("sync-recruits-apply").style.display = missing.length ? "block" : "none";
+  document.getElementById("sync-recruits-apply").dataset.missing = JSON.stringify(missing.map(m => ({ id: m.agent.id, month: m.month })));
+  document.getElementById("sync-recruits-modal").classList.add("open");
+}
+function closeSyncRecruitsModal() { document.getElementById("sync-recruits-modal").classList.remove("open"); }
+function applySyncRecruits() {
+  const run = runs.find(r => r.id === activeId);
+  if (!run) return;
+  const missingMeta = JSON.parse(document.getElementById("sync-recruits-apply").dataset.missing || "[]");
+  const checked = [...document.querySelectorAll(".sync-recruit-cb:checked")].map(cb => parseInt(cb.dataset.idx, 10));
+  const agents = typeof AGENTS !== "undefined" ? AGENTS : [];
+  let added = 0;
+  checked.forEach(i => {
+    const meta = missingMeta[i];
+    if (!meta) return;
+    const agent = agents.find(a => a.id === meta.id);
+    if (!agent) return;
+    if (!run.recruits[meta.month]) run.recruits[meta.month] = [];
+    run.recruits[meta.month].push({
+      d: agent.enrollmentDate, n: `${agent.name} ${agent.phpId || ""}`.trim(), by: agent.uplineId,
+    });
+    added++;
+  });
+  save();
+  closeSyncRecruitsModal();
+  renderAll();
+  toast(`✓ Added ${added} recruit(s) from the roster`);
+}
+
 function openRecruitImport() {
   document.getElementById('recruit-csv-input').click();
 }
@@ -4360,6 +4461,20 @@ function handlePolicyCSV(evt) {
 
 
 <!-- EDIT TEAM MODAL -->
+<div class="modal-bg" id="sync-recruits-modal">
+  <div class="modal" style="max-width:520px;">
+    <div class="modal-hdr">
+      <div class="modal-title">🔄 Sync Recruits from Roster</div>
+      <button class="modal-close" onclick="closeSyncRecruitsModal()">×</button>
+    </div>
+    <div class="modal-body" id="sync-recruits-body"></div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeSyncRecruitsModal()">Cancel</button>
+      <button class="btn-create" id="sync-recruits-apply" onclick="applySyncRecruits()">✓ Add Selected</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-bg" id="edit-team-modal">
   <div class="modal" style="max-width:540px;">
     <div class="modal-hdr">
