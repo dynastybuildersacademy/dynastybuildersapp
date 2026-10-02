@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Resources — Dynasty Builders Academy</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<!-- Public page: auth.js is intentionally not loaded (it contains the agent roster). -->
+<style>
+:root{--bg:#F5F1E8;--s1:#FFFFFF;--s2:#ECE6D6;--gold:#C9A84C;--label:#7A5C14;--text:#1E1A10;--muted:#4A5568;--border:rgba(201,168,76,.25);}
+@media (prefers-color-scheme: dark){:root{--bg:#15130D;--s1:#211E15;--s2:#2A2619;--text:#F5F1E8;--muted:#A9B7CC;--border:rgba(201,168,76,.3);--label:#F5E8C0;}}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);}
+.topnav{display:flex;justify-content:space-between;align-items:center;padding:12px 18px;background:var(--s1);border-bottom:1px solid var(--border);gap:10px;flex-wrap:wrap;}
+.topnav h1{font-family:'Cormorant Garamond',serif;font-size:21px;color:var(--label);}
+.topnav-right{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.topnav-right a{color:var(--muted);text-decoration:none;font-size:13px;border:1px solid var(--border);padding:6px 12px;border-radius:6px;}
+.wrap{max-width:1100px;margin:0 auto;padding:16px;}
+.decks{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-bottom:14px;}
+.deck{display:flex;gap:12px;align-items:center;text-align:left;background:var(--s1);border:2px solid var(--border);border-radius:12px;padding:10px;cursor:pointer;font-family:inherit;color:var(--text);}
+.deck.on{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,168,76,.2);}
+.deck img{width:120px;height:68px;object-fit:cover;border-radius:6px;flex-shrink:0;}
+.deck .t{font-weight:700;font-size:14px;} .deck .m{font-size:12px;color:var(--muted);margin-top:3px;}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px;}
+.toolbar .dl{background:var(--s1);color:var(--text);border:1.5px solid var(--border);border-radius:8px;padding:9px 14px;font-size:13px;font-weight:700;text-decoration:none;}
+.toolbar .hint{font-size:12px;color:var(--muted);flex:1;min-width:200px;}
+.stage{position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:12px;overflow:hidden;}
+.slide{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:opacity .3s;}
+.slide.active{opacity:1;visibility:visible;}
+.slide img{max-width:100%;max-height:100%;object-fit:contain;}
+.slide-counter{position:absolute;top:10px;right:14px;font-family:'DM Mono',monospace;font-size:12px;color:#fff;background:rgba(0,0,0,.45);padding:3px 8px;border-radius:10px;z-index:5;}
+.nav-controls{position:absolute;bottom:12px;left:0;right:0;display:flex;justify-content:center;gap:14px;z-index:5;}
+.nav-btn{width:44px;height:44px;border-radius:50%;background:rgba(0,0,0,.5);color:#fff;border:1px solid rgba(255,255,255,.35);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.strip{display:flex;gap:6px;overflow-x:auto;padding:10px 0;}
+.strip img{height:54px;border-radius:4px;border:2px solid transparent;cursor:pointer;flex-shrink:0;}
+.strip img.on{border-color:var(--gold);}
+.note{font-size:12px;color:var(--muted);line-height:1.6;margin-top:10px;}
+</style>
+</head>
+<body>
+<div class="topnav">
+  <h1>📚 Resources</h1>
+  <div class="topnav-right"><a href="hub.html" id="hub-link" style="display:none;">← Hub</a></div>
+</div>
+<div class="wrap">
+  <div class="decks" id="decks"></div>
+  <div class="toolbar">
+    <a class="dl" id="dl" download>⬇ Download editable PowerPoint</a>
+    <span class="hint">Opens in PowerPoint, Keynote, or Google Slides (upload it to Google Drive, then open with Google Slides). Use <b>▶ Present</b> to show it from here.</span>
+  </div>
+  <div class="stage" id="stage">
+    <div class="slide-counter" id="slide-counter"></div>
+    <div id="slides-container"></div>
+    <div class="nav-controls"><button class="nav-btn" onclick="prevSlide()" aria-label="Previous slide">‹</button><button class="nav-btn" onclick="nextSlide()" aria-label="Next slide">›</button></div>
+  </div>
+  <div class="strip" id="strip"></div>
+  <div class="note" id="deck-note"></div>
+</div>
+
+<script>
+// Slide images are pre-rendered from each deck; the .pptx is the editable original.
+const DECKS = [
+  { id:'recruit-life-cycle', title:'Recruit Life Cycle Training', meta:'30 slides · life cycle, income & timelines, role play', folder:'resources/recruit-life-cycle', count:30,
+    file:'resources/Dynasty-Recruit-Life-Cycle-Training.pptx', public:true,
+    note:'Slides 13–21 are the Income & Timelines module (commission math, overrides, the $10,000 cap, points and cash timing, carrier cutoffs, generational overrides, President’s Club) from PHP’s own training material; skip them if you only need the life cycle. Facilitator notes for every slide are in the speaker notes of the PowerPoint download.' },
+  { id:'bom', title:'Dynasty BOM Presentation', meta:'30 slides · agents only', folder:'resources/bom', count:30,
+    file:'resources/Dynasty-BOM-Presentation.pptx', public:false,
+    note:'The download also includes 26 hidden slides from the original deck — in PowerPoint, right-click a slide → Show/Hide Slide. Images were compressed (51 MB → 15 MB); no slide content was changed. Personalize the opening and closing slides with your own story and contact details before presenting.' },
+];
+// Agents-only decks are hidden from the public. (Files on a static site are
+// still reachable by anyone who has the direct link.)
+let signedIn = false;
+try { signedIn = !!JSON.parse(sessionStorage.getItem('dba_session') || 'null')?.agentId; } catch (e) {}
+if (signedIn) document.getElementById('hub-link').style.display = '';
+const visible = DECKS.filter(d => d.public || signedIn);
+
+let slides = [], currentSlide = 0, deck = null;
+const pad = (n, w) => String(n).padStart(w, '0');
+function imgUrl(d, i){ return `${d.folder}/s-${pad(i + 1, d.count >= 10 ? 2 : 1)}.jpg`; }
+
+function loadDeck(id){
+  deck = visible.find(d => d.id === id) || visible[0];
+  document.querySelectorAll('.deck').forEach(b => b.classList.toggle('on', b.dataset.id === deck.id));
+  slides = Array.from({ length: deck.count }, (_, i) => ({ src: imgUrl(deck, i) }));
+  document.getElementById('slides-container').innerHTML = slides.map((s, i) =>
+    `<div class="slide" data-idx="${i}"><img src="${s.src}" alt="Slide ${i + 1} of ${deck.title}" ${i > 1 ? 'loading="lazy"' : ''}></div>`).join('');
+  document.getElementById('strip').innerHTML = slides.map((s, i) => `<img src="${s.src}" loading="lazy" data-idx="${i}" onclick="goToSlide(${i})" alt="Go to slide ${i + 1}">`).join('');
+  const dl = document.getElementById('dl'); dl.href = deck.file; dl.setAttribute('download', deck.file.split('/').pop());
+  document.getElementById('deck-note').textContent = deck.note;
+  history.replaceState(null, '', '?deck=' + deck.id + location.hash);
+  goToSlide(0);
+}
+function goToSlide(idx){
+  if (!slides.length) return;
+  if (idx < 0) idx = slides.length - 1;
+  if (idx >= slides.length) idx = 0;
+  currentSlide = idx;
+  document.querySelectorAll('.slide').forEach(el => el.classList.toggle('active', +el.dataset.idx === idx));
+  document.querySelectorAll('#strip img').forEach(el => el.classList.toggle('on', +el.dataset.idx === idx));
+  document.getElementById('slide-counter').textContent = (idx + 1) + ' / ' + slides.length;
+  document.querySelector(`#strip img[data-idx="${idx}"]`)?.scrollIntoView({ block:'nearest', inline:'nearest' });
+  // Preload the next slide so advancing during a presentation is instant.
+  const n = document.querySelector(`.slide[data-idx="${idx + 1}"] img`); if (n) n.loading = 'eager';
+}
+function nextSlide(){ goToSlide(currentSlide + 1); }
+function prevSlide(){ goToSlide(currentSlide - 1); }
+document.addEventListener('keydown', e => {
+  if (e.target.closest('input,textarea,select')) return;
+  if (e.key === 'ArrowRight') nextSlide();
+  if (e.key === 'ArrowLeft') prevSlide();
+});
+let tx = 0;
+document.getElementById('stage').addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, { passive:true });
+document.getElementById('stage').addEventListener('touchend', e => { const dx = e.changedTouches[0].clientX - tx; if (dx > 50) prevSlide(); if (dx < -50) nextSlide(); });
+
+document.getElementById('decks').innerHTML = visible.map(d => `
+  <button class="deck" data-id="${d.id}" onclick="loadDeck('${d.id}')"><img src="${imgUrl(d,0)}" alt=""><div><div class="t">${d.title}</div><div class="m">${d.meta}</div></div></button>`).join('');
+loadDeck(new URLSearchParams(location.search).get('deck') || visible[0].id);
+</script>
+<script src="present-mode.js" defer></script>
+</body>
+</html>

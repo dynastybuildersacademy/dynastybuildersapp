@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="auth.js"></script>
 <script src="card-styles.js"></script>
+<script src="prospect-capture.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
 :root{--navy:#F5F1E8;--s1:#FFFFFF;--s2:#ECE6D6;--gold:#C9A84C;--gold2:#E8C97A;--label:#7A5C14;--text:#1E1A10;--muted:#4A5568;--border:rgba(201,168,76,.25);--green:#1E7A46;--red:#9B1C1C;}
@@ -71,6 +72,12 @@ input:focus,textarea:focus{outline:none;border-color:var(--gold);}
 .modal-bg.open{display:flex;}
 .modal{background:var(--s1);border-radius:12px;padding:16px;max-width:420px;width:100%;text-align:center;}
 .modal video{width:100%;border-radius:10px;background:#000;transform:scaleX(-1);}
+.lead-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px;}
+.lead-stat{background:var(--navy);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center;}
+.lead-stat b{display:block;font-size:20px;color:var(--label);}
+.lead-stat span{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
+.lead-row{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:8px 10px;border:1px solid var(--border);border-radius:8px;margin-bottom:6px;font-size:13px;}
+.lead-row .d{font-weight:700;} .lead-row .m{color:var(--muted);font-size:12px;}
 .drop{border:2px dashed var(--border);border-radius:10px;padding:10px;text-align:center;font-size:11.5px;color:var(--muted);margin-top:8px;}
 .drop.over{border-color:var(--gold);background:rgba(201,168,76,.08);}
 </style>
@@ -148,6 +155,13 @@ input:focus,textarea:focus{outline:none;border-color:var(--gold);}
       </div>
     </div>
     <div class="hint" style="margin-top:8px;">When someone scans this QR code, your card opens with buttons to text, WhatsApp, or email it on to someone else.</div>
+  </div>
+
+  <div class="panel" id="leads-panel" style="margin-top:16px;">
+    <h2>Prospects From Your Card &amp; QR</h2>
+    <div class="lead-stats" id="lead-stats"></div>
+    <div id="lead-list"></div>
+    <div class="hint" style="margin-top:8px;">Names and phone numbers land on your <a href="top25.html" style="color:var(--label);font-weight:700;">Top 25 board</a>. This list updates on its own every minute.</div>
   </div>
 </div>
 
@@ -355,7 +369,7 @@ function showShare(){
   $('sh-wa').href='https://wa.me/?text='+encodeURIComponent(txt);
   $('sh-email').href='mailto:?subject='+encodeURIComponent(name+' — Contact Card')+'&body='+encodeURIComponent(txt);
   const q=$('qr'); q.innerHTML='';
-  if (typeof QRCode!=='undefined') new QRCode(q,{ text:url, width:180, height:180, colorDark:'#000000', colorLight:'#FFFFFF' });
+  if (typeof QRCode!=='undefined') new QRCode(q,{ text:url + '&via=qr', width:180, height:180, colorDark:'#000000', colorLight:'#FFFFFF' });
   else q.textContent='QR unavailable — use the link above.';
 }
 function copyLink(){ const u=cardUrl(); navigator.clipboard?.writeText(u).then(()=>setStatus('save-status','✓ Link copied','ok'),()=>prompt('Copy:',u)); }
@@ -364,7 +378,34 @@ function downloadQR(){
   if(!src) return;
   const a=document.createElement('a'); a.href=src; a.download=`business-card-qr-${ME.id}.png`; a.click();
 }
+// ── PROSPECTS FROM YOUR CARD & QR (live) ─────────────────────────
+// Read from the same central lead log the activity tracker uses, so the
+// date shown is when Monday actually received the prospect. Refreshes
+// itself every minute while this tab is visible.
+const POLL_MS = window.__POLL_MS || 60000;
+let LEADS = [];
+const dayStart = n => { const d = new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate() - n); return d; };
+const leadTime = l => new Date(l.at || (l.date + 'T12:00:00'));
+function leadWhen(l){
+  if (!l.at || isNaN(new Date(l.at))) return l.date;
+  const d = new Date(l.at), diff = Math.round((dayStart(0) - new Date(d.getFullYear(), d.getMonth(), d.getDate())) / 86400000);
+  const day = diff <= 0 ? 'Today' : diff === 1 ? 'Yesterday' : d.toLocaleDateString('en-US', { month:'short', day:'numeric' });
+  return day + ' \u00b7 ' + d.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' });
+}
+function renderLeads(){
+  const sorted = LEADS.slice().sort((a, b) => leadTime(b) - leadTime(a));
+  const today = sorted.filter(l => leadTime(l) >= dayStart(0)).length, week = sorted.filter(l => leadTime(l) >= dayStart(6)).length;
+  $('lead-stats').innerHTML = [[today,'Today'],[week,'Last 7 days'],[sorted.length,'All time']].map(([n,t]) => `<div class="lead-stat"><b>${n}</b><span>${t}</span></div>`).join('');
+  const icon = { 'Business Card':'\ud83d\udcc7', 'QR Code':'\ud83d\udd33', 'Share Link':'\ud83d\udd17' };
+  $('lead-list').innerHTML = sorted.length
+    ? sorted.slice(0, 8).map(l => `<div class="lead-row"><span class="d">${escHtml(leadWhen(l))}</span><span class="m">${icon[l.source] || '\u2022'} ${escHtml(l.source)} \u00b7 ${l.hasPhone ? '\ud83d\udcde phone given' : '\u2709\ufe0f no phone'}</span></div>`).join('')
+    : '<div class="hint">No prospects yet. They show up here as soon as someone submits your card or QR code.</div>';
+}
+async function refreshLeads(){ try { LEADS = await fetchAgentLeads(ME.id, MONDAY_PROXY); renderLeads(); } catch (e) { /* keep what is showing */ } }
+setInterval(() => { if (!document.hidden) refreshLeads(); }, POLL_MS);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshLeads(); });
 loadCard();
+refreshLeads();
 </script>
 </body>
 </html>

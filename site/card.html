@@ -119,7 +119,7 @@ function render(){
           <button class="go" id="p-go" onclick="submitProspect()">Send My Info →</button>
           <div class="err" id="p-err"></div>
         </div>
-        <div class="done" id="connect-done"><div style="font-size:30px;">✅</div><h3>You're all set!</h3><p>Thanks — ${escHtml(firstName(c.name))} will personally reach out soon.</p></div>
+        <div class="done" id="connect-done"><div style="font-size:30px;">✅</div><h3>You're all set!</h3><p>Thanks — ${escHtml(firstName(c.name))} will personally reach out soon.</p><p id="connect-when" style="font-size:11.5px;margin-top:6px;"></p></div>
       </div>
       <div class="info">
         ${c.phone ? `<div class="row"><span class="ico">📞</span><a href="tel:${phoneDigits}">${escHtml(formatPhone(c.phone))}</a></div>` : ''}
@@ -150,7 +150,7 @@ function render(){
   document.getElementById('sh-wa').href = 'https://wa.me/?text=' + encodeURIComponent(txt);
   document.getElementById('sh-email').href = 'mailto:?subject=' + encodeURIComponent(`${c.name} — Contact Card`) + '&body=' + encodeURIComponent(txt);
   if (typeof QRCode !== 'undefined') {
-    new QRCode(document.getElementById('qr'), { text: cardUrl(), width: 150, height: 150, colorDark: '#000000', colorLight: '#FFFFFF' });
+    new QRCode(document.getElementById('qr'), { text: cardUrl() + '&via=qr', width: 150, height: 150, colorDark: '#000000', colorLight: '#FFFFFF' });
   } else { document.getElementById('qr').style.display = 'none'; }
 }
 
@@ -166,7 +166,7 @@ async function submitProspect(){
   if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { err.textContent='That email address doesn\'t look right.'; err.style.display='block'; return; }
   const btn=document.getElementById('p-go'); btn.disabled=true; btn.textContent='Sending…';
   const r = await saveProspectToTop25({ proxyUrl: PROXY, boardId: CARD.top25Board || undefined,
-    first, last, phone, email, note, source: 'Business Card', agentName: CARD.name });
+    first, last, phone, email, note, source: 'Business Card', agentName: CARD.name, agentId, via: params.get('via') || '' });
   try {
     fetch('/api/automations', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({
       trigger:'top25_prospect', agentId, agentName: CARD.name, timestamp:new Date().toISOString(),
@@ -178,7 +178,11 @@ async function submitProspect(){
   }
   showConnected();
 }
-function showConnected(){ document.getElementById('connect-form').style.display='none'; document.getElementById('connect-done').style.display='block'; }
+function showConnected(){
+  document.getElementById('connect-form').style.display='none'; document.getElementById('connect-done').style.display='block';
+  const when = new Date().toLocaleString('en-US', { weekday:'short', month:'short', day:'numeric', year:'numeric', hour:'numeric', minute:'2-digit' });
+  const el = document.getElementById('connect-when'); if (el) el.textContent = 'Sent ' + when;
+}
 
 function copyLink(){
   const u = cardUrl();

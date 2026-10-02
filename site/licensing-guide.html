@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>State Licensing Guide — Dynasty Builders Academy</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="auth.js"></script>
+<style>
+:root{--bg:#F5F1E8;--s1:#FFFFFF;--s2:#ECE6D6;--gold:#C9A84C;--label:#7A5C14;--text:#1E1A10;--muted:#4A5568;--border:rgba(201,168,76,.25);--ok:#14613A;--warn:#8A4A08;--okbg:rgba(39,174,96,.1);--warnbg:rgba(230,126,34,.1);}
+@media (prefers-color-scheme: dark){:root{--bg:#15130D;--s1:#211E15;--s2:#2A2619;--text:#F5F1E8;--muted:#A9B7CC;--border:rgba(201,168,76,.3);--label:#F5E8C0;--ok:#6BE09A;--warn:#FFB35C;}}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);}
+.top{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;background:var(--s1);border-bottom:1px solid var(--border);}
+.top h1{font-family:'Cormorant Garamond',serif;font-size:21px;color:var(--label);}
+.top a{color:var(--muted);text-decoration:none;font-size:13px;border:1px solid var(--border);padding:6px 12px;border-radius:6px;margin-left:6px;}
+.wrap{max-width:900px;margin:0 auto;padding:20px;}
+.picker{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px;}
+.picker select{flex:1;min-width:220px;padding:11px 12px;border-radius:8px;border:1.5px solid var(--border);background:var(--s1);color:var(--text);font-size:15px;font-family:inherit;}
+.quick button{padding:9px 12px;border-radius:20px;border:1.5px solid var(--border);background:var(--s1);color:var(--text);font-weight:700;font-size:12.5px;cursor:pointer;font-family:inherit;margin:2px;}
+.quick button.on{border-color:var(--gold);background:rgba(201,168,76,.15);}
+.card{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:14px;}
+.state-h{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;}
+.state-h h2{font-family:'Cormorant Garamond',serif;font-size:30px;}
+.badge{font-size:11px;font-weight:700;padding:4px 10px;border-radius:12px;text-transform:uppercase;letter-spacing:.05em;}
+.badge.ok{background:var(--okbg);color:var(--ok);} .badge.warn{background:var(--warnbg);color:var(--warn);}
+.tabs{display:flex;gap:6px;margin:14px 0;}
+.tabs button{flex:1;padding:11px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);font-weight:700;font-size:14px;cursor:pointer;font-family:inherit;}
+.tabs button.on{background:var(--gold);color:#1E1A10;border-color:var(--gold);}
+.cost{display:grid;grid-template-columns:1fr auto;gap:6px 14px;font-size:14px;}
+.cost .l{color:var(--text);} .cost .v{font-family:'DM Mono',monospace;font-weight:700;text-align:right;}
+.cost .tot{border-top:2px solid var(--border);padding-top:8px;margin-top:4px;font-weight:700;}
+.cost .note{grid-column:1/-1;font-size:11.5px;color:var(--muted);margin-top:-2px;}
+h3{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--label);margin:18px 0 8px;}
+ol.steps{padding-left:20px;font-size:14px;line-height:1.65;} ol.steps li{margin-bottom:6px;}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;}
+.fact{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;}
+.fact .k{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700;}
+.fact .val{font-size:14.5px;font-weight:700;margin-top:3px;}
+.alert{border-radius:8px;padding:11px 13px;font-size:13px;line-height:1.55;margin-top:12px;}
+.alert.warn{background:var(--warnbg);color:var(--text);border-left:4px solid var(--warn);}
+.alert.info{background:rgba(201,168,76,.1);border-left:4px solid var(--gold);}
+.src{font-size:12px;color:var(--muted);line-height:1.7;}
+.src a{color:var(--label);}
+.links a{display:inline-block;margin:4px 6px 0 0;padding:8px 12px;border-radius:8px;border:1.5px solid var(--border);color:var(--text);text-decoration:none;font-size:13px;font-weight:600;}
+</style>
+</head>
+<body>
+<script>AUTH.require('licensing-guide.html', 0);</script>
+<div class="top"><h1>🗺️ State Licensing Guide</h1><div><a href="licensing.html">Licensing Tracker</a><a href="hub.html">← Hub</a></div></div>
+<div class="wrap">
+  <div class="picker"><select id="state-sel" onchange="pick(this.value)" aria-label="Choose a state"></select></div>
+  <div class="quick" id="quick"></div>
+  <div id="out" style="margin-top:12px;"></div>
+  <div class="card src">
+    <b>About this guide.</b> Life / Life &amp; Health producer licenses. Fees change, so states marked <b>Verified</b> list the source and the date it was checked. Always confirm on the official links before paying. Every state also charges an NIPR or Sircon processing fee on top of the state fee.
+  </div>
+</div>
+
+<script>
+const VERIFIED_ON = 'September 30, 2026';
+const STATES = [['AL','Alabama'],['AK','Alaska'],['AZ','Arizona'],['AR','Arkansas'],['CA','California'],['CO','Colorado'],['CT','Connecticut'],['DE','Delaware'],['DC','District of Columbia'],['FL','Florida'],['GA','Georgia'],['HI','Hawaii'],['ID','Idaho'],['IL','Illinois'],['IN','Indiana'],['IA','Iowa'],['KS','Kansas'],['KY','Kentucky'],['LA','Louisiana'],['ME','Maine'],['MD','Maryland'],['MA','Massachusetts'],['MI','Michigan'],['MN','Minnesota'],['MS','Mississippi'],['MO','Missouri'],['MT','Montana'],['NE','Nebraska'],['NV','Nevada'],['NH','New Hampshire'],['NJ','New Jersey'],['NM','New Mexico'],['NY','New York'],['NC','North Carolina'],['ND','North Dakota'],['OH','Ohio'],['OK','Oklahoma'],['OR','Oregon'],['PA','Pennsylvania'],['RI','Rhode Island'],['SC','South Carolina'],['SD','South Dakota'],['TN','Tennessee'],['TX','Texas'],['UT','Utah'],['VT','Vermont'],['VA','Virginia'],['WA','Washington'],['WV','West Virginia'],['WI','Wisconsin'],['WY','Wyoming']];
+const slug = n => n.toLowerCase().replace(/\s+/g,'-');
+const nipr = (name, kind) => `https://nipr.com/licensing-center/state-requirements/${slug(name)}-${kind}-licensing-individual`;
+
+// Verified detail. Every figure here traces to a source in `sources`.
+const DETAIL = {
+  MI: {
+    agency:'Department of Insurance and Financial Services (DIFS)', agencyUrl:'https://www.michigan.gov/difs',
+    resident:{
+      cost:[['Pre-licensing course (your choice of provider)','$39–$199+','Varies by provider; required before the exam'],['State exam (PSI), per attempt','$41','Retakes are $41 each'],['License application (DIFS)','$10',''],['NIPR transaction fee','$5','']],
+      stateFees:56,
+      facts:[['Pre-licensing','20 hrs per line (40 for Life + Health)'],['Exam vendor','PSI (in person only)'],['Fingerprints','Not required for a new license'],['Passing score','Life 72%'],['Exam window','Pass within 180 days of applying']],
+      steps:['Complete a Michigan-approved pre-licensing course (20 hours for Life; 40 for Life & Health) and get your certificate of completion.','Schedule and pass the Michigan exam with PSI ($41).','Apply through NIPR: $10 state fee + $5 transaction fee. The application is valid for 180 days.','Get appointed by a carrier before you sell.'],
+      alerts:['Fingerprinting: Michigan does not fingerprint new producers (it can be required if you are reinstating after more than 12 months unlicensed). If you see a ~$50 fingerprint charge for Michigan, that figure is from another state.'],
+    },
+    nonresident:{
+      cost:[['License application (DIFS)','$10',''],['NIPR transaction fee','$6.18','']],
+      stateFees:16.18,
+      facts:[['Exam','Not required'],['Pre-licensing','Not required'],['Requirement','Active resident license in your home state'],['Verification','DIFS checks your home license in the national database']],
+      steps:['Hold an active resident producer license in your home state for the same lines.','Apply through NIPR: $10 state fee + $6.18 transaction fee.','Get appointed by a carrier for Michigan.'],
+      alerts:[],
+    },
+    ce:'24 hours every 2 years, including 3 hours of ethics. $1 per credit-hour reporting fee. Up to 12 extra hours carry over. Non-residents who meet their home state’s CE are generally treated as compliant.',
+    moving:'Moving to Michigan with a license from another state: if you surrendered it within 90 days, no exam; 90 days–12 months, take the exam; over 12 months, pre-licensing plus the exam.',
+    sources:[['DIFS — Resident producer','https://www.michigan.gov/difs/industry/licensing-ins/agnt-ins/general-info/how-to-become-licensed-as-a-resident-producer'],['DIFS — Non-resident producer','https://www.michigan.gov/difs/industry/licensing-ins/agnt-ins/general-info/how-to-become-licensed-as-a-non-resident-producer'],['DIFS — Moving to Michigan','https://michigan.gov/difs/industry/licensing-ins/agnt-ins/general-info/how-to-become-a-resident-producer-when-moving-to-michigan-from-another-state'],['DIFS — Continuing education FAQ','https://www.michigan.gov/difs/news-and-outreach/faq/insurance/ins-licensee-continuing-education'],['PSI Michigan candidate bulletin ($41 exam)','https://test-takers.psiexams.com/api/content/bulletin/2736']],
+  },
+  CA: {
+    agency:'California Department of Insurance (CDI)', agencyUrl:'https://www.insurance.ca.gov',
+    resident:{
+      cost:[['12-hour Ethics & CA Insurance Code course','varies','The only pre-licensing requirement since Jan 1, 2026'],['State exam (CDI fee, scheduled through PSI)','$55','CDI lists $88 total when taken at a PSI site'],['Fingerprints (resident Live Scan)','$74',''],['License application, 2-year term','$188','']],
+      stateFees:317,
+      facts:[['Pre-licensing','12-hour Ethics & Code only (20-hour line course repealed 1/1/2026)'],['Exam vendor','PSI'],['Fingerprints','Required'],['License term','2 years ($188 renewal)']],
+      steps:['Complete the 12-hour Ethics & California Insurance Code course (includes 1 hour of anti-fraud).','Pass the California Life-Only (or Life, Accident & Health) exam through PSI.','Submit Live Scan fingerprints ($74).','Apply ($188) within one year of passing the exam.','Get appointed by a carrier before you sell.'],
+      alerts:['California dropped the 20-hour per-line pre-licensing requirement on January 1, 2026 (AB 943). Older guides that say 32 or 52 hours are out of date.'],
+    },
+    nonresident:{
+      cost:[['License application, 2-year term','$188',''],['Fingerprints','$0 or required','Exempt only if your home state already fingerprinted you for your license']],
+      stateFees:188,
+      facts:[['Exam','Not required'],['12-hour course','Not required for non-residents'],['Fingerprints','Required unless your home state fingerprinted you'],['Authority','Same lines as your home-state license']],
+      steps:['Hold an active resident license in your home state.','Submit fingerprints if your home state did not fingerprint you for your license.','Apply online ($188).','Get appointed by a carrier for California.'],
+      alerts:['Michigan does not fingerprint new producers, so a Michigan-resident agent applying for a California non-resident license should expect to need California fingerprints. Confirm the current exempt-state list on NIPR before submitting.'],
+    },
+    ce:'24 hours every 2-year license term, including 3 hours of ethics.',
+    moving:'Non-residents who move to California must complete the 12-hour Ethics & Code course before a resident license is issued.',
+    sources:[['CDI — 20-hour prelicensing repeal notice (Nov 10, 2025)','https://www.insurance.ca.gov/0200-industry/0120-notices/upload/Notice111025linked.pdf'],['CDI — 12-hour Ethics & Code FAQ','https://www.insurance.ca.gov/0200-industry/0030-seek-pre-lic/0400-prelicensing-faq/0100-12-hours-of-ethics-california-insurance-code-frequent-questions'],['CDI — Non-resident application (life)','https://www.insurance.ca.gov/0200-industry/0050-renew-license/0200-requirements/life-only/app-proc-ind-nonres.cfm'],['NIPR — California non-resident','https://nipr.com/licensing-center/state-requirements/california-non-resident-licensing-individual']],
+  },
+  TX: {
+    agency:'Texas Department of Insurance (TDI)', agencyUrl:'https://www.tdi.texas.gov',
+    resident:{
+      cost:[['Pre-licensing course','optional','Texas does not require pre-licensing education'],['State exam (Pearson VUE)','about $49','Set by Pearson VUE; check when scheduling'],['Fingerprints (IdentoGO)','about $50','Begin on TDI’s application & fingerprint portal'],['License application (TDI)','$50','']],
+      stateFees:149, approx:true,
+      facts:[['Pre-licensing','Not required'],['Exam vendor','Pearson VUE (pass with 70)'],['Fingerprints','Required for residents'],['Apply within','1 year of passing the exam']],
+      steps:['Study (no required course) and pass the General Lines – Life, Accident & Health exam with Pearson VUE.','Start your application on TDI’s portal and get fingerprinted through IdentoGO.','Apply ($50) within one year of passing.','Get appointed by a carrier before you sell.'],
+      alerts:['Texas offers a one-time 180-day temporary life agent license — ask your upline before using it.'],
+    },
+    nonresident:{
+      cost:[['License application (TDI)','$50','']],
+      stateFees:50,
+      facts:[['Exam','Not required'],['Fingerprints','Not required with an active home-state resident license'],['Requirement','Active home license with the same or greater authority']],
+      steps:['Hold an active resident license in your home state with the same or greater authority.','Apply through Sircon or NIPR ($50).','Get appointed by a carrier for Texas.'],
+      alerts:[],
+    },
+    ce:'24 hours every 2 years, including 3 hours of ethics. Renew by the last day of your birth month.',
+    moving:'',
+    sources:[['TDI — Life agent license','https://tdi.texas.gov//agent/life-agent-apply.html'],['TDI — Fingerprint instructions','https://www.tdi.texas.gov/agent/fingerprint-instructions.html'],['NIPR — Texas requirements','https://nipr.com/licensing-center/state-requirements/texas-non-resident-licensing-individual']],
+  },
+};
+
+// What's true in every state (NAIC producer licensing model, used nationwide).
+const GENERAL = {
+  resident:['Most states require state-approved pre-licensing education before the exam; hours vary by state and line.','Pass the state licensing exam (PSI, Pearson VUE, or Prometric, depending on the state).','Many states require a fingerprint background check for new residents.','Apply through NIPR or Sircon and pay the state fee plus a processing fee.','Get appointed by a carrier before you sell.'],
+  nonresident:['Hold an active resident license in your home state for the same lines.','No exam or pre-licensing — states rely on your home-state license (reciprocity).','Apply through NIPR’s non-resident application; the state fee varies.','Some states fingerprint non-residents whose home state did not fingerprint them.','Meeting your home state’s continuing education usually satisfies the non-resident state.'],
+};
+
+let current = 'MI', mode = 'resident';
+const sel = document.getElementById('state-sel');
+sel.innerHTML = STATES.map(([c,n]) => `<option value="${c}">${n}${DETAIL[c] ? ' ✓' : ''}</option>`).join('');
+document.getElementById('quick').innerHTML = Object.keys(DETAIL).map(c => `<button data-c="${c}" onclick="pick('${c}')">${STATES.find(s=>s[0]===c)[1]}</button>`).join('');
+
+function pick(c){ current=c; sel.value=c; render(); }
+function setMode(m){ mode=m; render(); }
+const money = n => '$' + (Number.isInteger(n) ? n : n.toFixed(2));
+
+function render(){
+  const name = STATES.find(s=>s[0]===current)[1], d = DETAIL[current];
+  document.querySelectorAll('#quick button').forEach(b => b.classList.toggle('on', b.dataset.c===current));
+  const tabs = `<div class="tabs"><button class="${mode==='resident'?'on':''}" onclick="setMode('resident')">Resident</button><button class="${mode==='nonresident'?'on':''}" onclick="setMode('nonresident')">Non-Resident</button></div>`;
+  const links = `<div class="links"><a href="${nipr(name, mode==='resident'?'resident':'non-resident')}" target="_blank" rel="noopener">NIPR — ${name} ${mode==='resident'?'resident':'non-resident'} requirements ↗</a>${d?`<a href="${d.agencyUrl}" target="_blank" rel="noopener">${d.agency.split(' (')[0]} ↗</a>`:''}</div>`;
+  if (!d) {
+    document.getElementById('out').innerHTML = `<div class="card">
+      <div class="state-h"><h2>${name}</h2><span class="badge warn">Fees not yet verified</span></div>${tabs}
+      <h3>How it works in every state</h3><ol class="steps">${GENERAL[mode].map(s=>`<li>${s}</li>`).join('')}</ol>
+      <div class="alert info">Exact ${name} fees, pre-licensing hours and fingerprint rules aren't loaded yet. Use the official link below — NIPR lists the current state fees for each license type.</div>
+      <h3>Official sources</h3>${links}</div>`;
+    return;
+  }
+  const r = d[mode];
+  document.getElementById('out').innerHTML = `<div class="card">
+    <div class="state-h"><h2>${name}</h2><span class="badge ok">Verified ${VERIFIED_ON}</span></div>${tabs}
+    <h3>What it costs</h3>
+    <div class="cost">${r.cost.map(([l,v,n])=>`<div class="l">${l}</div><div class="v">${v}</div>${n?`<div class="note">${n}</div>`:''}`).join('')}
+      <div class="l tot">Fixed state &amp; processing fees</div><div class="v tot">${r.approx?'about ':''}${money(r.stateFees)}</div>
+      ${mode==='resident'?'<div class="note">Plus your choice of course or exam prep where it applies. Retakes are extra.</div>':''}</div>
+    <h3>Key facts</h3><div class="facts">${r.facts.map(([k,v])=>`<div class="fact"><div class="k">${k}</div><div class="val">${v}</div></div>`).join('')}</div>
+    <h3>Steps</h3><ol class="steps">${r.steps.map(s=>`<li>${s}</li>`).join('')}</ol>
+    ${r.alerts.map(a=>`<div class="alert warn">⚠️ ${a}</div>`).join('')}
+    <h3>Continuing education</h3><div style="font-size:14px;line-height:1.6;">${d.ce}</div>
+    ${d.moving && mode==='resident' ? `<div class="alert info">${d.moving}</div>` : ''}
+    <h3>Official sources</h3>${links}
+    <div class="src" style="margin-top:10px;">${d.sources.map(([t,u])=>`<a href="${u}" target="_blank" rel="noopener">${t}</a>`).join(' · ')}</div>
+  </div>`;
+}
+const fromUrl = new URLSearchParams(location.search).get('state');
+if (fromUrl && STATES.some(s=>s[0]===fromUrl.toUpperCase())) current = fromUrl.toUpperCase();
+pick(current);
+</script>
+</body>
+</html>

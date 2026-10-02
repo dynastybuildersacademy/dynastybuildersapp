@@ -6,6 +6,7 @@
 <title>DBA — Call Tracker</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@700&family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="auth.js"></script>
+<script src="prospect-capture.js"></script>
 <style>
 :root{--navy:#F5F1E8;--navy-mid:#FFFFFF;--navy-light:#ECE6D6;--gold:#C9A84C;--gold-light:#E8C97A;--cream:#1E1A10;--success:#27AE60;--warn:#E67E22;--danger:#C0392B;--slate:#6B7C93;--border:rgba(201,168,76,0.22);}
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -59,6 +60,8 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);m
 .c-btn.plus:hover{background:var(--gold);color:var(--navy);}
 .c-btn.minus:hover{background:rgba(192,57,43,0.15);border-color:var(--danger);}
 .counter-goal{font-size:10px;color:var(--slate);margin-top:6px;}
+.counter-auto{font-size:10.5px;color:var(--slate);line-height:1.45;margin-top:5px;}
+.counter-auto b{color:var(--cream);}
 .progress-bar-sm{height:4px;background:rgba(201,168,76,0.12);border-radius:2px;margin-top:8px;}
 .progress-bar-fill{height:4px;border-radius:2px;transition:width 0.4s;}
 
@@ -597,11 +600,11 @@ const COUNTER_CONFIG = [
   // ── Daily Activity ─────────────────────────────────────────
   { id:'approaches', label:'Approaches',                     emoji:'🤝', goal:100, desc:'People approached to ask for a phone number',    group:'activity' },
   { id:'phones',     label:'Phone #s Obtained',                emoji:'📱', goal:25,  desc:'Phone numbers actually collected',               group:'activity' },
-  { id:'prospects', label:'Prospects',                        emoji:'🎯', goal:25,  desc:'New prospects identified',                      group:'activity' },
   { id:'calls',     label:'Calls',                             emoji:'📞', goal:250, desc:'Outbound calls dialed',                         group:'activity' },
   { id:'invites',   label:'Weekly Personal Invites',           emoji:'📣', goal:10,  desc:'Personal invites sent this week',               group:'activity' },
   { id:'recruits',  label:'Directs / Pers Recruits',           emoji:'👥', goal:1,   desc:'New agents personally enrolled',                group:'activity' },
-  { id:'hours',     label:'Weekly Hours Worked',               emoji:'⏱️', goal:40,  desc:'Total hours worked this week',                  group:'activity' },
+  // Calculated, not typed: 5 phone #s = 1 hr · 25 calls = 1 hr · 1 appointment = 1 hr (last 7 days)
+  { id:'hours',     label:'Weekly Personal Hours',             emoji:'⏱️', goal:40,  desc:'Calculated: 5 phone #s = 1 hr, 25 calls = 1 hr, 1 appointment = 1 hr', group:'activity', auto:true },
   // ── Interviews & Appointments ──────────────────────────────
   { id:'ri',        label:'Recruiting Interviews',             emoji:'🎯', goal:10,  desc:'Recruiting Interviews conducted',               group:'appts' },
   { id:'ft',        label:'Field Trainings',                   emoji:'💼', goal:6,   desc:'Field Training appointments run',               group:'appts' },
@@ -619,6 +622,65 @@ let counts = { approaches:0, phones:0, clients:0, prospects:0, calls:0, invites:
                contacts:0, appts:0, shows:0, gi:0, gc:0, ga:0, gag:0, rec_inv:0 };
 let policies  = []; // array of submitted policy entries
 let prospects = [];
+
+// ── CARD / QR LEADS → PHONE #s ────────────────────────────────
+// Prospects who submit your business card, QR code or share link are
+// logged centrally (see prospect-capture.js). Each one that left a phone
+// number is credited here as a phone number obtained, per day, on top of
+// whatever you type yourself. They are never stored in your daily record,
+// so they can't be counted twice.
+let LEADS = [];   // [{ date, source, hasPhone }]
+const todayStr = () => new Date().toISOString().slice(0,10);   // same UTC day key the tracker saves under
+const leadsOn = d => LEADS.filter(l => l.date === d && l.hasPhone);
+const autoPhonesOn = d => leadsOn(d).length;
+function leadSplit(days) {
+  const out = { 'Business Card':0, 'QR Code':0, 'Share Link':0 };
+  for (let i = 0; i < days; i++) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    leadsOn(d.toISOString().slice(0,10)).forEach(l => { out[l.source in out ? l.source : 'Share Link']++; });
+  }
+  return out;
+}
+async function loadLeads() {
+  try { LEADS = await fetchAgentLeads(agentId, MONDAY_PROXY); }
+  catch (e) { console.warn('Could not load card/QR leads:', e.message); return; }
+  updateWeekly();
+}
+// New card / QR leads appear without a reload: refresh once a minute while the page is visible.
+setInterval(() => { if (!document.hidden) loadLeads(); }, window.__POLL_MS || 60000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) loadLeads(); });
+
+// ── WEEKLY PERSONAL HOURS (calculated) ────────────────────────
+// 5 phone numbers = 1 hr · 25 calls = 1 hr · 1 appointment = 1 hr, over the
+// last 7 days. Proportional (7 phone #s = 1.4 hrs). "Appointments" is the
+// same Recruiting Interviews + Field Trainings + Faststarts total used
+// everywhere else on this page.
+const HOURS_RULE = { phonesPerHour:5, callsPerHour:25, apptsPerHour:1 };
+function weeklyHours() {
+  const t = getRatioTotals(7);
+  const hPhones = t.phones / HOURS_RULE.phonesPerHour, hCalls = t.calls / HOURS_RULE.callsPerHour, hAppts = t.appts / HOURS_RULE.apptsPerHour;
+  return { phones:t.phones, calls:t.calls, appts:t.appts, hPhones, hCalls, hAppts, total:hPhones + hCalls + hAppts };
+}
+const fmtH = n => (Math.round(n * 10) / 10).toString();
+function syncDerived() { counts.hours = Math.round(weeklyHours().total * 10) / 10; }
+function tileValue(id) {
+  if (id === 'hours')  return Math.round(weeklyHours().total * 10) / 10;
+  if (id === 'phones') return (counts.phones || 0) + autoPhonesOn(todayStr());
+  return counts[id] || 0;
+}
+function autoLine(id) {
+  if (id === 'phones') {
+    const today = autoPhonesOn(todayStr()), wk = leadSplit(7);
+    const wkTotal = wk['Business Card'] + wk['QR Code'] + wk['Share Link'];
+    return (today ? `<b>+${today}</b> today from your card / QR · ` : '') +
+      (wkTotal ? `7 days: 📇 ${wk['Business Card']} card · 🔳 ${wk['QR Code']} QR${wk['Share Link'] ? ` · 🔗 ${wk['Share Link']} link` : ''}` : 'Card, QR & link leads with a phone # add here automatically');
+  }
+  if (id === 'hours') {
+    const h = weeklyHours();
+    return `Last 7 days: <b>${fmtH(h.hPhones)}</b> (${h.phones} phone #s ÷ 5) + <b>${fmtH(h.hCalls)}</b> (${h.calls} calls ÷ 25) + <b>${fmtH(h.hAppts)}</b> (${h.appts} appts)`;
+  }
+  return '';
+}
 
 // ── INIT ──────────────────────────────────────────────────────
 const session = AUTH.getSession();
@@ -669,6 +731,7 @@ renderCounters();
 renderPolicies();
 renderProspects();
 updateWeekly();
+loadLeads();   // card / QR leads arrive a moment later and refresh the tiles
 
 // Default the Reporting Date to today unless a saved session already set it
 (function initReportDate(){
@@ -694,44 +757,47 @@ function renderCounters() {
 }
 
 function buildCounter(c) {
-  const val    = counts[c.id] || 0;
-  const pct    = Math.min(100, Math.round((val / c.goal) * 100));
-  const atGoal = val >= c.goal;
+  const val    = c.auto ? tileValue(c.id) : (counts[c.id] || 0);   // what the box shows
+  const total  = tileValue(c.id);                                   // what goal + bar measure
+  const pct    = Math.min(100, Math.round((total / c.goal) * 100));
+  const atGoal = total >= c.goal;
   const barColor = pct < 50 ? '#C0392B' : pct < 100 ? '#E67E22' : '#27AE60';
+  const extra = (c.id === 'phones' || c.id === 'hours') ? `<div class="counter-auto">${autoLine(c.id)}</div>` : '';
   return `
-    <div class="counter ${atGoal?'at-goal':''}" id="counter-${c.id}">
+    <div class="counter ${atGoal?'at-goal':''}" id="counter-${c.id}" title="${c.desc.replace(/"/g,'&quot;')}">
       <div class="counter-emoji">${c.emoji}</div>
       <div class="counter-label">${c.label}</div>
-      <input type="number" min="0" id="val-${c.id}" value="${val}"
-        oninput="setCount('${c.id}',this.value)"
+      <input type="number" min="0" id="val-${c.id}" value="${c.auto ? fmtH(val) : val}" ${c.auto ? 'readonly tabindex="-1" aria-label="Calculated automatically"' : `oninput="setCount('${c.id}',this.value)"`}
         style="width:100%;background:var(--navy);border:1px solid ${atGoal?'#27AE60':'var(--border)'};
                color:${atGoal?'#27AE60':'var(--cream)'};font-family:\'DM Mono\',monospace;
                font-size:1.4rem;font-weight:700;text-align:center;padding:6px 4px;
-               border-radius:3px;outline:none;margin:4px 0;">
+               border-radius:3px;outline:none;margin:4px 0;${c.auto ? 'cursor:default;opacity:.95;' : ''}">
       <div class="counter-goal">Goal: ${c.goal} ${atGoal?'✅':''}</div>
       <div class="progress-bar-sm"><div class="progress-bar-fill" style="width:${pct}%;background:${barColor};"></div></div>
+      ${extra}
     </div>`;
 }
 
+// Repaint one tile from its current value (typed, or calculated).
+function refreshTile(id) {
+  const cfg = COUNTER_CONFIG.find(c => c.id === id); if (!cfg) return;
+  const v = tileValue(id), atGoal = v >= cfg.goal;
+  const el = document.getElementById('counter-' + id), inp = document.getElementById('val-' + id);
+  if (el)  el.className = 'counter' + (atGoal ? ' at-goal' : '');
+  if (inp) { inp.style.borderColor = atGoal ? '#27AE60' : 'var(--border)'; inp.style.color = atGoal ? '#27AE60' : 'var(--cream)'; if (cfg.auto) inp.value = fmtH(v); }
+  const goalEl = el?.querySelector('.counter-goal'); if (goalEl) goalEl.textContent = 'Goal: ' + cfg.goal + (atGoal ? ' ✅' : '');
+  const pct = Math.min(100, Math.round((v / cfg.goal) * 100));
+  const bar = el?.querySelector('.progress-bar-fill');
+  if (bar) { bar.style.width = pct + '%'; bar.style.background = pct < 50 ? '#C0392B' : pct < 100 ? '#E67E22' : '#27AE60'; }
+  const auto = el?.querySelector('.counter-auto'); if (auto) auto.innerHTML = autoLine(id);
+}
+function refreshDerivedTiles() { refreshTile('phones'); refreshTile('hours'); }
+
 function setCount(id, value) {
   counts[id] = Math.max(0, parseFloat(value) || 0);
-  const cfg  = COUNTER_CONFIG.find(c => c.id === id);
-  const atGoal = cfg && counts[id] >= cfg.goal;
-  const el = document.getElementById('counter-' + id);
-  const inp = document.getElementById('val-' + id);
-  if (el)  el.className  = 'counter' + (atGoal ? ' at-goal' : '');
-  if (inp) inp.style.borderColor = atGoal ? '#27AE60' : 'var(--border)';
-  if (inp) inp.style.color       = atGoal ? '#27AE60' : 'var(--cream)';
-  // Update goal label
-  const goalEl = el?.querySelector('.counter-goal');
-  if (goalEl && cfg) goalEl.textContent = 'Goal: ' + cfg.goal + (atGoal ? ' ✅' : '');
-  // Update progress bar
-  const pct = cfg ? Math.min(100, Math.round((counts[id] / cfg.goal) * 100)) : 0;
-  const barColor = pct < 50 ? '#C0392B' : pct < 100 ? '#E67E22' : '#27AE60';
-  const bar = el?.querySelector('.progress-bar-fill');
-  if (bar) { bar.style.width = pct + '%'; bar.style.background = barColor; }
+  refreshTile(id);
   saveTodayData();
-  updateWeekly();
+  updateWeekly();      // refreshes the calculated tiles (hours, phone # total) and the ratios
 }
 
 // Keep adjust() for any legacy calls (e.g. callProspect increments calls)
@@ -835,6 +901,7 @@ function renderPolicies() {
 
 // ── WEEKLY SUMMARY ────────────────────────────────────────────
 function updateWeekly() {
+  refreshDerivedTiles();
   const total = getTotalATP();
   document.getElementById('w-calls').textContent     = counts.calls;
   document.getElementById('w-invites').textContent   = counts.invites;
@@ -850,28 +917,28 @@ function updateWeekly() {
 // window so ratios rest on real volume — a single day's numbers swing too
 // much to mean anything. Today's live, unsaved counts are always included.
 function getRatioTotals(days) {
-  const t = { approaches:0, phones:0, appts:0, recruits:0, clients:0, pts:0, daysWithData:0 };
-  const todayStr = new Date().toISOString().slice(0,10);
+  const t = { approaches:0, phones:0, calls:0, appts:0, recruits:0, clients:0, pts:0, daysWithData:0 };
+  const todayS = todayStr();
   for (let i = 0; i < days; i++) {
     const d = new Date(); d.setDate(d.getDate() - i);
     const dateStr = d.toISOString().slice(0,10);
     let raw = null;
-    if (dateStr === todayStr) {
+    if (dateStr === todayS) {
       const sp = parseInt(document.getElementById('personal-sp')?.value) || 0;
       raw = { counts, policies, sp };
     } else {
       try { raw = JSON.parse(localStorage.getItem(`dba_tracker_${agentId}_${dateStr}`) || 'null'); } catch {}
     }
-    if (!raw || !raw.counts) continue;
-    const c = raw.counts;
+    const c = (raw && raw.counts) || {};
+    const auto = autoPhonesOn(dateStr);      // card / QR / link leads that day (can exist on a day with no saved record)
     const dayAppts = (c.ri||0) + (c.ft||0) + (c.fs||0);
-    const dayAtp = (raw.policies || []).reduce((n,p) => n + (p.atp||0), 0);
-    if (!(c.approaches||c.phones||dayAppts||c.recruits||c.clients||raw.sp||dayAtp)) continue;
+    const dayAtp = ((raw && raw.policies) || []).reduce((n,p) => n + (p.atp||0), 0);
+    if (!(c.approaches||c.phones||auto||c.calls||dayAppts||c.recruits||c.clients||(raw && raw.sp)||dayAtp)) continue;
     t.daysWithData++;
-    t.approaches += c.approaches||0; t.phones += c.phones||0; t.appts += dayAppts;
+    t.approaches += c.approaches||0; t.phones += (c.phones||0) + auto; t.calls += c.calls||0; t.appts += dayAppts;
     t.recruits += c.recruits||0; t.clients += c.clients||0;
     // Per day: entered submitted points if there are any, otherwise that day's policy ATP
-    t.pts += raw.sp || dayAtp;
+    t.pts += (raw && raw.sp) || dayAtp;
   }
   return t;
 }
@@ -899,7 +966,7 @@ function renderRatios() {
       <div style="font-size:10px;color:var(--slate);margin-top:3px;">${c.detail}</div>
     </div>`).join('');
   document.getElementById('ratio-note').textContent =
-    `Based on ${t.daysWithData} day${t.daysWithData===1?'':'s'} of saved activity. "Appointments" = Recruiting Interviews + Field Trainings + Faststarts. Ratios only mean something with enough volume — a longer window is steadier than a single day.`;
+    `Based on ${t.daysWithData} day${t.daysWithData===1?'':'s'} of saved activity. "Appointments" = Recruiting Interviews + Field Trainings + Faststarts. Phone #s include leads from your business card, QR code and share link. Ratios only mean something with enough volume — a longer window is steadier than a single day.`;
 }
 
 // ── APPOINTMENTS RAN (derived total: RI + FT + FS vs. official goal of 20) ──
@@ -1068,6 +1135,7 @@ function renderProspects() {
 // ── PERSISTENCE ───────────────────────────────────────────────
 function getTodayKey() { return `dba_tracker_${agentId}_${new Date().toISOString().slice(0,10)}`; }
 function saveTodayData() {
+  syncDerived();
   const reportDate = document.getElementById('report-date')?.value || '';
   const sp = parseInt(document.getElementById('personal-sp')?.value) || 0;
   const pp = parseInt(document.getElementById('personal-pp')?.value) || 0;
@@ -1161,7 +1229,7 @@ async function loadFromMonday() {
     };
 
     const periodTotals = {
-      prospects:    findTotal('prospects'),
+      phones:       findTotal('phone numbers obtained','phone # obtained','phone #s'),
       calls:        findTotal('calls','call'),
       invites:      findTotal('weekly personal invites','personal invites','invites'),
       pers_gc:      findTotal('pers guests confirmed','guests confirmed on captains','guest conf'),
@@ -1189,7 +1257,7 @@ async function loadFromMonday() {
 
     // Render the period totals bar — matches the official weekly reporting spreadsheet
     const BAR_FIELDS = [
-      { key:'prospects',     label:'Prospects',            color:'#5DADE2' },
+      { key:'phones',        label:'Phone #s',             color:'#5DADE2' },
       { key:'calls',         label:'Calls',                color:'#5DADE2' },
       { key:'invites',       label:'Pers Invites',         color:'#BB8FCE' },
       { key:'pers_gc',       label:'Guests Conf.',         color:'#BB8FCE' },
@@ -1234,6 +1302,8 @@ function showToast(msg) {
 
 // ── SAVE SESSION — writes to Monday.com + Make.com ────────────
 async function saveSession() {
+  syncDerived();
+  const phonesTotal = (counts.phones || 0) + autoPhonesOn(todayStr());   // typed + card/QR leads today
   const totalATP     = getTotalATP();
   const date         = new Date().toISOString().slice(0,10);
   const reportingDate= document.getElementById('report-date')?.value || date;
@@ -1253,9 +1323,11 @@ async function saveSession() {
     date,
     week,
     approaches:              counts.approaches || 0,
-    phoneNumbersObtained:    counts.phones     || 0,
+    phoneNumbersObtained:    phonesTotal,
     clientsClosed:           counts.clients    || 0,
-    prospects:               counts.prospects || 0,
+    // The Prospects counter was removed from the tracker as redundant with phone #s. The weekly
+    // report still has a Prospects column, so it receives the same number rather than reading 0.
+    prospects:               phonesTotal,
     calls:                   counts.calls     || 0,
     weeklyPersonalInvites:   counts.invites   || 0,
     persGuestsConfirmedOnCaptains: counts.pers_gc || 0,
@@ -1305,7 +1377,7 @@ async function saveSession() {
       const atp  = pol ? pol.atp : 0;
       const itemName = pol
         ? `${pol.client} — ${pol.carrier} (${pol.typeLabel}) $${atp.toLocaleString()} · ${agent.name||session.name} · ${date}`
-        : `${agent.name||session.name} · ${reportingDate} · Prospects:${counts.prospects} Calls:${counts.calls} Invites:${counts.invites} RI:${counts.ri} FT:${counts.ft} FS:${counts.fs} ApptsRan:${apptsRan} PersGC:${counts.pers_gc} PersGA:${counts.pers_ga} Recruits:${counts.recruits} Hrs:${counts.hours}${sp?` SP:$${sp.toLocaleString()}`:''}${pp?` PP:$${pp.toLocaleString()}`:''}`;
+        : `${agent.name||session.name} · ${reportingDate} · Phones:${phonesTotal} Calls:${counts.calls} Invites:${counts.invites} RI:${counts.ri} FT:${counts.ft} FS:${counts.fs} ApptsRan:${apptsRan} PersGC:${counts.pers_gc} PersGA:${counts.pers_ga} Recruits:${counts.recruits} Hrs:${counts.hours}${sp?` SP:$${sp.toLocaleString()}`:''}${pp?` PP:$${pp.toLocaleString()}`:''}`;
 
       // Only write column values for columns that were actually found on the board
       const cv = {};
@@ -1319,9 +1391,9 @@ async function saveSession() {
         if (resolvedCols.date)         cv[resolvedCols.date]         = { date: reportingDate };
         // Official weekly reporting spreadsheet fields
         if (resolvedCols.approaches)   cv[resolvedCols.approaches]   = counts.approaches;
-        if (resolvedCols.phones)       cv[resolvedCols.phones]       = counts.phones;
+        if (resolvedCols.phones)       cv[resolvedCols.phones]       = phonesTotal;
         if (resolvedCols.clients)      cv[resolvedCols.clients]      = counts.clients;
-        if (resolvedCols.prospects)    cv[resolvedCols.prospects]    = counts.prospects;
+        if (resolvedCols.prospects)    cv[resolvedCols.prospects]    = phonesTotal;   // mirrors phone #s (see payload note)
         if (resolvedCols.calls)        cv[resolvedCols.calls]        = counts.calls;
         if (resolvedCols.invites)      cv[resolvedCols.invites]      = counts.invites;
         if (resolvedCols.pers_gc)      cv[resolvedCols.pers_gc]      = counts.pers_gc;

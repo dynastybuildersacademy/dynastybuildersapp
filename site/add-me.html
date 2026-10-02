@@ -170,6 +170,7 @@ async function submitAddMe() {
   const result = await saveProspectToTop25({
     proxyUrl: MONDAY_PROXY, boardId: TARGET_BOARD_ID,
     first, last, phone, email, note, source: 'QR / Share Link', agentName: _agentName,
+    agentId: _agentId, via: new URLSearchParams(location.search).get('via') || '',
   });
 
   // Fire automation trigger (non-blocking, matches survey.html's pattern).

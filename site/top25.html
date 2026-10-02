@@ -448,8 +448,8 @@ const AGENT_ROSTER_BOARD = '18411252280';
 
 // ── PROGRESSIVE CACHE ─────────────────────────────────────────
 const CACHE_TTL_MS = 15 * 60 * 1000; // 15 minutes
-function _cacheKey(boardId) { return `dba_t25_cache_${boardId}`; }
-function _cacheMetaKey(boardId) { return `dba_t25_meta_${boardId}`; }
+function _cacheKey(boardId) { return `dba_t25_cache_v2_${boardId}`; }   // v2: items now carry created_at
+function _cacheMetaKey(boardId) { return `dba_t25_meta_v2_${boardId}`; }
 
 function writeCache(boardId, items) {
   try {
@@ -661,7 +661,7 @@ function clearStatFilter(){
 
 // ── ITEM FRAGMENT ─────────────────────────────────────────────
 const ITEM_FRAGMENT = `
-  id name
+  id name created_at
   group { id title }
   column_values {
     id text type
@@ -1015,7 +1015,7 @@ function renderRows(prospects){
         <div class="row-num">${String(i+1).padStart(2,'0')}</div>
         <div class="row-info">
           <div class="row-name">${p.name}</div>
-          <div class="row-meta">${[p.occupation,p.phone?`📞 ${p.phone}`:''].filter(Boolean).join(' · ')}</div>
+          <div class="row-meta">${[addedMeta(p),p.occupation,p.phone?`📞 ${p.phone}`:''].filter(Boolean).join(' · ')}</div>
         </div>
         <div class="row-cell">${statusPill(p.status)||'<span style="color:var(--muted);font-size:11px;">—</span>'}</div>
         <div class="row-cell hide-md">${actionPill(p.next_action)||'<span style="color:var(--muted);font-size:11px;">—</span>'}</div>
@@ -1029,6 +1029,8 @@ function renderRows(prospects){
       </div>
       <div class="row-detail ${expanded?'open':''}" id="detail-${p.id}">
         <div class="detail-grid">
+          <div class="detail-item"><div class="d-label">Date entered</div><div class="d-val">${addedFull(p)||'\u2014'}</div></div>
+          <div class="detail-item"><div class="d-label">How they arrived</div><div class="d-val">${entryVia(p)||'\u2014'}</div></div>
           <div class="detail-item"><div class="d-label">Phone</div><div class="d-val">${p.phone?`<a href="tel:${p.phone}">${p.phone}</a>`:'—'}</div></div>
           <div class="detail-item"><div class="d-label">Email</div><div class="d-val">${p.email?`<a href="mailto:${p.email}">${p.email}</a>`:'—'}</div></div>
           <div class="detail-item"><div class="d-label">Occupation</div><div class="d-val">${p.occupation||'—'}</div></div>
@@ -1208,6 +1210,7 @@ function parseItem(item){
   const get=(id)=>cv[id]?.text||cv[id]?.label||cv[id]?.value||'';
   return{
     id:           item.id,
+    added_at:     item.created_at||'',
     name:         item.name,
     group_id:     item.group?.id||'',
     group_title:  item.group?.title||'',
@@ -1824,6 +1827,58 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // ── INIT ──────────────────────────────────────────────────────
+// ── WHEN A PROSPECT WAS ENTERED ────────────────────────────────
+// Monday stamps every item with its creation time; nothing on this page
+// used to ask for it. Prospects who come in through a business card, QR
+// code or share link also say so at the start of their Notes.
+function addedDate(p){ const d = p.added_at ? new Date(p.added_at) : null; return d && !isNaN(d) ? d : null; }
+function addedMeta(p){
+  const d = addedDate(p); if (!d) return '';
+  const day = x => new Date(x.getFullYear(), x.getMonth(), x.getDate());
+  const diff = Math.round((day(new Date()) - day(d)) / 86400000);
+  const when = diff <= 0 ? 'today' : diff === 1 ? 'yesterday'
+    : d.toLocaleDateString('en-US', { month:'short', day:'numeric', ...(d.getFullYear() !== new Date().getFullYear() ? { year:'numeric' } : {}) });
+  const via = entryVia(p);
+  return `Added ${when}${via ? ' \u00b7 ' + via : ''}`;
+}
+function addedFull(p){
+  const d = addedDate(p); if (!d) return '';
+  return d.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric', year:'numeric' }) + ' \u00b7 ' + d.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' });
+}
+function entryVia(p){
+  const n = String(p.notes || '');
+  if (/^\s*QR Code\b/i.test(n))          return '\ud83d\udd33 QR Code';
+  if (/^\s*Business Card\b/i.test(n))    return '\ud83d\udcc7 Business Card';
+  if (/^\s*Share Link\b/i.test(n))       return '\ud83d\udd17 Share Link';
+  if (/^\s*QR \/ Share Link\b/i.test(n)) return '\ud83d\udd33 QR / Share Link';
+  return '';
+}
+
+// ── LIVE UPDATES ───────────────────────────────────────────────
+// The board is cached for 15 minutes, so a prospect who just submitted a
+// card or QR form wouldn't appear until the cache expired. Once a minute
+// (while this tab is visible) this asks Monday only for the board's item
+// count — a very small request — and does a silent refresh if it changed.
+const POLL_MS = window.__POLL_MS || 60000;
+let _knownCount = null, _polling = false;
+async function pollForNewProspects(){
+  if (_polling || document.hidden || !BOARD_ID) return;
+  _polling = true;
+  try {
+    const r = await mondayQuery(`{ boards(ids:${BOARD_ID}) { items_count } }`);
+    const n = r?.data?.boards?.[0]?.items_count;
+    if (typeof n !== 'number') return;
+    if (_knownCount === null) _knownCount = readCache(BOARD_ID)?.meta?.count ?? n;   // baseline = what's on screen
+    if (n !== _knownCount) {
+      const added = n - _knownCount; _knownCount = n;
+      await _backgroundRefresh(BOARD_ID);
+      if (added > 0) toast(`\ud83d\udd14 ${added} new prospect${added > 1 ? 's' : ''} added`);
+    }
+  } catch (e) { /* try again next tick */ } finally { _polling = false; }
+}
+setInterval(pollForNewProspects, POLL_MS);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) pollForNewProspects(); });
+
 document.addEventListener('DOMContentLoaded',()=>{
   document.getElementById('log-modal').addEventListener('click',e=>{if(e.target===document.getElementById('log-modal')) closeModal();});
   document.getElementById('board-picker-modal').addEventListener('click',e=>{if(e.target===document.getElementById('board-picker-modal')) closeBoardPicker();});
@@ -1856,7 +1911,7 @@ function openShareModal() {
     // to it, that's almost no contrast at all, which is exactly what a QR
     // scanner needs to tell the dark modules from the light ones. A QR
     // code needs real black-on-white contrast to scan reliably.
-    new QRCode(canvas, { text: link, width: 220, height: 220, colorDark: '#000000', colorLight: '#ffffff' });
+    new QRCode(canvas, { text: link + (link.includes('?') ? '&' : '?') + 'via=qr', width: 220, height: 220, colorDark: '#000000', colorLight: '#ffffff' });
   } else {
     canvas.innerHTML = `<div style="padding:40px;color:#1E1A10;font-family:'DM Mono',monospace;font-size:11px;text-align:center;">QR library failed to load.<br>Use the link below instead.</div>`;
   }

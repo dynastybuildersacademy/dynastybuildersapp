@@ -44,6 +44,19 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);o
 .slide .badge-guest,.slide .sbp-guest,.slide .topnav-left .label
 { color:#F5F1E8; }
 .slide.active{opacity:1;visibility:visible;transform:scale(1);}
+.slide .custom-title{font-family:'Playfair Display',serif;font-weight:900;font-size:clamp(2rem,5vw,3.6rem);color:#E8C97A;text-align:center;line-height:1.1;margin-bottom:18px;max-width:900px;}
+.slide .custom-body{font-size:clamp(1rem,2vw,1.4rem);color:#F5F1E8;text-align:center;line-height:1.6;max-width:820px;white-space:pre-line;}
+.slide .custom-img{max-width:min(80%,900px);max-height:48vh;object-fit:contain;border-radius:10px;margin-top:22px;}
+.as-l{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--slate);margin:10px 0 4px;}
+.as-in{width:100%;background:var(--navy2);border:1px solid var(--border);border-radius:6px;padding:9px 10px;color:var(--cream);font-family:inherit;font-size:13px;}
+.sm-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--border);border-radius:6px;margin-bottom:6px;font-size:13px;}
+.sm-row.off{opacity:.55;}
+.sm-row .sm-l{flex:1;}
+.sm-row button{background:transparent;border:1px solid var(--border);color:var(--cream);border-radius:4px;padding:4px 9px;font-size:11.5px;cursor:pointer;}
+/* Opening slide: subtitle and category pills sit on the dark navy band,
+   but were dark grey (55% black / slate) — unreadable on a projector. */
+.slide .intro-sub{color:rgba(245,241,232,.9);}
+.slide .intro-cat-chip{background:rgba(0,0,0,.35);color:#F5F1E8;border-color:rgba(232,201,122,.45);}
 
 /* slide backgrounds */
 .bg-gold{background:radial-gradient(circle at 30% 20%,rgba(201,168,76,.18),transparent 55%),linear-gradient(160deg,var(--navy) 0%,#1d2c4d 100%);}
@@ -113,6 +126,7 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);o
 .admin-bar{position:absolute;top:14px;left:20px;z-index:60;display:flex;gap:8px;}
 .btn-sm{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:6px 12px;border-radius:3px;cursor:pointer;border:1px solid var(--border);background:rgba(10,10,10,.04);color:var(--gold);}
 .btn-sm:hover{background:var(--gold-dim);}
+.admin-bar .btn-sm{background:rgba(15,30,56,.88);color:#E8C97A;border-color:rgba(232,201,122,.45);font-size:11px;}
 
 /* ── EXTRA SLIDES ───────────────────────────────────────────── */
 .bg-contest{background:radial-gradient(circle at 50% 20%,rgba(201,40,40,.25),transparent 60%),linear-gradient(180deg,#120808 0%,#1a1010 50%,#0a0606 100%);}
@@ -291,6 +305,7 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);o
 .sp-footer{font-family:'DM Mono',monospace;font-size:9px;color:rgba(10,10,10,.25);margin-top:10px;letter-spacing:.06em;}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+<script src="present-mode.js" defer></script>
 </head>
 <body>
 
@@ -322,6 +337,35 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);o
     <div class="nav-btn" onclick="prevSlide()">‹</div>
     <div class="nav-dots" id="nav-dots"></div>
     <div class="nav-btn" onclick="nextSlide()">›</div>
+  </div>
+</div>
+
+<!-- ADD SLIDE MODAL -->
+<div class="modal-bg" id="addslide-modal">
+  <div class="modal">
+    <h3>&#10133; Add a Slide</h3>
+    <p style="font-size:12px;color:var(--slate);margin-bottom:12px;">It goes right after the slide you're on. Add a title and message, an image (like a flyer), or both.</p>
+    <label class="as-l">Title</label><input id="as-title" maxlength="80" placeholder="e.g. Happy Birthday, Deisy!" class="as-in">
+    <label class="as-l">Message</label><textarea id="as-body" rows="4" maxlength="600" class="as-in" placeholder="Optional"></textarea>
+    <label class="as-l">Image (optional)</label><input type="file" id="as-image" accept="image/*" class="as-in" onchange="asPickImage(this)">
+    <div id="as-img-prev" style="margin:6px 0;"></div>
+    <label class="as-l">Show it</label>
+    <select id="as-scope" class="as-in"><option value="week">This week only</option><option value="all">Every week</option></select>
+    <div id="as-status" style="font-size:12px;color:var(--slate);min-height:16px;margin-top:6px;"></div>
+    <div style="display:flex;gap:8px;margin-top:12px;">
+      <button class="btn-sm" style="flex:1;" onclick="closeAddSlide()">Cancel</button>
+      <button class="btn btn-gold" style="flex:2;" onclick="saveAddSlide()">Add Slide</button>
+    </div>
+  </div>
+</div>
+
+<!-- MANAGE SLIDES MODAL -->
+<div class="modal-bg" id="slides-modal">
+  <div class="modal" style="max-width:560px;">
+    <h3>&#128450; Slides</h3>
+    <p style="font-size:12px;color:var(--slate);margin-bottom:12px;">Removed slides stay hidden every week until you restore them. Added slides marked ★.</p>
+    <div id="slides-list"></div>
+    <div style="display:flex;gap:8px;margin-top:12px;"><button class="btn-sm" style="flex:1;" onclick="document.getElementById('slides-modal').classList.remove('open')">Done</button></div>
   </div>
 </div>
 
@@ -557,10 +601,73 @@ function buildSlides() {
   slides.push({ type:'speaker', speaker:'guenther' });
   slides.push({ type:'speaker', speaker:'anjelah' });
   slides.push({ type:'speaker', speaker:'bryan' });
+
+  // ── ADD / REMOVE SLIDES ─────────────────────────────────────
+  slides.forEach(sl => sl.key = slideKey(sl));
+  allBuiltSlides = slides.slice();
+  slides = applySlideConfig(slides);
+}
+
+// Slides admins removed (stay removed every week until restored) and
+// slides they added (this week only, or every week). Stored with the rest
+// of Thankful Thursday's data.
+let allBuiltSlides = [];
+function slideKey(sl){ return sl.key || (sl.type + (sl.cat ? ':' + sl.cat.key : '') + (sl.speaker ? ':' + sl.speaker : '')); }
+function getSlideConfig(){
+  if (!data.slideConfig) data.slideConfig = { hidden: [], custom: [] };
+  data.slideConfig.hidden = data.slideConfig.hidden || [];
+  data.slideConfig.custom = data.slideConfig.custom || [];
+  return data.slideConfig;
+}
+function customSlidesFor(weekKey){ return getSlideConfig().custom.filter(c => !c.weekKey || c.weekKey === weekKey); }
+function applySlideConfig(built){
+  const cfg = getSlideConfig();
+  const out = built.filter(sl => !cfg.hidden.includes(sl.key));
+  customSlidesFor(currentWeekKey).forEach(c => {
+    const cs = { type:'custom', key:'custom:' + c.id, custom:c };
+    let anchor = c.after;
+    // Anchor was removed? Fall back to the nearest earlier slide still showing.
+    if (anchor && anchor !== '__start' && !out.some(x => x.key === anchor)) {
+      const order = built.map(x => x.key); let i = order.indexOf(anchor);
+      anchor = null;
+      while (i > 0) { i--; if (out.some(x => x.key === order[i])) { anchor = order[i]; break; } }
+    }
+    if (anchor === '__start' || (!anchor && c.after)) { out.unshift(cs); return; }
+    let i = out.findIndex(x => x.key === anchor);
+    if (i < 0) { out.push(cs); return; }
+    let j = i + 1;   // keep slides added after the same anchor in the order they were added
+    while (out[j] && out[j].type === 'custom' && out[j].custom.after === c.after) j++;
+    out.splice(j, 0, cs);
+  });
+  return out;
+}
+function slideLabel(sl){
+  const L = { intro:'Opening slide', thankfultraining:'Thankful Thursday training flyer', '1kearners':'$1K earners', miami2026:'Miami 2026 flyer',
+    wealthexperience:'Wealth Experience flyer', dynasty:'Dynasty Builder of the Week', contest:'Contest', mansion:'Mansion', bookclub:'Book club' };
+  if (sl.type === 'custom') return '★ ' + (sl.custom.title || 'Image slide');
+  if (sl.type === 'runnersup') return sl.cat.title + ' — runners-up';
+  if (sl.type === 'spotlight') return sl.cat.title + ' — #1 spotlight';
+  if (sl.type === 'speaker') return 'Speaker — ' + sl.speaker.charAt(0).toUpperCase() + sl.speaker.slice(1);
+  return L[sl.type] || sl.type;
+}
+function saveSlideConfig(){
+  try { saveData(data); return true; }
+  catch (e) { alert('Couldn\'t save — this browser\'s storage is full. Remove an image slide or use a smaller image.'); return false; }
 }
 
 // ── RENDER SLIDES ─────────────────────────────────────────────
 function renderSlideHTML(slide, idx) {
+  if (slide.type === 'custom') {
+    const c = slide.custom, esc = t => String(t||'').replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+    if (c.image && !c.title && !c.body) {
+      return `<div class="slide bg-spotlight" data-idx="${idx}" style="padding:24px;"><img src="${c.image}" alt="" style="max-width:100%;max-height:100%;object-fit:contain;border-radius:10px;"></div>`;
+    }
+    return `<div class="slide bg-spotlight" data-idx="${idx}">
+      ${c.title ? `<div class="custom-title">${esc(c.title)}</div>` : ''}
+      ${c.body ? `<div class="custom-body">${esc(c.body)}</div>` : ''}
+      ${c.image ? `<img class="custom-img" src="${c.image}" alt="">` : ''}
+    </div>`;
+  }
   if (slide.type === 'intro') {
     return `<div class="slide bg-spotlight" data-idx="${idx}">
       <div class="intro-badge">Weekly Recognition</div>
@@ -896,12 +1003,96 @@ function renderAll() {
   if(adminBar) {
     adminBar.style.display = isAdmin ? 'flex' : 'none';
     adminBar.innerHTML = isAdmin
-      ? `<button class="btn-sm" onclick="openConfigModal()">&#9432; How scoring works</button>
-         <button class="btn-sm btn-gold-sm" onclick="openPptxModal()" style="background:rgba(201,168,76,.15);border-color:rgba(201,168,76,.4);color:#E8C97A;">&#11015; Export PowerPoint</button>`
+      ? `<button class="btn-sm" onclick="openAddSlide()">&#10133; Add Slide</button>
+         <button class="btn-sm" onclick="removeCurrentSlide()">&#128465; Remove This Slide</button>
+         <button class="btn-sm" onclick="openManageSlides()">&#128450; Slides</button>
+         <button class="btn-sm" onclick="openConfigModal()">&#9432; How scoring works</button>
+         <button class="btn-sm btn-gold-sm" onclick="openPptxModal()" style="background:#C9A84C;border-color:#C9A84C;color:#1E1A10;">&#11015; Export PowerPoint</button>`
       : '';
   }
 
   goToSlide(Math.min(currentSlide, slides.length-1));
+}
+
+// ── ADD / REMOVE SLIDES UI ──────────────────────────────────
+let asImage = null;   // { data, w, h }
+function openAddSlide(){
+  ['as-title','as-body'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('as-image').value = ''; document.getElementById('as-img-prev').innerHTML = '';
+  document.getElementById('as-status').textContent = ''; asImage = null;
+  document.getElementById('addslide-modal').classList.add('open');
+}
+function closeAddSlide(){ document.getElementById('addslide-modal').classList.remove('open'); }
+// Images are resized before saving: they live in this browser's storage, which is small.
+function asPickImage(input){
+  const f = input.files?.[0]; if (!f) return;
+  const st = document.getElementById('as-status'); st.textContent = 'Preparing image…';
+  const r = new FileReader();
+  r.onload = () => { const img = new Image(); img.onload = () => {
+      const scale = Math.min(1, 1600 / Math.max(img.naturalWidth, img.naturalHeight));
+      const c = document.createElement('canvas'); c.width = Math.round(img.naturalWidth*scale); c.height = Math.round(img.naturalHeight*scale);
+      const ctx = c.getContext('2d'); ctx.fillStyle = '#000'; ctx.fillRect(0,0,c.width,c.height); ctx.drawImage(img,0,0,c.width,c.height);
+      let q = 0.82, out = c.toDataURL('image/jpeg', q);
+      while (out.length > 450000 && q > 0.4) { q -= 0.1; out = c.toDataURL('image/jpeg', q); }
+      asImage = { data: out, w: c.width, h: c.height };
+      document.getElementById('as-img-prev').innerHTML = `<img src="${out}" style="max-width:100%;max-height:140px;border-radius:6px;">`;
+      st.textContent = `Image ready (${Math.round(out.length/1024)} KB)`;
+    }; img.onerror = () => { st.textContent = 'That image type can\'t be read here — try a JPG or PNG.'; asImage = null; }; img.src = r.result; };
+  r.readAsDataURL(f);
+}
+function saveAddSlide(){
+  const title = document.getElementById('as-title').value.trim(), body = document.getElementById('as-body').value.trim();
+  if (!title && !body && !asImage) { document.getElementById('as-status').textContent = 'Add a title, a message, or an image.'; return; }
+  const cfg = getSlideConfig();
+  const anchor = slides[currentSlide]?.key || '__start';
+  const c = { id: Date.now().toString(36), title, body, after: anchor,
+              weekKey: document.getElementById('as-scope').value === 'week' ? currentWeekKey : null };
+  if (asImage) { c.image = asImage.data; c.imgW = asImage.w; c.imgH = asImage.h; }
+  cfg.custom.push(c);
+  if (!saveSlideConfig()) { cfg.custom.pop(); return; }
+  closeAddSlide();
+  renderAll();
+  goToSlide(slides.findIndex(x => x.key === 'custom:' + c.id));
+  toast('Slide added');
+}
+function removeCurrentSlide(){
+  const sl = slides[currentSlide]; if (!sl) return;
+  if (slides.length <= 1) { alert('You can\'t remove the last slide.'); return; }
+  if (!confirm(sl.type === 'custom' ? `Delete "${slideLabel(sl)}"?` : `Remove "${slideLabel(sl)}"? You can restore it from Slides.`)) return;
+  const cfg = getSlideConfig();
+  if (sl.type === 'custom') cfg.custom = cfg.custom.filter(c => c.id !== sl.custom.id);
+  else cfg.hidden.push(sl.key);
+  saveSlideConfig();
+  const keep = Math.min(currentSlide, slides.length - 2);
+  renderAll(); goToSlide(keep);
+  toast('Slide removed');
+}
+function openManageSlides(){ renderManageSlides(); document.getElementById('slides-modal').classList.add('open'); }
+function renderManageSlides(){
+  const cfg = getSlideConfig();
+  const custom = customSlidesFor(currentWeekKey).map(c => ({ type:'custom', key:'custom:'+c.id, custom:c }));
+  const rows = allBuiltSlides.map(sl => {
+    const off = cfg.hidden.includes(sl.key);
+    return `<div class="sm-row ${off?'off':''}"><span class="sm-l">${slideLabel(sl)}${off?' <em>(removed)</em>':''}</span>
+      <button onclick="toggleBuiltSlide('${sl.key}')">${off?'Restore':'Remove'}</button></div>`;
+  }).concat(custom.map(sl => `<div class="sm-row"><span class="sm-l">${slideLabel(sl).replace(/</g,'&lt;')} <span style="font-size:11px;color:var(--slate);">${sl.custom.weekKey?'this week':'every week'}</span></span>
+      <button onclick="goToSlide(slides.findIndex(x=>x.key==='${sl.key}'));document.getElementById('slides-modal').classList.remove('open')">View</button>
+      <button onclick="deleteCustomSlide('${sl.custom.id}')">Delete</button></div>`));
+  document.getElementById('slides-list').innerHTML = rows.join('');
+}
+function toggleBuiltSlide(key){
+  const cfg = getSlideConfig();
+  if (cfg.hidden.includes(key)) cfg.hidden = cfg.hidden.filter(k => k !== key);
+  else {
+    if (slides.filter(x => x.key !== key).length === 0) { alert('You can\'t remove the last slide.'); return; }
+    cfg.hidden.push(key);
+  }
+  saveSlideConfig(); renderAll(); renderManageSlides();
+}
+function deleteCustomSlide(id){
+  if (!confirm('Delete this slide?')) return;
+  const cfg = getSlideConfig(); cfg.custom = cfg.custom.filter(c => c.id !== id);
+  saveSlideConfig(); renderAll(); renderManageSlides();
 }
 
 // ── NAVIGATION ────────────────────────────────────────────────
@@ -1365,6 +1556,22 @@ const PC = {
 const PF = { h:'Barlow Condensed', b:'Barlow', m:'Courier New' };
 const PW = 10, PH = 5.625;
 
+// An admin-added slide: title, message and/or image, same look as the others.
+function pCustom(pres, c) {
+  const slide = pres.addSlide();
+  pbg(slide, PC.navy2); pgoldBar(slide);
+  const hasText = !!(c.title || c.body);
+  // Text-only slides sit in the middle of the slide rather than at the top.
+  let y = c.image ? 0.45 : Math.max(0.45, (PH - ((c.title ? 0.9 : 0) + (c.body ? 2.2 : 0))) / 2);
+  if (c.title) { slide.addText(c.title, { x:0.5,y,w:PW-1,h:0.8,align:'center',valign:'middle',fontFace:PF.h,fontSize:30,bold:true,color:PC.gold2,isTextBox:true,margin:0,fit:'shrink' }); y += 0.9; }
+  if (c.body)  { slide.addText(c.body,  { x:0.8,y,w:PW-1.6,h:c.image?1.1:2.2,align:'center',valign:'top',fontFace:PF.b,fontSize:16,color:PC.white,isTextBox:true,margin:0,fit:'shrink' }); y += c.image ? 1.2 : 0; }
+  if (c.image) {
+    const boxW = PW - (hasText ? 2 : 0.6), boxH = PH - y - (hasText ? 0.35 : 0.3);
+    const ar = (c.imgW && c.imgH) ? c.imgW / c.imgH : 16/9;
+    let w = boxW, h = w / ar; if (h > boxH) { h = boxH; w = h * ar; }
+    slide.addImage({ data: c.image.replace(/^data:/, ''), x:(PW-w)/2, y: hasText ? y : (PH-h)/2, w, h });
+  }
+}
 function pbg(slide, color) {
   slide.addShape('rect', { x:0,y:0,w:PW,h:PH, fill:{color}, line:{color} });
 }
@@ -1587,17 +1794,39 @@ async function generatePptx() {
       {key:'cashflow',   icon:'💰', title:'Top Cash Flow',             sub:weekLabel+' · DBA Team · Comma checks',           thr:'$1,000+',           accent:'162B3C'},
     ];
 
+    // Same add/remove choices as the on-screen slides. Removed slides are
+    // skipped; added slides go after the slide they follow on screen when
+    // that slide is in this export, otherwise at the start or before the
+    // closing slide, matching where they sit on screen.
+    const cfg = getSlideConfig();
+    const hidden = k => cfg.hidden.includes(k);
+    const exportKeys = new Set(CATS.flatMap(c => ['runnersup:'+c.key, 'spotlight:'+c.key]).concat(['1kearners','dynasty']));
+    const order = allBuiltSlides.map(x => x.key);
+    const firstCat = Math.min(...CATS.map(c => order.indexOf('runnersup:'+c.key)).filter(i => i >= 0));
+    const groups = { start: [], end: [] }, after = {};
+    const placed = {};
+    customSlidesFor(key).forEach(c => {
+      let a = c.after;
+      if (a && a.startsWith('custom:') && placed[a]) { placed['custom:'+c.id] = placed[a]; placed[a].push(c); return; }
+      let bucket;
+      if (exportKeys.has(a) && !hidden(a)) bucket = (after[a] = after[a] || []);
+      else bucket = (a === '__start' || order.indexOf(a) < firstCat) ? groups.start : groups.end;
+      bucket.push(c); placed['custom:'+c.id] = bucket;
+    });
+    const addCustom = list => (list || []).forEach(c => pCustom(pres, c));
+
+    addCustom(groups.start);
     // 2 slides per category: Honorable Mention (2-6) → #1 Spotlight
     CATS.forEach(cat => {
       const sorted = (wk[cat.key]||[]).sort((a,b)=>a.rank-b.rank);
       const runnersUp = sorted.filter(w => w.rank >= 2).slice(0,5);
       const first = sorted.find(w => w.rank === 1);
-      pHonorableMention(pres, cat.icon, cat.title, cat.sub, cat.thr, cat.accent, runnersUp);
-      pSpotlight(pres, cat.icon, cat.title, cat.sub, cat.thr, cat.accent, first);
+      if (!hidden('runnersup:'+cat.key)) { pHonorableMention(pres, cat.icon, cat.title, cat.sub, cat.thr, cat.accent, runnersUp); addCustom(after['runnersup:'+cat.key]); }
+      if (!hidden('spotlight:'+cat.key)) { pSpotlight(pres, cat.icon, cat.title, cat.sub, cat.thr, cat.accent, first); addCustom(after['spotlight:'+cat.key]); }
     });
 
     // 1K Earners
-    {
+    if (!hidden('1kearners')) {
       const slide = pres.addSlide();
       pbg(slide, PC.dark);
       pgoldBar(slide);
@@ -1635,8 +1864,10 @@ async function generatePptx() {
       });
     }
 
+    addCustom(after['1kearners']);
+
     // Dynasty Builder of the Week
-    {
+    if (!hidden('dynasty')) {
       const slide = pres.addSlide();
       pbg(slide, PC.navy3);
       pgoldBar(slide);
@@ -1682,6 +1913,9 @@ async function generatePptx() {
         fontFace:PF.h,fontSize:13,bold:true,color:PC.gold,isTextBox:true,margin:0,charSpacing:2,
       });
     }
+
+    addCustom(after['dynasty']);
+    addCustom(groups.end);
 
     // Closing slide
     {
