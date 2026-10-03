@@ -72,7 +72,7 @@ body::before{content:'';position:fixed;inset:0;
 .sh-badge{padding:2px 9px;border-radius:8px;background:rgba(201,168,76,.1);color:var(--gold);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.08em;border:1px solid rgba(201,168,76,.25);}
 
 /* REWARD TRACKS */
-.tracks{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin-bottom:40px;}
+.tracks{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));gap:16px;margin-bottom:40px;}
 .track-card{background:var(--s1);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:transform .2s,border-color .2s;}
 .track-card:hover{transform:translateY(-2px);border-color:rgba(201,168,76,.4);}
 .track-header{padding:16px 20px 14px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);}
@@ -203,6 +203,8 @@ body::before{content:'';position:fixed;inset:0;
   .cl-level{width:120px;font-size:12px;}
   .cl-comm{width:60px;font-size:14px;}
 }
+/* Small phones: let rows wrap instead of running off the right edge */
+@media (max-width:420px){.track-header{flex-wrap:wrap;gap:6px;}}
 </style>
 </head>
 <body>

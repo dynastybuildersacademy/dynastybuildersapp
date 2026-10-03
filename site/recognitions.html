@@ -303,6 +303,8 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);o
 .sp-session-title{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:#fff;margin-bottom:2px;}
 .sp-session-desc{font-size:10px;color:var(--slate);line-height:1.6;}
 .sp-footer{font-family:'DM Mono',monospace;font-size:9px;color:rgba(10,10,10,.25);margin-top:10px;letter-spacing:.06em;}
+/* Narrow screens: keep header buttons and tabs inside the page instead of running off the right edge */
+@media (max-width:700px){.topnav{flex-wrap:wrap;gap:8px;padding:10px 14px;}.topnav-right{flex-wrap:wrap;gap:8px;}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
 <script src="present-mode.js" defer></script>

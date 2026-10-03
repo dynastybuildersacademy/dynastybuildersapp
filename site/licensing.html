@@ -169,7 +169,7 @@ tr:hover td{background:rgba(201,168,76,.03);}
     <button class="vt-btn active" id="vt-table" onclick="setView('table',this)">☰ Table</button>
     <button class="vt-btn" id="vt-kanban" onclick="setView('kanban',this)">⊞ Kanban</button>
   </div>
-  <div style="display:flex;gap:8px;align-items:center;">
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
     <select id="filter-stage" onchange="renderAll()" style="background:var(--navy);border:1px solid var(--border);color:var(--cream);font-size:12px;padding:7px 12px;border-radius:3px;outline:none;">
       <option value="">All Stages</option>
     </select>

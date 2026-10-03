@@ -106,6 +106,8 @@ td{padding:11px 12px;font-size:13px;vertical-align:middle;}
 /* ── TOAST ── */
 .toast{position:fixed;bottom:24px;right:24px;background:var(--navy-mid);border:1px solid var(--gold);border-radius:4px;padding:12px 20px;font-size:13px;transform:translateY(80px);opacity:0;transition:all 0.3s;z-index:2000;}
 .toast.show{transform:translateY(0);opacity:1;}
+/* Small phones: let rows wrap instead of running off the right edge */
+@media (max-width:420px){.header{flex-wrap:wrap;gap:8px;}}
 </style>
 <script src="auth.js"></script>
 </head>

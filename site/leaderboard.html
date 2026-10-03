@@ -144,6 +144,8 @@ td.num{text-align:right;font-family:'Barlow Condensed',sans-serif;font-size:15px
 
 /* ── PDF HIDDEN ELEMENTS ── */
 @media print{.controls,.header,.no-print{display:none!important;}}
+/* Small phones: let rows wrap instead of running off the right edge */
+@media (max-width:420px){.ctrl-group{flex-wrap:wrap;}}
 </style>
 <script src="auth.js"></script>
 </head>

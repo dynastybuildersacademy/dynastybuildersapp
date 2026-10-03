@@ -63,7 +63,17 @@ html,body{height:100%;background:var(--navy);color:var(--text);font-family:'Barl
 .mod-icon{font-size:22px;width:38px;height:38px;display:flex;align-items:center;
   justify-content:center;background:var(--s1);border-radius:8px;flex-shrink:0;}
 .mod-title{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;
-  letter-spacing:.06em;text-transform:uppercase;color:var(--sub);}
+  letter-spacing:.06em;text-transform:uppercase;color:var(--sub);flex:1;min-width:0;}
+/* Collapsible sections (only when an admin has this switched on for the agent) */
+.mod-hdr.is-toggle{cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none;border-radius:8px;}
+.mod-hdr.is-toggle:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+.mod-count{font-family:'DM Mono',monospace;font-size:11px;color:var(--sub);background:var(--s1);border-radius:10px;padding:2px 9px;flex-shrink:0;}
+.mod-chevron{font-size:15px;color:var(--sub);transition:transform .2s;flex-shrink:0;width:18px;text-align:center;}
+.module-section.collapsed .mod-chevron{transform:rotate(-90deg);}
+.module-section.collapsed .tool-grid{display:none;}
+.module-section.collapsed .mod-hdr{margin-bottom:0;}
+.mod-bar{display:flex;justify-content:flex-end;gap:8px;margin:0 0 10px;}
+.mod-bar button{background:var(--s1);border:1px solid var(--border);color:var(--sub);border-radius:14px;padding:5px 12px;font-family:'DM Mono',monospace;font-size:10.5px;cursor:pointer;}
 
 /* ── TOOL GRID ───────────────────────────────────────────── */
 .tool-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
@@ -568,14 +578,21 @@ function renderHub(session) {
     </div>
   </div>`;
 
+  // Collapsible sections are an admin setting (everyone / per agent), on by default.
+  const collapsible = !!(AUTH.hubCollapsibleFor && AUTH.hubCollapsibleFor(session.agentId));
+  const collapsedIds = collapsible ? loadCollapsedSections(session.agentId) : [];
+  if (collapsible) html += `<div class="mod-bar"><button type="button" onclick="setAllSections(true)">Collapse all</button><button type="button" onclick="setAllSections(false)">Expand all</button></div>`;
+
   // Module sections
   activeMods.forEach(mod => {
     const visibleTools = mod.tools.filter(tool => isToolVisible(session.agentId, tool.href));
     if (!visibleTools.length) return; // admin hid every page in this module for this agent
-    html += `<div class="module-section">
-      <div class="mod-hdr">
+    const isCollapsed = collapsible && collapsedIds.includes(mod.id);
+    html += `<div class="module-section${collapsible ? ' collapsible' : ''}${isCollapsed ? ' collapsed' : ''}" data-mod="${mod.id}">
+      <div class="mod-hdr${collapsible ? ' is-toggle' : ''}" ${collapsible ? `role="button" tabindex="0" aria-expanded="${!isCollapsed}" onclick="toggleSection('${mod.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleSection('${mod.id}')}"` : ''}>
         <div class="mod-icon">${mod.icon}</div>
         <div class="mod-title">${mod.name}</div>
+        ${collapsible ? `<span class="mod-count">${visibleTools.length}</span><span class="mod-chevron" aria-hidden="true">\u25be</span>` : ''}
       </div>
       <div class="tool-grid">`;
     visibleTools.forEach(tool => {
@@ -603,6 +620,34 @@ function renderHub(session) {
 
   main.innerHTML = html;
   renderBottomNav(session);
+}
+
+// ── COLLAPSE STATE (per agent, remembered on this device) ──────
+const SK_COLLAPSED = 'dba_hub_collapsed';
+function loadCollapsedSections(agentId) {
+  try { const r = JSON.parse(localStorage.getItem(SK_COLLAPSED) || '{}'); return Array.isArray(r[agentId]) ? r[agentId] : []; } catch { return []; }
+}
+function saveCollapsedSections(agentId, ids) {
+  try { const r = JSON.parse(localStorage.getItem(SK_COLLAPSED) || '{}'); r[agentId] = ids; localStorage.setItem(SK_COLLAPSED, JSON.stringify(r)); } catch {}
+}
+function toggleSection(modId) {
+  const session = AUTH.getSession();
+  const el = [...document.querySelectorAll('.module-section.collapsible')].find(x => x.dataset.mod === modId);
+  if (!el) return;
+  const nowCollapsed = el.classList.toggle('collapsed');
+  el.querySelector('.mod-hdr')?.setAttribute('aria-expanded', String(!nowCollapsed));
+  const ids = new Set(loadCollapsedSections(session.agentId));
+  if (nowCollapsed) ids.add(modId); else ids.delete(modId);
+  saveCollapsedSections(session.agentId, [...ids]);
+}
+function setAllSections(collapse) {
+  const session = AUTH.getSession(), ids = [];
+  document.querySelectorAll('.module-section.collapsible').forEach(el => {
+    el.classList.toggle('collapsed', collapse);
+    el.querySelector('.mod-hdr')?.setAttribute('aria-expanded', String(!collapse));
+    if (collapse) ids.push(el.dataset.mod);
+  });
+  saveCollapsedSections(session.agentId, ids);
 }
 
 // ── WIZARD ────────────────────────────────────────────────────
@@ -933,6 +978,10 @@ function checkNotifications(session) {
       const wizardOpen = document.getElementById('wizard-overlay')?.style.display !== 'none';
       if (wizardOpen) openWizard(); // re-render with the refreshed eligibility
     });
+  }
+  // Pull the admin's collapsible-sections setting; redraw only if it changed since this device last heard.
+  if (typeof AUTH.refreshHubSettings === 'function') {
+    AUTH.refreshHubSettings().then(changed => { if (changed) renderHub(session); });
   }
 })();
 </script>

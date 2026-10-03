@@ -97,6 +97,15 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 /* BADGE */
 .board-badge{display:inline-flex;padding:1px 7px;border-radius:6px;font-family:'DM Mono',monospace;font-size:10px;background:rgba(45,202,115,.1);color:var(--green);border:1px solid rgba(45,202,115,.25);}
 .no-board{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);}
+.hl-label{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+.hl-seg{display:inline-flex;flex-wrap:wrap;gap:6px;margin-bottom:6px;}
+.hl-seg button{background:var(--s2);border:1.5px solid var(--border);color:var(--text);border-radius:8px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;}
+.hl-seg button.on{background:var(--gold);border-color:var(--gold);color:#1E1A10;}
+.hl-seg button:disabled{opacity:.5;cursor:wait;}
+.hl-status{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.5;}
+.hl-status.err{color:#B42318;}
+.hl-pick{text-align:left;background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:8px 12px;color:var(--text);font-size:13px;cursor:pointer;font-family:inherit;}
+.hl-row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:8px 12px;border:1px solid var(--border);border-radius:6px;margin-bottom:6px;font-size:13px;}
 </style>
 </head>
 <body>
@@ -136,6 +145,7 @@ AUTH.require('roster-admin.html');
     <button class="tab" id="tab-btn-adminaccess" onclick="switchTab('adminaccess',this)" style="display:none;">🔐 Admin Access</button>
     <button class="tab" onclick="switchTab('genealogy',this)">🌳 Downline Tree</button>
     <button class="tab" onclick="switchTab('attendance',this)">📅 Attendance &amp; Certifications</button>
+    <button class="tab" id="tab-btn-hublayout" onclick="switchTab('hublayout',this)" style="display:none;">&#129513; Hub Layout</button>
     <button class="tab" id="tab-btn-toolaccess" onclick="switchTab('toolaccess',this)" style="display:none;">🔑 Tool Access</button>
   </div>
 
@@ -385,6 +395,36 @@ AUTH.require('roster-admin.html');
   </div>
 
   <!-- ── TOOL ACCESS TAB (Marketing Director / super_admin+ only) ── -->
+  <!-- HUB LAYOUT TAB -->
+  <div class="tab-pane" id="pane-hublayout">
+    <div class="card">
+      <div class="card-title">&#129513; Hub Layout &mdash; Collapsible Sections</div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.7;">
+        When this is <strong style="color:var(--text);">On</strong>, each section of the hub (Getting Started, Recruit, and so on) can be collapsed or expanded with a tap, and each person's choices are remembered on their own device.
+        When it is <strong style="color:var(--text);">Off</strong>, the hub shows every section fully open, as before.
+        A setting for one agent always wins over the setting for everyone.
+      </p>
+      <div id="hl-all-wrap" style="display:none;margin-bottom:22px;">
+        <div class="hl-label">Everyone</div>
+        <div class="hl-seg" id="hl-all-seg"><button type="button" data-v="on">On</button><button type="button" data-v="off">Off</button></div>
+        <div class="hl-status" id="hl-all-status"></div>
+      </div>
+      <div id="hl-all-note" style="display:none;font-size:12px;color:var(--muted);margin-bottom:18px;">The setting for everyone can only be changed by the Super User account. You can still set it for individual agents below.</div>
+      <div class="hl-label">One agent</div>
+      <input type="text" id="hl-search" placeholder="Search by name, login ID or email&hellip;" autocomplete="off"
+        style="width:100%;max-width:420px;background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--text);font-size:13px;margin-bottom:8px;">
+      <div id="hl-results" style="display:flex;flex-direction:column;gap:4px;max-width:420px;margin-bottom:10px;"></div>
+      <div id="hl-agent-box" style="display:none;margin-bottom:6px;">
+        <div style="font-size:13px;font-weight:700;margin-bottom:8px;" id="hl-agent-name"></div>
+        <div class="hl-seg" id="hl-agent-seg"><button type="button" data-v="inherit">Use everyone's setting</button><button type="button" data-v="on">On</button><button type="button" data-v="off">Off</button></div>
+        <div class="hl-status" id="hl-agent-status"></div>
+      </div>
+      <div class="hl-status" id="hl-msg" style="min-height:18px;"></div>
+      <div class="hl-label" style="margin-top:20px;">Agents with their own setting</div>
+      <div id="hl-list"></div>
+    </div>
+  </div>
+
   <div class="tab-pane" id="pane-toolaccess">
     <div class="card">
       <div class="card-title">🔑 Assign Tool Access</div>
@@ -520,6 +560,7 @@ function switchTab(name, el) {
   if (name === 'adminaccess') renderAdminAccessTable();
   if (name === 'genealogy') renderGenealogy();
   if (name === 'attendance') { renderAttendanceSummary(); renderAttendanceTable(); }
+  if (name === 'hublayout') initHubLayoutTab();
   if (name === 'toolaccess') {
     populateToolAccessAgentPicker();
     renderToolAccessSummary();
@@ -1289,6 +1330,8 @@ document.addEventListener('DOMContentLoaded', () => {
   if (viewerTier === 'super_admin' || viewerTier === 'super_user') {
     const toolTabBtn = document.getElementById('tab-btn-toolaccess');
     if (toolTabBtn) toolTabBtn.style.display = 'inline-block';
+    const hubTabBtn = document.getElementById('tab-btn-hublayout');   // same people who can extend tool access
+    if (hubTabBtn) hubTabBtn.style.display = 'inline-block';
   }
 });
 
@@ -1753,6 +1796,63 @@ function downloadAttendanceTemplate() {
 }
 
 // ── TOOL ACCESS — MD-assigned extra access ──────────────────────
+// ── HUB LAYOUT: collapsible sections on/off ────────────────────────
+// Setting for one agent beats the setting for everyone (see AUTH.hubSettingFor).
+let hlAgentId = '';
+const hlSay = (id, msg, err) => { const e = document.getElementById(id); if (e) { e.textContent = msg; e.classList.toggle('err', !!err); } };
+const hlName = id => (agentList.find(a => a.id === id) || {}).name || id;
+async function initHubLayoutTab() {
+  const isSuper = getAdminTier(AUTH.getSession()) === 'super_user';
+  document.getElementById('hl-all-wrap').style.display = isSuper ? 'block' : 'none';
+  document.getElementById('hl-all-note').style.display = isSuper ? 'none' : 'block';
+  renderHubLayout();                          // what this device already knows
+  await AUTH.refreshHubSettings();            // then the live values from Monday
+  renderHubLayout();
+}
+function hlMark(segId, value) { document.querySelectorAll('#' + segId + ' button').forEach(b => b.classList.toggle('on', b.dataset.v === value)); }
+function renderHubLayout() {
+  const st = AUTH.getHubSettings(), allVal = (st.all && st.all.collapsible) || '';
+  hlMark('hl-all-seg', allVal === 'off' ? 'off' : 'on');
+  hlSay('hl-all-status', allVal ? 'Set to ' + allVal.toUpperCase() + ' for everyone.' : 'Using the default: ON for everyone.');
+  const box = document.getElementById('hl-agent-box');
+  if (hlAgentId) {
+    const own = (st.agents && st.agents[hlAgentId] && st.agents[hlAgentId].collapsible) || 'inherit';
+    box.style.display = 'block';
+    document.getElementById('hl-agent-name').textContent = hlName(hlAgentId) + '  (' + hlAgentId + ')';
+    hlMark('hl-agent-seg', own);
+    const eff = AUTH.hubSettingFor(hlAgentId, 'collapsible');
+    hlSay('hl-agent-status', own === 'inherit' ? 'Follows the setting for everyone: ' + eff.toUpperCase() + '.' : 'Set to ' + own.toUpperCase() + ' for this agent.');
+  } else box.style.display = 'none';
+  const list = document.getElementById('hl-list'); list.textContent = '';
+  const rows = Object.entries(st.agents || {}).filter(([, v]) => v && v.collapsible);
+  if (!rows.length) { const d = document.createElement('div'); d.className = 'hl-status'; d.textContent = 'None. Everyone follows the setting above.'; list.appendChild(d); return; }
+  rows.sort((a, b) => hlName(a[0]).localeCompare(hlName(b[0]))).forEach(([id, v]) => {
+    const row = document.createElement('div'); row.className = 'hl-row';
+    const label = document.createElement('span'); label.textContent = hlName(id) + ' \u2014 ' + v.collapsible.toUpperCase();
+    const rm = document.createElement('button'); rm.type = 'button'; rm.className = 'btn btn-ghost'; rm.style.cssText = 'padding:4px 10px;font-size:11px;'; rm.textContent = 'Remove'; rm.dataset.remove = id;
+    row.append(label, rm); list.appendChild(row);
+  });
+}
+async function hlApply(scope, value, segId) {
+  const btns = document.querySelectorAll('#' + segId + ' button'); btns.forEach(b => b.disabled = true);
+  hlSay('hl-msg', 'Saving\u2026');
+  try { await AUTH.setHubSetting(scope, 'collapsible', value); hlSay('hl-msg', '\u2713 Saved. It reaches each device the next time they open the hub.'); }
+  catch (e) { hlSay('hl-msg', 'Could not save: ' + e.message + ' Nothing was changed.', true); }
+  btns.forEach(b => b.disabled = false); renderHubLayout();
+}
+document.addEventListener('click', e => {
+  const seg = e.target.closest('#hl-all-seg button'); if (seg) return hlApply('all', seg.dataset.v, 'hl-all-seg');
+  const ag = e.target.closest('#hl-agent-seg button'); if (ag && hlAgentId) return hlApply(hlAgentId, ag.dataset.v, 'hl-agent-seg');
+  const pick = e.target.closest('.hl-pick'); if (pick) { hlAgentId = pick.dataset.id; document.getElementById('hl-results').textContent = ''; document.getElementById('hl-search').value = ''; return renderHubLayout(); }
+  const rm = e.target.closest('[data-remove]'); if (rm) return hlApply(rm.dataset.remove, 'inherit', 'hl-agent-seg');
+});
+document.getElementById('hl-search').addEventListener('input', e => {
+  const q = e.target.value.trim().toLowerCase(), box = document.getElementById('hl-results'); box.textContent = '';
+  if (q.length < 2) return;
+  agentList.filter(a => (a.name || '').toLowerCase().includes(q) || (a.id || '').toLowerCase().includes(q) || (a.email || '').toLowerCase().includes(q))
+    .slice(0, 8).forEach(a => { const b = document.createElement('button'); b.type = 'button'; b.className = 'hl-pick'; b.dataset.id = a.id; b.textContent = a.name + '  \u00b7  ' + a.id; box.appendChild(b); });
+});
+
 function populateToolAccessAgentPicker() {
   const sel = document.getElementById('toolaccess-agent');
   if (!sel || sel.dataset.wired) return;

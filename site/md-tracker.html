@@ -277,6 +277,8 @@ body::before{content:"";position:fixed;inset:0;
 #career-path-strip::-webkit-scrollbar-track{background:transparent;}
 #career-path-strip::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
 
+/* Small phones: let rows wrap instead of running off the right edge */
+@media (max-width:420px){.topbar{flex-wrap:wrap;}.tb-right{flex-wrap:wrap;}}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>

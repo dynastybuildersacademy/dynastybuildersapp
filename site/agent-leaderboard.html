@@ -179,6 +179,9 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .mr-add-btn{padding:2px 8px;border-radius:5px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;cursor:pointer;}
 .mr-add-btn.added{background:rgba(45,202,115,.1);border-color:var(--green);color:var(--green);}
 
+/* Narrow screens: keep header buttons and tabs inside the page instead of running off the right edge */
+@media (max-width:700px){.topbar{flex-wrap:wrap;padding:8px 14px;}.topbar-right{margin-left:0;width:100%;flex-wrap:wrap;}}
+@media (max-width:700px){.lb-table{display:block;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;}}
 </style>
 </head>
 <body>

@@ -74,6 +74,8 @@ input:focus{outline:none;border-color:var(--gold);}
 .run-sub{font-size:13px;color:var(--slate);margin-top:4px;}
 .progress-bar{height:6px;background:rgba(201,168,76,0.12);border-radius:3px;overflow:hidden;margin-top:12px;}
 .progress-fill{height:6px;background:linear-gradient(90deg,var(--gold),var(--gold-light));border-radius:3px;transition:width 0.5s ease;width:0%;}
+/* Narrow screens: keep header buttons and tabs inside the page instead of running off the right edge */
+.api-row{flex-wrap:wrap;}.api-row input{flex:1 1 180px;min-width:0;}
 </style>
 </head>
 <body>
