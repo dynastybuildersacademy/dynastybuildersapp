@@ -612,8 +612,8 @@ function renderHub(session) {
   const collapsedIds = collapsible ? loadCollapsedSections(session.agentId) : [];
   if (collapsible) html += `<div class="mod-bar"><button type="button" onclick="setAllSections(true)">Collapse all</button><button type="button" onclick="setAllSections(false)">Expand all</button></div>`;
 
-  // My Goals & Vision: day / week / month / year goals and the vision board
-  html += goalsSectionHTML(session, collapsible, collapsedIds);
+  // My Vision Board first, then My Goals (day / week / month / year)
+  html += visionSectionHTML(session, collapsible, collapsedIds) + goalsSectionHTML(session, collapsible, collapsedIds);
 
   // Module sections
   activeMods.forEach(mod => {
@@ -755,9 +755,12 @@ function goalsInnerHTML(agentId, msg, isErr) {
         <button type="button" class="gbtn gold" data-addbtn="${P.id}">Add</button></div>
     </div>`;
   }).join('');
+  return `<div class="goal-grid">${cards}</div><div class="goals-msg${isErr ? ' err' : ''}" id="goals-msg" role="status">${escG(msg || '')}</div>`;
+}
+function visionInnerHTML(agentId, msg, isErr) {
+  const data = loadGoalsData(agentId);
   const v = data.vision;
   const vision = `<div class="vision-card">
-      <h4 style="font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;">\ud83d\uddbc\ufe0f My Vision Board</h4>
       ${v.img ? `<img class="vision-img" src="${v.img}" alt="My vision board" data-vision="view" title="Tap to view full screen">
           <div class="vision-actions"><button type="button" class="gbtn" data-vision="camera">\ud83d\udcf7 Take a new photo</button><button type="button" class="gbtn" data-vision="choose">\ud83d\uddbc\ufe0f Change image</button><button type="button" class="gbtn" data-vision="remove">Remove</button></div>`
         : `<div class="vision-empty"><div>Add the picture of the life you're building. Photograph your board, or upload an image you made.</div>
@@ -766,8 +769,9 @@ function goalsInnerHTML(agentId, msg, isErr) {
       <textarea class="vision-text" id="vision-text" maxlength="600" placeholder="In one year I will be\u2026" aria-label="My 12-month vision">${escG(v.text)}</textarea>
       <div style="font-size:12px;margin-top:8px;"><a href="weekly-strategy-public.html" style="color:#7A5C14;font-weight:700;">\u2728 Need a picture? Build a vision board prompt \u2192</a></div>
     </div>`;
-  return `<div class="goal-grid">${cards}</div>${vision}<div class="goals-msg${isErr ? ' err' : ''}" id="goals-msg" role="status">${escG(msg || '')}</div>`;
+  return `${vision}<div class="goals-msg${isErr ? ' err' : ''}" id="vision-msg" role="status">${escG(msg || '')}</div>`;
 }
+const visionBadge = agentId => (loadGoalsData(agentId).vision.img ? '\u2713' : 'New');
 function goalsBadge(agentId) {
   const data = loadGoalsData(agentId), keys = goalKeys();
   const cur = data.items.filter(g => g.key === keys[g.period]);
@@ -777,10 +781,21 @@ function goalsSectionHTML(session, collapsible, collapsedIds) {
   const isCollapsed = collapsible && collapsedIds.includes('goals');
   return `<div class="module-section${collapsible ? ' collapsible' : ''}${isCollapsed ? ' collapsed' : ''}" data-mod="goals" id="goals-section">
     <div class="mod-hdr${collapsible ? ' is-toggle' : ''}" ${collapsible ? `role="button" tabindex="0" aria-expanded="${!isCollapsed}" onclick="toggleSection('goals')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleSection('goals')}"` : ''}>
-      <div class="mod-icon">\ud83c\udfaf</div><div class="mod-title">My Goals &amp; Vision</div>
+      <div class="mod-icon">\ud83c\udfaf</div><div class="mod-title">My Goals</div>
       ${collapsible ? `<span class="mod-count" id="goals-count">${goalsBadge(session.agentId)}</span><span class="mod-chevron" aria-hidden="true">\u25be</span>` : ''}
     </div>
     <div class="goals-body" id="goals-body">${goalsInnerHTML(session.agentId)}</div>
+  </div>`;
+}
+// The vision board is its own section, shown before the goals.
+function visionSectionHTML(session, collapsible, collapsedIds) {
+  const isCollapsed = collapsible && collapsedIds.includes('vision');
+  return `<div class="module-section${collapsible ? ' collapsible' : ''}${isCollapsed ? ' collapsed' : ''}" data-mod="vision" id="vision-section">
+    <div class="mod-hdr${collapsible ? ' is-toggle' : ''}" ${collapsible ? `role="button" tabindex="0" aria-expanded="${!isCollapsed}" onclick="toggleSection('vision')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleSection('vision')}"` : ''}>
+      <div class="mod-icon">\ud83d\uddbc\ufe0f</div><div class="mod-title">My Vision Board</div>
+      ${collapsible ? `<span class="mod-count" id="vision-count">${visionBadge(session.agentId)}</span><span class="mod-chevron" aria-hidden="true">\u25be</span>` : ''}
+    </div>
+    <div class="goals-body" id="vision-body">${visionInnerHTML(session.agentId)}</div>
     <input type="file" id="vision-file" accept="image/*" hidden>
     <input type="file" id="vision-cam" accept="image/*" capture="environment" hidden>
   </div>`;
@@ -791,6 +806,18 @@ function refreshGoals(msg, isErr, focusPeriod) {
   body.innerHTML = goalsInnerHTML(aid, msg, isErr);
   const badge = document.getElementById('goals-count'); if (badge) badge.textContent = goalsBadge(aid);
   if (focusPeriod) body.querySelector(`[data-add="${focusPeriod}"]`)?.focus();   // keep typing: ready for the next goal
+}
+function refreshVision(msg, isErr) {
+  const body = document.getElementById('vision-body'); if (!body) return;
+  const aid = AUTH.getSession().agentId;
+  body.innerHTML = visionInnerHTML(aid, msg, isErr);
+  const badge = document.getElementById('vision-count'); if (badge) badge.textContent = visionBadge(aid);
+}
+function visionMutate(fn, msg) {
+  const aid = AUTH.getSession().agentId, data = loadGoalsData(aid);
+  fn(data);
+  if (!saveGoalsData(aid, data)) return refreshVision('Could not save \u2014 this device\u2019s storage is full or blocked.', true);
+  refreshVision(msg, false);
 }
 function goalMutate(fn, msg, focusPeriod) {
   const aid = AUTH.getSession().agentId, data = loadGoalsData(aid);
@@ -810,8 +837,8 @@ function addGoal(period) {
 // Vision board image: shrunk before saving so it fits in this device's storage.
 function processVisionFile(file) {
   if (!file) return;
-  if (file.size > 30 * 1024 * 1024) return refreshGoals('That file is over 30 MB \u2014 please choose a smaller image.', true);
-  const msg = document.getElementById('goals-msg'); if (msg) { msg.className = 'goals-msg'; msg.textContent = 'Preparing image\u2026'; }
+  if (file.size > 30 * 1024 * 1024) return refreshVision('That file is over 30 MB \u2014 please choose a smaller image.', true);
+  const msg = document.getElementById('vision-msg'); if (msg) { msg.className = 'goals-msg'; msg.textContent = 'Preparing image\u2026'; }
   const fr = new FileReader();
   fr.onload = () => {
     const img = new Image();
@@ -824,13 +851,13 @@ function processVisionFile(file) {
         for (let q = 0.82; q >= 0.45; q -= 0.1) { out = c.toDataURL('image/jpeg', q); if (out.length <= 420000) break; }
         if (out.length <= 420000) break;
       }
-      if (out.length > 420000) return refreshGoals('Couldn\u2019t shrink that image enough \u2014 try a different one.', true);
+      if (out.length > 420000) return refreshVision('Couldn\u2019t shrink that image enough \u2014 try a different one.', true);
       const aid = AUTH.getSession().agentId, data = loadGoalsData(aid), before = data.vision.img;
       data.vision.img = out;
-      if (!saveGoalsData(aid, data)) { data.vision.img = before; return refreshGoals('Couldn\u2019t save the image \u2014 this device\u2019s storage is full. Your previous vision board is unchanged.', true); }
-      refreshGoals('\u2713 Vision board saved on this device.', false);
+      if (!saveGoalsData(aid, data)) { data.vision.img = before; return refreshVision('Couldn\u2019t save the image \u2014 this device\u2019s storage is full. Your previous vision board is unchanged.', true); }
+      refreshVision('\u2713 Vision board saved on this device.', false);
     };
-    img.onerror = () => refreshGoals('That image type can\u2019t be read here (HEIC photos from some iPhones). Take a new photo, or choose a JPG or PNG.', true);
+    img.onerror = () => refreshVision('That image type can\u2019t be read here (HEIC photos from some iPhones). Take a new photo, or choose a JPG or PNG.', true);
     img.src = fr.result;
   };
   fr.readAsDataURL(file);
@@ -850,7 +877,7 @@ document.addEventListener('click', e => {
     const a = v.dataset.vision;
     if (a === 'choose') return document.getElementById('vision-file')?.click();
     if (a === 'camera') return document.getElementById('vision-cam')?.click();
-    if (a === 'remove') { if (confirm('Remove your vision board image?')) goalMutate(d => { d.vision.img = ''; }, 'Image removed.'); return; }
+    if (a === 'remove') { if (confirm('Remove your vision board image?')) visionMutate(d => { d.vision.img = ''; }, 'Image removed.'); return; }
     if (a === 'view') {
       const img = loadGoalsData(AUTH.getSession().agentId).vision.img; if (!img) return;
       const box = document.createElement('div'); box.className = 'lightbox'; box.setAttribute('role', 'dialog'); box.setAttribute('aria-label', 'Vision board');
@@ -872,7 +899,7 @@ document.addEventListener('input', e => {
   clearTimeout(_visionTimer);
   _visionTimer = setTimeout(() => {
     const aid = AUTH.getSession().agentId, data = loadGoalsData(aid); data.vision.text = e.target.value.slice(0, 600);
-    if (!saveGoalsData(aid, data)) { const m = document.getElementById('goals-msg'); if (m) { m.className = 'goals-msg err'; m.textContent = 'Could not save \u2014 this device\u2019s storage is full or blocked.'; } }
+    if (!saveGoalsData(aid, data)) { const m = document.getElementById('vision-msg'); if (m) { m.className = 'goals-msg err'; m.textContent = 'Could not save \u2014 this device\u2019s storage is full or blocked.'; } }
   }, 400);
 });
 

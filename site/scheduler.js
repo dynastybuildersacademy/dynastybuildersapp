@@ -144,6 +144,41 @@ const PLAN = (() => {
     return out;
   }
 
+
+  // ── the Dynasty weekly schedule (from the "Dynasty and Unite" flyer) ─────
+  // The flyer prints START times only (assumed Pacific, like Thankful Thursday's 5:00 PM PST).
+  // Lengths are assumptions and every one is editable: Phone Zone is 6-9 PM per the Captain's System
+  // guide; Pregame is 30 min and leads straight into BOM; Training runs until Saturday's Pregame.
+  // Tuesday's Book Club is printed as 7:30 AM on the flyer and kept exactly as printed.
+  const ORG_SCHEDULE = [
+    { id: 'mon-md',      day: 1, label: 'MD\u2019s Meeting',   start: '08:00', end: '09:00', mdOnly: true },
+    { id: 'mon-builders',day: 1, label: 'Builders Call',       start: '09:15', end: '10:15' },
+    { id: 'mon-phone',   day: 1, label: 'Phone Zone',          start: '18:00', end: '21:00' },
+    { id: 'tue-book',    day: 2, label: 'Book Club',           start: '07:30', end: '08:30' },
+    { id: 'tue-pregame', day: 2, label: 'Pregame',             start: '18:30', end: '19:00' },
+    { id: 'tue-bom',     day: 2, label: 'BOM',                 start: '19:00', end: '21:00' },
+    { id: 'wed-vbom',    day: 3, label: 'Virtual BOM',         start: '17:00', end: '18:30' },
+    { id: 'thu-book',    day: 4, label: 'Book Club',           start: '07:30', end: '08:30' },
+    { id: 'thu-thanks',  day: 4, label: 'Thankful Thursday',   start: '17:00', end: '18:30' },
+    { id: 'sat-train',   day: 6, label: 'Training',            start: '08:00', end: '09:30' },
+    { id: 'sat-pregame', day: 6, label: 'Pregame',             start: '09:30', end: '10:00' },
+    { id: 'sat-bom',     day: 6, label: 'BOM',                 start: '10:00', end: '12:00' },
+  ];
+  // org = { on:true, shift:0, items:{ id:{ on, start, end } } }. The MD's Meeting is on by default only for Marketing Directors+.
+  // `shift` moves the printed times for other time zones (Eastern +3, Central +2, Mountain +1) and applies to
+  // items you have not edited by hand; an edited time is used exactly as typed.
+  const shiftTime = (t, hours) => hhmm(Math.min(1440, Math.max(0, mins(t) + Math.round(hours * 60))));
+  function orgAll(org, level) {
+    const o = org || {}, shift = Number(o.shift) || 0;
+    return ORG_SCHEDULE.map(it => {
+      const ov = (o.items || {})[it.id] || {}, edited = !!(ov.start || ov.end);
+      const on = ov.on != null ? !!ov.on : !(it.mdOnly && (level || 0) < 60);
+      return { ...it, on, edited, start: ov.start || shiftTime(it.start, shift), end: ov.end || shiftTime(it.end, shift) };
+    });
+  }
+  const orgItems = (org, level) => (org && org.on === false) ? [] : orgAll(org, level).filter(it => it.on);
+  const orgBlocks = (org, level) => orgItems(org, level).map(i => ({ id: 'org_' + i.id, kind: 'weekly', days: [i.day], label: i.label, start: i.start, end: i.end, org: true }));
+
   // ── the planner ────────────────────────────────────────────────
   function suggestWeek(opts) {
     const settings = { ...DEFAULTS, ...(opts.settings || {}) };
@@ -261,6 +296,6 @@ const PLAN = (() => {
     return L.map(fold).join('\r\n') + '\r\n';
   }
 
-  return { PW_BASE, DEFAULTS, TYPES, PRIORITY, ymd, parseYmd, addDays, isoDow, weekStartOf, mins, hhmm, pref, buildDemand, blockIntervals, suggestWeek, maxMultiplierThatFits, toICS };
+  return { PW_BASE, DEFAULTS, TYPES, PRIORITY, ORG_SCHEDULE, orgAll, orgItems, orgBlocks, shiftTime, ymd, parseYmd, addDays, isoDow, weekStartOf, mins, hhmm, pref, buildDemand, blockIntervals, suggestWeek, maxMultiplierThatFits, toICS };
 })();
 if (typeof module !== 'undefined') module.exports = PLAN;

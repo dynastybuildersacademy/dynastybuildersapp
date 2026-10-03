@@ -121,7 +121,22 @@ button.back-btn{background:none;cursor:pointer;font-family:inherit;}
 .plan-pick .pt{flex:1;min-width:0;overflow-wrap:anywhere;}
 .plan-pick .pt small{display:block;color:var(--slate);font-size:11px;}
 details.plan-how{font-size:12px;color:var(--slate);margin:8px 0 12px;line-height:1.6;}
+/* the global .field input{width:100%} rule must not stretch checkboxes (day pills, All day, options) */
+.field input[type=checkbox],.pf-days input[type=checkbox]{width:auto;display:inline-block;padding:0;margin:0 6px 0 0;vertical-align:middle;background:none;border:none;accent-color:var(--gold);}
+.field label:has(input[type=checkbox]){display:flex;align-items:center;gap:2px;}
+.org-times{display:flex;align-items:center;gap:6px;}
+@media(max-width:520px){.org-edit .nm{flex:1 1 100%;}}
 details.plan-how summary{cursor:pointer;color:var(--gold);font-weight:700;}
+.org-tag{font-family:'DM Mono',monospace;font-size:9px;color:#7A5C14;background:rgba(201,168,76,.2);border-radius:3px;padding:1px 5px;align-self:flex-start;}
+.org-row{background:rgba(201,168,76,.10);border:1px solid var(--border);border-radius:6px;padding:8px 10px;margin-bottom:6px;display:flex;align-items:center;gap:8px;font-size:13px;min-width:0;}
+.org-row .plan-title{flex:1;}
+.org-row .t{font-family:'DM Mono',monospace;font-size:11px;color:var(--slate);white-space:nowrap;}
+.org-edit{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:8px 0;border-bottom:1px solid rgba(10,10,10,.06);font-size:13px;}
+.org-edit .nm{flex:1;min-width:130px;font-weight:700;}
+.org-edit input[type=time]{width:112px;background:var(--navy);border:1px solid var(--border);border-radius:4px;padding:6px;color:var(--cream);font-family:'DM Mono',monospace;font-size:12px;}
+.org-day{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:14px;color:var(--gold);margin:12px 0 2px;}
+.plan-pick label{display:flex;gap:9px;align-items:flex-start;flex:1;min-width:0;cursor:pointer;}
+.conf-box{font-size:12px;color:#7A3F06;background:rgba(230,126,34,.13);border-radius:6px;padding:8px 10px;margin:6px 0 10px;line-height:1.5;}
 </style>
 </head>
 <body>
@@ -132,6 +147,7 @@ details.plan-how summary{cursor:pointer;color:var(--gold);font-weight:700;}
   <div class="header-links">
     <button type="button" class="back-btn" onclick="openPlanModal()">&#10024; Suggest My Week</button>
     <button type="button" class="back-btn" onclick="openBlockModal()">&#128683; Block Time</button>
+    <button type="button" class="back-btn" onclick="openOrgModal()">&#128204; Dynasty Schedule</button>
     <button type="button" class="back-btn" onclick="exportUpcoming()">&#128242; Phone Calendar</button>
     <a href="tracker.html" class="back-btn">📞 Activity Log</a>
     <a href="hub.html" class="back-btn">← Hub</a>
@@ -290,6 +306,33 @@ details.plan-how summary{cursor:pointer;color:var(--gold);font-weight:700;}
   </div>
 </div>
 
+<!-- DYNASTY WEEKLY SCHEDULE -->
+<div class="modal-bg" id="org-modal">
+  <div class="modal wide">
+    <div class="modal-hdr"><div class="modal-title">&#128204; Dynasty Weekly Schedule</div><button class="modal-close" onclick="closeOrgModal()" aria-label="Close">&#10005;</button></div>
+    <div style="font-size:12px;color:var(--slate);margin-bottom:12px;line-height:1.5;">These times from the &ldquo;Dynasty and Unite&rdquo; flyer are blocked out on your calendar, and suggested activities are never placed over them. The flyer prints start times only, so the lengths are a best guess &mdash; adjust any of them.</div>
+    <div class="field"><label style="text-transform:none;font-size:13px;letter-spacing:0;"><input type="checkbox" id="org-on"> Block out the Dynasty weekly schedule</label></div>
+    <div class="field"><label for="org-shift">Time zone</label>
+      <select id="org-shift"><option value="-2">Hawaii (2 hours earlier)</option><option value="-1">Alaska (1 hour earlier)</option><option value="0">Pacific (as printed)</option><option value="1">Mountain (+1 hour)</option><option value="2">Central (+2 hours)</option><option value="3">Eastern (+3 hours)</option></select></div>
+    <div class="sync-note" id="org-msg" style="color:#B42318;min-height:14px;text-align:left;" role="alert"></div>
+    <div id="org-list"></div>
+    <button class="btn btn-ghost btn-block" style="margin-top:12px;" onclick="resetOrg()">Reset everything to the flyer</button>
+  </div>
+</div>
+
+<!-- ADJUST AN ACTIVITY -->
+<div class="modal-bg" id="ev-modal">
+  <div class="modal">
+    <div class="modal-hdr"><div class="modal-title">&#9998; Adjust This Activity</div><button class="modal-close" onclick="closeEventEditor()" aria-label="Close">&#10005;</button></div>
+    <div class="field"><label for="ee-title">Activity</label><input type="text" id="ee-title" maxlength="100"></div>
+    <div class="field"><label for="ee-date">Day</label><input type="date" id="ee-date"></div>
+    <div class="pf-grid"><div class="field"><label for="ee-start">Starts</label><input type="time" id="ee-start"></div><div class="field"><label for="ee-end">Ends</label><input type="time" id="ee-end"></div></div>
+    <div id="ee-conf"></div>
+    <div class="sync-note" id="ee-msg" style="color:#B42318;min-height:14px;text-align:left;" role="alert"></div>
+    <div class="modal-footer"><button class="btn btn-ghost" style="flex:1;" onclick="closeEventEditor()">Cancel</button><button class="btn btn-gold" style="flex:1;" onclick="saveEventEdit()">Save</button></div>
+  </div>
+</div>
+
 <div id="toast-el" style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--gold);
   color:var(--navy);padding:10px 18px;border-radius:6px;font-family:'Barlow Condensed',sans-serif;font-weight:700;
   font-size:13px;opacity:0;pointer-events:none;transition:opacity .3s;z-index:400;"></div>
@@ -389,11 +432,12 @@ function renderCalendar() {
       `<div class="cal-chip" style="background:${TYPE_COLOR[a.type]||'#95a5a6'}">${a.name}</div>`
     ).join('');
     const more = dayAppts.length > 2 ? `<div class="cal-more">+${dayAppts.length-2} more</div>` : '';
-    const planned = plannedOn(c.dateStr), blocked = blocksOn(c.dateStr).length > 0;
+    const planned = plannedOn(c.dateStr), blocked = blocksOn(c.dateStr).length > 0, orgItemsToday = orgOn(c.dateStr);
+    const orgTag = orgItemsToday.length ? `<div class="org-tag" title="${escH(orgItemsToday.map(o => o.label).join(', '))}">\ud83d\udccc ${orgItemsToday.length}</div>` : '';
     const dots = planned.length ? `<div class="plan-dots" title="${planned.length} planned">${planned.slice(0,10).map(e => `<span class="plan-dot" style="background:${(PLAN.TYPES[e.type]||{}).color||'#999'}"></span>`).join('')}</div>` : '';
     return `<div class="cal-day ${isToday?'today':''} ${isSelected?'selected':''} ${blocked?'has-block':''}" onclick="selectDay('${c.dateStr}')">
       <div class="cal-day-num">${c.day}${activity ? '<span class="activity-dot" title="Activity logged"></span>' : ''}</div>
-      ${chips}${more}${dots}
+      ${chips}${more}${orgTag}${dots}
     </div>`;
   }).join('');
 
@@ -479,8 +523,8 @@ function goToday() {
 // Kept in its OWN store (not the appointments store): appointments feed the Activity Log
 // and sync to Monday, and a suggested "call block" must never count as a real appointment.
 const PLAN_KEY = `dba_plan_${agentId}`;
-let planState = { blocks: [], events: [], settings: {} };
-try { const p = JSON.parse(localStorage.getItem(PLAN_KEY) || 'null'); if (p) planState = { blocks: p.blocks || [], events: p.events || [], settings: p.settings || {} }; } catch (e) {}
+let planState = { blocks: [], events: [], settings: {}, org: null };
+try { const p = JSON.parse(localStorage.getItem(PLAN_KEY) || 'null'); if (p) planState = { blocks: p.blocks || [], events: p.events || [], settings: p.settings || {}, org: p.org || null }; } catch (e) {}
 function savePlan() {
   try { localStorage.setItem(PLAN_KEY, JSON.stringify(planState)); return true; }
   catch (e) { toast('\u26a0\ufe0f Could not save \u2014 this device\u2019s storage is full or blocked'); return false; }
@@ -490,6 +534,9 @@ const $id = id => document.getElementById(id);
 const DOW3 = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 const t12 = hhmm => { const [h, m] = String(hhmm).split(':').map(Number); return `${((h + 11) % 12) + 1}:${String(m).padStart(2, '0')} ${h < 12 ? 'AM' : 'PM'}`; };
 const planColor = type => (PLAN.TYPES[type] || {}).color || '#999';
+const orgLevel = () => session.level || 0;
+const allBlocks = () => planState.blocks.concat(PLAN.orgBlocks(planState.org, orgLevel()));       // your blocks + the Dynasty schedule
+const orgOn = date => PLAN.orgItems(planState.org, orgLevel()).filter(i => i.day === PLAN.isoDow(date)).sort((a, b) => a.start.localeCompare(b.start));
 const blocksOn  = date => planState.blocks.filter(b => b.kind === 'once' ? b.date === date : (b.days || []).includes(PLAN.isoDow(date)));
 const plannedOn = date => planState.events.filter(e => e.date === date).sort((a, b) => a.start.localeCompare(b.start));
 const blockText = b => `${b.label || 'Unavailable'} \u00b7 ${b.kind === 'once' ? PLAN.parseYmd(b.date).toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' }) : 'every ' + ((b.days || []).length === 7 ? 'day' : (b.days || []).map(d => DOW3[d - 1]).join(', '))} \u00b7 ${b.allDay ? 'all day' : t12(b.start) + ' \u2013 ' + t12(b.end)}`;
@@ -497,9 +544,10 @@ const blockText = b => `${b.label || 'Unavailable'} \u00b7 ${b.kind === 'once' ?
 // ── day view, today list, legend ──
 function renderDayPlan() {
   const date = selectedDate, bl = blocksOn(date), pl = plannedOn(date);
-  const ivs = PLAN.blockIntervals(planState.blocks, date);
+  const ivs = PLAN.blockIntervals(allBlocks(), date), org = orgOn(date);
   let html = '';
   if (bl.length) html += `<div class="day-section-label">Blocked off</div>` + bl.map(b => `<div class="block-row"><span>\ud83d\udeab</span><span class="plan-title">${escH(b.label || 'Unavailable')}</span><span class="t">${b.allDay ? 'All day' : t12(b.start) + ' \u2013 ' + t12(b.end)}${b.kind === 'weekly' ? ' \u00b7 weekly' : ''}</span></div>`).join('');
+  if (org.length) html += `<div class="day-section-label">Dynasty weekly schedule <a href="#" onclick="openOrgModal();return false;" style="color:var(--gold);text-transform:none;letter-spacing:0;">adjust</a></div>` + org.map(o => `<div class="org-row"><span>\ud83d\udccc</span><span class="plan-title">${escH(o.label)}</span><span class="t">${t12(o.start)} \u2013 ${t12(o.end)}</span></div>`).join('');
   if (pl.length) html += `<div class="day-section-label">Planned activities</div>` + pl.map(e => {
     const T = PLAN.TYPES[e.type] || {}, clash = ivs.some(([a, z]) => PLAN.mins(e.start) < z && a < PLAN.mins(e.end));
     return `<div class="plan-row${e.done ? ' done' : ''}" style="--c:${planColor(e.type)}">
@@ -507,6 +555,7 @@ function renderDayPlan() {
       <div style="flex:1;min-width:0;"><div class="plan-title">${T.icon || ''} ${escH(e.title)}</div>
         <div class="plan-detail">${t12(e.start)} \u2013 ${t12(e.end)}${e.detail ? ' \u00b7 ' + escH(e.detail) : ''}</div>
         ${clash ? '<div class="plan-warn">\u26a0\ufe0f This is now inside a blocked-off time.</div>' : ''}</div>
+      <button type="button" class="plan-x" data-pedit="${escH(e.id)}" aria-label="Adjust: ${escH(e.title)}" title="Adjust the time">\u270e</button>
       <button type="button" class="plan-x" data-pdel="${escH(e.id)}" aria-label="Remove: ${escH(e.title)}">\u00d7</button></div>`;
   }).join('');
   $id('day-plan-list').innerHTML = html;
@@ -515,12 +564,10 @@ function renderDayPlan() {
   if (extra.length) sub.textContent = (sub.textContent === 'Nothing scheduled yet' ? '' : sub.textContent + ' \u00b7 ') + extra.join(' \u00b7 ');
 }
 function renderTodayPlanned() {
-  const list = plannedOn(localToday()), el = $id('today-list'); if (!list.length) return;
+  const t = localToday(), list = plannedOn(t), org = orgOn(t), el = $id('today-list'); if (!list.length && !org.length) return;
   if (el.textContent.trim() === 'Nothing scheduled for today.') el.innerHTML = '';
-  el.insertAdjacentHTML('beforeend', list.map(e => `<div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(10,10,10,.05);">
-      <span style="width:8px;height:8px;border-radius:50%;background:${planColor(e.type)};flex-shrink:0;"></span>
-      <span style="flex:1;color:var(--cream);min-width:0;overflow-wrap:anywhere;${e.done ? 'text-decoration:line-through;opacity:.6;' : ''}">${escH(e.title)}</span>
-      <span style="font-family:'DM Mono',monospace;color:var(--slate);white-space:nowrap;">${t12(e.start)}</span></div>`).join(''));
+  const row = (color, text, time, extra) => `<div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(10,10,10,.05);"><span style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0;"></span><span style="flex:1;color:var(--cream);min-width:0;overflow-wrap:anywhere;${extra || ''}">${escH(text)}</span><span style="font-family:'DM Mono',monospace;color:var(--slate);white-space:nowrap;">${t12(time)}</span></div>`;
+  el.insertAdjacentHTML('beforeend', org.map(o => row('#C9A84C', '\ud83d\udccc ' + o.label, o.start)).join('') + list.map(e => row(planColor(e.type), e.title, e.start, e.done ? 'text-decoration:line-through;opacity:.6;' : '')).join(''));
 }
 function renderPlanLegend() {
   $id('legend').insertAdjacentHTML('beforeend', `<div style="margin-top:8px;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--slate);">Planned activities</div>` +
@@ -623,7 +670,7 @@ function buildPlan() {
   // Planning next week? Goals are usually set during the week, so fall back to this week's open goals.
   let goals = settings.useGoals ? hubWeekGoals(ws) : [];
   if (settings.useGoals && !goals.length && ws !== weekStarts()[0]) goals = hubWeekGoals(weekStarts()[0]);
-  const opts = { weekStart: ws, blocks: planState.blocks, appointments: appointments.filter(a => a.time), planned: planState.events, settings: { ...settings, goalBlocks: settings.useGoals ? 3 : 0 }, level: session.level || 0, goals, now: new Date() };
+  const opts = { weekStart: ws, blocks: allBlocks(), appointments: appointments.filter(a => a.time), planned: planState.events, settings: { ...settings, goalBlocks: settings.useGoals ? 3 : 0 }, level: session.level || 0, goals, now: new Date() };
   const res = PLAN.suggestWeek(opts);
   planDraft = { res, ws, mult: settings.multiplier, fit: res.summary.unplaced ? PLAN.maxMultiplierThatFits(opts) : settings.multiplier, picked: new Set(res.events.map(e => e.id)) };
   renderPlanResult();
@@ -643,7 +690,8 @@ function renderPlanResult() {
   h += Object.keys(days).sort().map(date => {
     const list = days[date], hrs = list.reduce((n, e) => n + (PLAN.mins(e.end) - PLAN.mins(e.start)) / 60, 0);
     return `<div class="plan-day-h"><span>${PLAN.parseYmd(date).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}</span><span>${hrs.toFixed(1)} h</span></div>` +
-      list.map(e => `<label class="plan-pick"><input type="checkbox" data-pick="${escH(e.id)}" ${planDraft.picked.has(e.id) ? 'checked' : ''}><span class="pt">${(PLAN.TYPES[e.type] || {}).icon || ''} ${escH(e.title)}<small>${t12(e.start)} \u2013 ${t12(e.end)}</small></span></label>`).join('');
+      list.map(e => { const cf = conflictsFor(e.date, e.start, e.end, e.id, true);
+        return `<div class="plan-pick"><label><input type="checkbox" data-pick="${escH(e.id)}" ${planDraft.picked.has(e.id) ? 'checked' : ''}><span class="pt">${(PLAN.TYPES[e.type] || {}).icon || ''} ${escH(e.title)}<small>${t12(e.start)} \u2013 ${t12(e.end)}</small>${cf.length ? `<span class="plan-warn" style="display:block;">\u26a0\ufe0f ${escH(cf[0])}${cf.length > 1 ? ` (+${cf.length - 1} more)` : ''}</span>` : ''}</span></label><button type="button" class="plan-x" data-pedit-draft="${escH(e.id)}" aria-label="Adjust: ${escH(e.title)}" title="Adjust the day or time">\u270e</button></div>`; }).join('');
   }).join('');
   h += `<div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;"><button class="btn btn-ghost" onclick="backToPlanForm()">&larr; Back</button>
     <button class="btn btn-gold" style="flex:1;min-width:150px;" onclick="acceptPlan(false)">Add to my calendar</button>
@@ -673,6 +721,91 @@ function clearWeekSuggestions() {
   planState.events = planState.events.filter(e => !(e.source === 'suggested' && !e.done && e.date >= from)); savePlan();
   closePlanModal(); renderCalendar(); toast('Suggestions cleared');
 }
+
+// ── adjust a suggested or planned activity ──
+const blocksMatch = (b, date) => b.kind === 'once' ? b.date === date : (b.days || []).includes(PLAN.isoDow(date));
+function conflictsFor(date, start, end, ignoreId, includeDrafts) {
+  const a = PLAN.mins(start), z = PLAN.mins(end), out = [];
+  allBlocks().filter(b => blocksMatch(b, date)).forEach(b => {
+    const iv = PLAN.blockIntervals([b], date)[0];
+    if (iv && a < iv[1] && iv[0] < z) out.push(`${b.label || 'Blocked time'} ${b.allDay ? '(all day)' : '(' + t12(b.start) + ' \u2013 ' + t12(b.end) + ')'}`);
+  });
+  appointments.filter(x => x.date === date && x.time).forEach(x => { const t = PLAN.mins(x.time); if (a < t + 60 && t < z) out.push(`Appointment: ${x.name || x.type} (${t12(x.time)})`); });
+  planState.events.filter(e => e.date === date && e.id !== ignoreId && a < PLAN.mins(e.end) && PLAN.mins(e.start) < z).forEach(e => out.push(`Already planned: ${e.title}`));
+  if (includeDrafts && planDraft) planDraft.res.events.filter(e => e.date === date && e.id !== ignoreId && planDraft.picked.has(e.id) && a < PLAN.mins(e.end) && PLAN.mins(e.start) < z).forEach(e => out.push(`Also suggested: ${e.title}`));
+  return out;
+}
+let editing = null, eeLastStart = '';
+function openEventEditor(mode, id) {
+  const ev = (mode === 'draft' ? (planDraft ? planDraft.res.events : []) : planState.events).find(e => e.id === id); if (!ev) return;
+  editing = { mode, id };
+  $id('ee-title').value = ev.title; $id('ee-date').value = ev.date; $id('ee-start').value = ev.start; $id('ee-end').value = ev.end; $id('ee-msg').textContent = ''; eeLastStart = ev.start;
+  showEditConflicts(); $id('ev-modal').classList.add('open');
+}
+function closeEventEditor() { $id('ev-modal').classList.remove('open'); editing = null; }
+function showEditConflicts() {
+  if (!editing) return;
+  const d = $id('ee-date').value, a = $id('ee-start').value, z = $id('ee-end').value;
+  const cf = (d && a && z && PLAN.mins(z) > PLAN.mins(a)) ? conflictsFor(d, a, z, editing.id, editing.mode === 'draft') : [];
+  $id('ee-conf').innerHTML = cf.length ? `<div class="conf-box">\u26a0\ufe0f This overlaps:<br>${cf.map(escH).join('<br>')}<br>You can still save it.</div>` : '';
+}
+['ee-date', 'ee-start', 'ee-end'].forEach(id => $id(id).addEventListener('input', showEditConflicts));
+$id('ee-start').addEventListener('change', () => {      // moving the start moves the end with it (the length stays the same)
+  const a = $id('ee-start').value, z = $id('ee-end').value;
+  if (a && z && eeLastStart && PLAN.mins(z) > PLAN.mins(eeLastStart)) $id('ee-end').value = PLAN.hhmm(Math.min(1439, PLAN.mins(a) + (PLAN.mins(z) - PLAN.mins(eeLastStart))));
+  eeLastStart = a; showEditConflicts();
+});
+function saveEventEdit() {
+  if (!editing) return;
+  const title = $id('ee-title').value.trim(), date = $id('ee-date').value, start = $id('ee-start').value, end = $id('ee-end').value, msg = $id('ee-msg');
+  if (!title) { msg.textContent = 'Give the activity a name.'; return; }
+  if (!date || !start || !end) { msg.textContent = 'Set the day, start time and end time.'; return; }
+  if (PLAN.mins(end) <= PLAN.mins(start)) { msg.textContent = 'The end time must be after the start time.'; return; }
+  const draft = editing.mode === 'draft', list = draft ? planDraft.res.events : planState.events, ev = list.find(e => e.id === editing.id); if (!ev) return closeEventEditor();
+  Object.assign(ev, { title: title.slice(0, 100), date, start, end });
+  list.sort((a, b) => a.date.localeCompare(b.date) || a.start.localeCompare(b.start));
+  closeEventEditor();
+  if (draft) { renderPlanResult(); return; }
+  savePlan(); selectedDate = date; const d = PLAN.parseYmd(date); viewYear = d.getFullYear(); viewMonth = d.getMonth(); renderCalendar(); toast('\u270e Activity updated');
+}
+document.addEventListener('click', e => {
+  const ed = e.target.closest && e.target.closest('[data-pedit]'); if (ed) return openEventEditor('stored', ed.dataset.pedit);
+  const dd = e.target.closest && e.target.closest('[data-pedit-draft]'); if (dd) return openEventEditor('draft', dd.dataset.peditDraft);
+});
+
+// ── Dynasty weekly schedule manager ──
+const ORG_DAYS = { 1: 'Monday', 2: 'Tuesday', 3: 'Wednesday', 4: 'Thursday', 5: 'Friday', 6: 'Saturday', 7: 'Sunday' };
+function orgStateRef() { if (!planState.org) planState.org = { on: true, shift: 0, items: {} }; planState.org.items = planState.org.items || {}; return planState.org; }
+function openOrgModal() { renderOrgModal(); $id('org-modal').classList.add('open'); }
+function closeOrgModal() { $id('org-modal').classList.remove('open'); }
+function renderOrgModal(msg) {
+  const o = planState.org || {}; $id('org-on').checked = o.on !== false; $id('org-shift').value = String(Number(o.shift) || 0); $id('org-msg').textContent = msg || '';
+  const all = PLAN.orgAll(planState.org, orgLevel()); let day = 0, html = '';
+  all.forEach(it => {
+    if (it.day !== day) { day = it.day; html += `<div class="org-day">${ORG_DAYS[day]}</div>`; }
+    html += `<div class="org-edit"><label class="nm"><input type="checkbox" data-org-on="${it.id}" ${it.on ? 'checked' : ''}> ${escH(it.label)}${it.mdOnly ? ' <small style="font-weight:400;color:var(--slate);">(MDs)</small>' : ''}</label>
+      <span class="org-times"><input type="time" data-org-start="${it.id}" value="${it.start}" aria-label="${escH(it.label)} starts"><span style="font-size:11px;color:var(--slate);">to</span><input type="time" data-org-end="${it.id}" value="${it.end}" aria-label="${escH(it.label)} ends"></span></div>`;
+  });
+  $id('org-list').innerHTML = html;
+}
+function afterOrgChange() { savePlan(); renderOrgModal(); renderCalendar(); }
+$id('org-on').addEventListener('change', e => { orgStateRef().on = e.target.checked; afterOrgChange(); });
+$id('org-shift').addEventListener('change', e => { orgStateRef().shift = Number(e.target.value) || 0; afterOrgChange(); });
+$id('org-list').addEventListener('change', e => {
+  const t = e.target, ref = orgStateRef();
+  if (t.dataset.orgOn) { (ref.items[t.dataset.orgOn] = ref.items[t.dataset.orgOn] || {}).on = t.checked; return afterOrgChange(); }
+  if (t.dataset.orgStart) {                       // moving the start moves the end with it, like a calendar app
+    const id = t.dataset.orgStart, cur = PLAN.orgAll(planState.org, orgLevel()).find(x => x.id === id), a = t.value;
+    if (!cur || !a) return renderOrgModal();
+    const z = PLAN.hhmm(Math.min(1439, PLAN.mins(a) + (PLAN.mins(cur.end) - PLAN.mins(cur.start))));
+    (ref.items[id] = ref.items[id] || {}).start = a; ref.items[id].end = z; return afterOrgChange();
+  }
+  const id = t.dataset.orgEnd; if (!id) return;
+  const a = document.querySelector(`[data-org-start="${id}"]`).value, z = document.querySelector(`[data-org-end="${id}"]`).value;
+  if (!a || !z || PLAN.mins(z) <= PLAN.mins(a)) return renderOrgModal('The end time must be after the start time \u2014 your change was not saved.');
+  (ref.items[id] = ref.items[id] || {}).start = a; ref.items[id].end = z; afterOrgChange();
+});
+function resetOrg() { if (!confirm('Reset the Dynasty schedule to the flyer times?')) return; planState.org = null; afterOrgChange(); toast('Reset to the flyer'); }
 
 // ── phone calendar file (.ics) ──
 function downloadICS(events, filename) {
