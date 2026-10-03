@@ -5,6 +5,7 @@
 <title>DBA — BOM Tracker</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700&family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="auth.js"></script>
+<script src="date-range.js"></script>
 <style>
 :root{--navy:#F5F1E8;--navy-mid:#FFFFFF;--navy-light:#ECE6D6;--gold:#C9A84C;--gold-light:#E8C97A;--cream:#1E1A10;--success:#27AE60;--warn:#E67E22;--danger:#C0392B;--slate:#6B7C93;--border:rgba(201,168,76,0.22);}
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -200,14 +201,7 @@ input:focus,select:focus{outline:none;border-color:var(--gold);}
     </div>
 
     <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap;">
-      <select id="guest-period-filter" onchange="applyGuestFilter()"
-        style="flex:1;min-width:110px;font-size:12px;padding:7px 10px;background:var(--navy);
-          border:1px solid var(--border);color:var(--cream);border-radius:4px;">
-        <option value="all" selected>All guests</option>
-        <option value="30">Last 30 days</option>
-        <option value="7">Last 7 days</option>
-        <option value="90">Last 90 days</option>
-      </select>
+      <span id="guest-range-host" style="display:inline-flex;gap:8px;align-items:center;flex-wrap:wrap;flex:1;min-width:110px;"></span>
       <select id="guest-day-filter" onchange="applyGuestFilter()"
         style="flex:1;min-width:100px;font-size:12px;padding:7px 10px;background:var(--navy);
           border:1px solid var(--border);color:var(--cream);border-radius:4px;">
@@ -217,6 +211,7 @@ input:focus,select:focus{outline:none;border-color:var(--gold);}
       </select>
       <span id="guest-filter-count" style="font-family:'DM Mono',monospace;font-size:10px;color:var(--slate);white-space:nowrap;"></span>
     </div>
+    <div id="guest-range-summary" style="display:none;margin-bottom:10px;padding:9px 12px;border:1px solid rgba(201,168,76,.25);background:rgba(201,168,76,.07);border-radius:6px;font-family:'DM Mono',monospace;font-size:11px;color:var(--cream);"></div>
 
     <div class="card">
       <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">
@@ -256,19 +251,7 @@ input:focus,select:focus{outline:none;border-color:var(--gold);}
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px;">
         <div class="card-title" style="margin:0;">🏆 Captain Leaderboard</div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
-          <select id="lb-period" onchange="loadLeaderboard()" style="font-size:11px;padding:6px 10px;background:var(--navy);border:1px solid var(--border);color:var(--cream);border-radius:4px;">
-            <option value="90" selected>Last 90 Days</option>
-            <option value="30">Last 30 Days</option>
-            <option value="7">Last 7 Days</option>
-            <option value="month">This Month</option>
-            <option value="all">All Time</option>
-            <option value="custom">Custom Range</option>
-          </select>
-          <div id="lb-custom-range" style="display:none;gap:5px;align-items:center;">
-            <input type="date" id="lb-from" onchange="loadLeaderboard()" style="font-size:11px;padding:5px 8px;background:var(--navy);border:1px solid var(--border);color:var(--cream);border-radius:4px;">
-            <span style="font-size:11px;color:var(--slate);">to</span>
-            <input type="date" id="lb-to" onchange="loadLeaderboard()" style="font-size:11px;padding:5px 8px;background:var(--navy);border:1px solid var(--border);color:var(--cream);border-radius:4px;">
-          </div>
+          <span id="lb-range-host" style="display:inline-flex;gap:6px;align-items:center;flex-wrap:wrap;"></span>
           <select id="lb-day-filter" onchange="loadLeaderboard()" style="font-size:11px;padding:6px 10px;background:var(--navy);border:1px solid var(--border);color:var(--cream);border-radius:4px;">
             <option value="all">All Days</option>
             <option value="Tuesday">Tuesdays</option>
@@ -286,6 +269,7 @@ input:focus,select:focus{outline:none;border-color:var(--gold);}
           </button>
         </div>
       </div>
+<div id="lb-note" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--slate);margin-bottom:8px;"></div>
       <div id="lb-loading" style="font-size:13px;color:var(--slate);text-align:center;padding:20px;display:none;">Loading…</div>
       <div id="lb-content"></div>
       <div id="lb-detail" style="margin-top:12px;"></div>
@@ -300,6 +284,12 @@ input:focus,select:focus{outline:none;border-color:var(--gold);}
         <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;
           color:#2DCA73;letter-spacing:.06em;text-transform:uppercase;">💰 BOM Income Calculator</div>
         <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(20,16,8,.4);">Generator 50% · Captain 25% · CFT 25%<br><span style="font-size:9px;opacity:.6;">If CFT blank → Captain earns 50%</span></div>
+      </div>
+
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px;">
+        <span style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:rgba(20,16,8,.5);">Clients converted:</span>
+        <span id="ic-range-host" style="display:inline-flex;gap:6px;align-items:center;flex-wrap:wrap;"></span>
+        <span id="ic-range-note" style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(20,16,8,.5);"></span>
       </div>
 
       <!-- GEB (Great Equalizer Bonus) + Team Analysis — Marketing Director and above only -->
@@ -407,6 +397,21 @@ input:focus,select:focus{outline:none;border-color:var(--gold);}
 // ── CONSTANTS ────────────────────────────────────────────────
 const SK              = 'dba_bom_sessions';
 const BOM_GUESTS_KEY  = 'dba_bom_guests';
+// ── DATE RANGES (shared control: date-range.js) ───────────────
+const guestRange = DR.mount(document.getElementById('guest-range-host'), {
+  presets:['all','today','last7','last30','last90','month','lastmonth','upcoming','custom'], labels:{ all:'All guests' },
+  selectStyle:'flex:1;min-width:110px;font-size:12px;padding:7px 10px;background:var(--navy);border:1px solid var(--border);color:var(--cream);border-radius:4px;', inputStyle:'font-size:12px;padding:7px 10px;background:var(--navy);border:1px solid var(--border);color:var(--cream);border-radius:4px;', ariaLabel:'Guest date range', onChange:() => applyGuestFilter() });
+const lbRange = DR.mount(document.getElementById('lb-range-host'), {
+  presets:['last90','last30','last7','month','lastmonth','all','custom'], value:'last90',
+  labels:{ last90:'Last 90 Days', last30:'Last 30 Days', last7:'Last 7 Days', month:'This Month', lastmonth:'Last Month', all:'All Time', custom:'Custom Range' },
+  selectStyle:'font-size:11px;padding:6px 10px;background:var(--navy);border:1px solid var(--border);color:var(--cream);border-radius:4px;', inputStyle:'font-size:11px;padding:5px 8px;background:var(--navy);border:1px solid var(--border);color:var(--cream);border-radius:4px;',
+  ariaLabel:'Leaderboard date range', onChange:() => loadLeaderboard() });
+const incomeRange = DR.mount(document.getElementById('ic-range-host'), {
+  presets:['all','month','lastmonth','last30','last90','year','custom'], labels:{ all:'All time' },
+  selectStyle:'font-size:11px;padding:6px 10px;background:#F5F1E8;border:1px solid rgba(201,168,76,.3);color:#1E1A10;border-radius:4px;',
+  inputStyle:'font-size:11px;padding:5px 8px;background:#F5F1E8;border:1px solid rgba(201,168,76,.3);color:#1E1A10;border-radius:4px;',
+  ariaLabel:'Income date range', onChange:() => recalcIncome() });
+
 const BOM_GUESTS_BOARD = '18393747809'; // 2026 BOM Captains DBA LC Hierarchy // Dynasty BOM Guests board
 const BOM_META_KEY    = 'dba_bom_meta';
 const BOM_CACHE_TTL   = 30 * 60 * 1000;
@@ -955,35 +960,13 @@ function toast(msg) {
 
 
 // ── CAPTAIN LEADERBOARD ───────────────────────────────────────
-document.getElementById('lb-period').addEventListener('change', function() {
-  const cr = document.getElementById('lb-custom-range');
-  cr.style.display = this.value === 'custom' ? 'flex' : 'none';
-  if (this.value !== 'custom') loadLeaderboard();
-});
 
 async function loadLeaderboard(forceRefresh) {
-  const period    = document.getElementById('lb-period').value;
   const dayFilter = document.getElementById('lb-day-filter').value;
   const metric    = document.getElementById('lb-metric').value;
-  const fromEl    = document.getElementById('lb-from');
-  const toEl      = document.getElementById('lb-to');
-
-  // Date range
-  const today = new Date().toISOString().slice(0,10);
-  let fromDate = '', toDate = '';
-  if (period === 'week') {
-    const d = new Date(); d.setDate(d.getDate() - 7);
-    fromDate = d.toISOString().slice(0,10);
-  } else if (period === 'month') {
-    fromDate = today.slice(0,7) + '-01';
-  } else if (period === 'quarter') {
-    const m = new Date().getMonth();
-    const qStart = new Date(new Date().getFullYear(), Math.floor(m/3)*3, 1);
-    fromDate = qStart.toISOString().slice(0,10);
-  } else if (period === 'custom') {
-    fromDate = fromEl?.value || '';
-    toDate   = toEl?.value   || '';
-  }
+  // Date range (shared control). With a range active, a guest with no BOM date can't be placed in it, so it is left out and counted in the note.
+  const range = lbRange.range(), fromDate = range.from, toDate = range.to, rangeOn = DR.isActive(range);
+  let undated = 0;
 
   document.getElementById('lb-loading').style.display = 'block';
   document.getElementById('lb-content').innerHTML = '';
@@ -1000,8 +983,7 @@ async function loadLeaderboard(forceRefresh) {
     day:       g.bomType   || g.day || '',
   })).filter(g => {
     if (!g.guestName) return false;
-    if (fromDate && g.date && g.date < fromDate) return false;
-    if (toDate   && g.date && g.date > toDate)   return false;
+    if (rangeOn && !DR.inRange(g.date, range)) { if (!g.date) undated++; return false; }
     if (dayFilter !== 'all' && g.day && !g.day.toLowerCase().includes(dayFilter.toLowerCase())) return false;
     return true;
   });
@@ -1011,8 +993,7 @@ async function loadLeaderboard(forceRefresh) {
   // re-filters the cached rows instead of re-hitting Monday every time.
   const mondayRowsAll = await getLeaderboardMondayRows(forceRefresh);
   const mondayRows = mondayRowsAll.filter(row => {
-    if (fromDate && row.date && row.date < fromDate) return false;
-    if (toDate   && row.date && row.date > toDate)   return false;
+    if (rangeOn && !DR.inRange(row.date, range)) { if (!row.date) undated++; return false; }
     if (dayFilter !== 'all' && row.day && !row.day.toLowerCase().includes(dayFilter.toLowerCase())) return false;
     return true;
   });
@@ -1021,6 +1002,12 @@ async function loadLeaderboard(forceRefresh) {
   const guestRows = [...localRows, ...mondayRows];
 
   document.getElementById('lb-loading').style.display = 'none';
+  const lbNote = document.getElementById('lb-note');
+  if (lbNote) lbNote.textContent = rangeOn ? `\ud83d\udcc5 ${DR.describe(range)} \u00b7 ${guestRows.length} guest${guestRows.length === 1 ? '' : 's'}${undated ? ` \u00b7 ${undated} without a BOM date not counted` : ''}` : '';
+  if (rangeOn && !guestRows.length) {
+    document.getElementById('lb-content').innerHTML = '<div style="text-align:center;padding:32px;font-family:DM Mono,monospace;font-size:12px;color:var(--slate);">No guests in this date range.</div>';
+    return;
+  }
 
   if (!guestRows.length) {
     document.getElementById('lb-content').innerHTML =
@@ -1258,7 +1245,6 @@ function renderLeaderboard(guestRows, metric, dayFilter) {
 
 // Leaderboard loads on-demand when tab is tapped
 
-renderGuests();
 
 // ════════════════════════════════════════════════════════════════
 // BOM INCOME CALCULATOR
@@ -1277,6 +1263,11 @@ const GEB_TIERS = [
   { rec:100, pts:150000, lic:8,  bonus:0.35 },
   { rec:200, pts:300000, lic:12, bonus:0.45 },
 ];
+
+// Initial render. This call used to sit above GEB_TIERS, where renderGuests -> recalcGEB -> getGEB
+// hit the constant before it existed, threw, and stopped the rest of this script from running
+// (including the page's start-up handler and the Income tab).
+renderGuests();
 function getGEB(rec, pts, lic) {
   let bonus = 0;
   GEB_TIERS.forEach(t => { if (rec >= t.rec && pts >= t.pts && lic >= t.lic) bonus = t.bonus; });
@@ -1343,9 +1334,14 @@ function recalcIncome() {
   //   If CFT is blank → Captain is also the CFT → Captain earns 50%
   const commRate = parseFloat(document.getElementById('ic-captain-rate')?.value || 75) / 100;
 
-  const clients = guests.filter(g =>
+  const allClients = guests.filter(g =>
     g.becameClient || ['Became Client','Follow-Up Converted'].includes(g.status)
   );
+  // Range applies to when they became a client (falls back to the BOM date if that wasn't entered).
+  const incRange = incomeRange.range();
+  const clients = DR.isActive(incRange) ? allClients.filter(g => DR.inRange(g.clientDate || g.date, incRange)) : allClients;
+  const icNote = document.getElementById('ic-range-note');
+  if (icNote) icNote.textContent = DR.isActive(incRange) ? `${DR.describe(incRange)} \u00b7 ${clients.length} of ${allClients.length} clients` : '';
 
   const totalClients  = clients.length;
   const totalPremium  = clients.reduce((s,g) => s + (g.annualPremium || g.policyAmount || 0), 0);
@@ -1359,7 +1355,7 @@ function recalcIncome() {
 
   if (!clients.length) {
     const emptyMsg = '<div style="font-family:DM Mono,monospace;font-size:11px;color:rgba(20,16,8,.35);padding:10px 0;">' +
-      'No converted clients yet. Mark a guest as "Became Client" and enter the policy amount.</div>';
+      (DR.isActive(incRange) ? 'No clients converted in this date range.' : 'No converted clients yet. Mark a guest as "Became Client" and enter the policy amount.') + '</div>';
     ['ic-captain-table','ic-generator-table','ic-cft-table','ic-detail-tbody'].forEach(id => {
       const t = el(id); if (t) t.innerHTML = emptyMsg;
     });
@@ -1499,19 +1495,19 @@ function switchBOMTab(tab) {
 // ════════════════════════════════════════════════════════════════
 // GUEST FILTER — 90-day default
 // ════════════════════════════════════════════════════════════════
-function getGuestCutoffDate(days) {
-  if (!days || days === 'all') return null;
-  const d = new Date();
-  d.setDate(d.getDate() - parseInt(days));
-  return d.toISOString().slice(0, 10);
+// Captains = anyone with 10+ invites to a single BOM (PHPU Captain's System).
+function captainsIn(list) {
+  const perBom = {};
+  list.forEach(g => { const c = (g.captain || '').trim().toLowerCase(); if (c) { const k = c + '|' + (g.date || ''); perBom[k] = (perBom[k] || 0) + 1; } });
+  return new Set(Object.keys(perBom).filter(k => perBom[k] >= 10).map(k => k.split('|')[0])).size;
 }
 
 function applyGuestFilter() {
-  const days     = document.getElementById('guest-period-filter')?.value || 'all';
   const dayFlt   = document.getElementById('guest-day-filter')?.value   || 'all';
   const agentFlt = document.getElementById('agent-filter')?.value       || 'all';
-  const cutoff   = getGuestCutoffDate(days);
-  const today    = new Date().toISOString().slice(0, 10);
+  const range    = guestRange.range(), rangeOn = DR.isActive(range);
+  const today    = DR.ymd(new Date());
+  let undated    = 0;
 
   // Show agent filter bar for Directors+ (level >= 60)
   const filterBar = document.getElementById('agent-filter-bar');
@@ -1527,8 +1523,8 @@ function applyGuestFilter() {
       if (!cap.includes(name) && !gen.includes(name) && !cft.includes(name)) return false;
     }
     // Date cutoff
-    if (cutoff && g.date && g.date < cutoff) return false;
-    if (g.date && g.date > today) return false;
+    if (rangeOn && !DR.inRange(g.date, range)) { if (!g.date) undated++; return false; }
+    if (!rangeOn && g.date && g.date > today) return false;   // with no range, future-dated entries stay hidden (existing behavior)
     // Day filter
     if (dayFlt !== 'all') {
       const storedDay = (g.bomType || g.day || '').toLowerCase();
@@ -1548,6 +1544,16 @@ function applyGuestFilter() {
     countEl.textContent = filtered.length === guests.length
       ? `${guests.length} guest${guests.length !== 1 ? 's' : ''}`
       : `${filtered.length} of ${guests.length} guests`;
+    if (undated) countEl.textContent += ` \u00b7 ${undated} undated hidden`;
+  }
+  const sumEl = document.getElementById('guest-range-summary');
+  if (sumEl) {
+    if (rangeOn) {
+      const st = s => (g => (g.status || '').toLowerCase() === s);
+      const showed = filtered.filter(st('showed')).length, confirmed = filtered.filter(st('confirmed')).length, caps = captainsIn(filtered);
+      sumEl.style.display = 'block';
+      sumEl.textContent = `\ud83d\udcc5 ${DR.describe(range)}  \u00b7  ${filtered.length} guest${filtered.length === 1 ? '' : 's'}  \u00b7  ${confirmed} confirmed  \u00b7  ${showed} showed  \u00b7  ${caps} captain${caps === 1 ? '' : 's'} (10+ invites at one BOM)`;
+    } else sumEl.style.display = 'none';
   }
   const countTitle = document.getElementById('guest-count');
   if (countTitle) countTitle.textContent = filtered.length + ' guest' + (filtered.length !== 1 ? 's' : '');

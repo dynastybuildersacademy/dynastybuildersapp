@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dynasty — Top 25 Prospects</title>
 <script src="auth.js"></script>
+<script src="date-range.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap');
@@ -337,6 +338,9 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
     <select class="fsel" id="filter-group" onchange="filterCards()">
       <option value="">All Groups</option>
     </select>
+    <span id="dr-added-host" style="display:inline-flex;gap:6px;align-items:center;flex-wrap:wrap;"></span>
+    <span id="dr-appt-host" style="display:inline-flex;gap:6px;align-items:center;flex-wrap:wrap;"></span>
+    <button class="icon-btn" id="dr-clear" onclick="clearDateFilters()" style="display:none;">\u2715 Clear dates</button>
     <span class="filter-count" id="count-pill">—</span>
   </div>
 
@@ -944,8 +948,11 @@ function getFiltered(){
   const fu=(document.getElementById('filter-followup')||{}).value||'';
   const grp=(document.getElementById('filter-group')||{}).value||'';
   const today=new Date().toISOString().slice(0,10);
+  const rAdded=drAdded?drAdded.range():null, rAppt=drAppt?drAppt.range():null;   // date entered / appointment date
   return allProspects.filter(p=>{
     if(grp&&p.group_id!==grp) return false;
+    if(DR.isActive(rAdded)&&!DR.inRange(p.added_at,rAdded)) return false;     // no entry date = can't be placed in a range
+    if(DR.isActive(rAppt)&&!DR.inRange(p.next_appt,rAppt)) return false;     // no appointment set = not in an appointment range
     if(q&&!p.name.toLowerCase().includes(q)&&!(p.phone||'').includes(q)&&!(p.occupation||'').toLowerCase().includes(q)) return false;
     if(status&&p.status!==status) return false;
     if(next&&p.next_action!==next) return false;
@@ -961,7 +968,28 @@ function getFiltered(){
   });
 }
 
-function filterCards(){ renderRows(getFiltered()); }
+function filterCards(){
+  const on = (drAdded && DR.isActive(drAdded.range())) || (drAppt && DR.isActive(drAppt.range()));
+  const clr = document.getElementById('dr-clear'); if (clr) clr.style.display = on ? '' : 'none';
+  renderRows(getFiltered());
+}
+
+// ── DATE FILTERS ────────────────────────────────────────────────
+// Date entered = when the prospect was added (Monday's creation date, shown
+// in the viewer's local day). Appointment date = the Next Appointment column.
+let drAdded = null, drAppt = null;
+function mountDateFilters(){
+  const sty = 'padding:8px 10px;';
+  drAdded = DR.mount(document.getElementById('dr-added-host'), {
+    presets:['all','today','yesterday','last7','last30','month','lastmonth','custom'],
+    labels:{ all:'\ud83d\udcc5 Entered: any date' }, selectClass:'fsel', inputClass:'fsel', inputStyle:sty,
+    ariaLabel:'Filter by date entered', onChange:filterCards });
+  drAppt = DR.mount(document.getElementById('dr-appt-host'), {
+    presets:['all','today','next7','next30','month','last30','custom'],
+    labels:{ all:'\ud83d\uddd3 Appointment: any date', last30:'Appointment: past 30 days', next7:'Appointment: next 7 days', next30:'Appointment: next 30 days', today:'Appointment: today', month:'Appointment: this month' },
+    selectClass:'fsel', inputClass:'fsel', inputStyle:sty, ariaLabel:'Filter by appointment date', onChange:filterCards });
+}
+function clearDateFilters(){ drAdded.set('all','','',true); drAppt.set('all','','',true); filterCards(); }
 
 // ── STATUS PILLS ───────────────────────────────────────────────
 function statusPill(label){
@@ -1879,6 +1907,7 @@ async function pollForNewProspects(){
 setInterval(pollForNewProspects, POLL_MS);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) pollForNewProspects(); });
 
+document.addEventListener('DOMContentLoaded', mountDateFilters);
 document.addEventListener('DOMContentLoaded',()=>{
   document.getElementById('log-modal').addEventListener('click',e=>{if(e.target===document.getElementById('log-modal')) closeModal();});
   document.getElementById('board-picker-modal').addEventListener('click',e=>{if(e.target===document.getElementById('board-picker-modal')) closeBoardPicker();});

@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0">
 <title>Recruiting Command Center · Dynasty Builders Academy</title>
 <script src="auth.js"></script>
+<script src="date-range.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Barlow:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
@@ -463,8 +464,12 @@ body::before{content:"";position:fixed;inset:0;
   <!-- ── SCHEDULE ───────────────────────────────────────────── -->
   <div class="view" id="view-schedule">
     <div class="section-head" style="margin-bottom:16px;">
-      <div class="sh-title">Upcoming Schedule</div>
+      <div class="sh-title" id="sched-title">Upcoming Schedule</div>
       <div class="sh-line"></div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px;">
+      <span id="sched-range-host" style="display:inline-flex;gap:6px;align-items:center;flex-wrap:wrap;"></span>
+      <span id="sched-summary" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);"></span>
     </div>
     <div id="full-schedule" class="schedule-list"></div>
   </div>
@@ -527,6 +532,14 @@ body::before{content:"";position:fixed;inset:0;
 // ════════════════════════════════════════════════════════════════
 // DYNASTY RECRUITING COMMAND CENTER
 // ════════════════════════════════════════════════════════════════
+
+// Appointment-date range for the Schedule view. "Upcoming" (from today) is the default, so the
+// screen looks the same until someone picks a different range.
+const schedRange = DR.mount(document.getElementById('sched-range-host'), {
+  presets:['upcoming','today','next7','next30','month','last30','all','custom'],
+  labels:{ upcoming:'Upcoming', last30:'Past 30 days', all:'All appointments' },
+  selectClass:'fsel', inputClass:'fsel', inputStyle:'padding:8px 10px;', ariaLabel:'Appointment date range',
+  onChange:() => renderFullSchedule() });
 
 const STORAGE = { prospects:'rcc_prospects', appointments:'rcc_appointments', cal:'rcc_calendar', settings:'rcc_settings' };
 const TZ = 'America/Los_Angeles';
@@ -1074,13 +1087,18 @@ function renderProspects() {
 }
 
 function renderFullSchedule() {
+  const range = schedRange.range(), isUpcoming = schedRange.state().preset === 'upcoming';
   const upcoming = appointments
-    .filter(a=>a.date>=localDateStr())
+    .filter(a=>a.date && DR.inRange(a.date, range))
     .sort((a,b)=>a.date.localeCompare(b.date)||(a.time||'').localeCompare(b.time||''));
+
+  const titleEl = document.getElementById('sched-title'); if(titleEl) titleEl.textContent = isUpcoming ? 'Upcoming Schedule' : 'Appointment Schedule';
+  const sumEl = document.getElementById('sched-summary');
+  if(sumEl) sumEl.textContent = DR.isActive(range) ? `${upcoming.length} appointment${upcoming.length===1?'':'s'} \u00b7 ${DR.describe(range)}` : `${upcoming.length} appointment${upcoming.length===1?'':'s'}`;
 
   const el = document.getElementById('full-schedule');
   if(!upcoming.length) {
-    el.innerHTML = '<div class="empty"><div class="e-ico">📅</div><div class="e-t">No upcoming appointments</div></div>';
+    el.innerHTML = `<div class="empty"><div class="e-ico">\ud83d\udcc5</div><div class="e-t">${isUpcoming?'No upcoming appointments':'No appointments in this date range'}</div></div>`;
     return;
   }
 
