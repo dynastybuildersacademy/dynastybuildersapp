@@ -72,6 +72,35 @@ html,body{height:100%;background:var(--navy);color:var(--text);font-family:'Barl
 .module-section.collapsed .mod-chevron{transform:rotate(-90deg);}
 .module-section.collapsed .tool-grid{display:none;}
 .module-section.collapsed .mod-hdr{margin-bottom:0;}
+/* My Goals & Vision */
+.module-section.collapsed .goals-body{display:none;}
+.goal-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:12px;}
+@media(max-width:560px){.goal-grid{grid-template-columns:minmax(0,1fr);}}
+.goal-card{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:12px 14px;min-width:0;}
+.goal-card h4{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--text);display:flex;justify-content:space-between;align-items:baseline;gap:8px;}
+.goal-card h4 .gprog{font-family:'DM Mono',monospace;font-size:11px;font-weight:500;letter-spacing:0;color:#5B6B85;text-transform:none;}
+.goal-sub{font-size:12px;color:#5B6B85;margin:1px 0 6px;}
+.goal-item{display:flex;gap:9px;align-items:flex-start;padding:6px 0;font-size:14.5px;line-height:1.35;min-width:0;}
+.goal-item input[type=checkbox]{width:21px;height:21px;accent-color:var(--gold);flex-shrink:0;margin-top:0;cursor:pointer;}
+.goal-item .gt{flex:1;min-width:0;overflow-wrap:anywhere;}
+.goal-item.done .gt{text-decoration:line-through;color:#6B7B95;}
+.goal-item .gdel{background:none;border:none;color:#6B7B95;font-size:20px;line-height:1;cursor:pointer;padding:0 4px;flex-shrink:0;}
+.goal-empty{font-size:13px;color:#5B6B85;padding:4px 0 2px;}
+.goal-add{display:flex;gap:6px;margin-top:8px;}
+.goal-add input{flex:1;min-width:0;border:1px solid var(--border);border-radius:8px;padding:9px 10px;font-size:14px;background:var(--navy);color:var(--text);font-family:inherit;}
+.gbtn{background:var(--s2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:9px 13px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;flex-shrink:0;}
+.gbtn.gold{background:var(--gold);border-color:var(--gold);color:#1E1A10;}
+.goal-carry{display:block;width:100%;text-align:left;background:rgba(201,168,76,.12);border:1px dashed rgba(201,168,76,.6);border-radius:8px;color:var(--text);padding:7px 10px;font-size:12.5px;cursor:pointer;margin:2px 0 6px;font-family:inherit;}
+.vision-card{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:12px 14px;min-width:0;}
+.vision-img{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:10px;cursor:zoom-in;display:block;background:var(--s2);}
+.vision-empty{aspect-ratio:16/9;min-height:150px;border:2px dashed rgba(201,168,76,.55);border-radius:10px;display:flex;flex-direction:column;gap:10px;align-items:center;justify-content:center;text-align:center;padding:12px;color:#5B6B85;font-size:13px;}
+.vision-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
+.vision-text{width:100%;min-height:72px;margin-top:10px;border:1px solid var(--border);border-radius:8px;padding:9px 10px;font-size:14px;background:var(--navy);color:var(--text);font-family:inherit;resize:vertical;}
+.vision-label{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#5B6B85;margin-top:10px;}
+.goals-msg{font-size:12.5px;margin:8px 0 0;min-height:16px;color:#5B6B85;}
+.goals-msg.err{color:#B42318;}
+.lightbox{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:300;display:flex;align-items:center;justify-content:center;padding:12px;cursor:zoom-out;}
+.lightbox img{max-width:100%;max-height:100%;object-fit:contain;border-radius:6px;}
 .mod-bar{display:flex;justify-content:flex-end;gap:8px;margin:0 0 10px;}
 .mod-bar button{background:var(--s1);border:1px solid var(--border);color:var(--sub);border-radius:14px;padding:5px 12px;font-family:'DM Mono',monospace;font-size:10.5px;cursor:pointer;}
 
@@ -583,6 +612,9 @@ function renderHub(session) {
   const collapsedIds = collapsible ? loadCollapsedSections(session.agentId) : [];
   if (collapsible) html += `<div class="mod-bar"><button type="button" onclick="setAllSections(true)">Collapse all</button><button type="button" onclick="setAllSections(false)">Expand all</button></div>`;
 
+  // My Goals & Vision: day / week / month / year goals and the vision board
+  html += goalsSectionHTML(session, collapsible, collapsedIds);
+
   // Module sections
   activeMods.forEach(mod => {
     const visibleTools = mod.tools.filter(tool => isToolVisible(session.agentId, tool.href));
@@ -649,6 +681,200 @@ function setAllSections(collapse) {
   });
   saveCollapsedSections(session.agentId, ids);
 }
+
+// ── MY GOALS & VISION ──────────────────────────────────────────
+// Goals belong to a period: a day, a week (Monday–Sunday), a month or a year. A new period
+// starts empty; unfinished goals from the last one can be carried over with a tap. Everything
+// is saved on this device, per agent.
+const SK_GOALS = 'dba_hub_goals_v1';
+const GOAL_PERIODS = [
+  { id:'day',   label:'Today',      icon:'\u2600\ufe0f' },
+  { id:'week',  label:'This week',  icon:'\ud83d\udcc5' },
+  { id:'month', label:'This month', icon:'\ud83d\uddd3\ufe0f' },
+  { id:'year',  label:'This year',  icon:'\ud83c\udfc6' },
+];
+const g2 = n => String(n).padStart(2, '0');
+const gYmd = d => `${d.getFullYear()}-${g2(d.getMonth() + 1)}-${g2(d.getDate())}`;
+const gYm  = d => `${d.getFullYear()}-${g2(d.getMonth() + 1)}`;
+function goalKeys(now = new Date()) {
+  const d0 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const monday = new Date(d0.getFullYear(), d0.getMonth(), d0.getDate() - ((d0.getDay() + 6) % 7));
+  return {
+    day: gYmd(d0), week: gYmd(monday), month: gYm(d0), year: String(d0.getFullYear()),
+    prev: {
+      day:   gYmd(new Date(d0.getFullYear(), d0.getMonth(), d0.getDate() - 1)),
+      week:  gYmd(new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() - 7)),
+      month: gYm(new Date(d0.getFullYear(), d0.getMonth() - 1, 1)),
+      year:  String(d0.getFullYear() - 1),
+    },
+  };
+}
+function goalSubLabel(period, now = new Date()) {
+  const k = goalKeys(now), md = d => d.toLocaleDateString('en-US', { month:'short', day:'numeric' });
+  if (period === 'day')   return now.toLocaleDateString('en-US', { weekday:'long', month:'short', day:'numeric' });
+  if (period === 'week')  { const m = new Date(k.week + 'T12:00:00'), e = new Date(m.getFullYear(), m.getMonth(), m.getDate() + 6); return `${md(m)} \u2013 ${md(e)}`; }
+  if (period === 'month') return now.toLocaleDateString('en-US', { month:'long', year:'numeric' });
+  return String(now.getFullYear());
+}
+const escG = t => String(t == null ? '' : t).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+function loadGoalsData(agentId) {
+  try {
+    const m = (JSON.parse(localStorage.getItem(SK_GOALS) || '{}') || {})[agentId] || {};
+    return { items: Array.isArray(m.items) ? m.items : [], vision: { img: (m.vision && m.vision.img) || '', text: (m.vision && m.vision.text) || '' } };
+  } catch { return { items: [], vision: { img:'', text:'' } }; }
+}
+function saveGoalsData(agentId, data) {
+  // Drop old finished periods so storage doesn't grow forever (months and years are kept).
+  const k = goalKeys(), dayCut = gYmd(new Date(Date.now() - 120 * 864e5)), wkCut = gYmd(new Date(Date.now() - 400 * 864e5));
+  data.items = data.items.filter(g => g.period === 'day' ? g.key >= dayCut : g.period === 'week' ? g.key >= wkCut : true);
+  try {
+    const all = JSON.parse(localStorage.getItem(SK_GOALS) || '{}') || {};
+    all[agentId] = data; localStorage.setItem(SK_GOALS, JSON.stringify(all)); return true;
+  } catch (e) { return false; }
+}
+const goalsFor = (data, period, key) => data.items.filter(g => g.period === period && g.key === key);
+
+function goalsInnerHTML(agentId, msg, isErr) {
+  const data = loadGoalsData(agentId), keys = goalKeys();
+  const cards = GOAL_PERIODS.map(P => {
+    const list = goalsFor(data, P.id, keys[P.id]);
+    const ordered = list.filter(g => !g.done).concat(list.filter(g => g.done));
+    const done = list.filter(g => g.done).length;
+    const carry = goalsFor(data, P.id, keys.prev[P.id]).filter(g => !g.done && !g.carried).length;
+    const prevName = { day:'yesterday', week:'last week', month:'last month', year:'last year' }[P.id];
+    return `<div class="goal-card" data-period="${P.id}">
+      <h4><span>${P.icon} ${P.label}</span><span class="gprog">${list.length ? done + ' of ' + list.length + ' done' : ''}</span></h4>
+      <div class="goal-sub">${escG(goalSubLabel(P.id))}</div>
+      ${carry ? `<button type="button" class="goal-carry" data-carry="${P.id}">\u21a9 Carry over ${carry} unfinished goal${carry === 1 ? '' : 's'} from ${prevName}</button>` : ''}
+      ${ordered.length ? ordered.map(g => `<div class="goal-item${g.done ? ' done' : ''}">
+          <input type="checkbox" data-goal="${escG(g.id)}" ${g.done ? 'checked' : ''} aria-label="Mark done: ${escG(g.text)}">
+          <span class="gt">${escG(g.text)}</span>
+          <button type="button" class="gdel" data-del="${escG(g.id)}" aria-label="Delete goal: ${escG(g.text)}">\u00d7</button></div>`).join('')
+        : '<div class="goal-empty">No goals yet.</div>'}
+      <div class="goal-add"><input type="text" maxlength="140" data-add="${P.id}" placeholder="Add a goal for ${P.label.toLowerCase()}" aria-label="New goal for ${P.label.toLowerCase()}">
+        <button type="button" class="gbtn gold" data-addbtn="${P.id}">Add</button></div>
+    </div>`;
+  }).join('');
+  const v = data.vision;
+  const vision = `<div class="vision-card">
+      <h4 style="font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;">\ud83d\uddbc\ufe0f My Vision Board</h4>
+      ${v.img ? `<img class="vision-img" src="${v.img}" alt="My vision board" data-vision="view" title="Tap to view full screen">
+          <div class="vision-actions"><button type="button" class="gbtn" data-vision="camera">\ud83d\udcf7 Take a new photo</button><button type="button" class="gbtn" data-vision="choose">\ud83d\uddbc\ufe0f Change image</button><button type="button" class="gbtn" data-vision="remove">Remove</button></div>`
+        : `<div class="vision-empty"><div>Add the picture of the life you're building. Photograph your board, or upload an image you made.</div>
+            <div class="vision-actions" style="justify-content:center;margin-top:0;"><button type="button" class="gbtn gold" data-vision="camera">\ud83d\udcf7 Take a photo</button><button type="button" class="gbtn" data-vision="choose">\ud83d\uddbc\ufe0f Choose or upload</button></div></div>`}
+      <div class="vision-label">My 12-month vision</div>
+      <textarea class="vision-text" id="vision-text" maxlength="600" placeholder="In one year I will be\u2026" aria-label="My 12-month vision">${escG(v.text)}</textarea>
+      <div style="font-size:12px;margin-top:8px;"><a href="weekly-strategy-public.html" style="color:#7A5C14;font-weight:700;">\u2728 Need a picture? Build a vision board prompt \u2192</a></div>
+    </div>`;
+  return `<div class="goal-grid">${cards}</div>${vision}<div class="goals-msg${isErr ? ' err' : ''}" id="goals-msg" role="status">${escG(msg || '')}</div>`;
+}
+function goalsBadge(agentId) {
+  const data = loadGoalsData(agentId), keys = goalKeys();
+  const cur = data.items.filter(g => g.key === keys[g.period]);
+  return cur.length ? `${cur.filter(g => g.done).length}/${cur.length}` : 'New';
+}
+function goalsSectionHTML(session, collapsible, collapsedIds) {
+  const isCollapsed = collapsible && collapsedIds.includes('goals');
+  return `<div class="module-section${collapsible ? ' collapsible' : ''}${isCollapsed ? ' collapsed' : ''}" data-mod="goals" id="goals-section">
+    <div class="mod-hdr${collapsible ? ' is-toggle' : ''}" ${collapsible ? `role="button" tabindex="0" aria-expanded="${!isCollapsed}" onclick="toggleSection('goals')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleSection('goals')}"` : ''}>
+      <div class="mod-icon">\ud83c\udfaf</div><div class="mod-title">My Goals &amp; Vision</div>
+      ${collapsible ? `<span class="mod-count" id="goals-count">${goalsBadge(session.agentId)}</span><span class="mod-chevron" aria-hidden="true">\u25be</span>` : ''}
+    </div>
+    <div class="goals-body" id="goals-body">${goalsInnerHTML(session.agentId)}</div>
+    <input type="file" id="vision-file" accept="image/*" hidden>
+    <input type="file" id="vision-cam" accept="image/*" capture="environment" hidden>
+  </div>`;
+}
+function refreshGoals(msg, isErr, focusPeriod) {
+  const body = document.getElementById('goals-body'); if (!body) return;
+  const aid = AUTH.getSession().agentId;
+  body.innerHTML = goalsInnerHTML(aid, msg, isErr);
+  const badge = document.getElementById('goals-count'); if (badge) badge.textContent = goalsBadge(aid);
+  if (focusPeriod) body.querySelector(`[data-add="${focusPeriod}"]`)?.focus();   // keep typing: ready for the next goal
+}
+function goalMutate(fn, msg, focusPeriod) {
+  const aid = AUTH.getSession().agentId, data = loadGoalsData(aid);
+  fn(data);
+  if (!saveGoalsData(aid, data)) return refreshGoals('Could not save \u2014 this device\u2019s storage is full or blocked.', true);
+  refreshGoals(msg, false, focusPeriod);
+}
+function addGoal(period) {
+  const input = document.querySelector(`#goals-body [data-add="${period}"]`); if (!input) return;
+  const text = input.value.replace(/\s+/g, ' ').trim(); if (!text) { input.focus(); return; }
+  const key = goalKeys()[period];
+  goalMutate(d => {
+    if (goalsFor(d, period, key).length >= 25) return;
+    d.items.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), text: text.slice(0, 140), period, key, done: false });
+  }, '', period);
+}
+// Vision board image: shrunk before saving so it fits in this device's storage.
+function processVisionFile(file) {
+  if (!file) return;
+  if (file.size > 30 * 1024 * 1024) return refreshGoals('That file is over 30 MB \u2014 please choose a smaller image.', true);
+  const msg = document.getElementById('goals-msg'); if (msg) { msg.className = 'goals-msg'; msg.textContent = 'Preparing image\u2026'; }
+  const fr = new FileReader();
+  fr.onload = () => {
+    const img = new Image();
+    img.onload = () => {
+      let out = '';
+      for (const max of [1400, 1100, 900, 700]) {
+        const sc = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+        const c = document.createElement('canvas'); c.width = Math.round(img.naturalWidth * sc); c.height = Math.round(img.naturalHeight * sc);
+        const ctx = c.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height); ctx.drawImage(img, 0, 0, c.width, c.height);
+        for (let q = 0.82; q >= 0.45; q -= 0.1) { out = c.toDataURL('image/jpeg', q); if (out.length <= 420000) break; }
+        if (out.length <= 420000) break;
+      }
+      if (out.length > 420000) return refreshGoals('Couldn\u2019t shrink that image enough \u2014 try a different one.', true);
+      const aid = AUTH.getSession().agentId, data = loadGoalsData(aid), before = data.vision.img;
+      data.vision.img = out;
+      if (!saveGoalsData(aid, data)) { data.vision.img = before; return refreshGoals('Couldn\u2019t save the image \u2014 this device\u2019s storage is full. Your previous vision board is unchanged.', true); }
+      refreshGoals('\u2713 Vision board saved on this device.', false);
+    };
+    img.onerror = () => refreshGoals('That image type can\u2019t be read here (HEIC photos from some iPhones). Take a new photo, or choose a JPG or PNG.', true);
+    img.src = fr.result;
+  };
+  fr.readAsDataURL(file);
+}
+let _visionTimer = null;
+document.addEventListener('click', e => {
+  const t = e.target;
+  const add = t.closest('[data-addbtn]'); if (add) return addGoal(add.dataset.addbtn);
+  const del = t.closest('#goals-body [data-del]'); if (del) return goalMutate(d => { d.items = d.items.filter(g => g.id !== del.dataset.del); });
+  const carry = t.closest('[data-carry]');
+  if (carry) {
+    const p = carry.dataset.carry, k = goalKeys();
+    return goalMutate(d => { goalsFor(d, p, k.prev[p]).filter(g => !g.done && !g.carried).forEach(g => { g.carried = true; d.items.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), text: g.text, period: p, key: k[p], done: false }); }); });
+  }
+  const v = t.closest('[data-vision]');
+  if (v) {
+    const a = v.dataset.vision;
+    if (a === 'choose') return document.getElementById('vision-file')?.click();
+    if (a === 'camera') return document.getElementById('vision-cam')?.click();
+    if (a === 'remove') { if (confirm('Remove your vision board image?')) goalMutate(d => { d.vision.img = ''; }, 'Image removed.'); return; }
+    if (a === 'view') {
+      const img = loadGoalsData(AUTH.getSession().agentId).vision.img; if (!img) return;
+      const box = document.createElement('div'); box.className = 'lightbox'; box.setAttribute('role', 'dialog'); box.setAttribute('aria-label', 'Vision board');
+      box.innerHTML = `<img src="${img}" alt="My vision board">`; box.onclick = () => box.remove(); document.body.appendChild(box);
+    }
+  }
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.querySelector('.lightbox')?.remove();
+  if (e.key === 'Enter' && e.target && e.target.matches && e.target.matches('#goals-body [data-add]')) { e.preventDefault(); addGoal(e.target.dataset.add); }
+});
+document.addEventListener('change', e => {
+  const t = e.target;
+  if (t.matches && t.matches('#goals-body [data-goal]')) return goalMutate(d => { const g = d.items.find(x => x.id === t.dataset.goal); if (g) { g.done = t.checked; g.doneAt = t.checked ? Date.now() : 0; } });
+  if (t.id === 'vision-file' || t.id === 'vision-cam') { const f = t.files && t.files[0]; t.value = ''; processVisionFile(f); }
+});
+document.addEventListener('input', e => {
+  if (e.target.id !== 'vision-text') return;
+  clearTimeout(_visionTimer);
+  _visionTimer = setTimeout(() => {
+    const aid = AUTH.getSession().agentId, data = loadGoalsData(aid); data.vision.text = e.target.value.slice(0, 600);
+    if (!saveGoalsData(aid, data)) { const m = document.getElementById('goals-msg'); if (m) { m.className = 'goals-msg err'; m.textContent = 'Could not save \u2014 this device\u2019s storage is full or blocked.'; } }
+  }, 400);
+});
 
 // ── WIZARD ────────────────────────────────────────────────────
 function openWizard() {

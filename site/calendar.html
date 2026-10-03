@@ -87,6 +87,41 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);m
 .field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 .modal-footer{display:flex;gap:8px;margin-top:16px;}
 .sync-note{font-size:10px;color:var(--slate);margin-top:10px;text-align:center;}
+
+/* ── PLANNER: suggested activities + blocked time ── */
+button.back-btn{background:none;cursor:pointer;font-family:inherit;}
+.plan-dots{display:flex;gap:3px;flex-wrap:wrap;margin-top:auto;}
+.plan-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.cal-day.has-block{background-image:repeating-linear-gradient(135deg,rgba(107,124,147,.15) 0 6px,transparent 6px 12px);}
+.day-section-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--slate);margin:14px 0 6px;}
+.plan-row{background:var(--navy);border:1px solid var(--border);border-left:4px solid var(--c,#999);border-radius:6px;padding:8px 10px;margin-bottom:6px;display:flex;align-items:flex-start;gap:8px;min-width:0;}
+.plan-row input[type=checkbox]{width:18px;height:18px;accent-color:var(--gold);flex-shrink:0;margin-top:2px;}
+.plan-row.done .plan-title{text-decoration:line-through;color:var(--slate);}
+.plan-title{font-size:13px;font-weight:700;overflow-wrap:anywhere;}
+.plan-detail{font-size:11px;color:var(--slate);margin-top:2px;overflow-wrap:anywhere;}
+.plan-warn{font-size:11px;color:#B42318;margin-top:2px;}
+.plan-x{background:none;border:none;color:var(--slate);font-size:20px;line-height:1;cursor:pointer;padding:0 2px;flex-shrink:0;}
+.block-row{background:repeating-linear-gradient(135deg,rgba(107,124,147,.14) 0 6px,transparent 6px 12px),var(--navy);border:1px dashed var(--slate);border-radius:6px;padding:8px 10px;margin-bottom:6px;display:flex;align-items:center;gap:8px;font-size:13px;min-width:0;}
+.block-row .plan-title{flex:1;}
+.block-row .t{font-family:'DM Mono',monospace;font-size:11px;color:var(--slate);}
+.modal.wide{max-width:600px;}
+.pf-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
+@media(max-width:480px){.pf-grid{grid-template-columns:minmax(0,1fr);}}
+.pf-days{display:flex;gap:6px;flex-wrap:wrap;}
+.pf-days label{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--border);border-radius:16px;padding:6px 11px;font-size:12px;font-weight:700;cursor:pointer;text-transform:none;letter-spacing:0;color:var(--cream);margin:0;}
+.pf-days input{accent-color:var(--gold);}
+.chip{background:rgba(10,10,10,.06);border:1px solid var(--border);color:var(--cream);border-radius:16px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;}
+.chip:hover{border-color:var(--gold);}
+.plan-summary{background:rgba(201,168,76,.1);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:13px;line-height:1.55;margin-bottom:10px;}
+.plan-short{font-size:12.5px;color:#7A3F06;background:rgba(230,126,34,.13);border-radius:6px;padding:8px 10px;margin-bottom:10px;line-height:1.5;}
+.plan-day-h{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:15px;color:var(--gold);margin:12px 0 4px;display:flex;justify-content:space-between;gap:8px;}
+.plan-day-h span:last-child{font-family:'DM Mono',monospace;font-size:10px;color:var(--slate);font-weight:400;}
+.plan-pick{display:flex;gap:9px;align-items:flex-start;padding:6px 0;font-size:13px;border-bottom:1px solid rgba(10,10,10,.06);min-width:0;}
+.plan-pick input{width:18px;height:18px;accent-color:var(--gold);flex-shrink:0;margin-top:1px;}
+.plan-pick .pt{flex:1;min-width:0;overflow-wrap:anywhere;}
+.plan-pick .pt small{display:block;color:var(--slate);font-size:11px;}
+details.plan-how{font-size:12px;color:var(--slate);margin:8px 0 12px;line-height:1.6;}
+details.plan-how summary{cursor:pointer;color:var(--gold);font-weight:700;}
 </style>
 </head>
 <body>
@@ -95,6 +130,9 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);m
 <div class="header">
   <h1>📅 Calendar</h1>
   <div class="header-links">
+    <button type="button" class="back-btn" onclick="openPlanModal()">&#10024; Suggest My Week</button>
+    <button type="button" class="back-btn" onclick="openBlockModal()">&#128683; Block Time</button>
+    <button type="button" class="back-btn" onclick="exportUpcoming()">&#128242; Phone Calendar</button>
     <a href="tracker.html" class="back-btn">📞 Activity Log</a>
     <a href="hub.html" class="back-btn">← Hub</a>
   </div>
@@ -119,7 +157,12 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);m
       <div class="day-detail-title" id="day-detail-title">Select a day</div>
       <div class="day-detail-sub" id="day-detail-sub"></div>
       <div id="day-detail-list"></div>
-      <button class="btn btn-gold btn-block" onclick="openApptModal()">+ Add Appointment</button>
+      <div id="day-plan-list"></div>
+      <button class="btn btn-gold btn-block" onclick="openApptModal()" style="margin-top:10px;">+ Add Appointment</button>
+      <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+        <button class="btn btn-ghost" style="flex:1;" onclick="openBlockModal(selectedDate)">&#128683; Block this day</button>
+        <button class="btn btn-ghost" style="flex:1;" onclick="openPlanModal()">&#10024; Suggest my week</button>
+      </div>
     </div>
   </div>
 
@@ -191,13 +234,73 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--cream);m
   </div>
 </div>
 
+<!-- BLOCK OUT TIME -->
+<div class="modal-bg" id="block-modal">
+  <div class="modal">
+    <div class="modal-hdr"><div class="modal-title">&#128683; Block Out Time</div><button class="modal-close" onclick="closeBlockModal()" aria-label="Close">&#10005;</button></div>
+    <div style="font-size:12px;color:var(--slate);margin-bottom:12px;line-height:1.5;">Times you are not available. Suggested activities are never placed here.</div>
+    <div class="pf-days" style="margin-bottom:12px;">
+      <button type="button" class="chip" onclick="applyBlockPreset('work')">Day job 9&ndash;5</button>
+      <button type="button" class="chip" onclick="applyBlockPreset('lunch')">Lunch</button>
+      <button type="button" class="chip" onclick="applyBlockPreset('family')">Family time</button>
+    </div>
+    <div class="field"><label for="bf-label">What is it?</label><input type="text" id="bf-label" maxlength="60" placeholder="e.g. Day job, Family dinner, Church"></div>
+    <div class="field"><label for="bf-repeat">Repeats</label><select id="bf-repeat" onchange="toggleBlockFields()"><option value="weekly">Every week</option><option value="once">One day only</option></select></div>
+    <div class="field" id="bf-days-wrap"><label>Days</label><div class="pf-days" id="bf-days"></div></div>
+    <div class="field" id="bf-date-wrap" style="display:none;"><label for="bf-date">Date</label><input type="date" id="bf-date"></div>
+    <div class="field"><label style="text-transform:none;font-size:13px;letter-spacing:0;"><input type="checkbox" id="bf-all" onchange="toggleBlockFields()"> All day</label></div>
+    <div class="pf-grid" id="bf-times"><div class="field"><label for="bf-start">From</label><input type="time" id="bf-start" value="09:00"></div><div class="field"><label for="bf-end">Until</label><input type="time" id="bf-end" value="17:00"></div></div>
+    <div class="sync-note" id="bf-msg" style="color:#B42318;min-height:14px;text-align:left;" role="alert"></div>
+    <button class="btn btn-gold btn-block" onclick="saveBlock()">Block this time</button>
+    <div class="day-section-label">Currently blocked</div>
+    <div id="bf-list"></div>
+  </div>
+</div>
+
+<!-- SUGGEST MY WEEK -->
+<div class="modal-bg" id="plan-modal">
+  <div class="modal wide">
+    <div class="modal-hdr"><div class="modal-title">&#10024; Suggest My Week</div><button class="modal-close" onclick="closePlanModal()" aria-label="Close">&#10005;</button></div>
+    <div id="plan-form">
+      <div style="font-size:12px;color:var(--slate);margin-bottom:12px;line-height:1.5;">Builds your week from the Perfect Week requirements and your goals, and fits it into the time you have free. Blocked times and appointments are never double-booked.</div>
+      <div class="pf-grid">
+        <div class="field"><label for="pf-week">Week</label><select id="pf-week"></select></div>
+        <div class="field"><label for="pf-mult">Perfect Week standard</label><select id="pf-mult"><option value="1">1&times; (the standard)</option><option value="1.25">1.25&times;</option><option value="1.5">1.5&times; (stretch)</option><option value="2">2&times;</option></select></div>
+        <div class="field"><label for="pf-annual">Client annual reviews</label><input type="number" id="pf-annual" min="0" max="10"></div>
+        <div class="field"><label for="pf-team">Team-building calls</label><input type="number" id="pf-team" min="0" max="5"></div>
+        <div class="field"><label for="pf-leader">Leadership calls</label><input type="number" id="pf-leader" min="0" max="5"></div>
+        <div class="field"><label for="pf-maxh">Most hours in a day</label><input type="number" id="pf-maxh" min="2" max="14"></div>
+        <div class="field"><label for="pf-start">Earliest start</label><input type="time" id="pf-start"></div>
+        <div class="field"><label for="pf-end">Latest finish</label><input type="time" id="pf-end"></div>
+      </div>
+      <div class="field"><label>Days I work</label><div class="pf-days" id="pf-days"></div></div>
+      <div class="field"><label style="text-transform:none;font-size:13px;letter-spacing:0;display:block;margin-bottom:6px;"><input type="checkbox" id="pf-sunrev"> Add a 30-minute weekly review on Sunday evening</label>
+        <label style="text-transform:none;font-size:13px;letter-spacing:0;display:block;"><input type="checkbox" id="pf-goals"> Add focus time for my weekly goals <span id="pf-goals-n" style="color:var(--slate);"></span></label></div>
+      <details class="plan-how"><summary>How the schedule is built</summary>
+        <div>1. Calls go in the best contact windows (late morning, early evening); appointments in evenings and Saturday mornings; desk work early.<br>
+        2. Similar work is batched, and call blocks are capped at 90 minutes.<br>
+        3. There is a 15-minute break between any two activities.<br>
+        4. The load is spread across the days you work, up to your daily maximum.<br>
+        5. If time is short, every activity is scaled back evenly, rather than dropping whatever is last.<br>
+        Hours follow the Activity Log rule: 5 phone numbers, 25 calls, or 1 appointment each equal one hour.</div></details>
+      <button class="btn btn-gold btn-block" onclick="buildPlan()">Build my schedule</button>
+      <button class="btn btn-ghost btn-block" style="margin-top:8px;" onclick="clearWeekSuggestions()" id="pf-clear">Clear this week&rsquo;s suggestions</button>
+    </div>
+    <div id="plan-result" style="display:none;"></div>
+  </div>
+</div>
+
 <div id="toast-el" style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--gold);
   color:var(--navy);padding:10px 18px;border-radius:6px;font-family:'Barlow Condensed',sans-serif;font-weight:700;
   font-size:13px;opacity:0;pointer-events:none;transition:opacity .3s;z-index:400;"></div>
 
+<script src="scheduler.js"></script>
 <script>
 const session = AUTH.getSession();
 const agentId = session.agentId;
+// Local calendar day (the old code used UTC, which flips to tomorrow in the evening in the Americas).
+function localYmd(d) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+function localToday() { return localYmd(new Date()); }
 
 // ── SAME DATA MODEL AS tracker.html'S APPOINTMENTS ──────────────
 // This page reads and writes the exact same store, so anything
@@ -224,7 +327,7 @@ function toast(msg) {
 
 // ── CALENDAR STATE ────────────────────────────────────────────
 let viewYear, viewMonth; // 0-indexed month
-let selectedDate = new Date().toISOString().slice(0,10);
+let selectedDate = localToday();
 (function initView(){
   const now = new Date();
   viewYear = now.getFullYear();
@@ -259,7 +362,7 @@ function renderCalendar() {
   const startOffset = firstOfMonth.getDay(); // 0=Sun
   const daysInMonth = new Date(viewYear, viewMonth+1, 0).getDate();
   const daysInPrevMonth = new Date(viewYear, viewMonth, 0).getDate();
-  const todayStr = new Date().toISOString().slice(0,10);
+  const todayStr = localToday();
 
   const cells = [];
   // Leading days from previous month
@@ -286,9 +389,11 @@ function renderCalendar() {
       `<div class="cal-chip" style="background:${TYPE_COLOR[a.type]||'#95a5a6'}">${a.name}</div>`
     ).join('');
     const more = dayAppts.length > 2 ? `<div class="cal-more">+${dayAppts.length-2} more</div>` : '';
-    return `<div class="cal-day ${isToday?'today':''} ${isSelected?'selected':''}" onclick="selectDay('${c.dateStr}')">
+    const planned = plannedOn(c.dateStr), blocked = blocksOn(c.dateStr).length > 0;
+    const dots = planned.length ? `<div class="plan-dots" title="${planned.length} planned">${planned.slice(0,10).map(e => `<span class="plan-dot" style="background:${(PLAN.TYPES[e.type]||{}).color||'#999'}"></span>`).join('')}</div>` : '';
+    return `<div class="cal-day ${isToday?'today':''} ${isSelected?'selected':''} ${blocked?'has-block':''}" onclick="selectDay('${c.dateStr}')">
       <div class="cal-day-num">${c.day}${activity ? '<span class="activity-dot" title="Activity logged"></span>' : ''}</div>
-      ${chips}${more}
+      ${chips}${more}${dots}
     </div>`;
   }).join('');
 
@@ -296,6 +401,9 @@ function renderCalendar() {
   renderMonthStats();
   renderTodayList();
   renderLegend();
+  renderDayPlan();
+  renderTodayPlanned();
+  renderPlanLegend();
 }
 
 function selectDay(dateStr) {
@@ -334,7 +442,7 @@ function renderMonthStats() {
 }
 
 function renderTodayList() {
-  const todayStr = new Date().toISOString().slice(0,10);
+  const todayStr = localToday();
   const list = appointments.filter(a => a.date === todayStr).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
   const el = document.getElementById('today-list');
   if (!list.length) { el.innerHTML = 'Nothing scheduled for today.'; return; }
@@ -362,11 +470,223 @@ function goToday() {
   const now = new Date();
   viewYear = now.getFullYear();
   viewMonth = now.getMonth();
-  selectedDate = now.toISOString().slice(0,10);
+  selectedDate = localYmd(now);
   renderCalendar();
 }
 
 // ── MODAL ─────────────────────────────────────────────────────
+// ══ PLANNER: blocked time + suggested activities ═════════════════
+// Kept in its OWN store (not the appointments store): appointments feed the Activity Log
+// and sync to Monday, and a suggested "call block" must never count as a real appointment.
+const PLAN_KEY = `dba_plan_${agentId}`;
+let planState = { blocks: [], events: [], settings: {} };
+try { const p = JSON.parse(localStorage.getItem(PLAN_KEY) || 'null'); if (p) planState = { blocks: p.blocks || [], events: p.events || [], settings: p.settings || {} }; } catch (e) {}
+function savePlan() {
+  try { localStorage.setItem(PLAN_KEY, JSON.stringify(planState)); return true; }
+  catch (e) { toast('\u26a0\ufe0f Could not save \u2014 this device\u2019s storage is full or blocked'); return false; }
+}
+const escH = t => String(t == null ? '' : t).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+const $id = id => document.getElementById(id);
+const DOW3 = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const t12 = hhmm => { const [h, m] = String(hhmm).split(':').map(Number); return `${((h + 11) % 12) + 1}:${String(m).padStart(2, '0')} ${h < 12 ? 'AM' : 'PM'}`; };
+const planColor = type => (PLAN.TYPES[type] || {}).color || '#999';
+const blocksOn  = date => planState.blocks.filter(b => b.kind === 'once' ? b.date === date : (b.days || []).includes(PLAN.isoDow(date)));
+const plannedOn = date => planState.events.filter(e => e.date === date).sort((a, b) => a.start.localeCompare(b.start));
+const blockText = b => `${b.label || 'Unavailable'} \u00b7 ${b.kind === 'once' ? PLAN.parseYmd(b.date).toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' }) : 'every ' + ((b.days || []).length === 7 ? 'day' : (b.days || []).map(d => DOW3[d - 1]).join(', '))} \u00b7 ${b.allDay ? 'all day' : t12(b.start) + ' \u2013 ' + t12(b.end)}`;
+
+// ── day view, today list, legend ──
+function renderDayPlan() {
+  const date = selectedDate, bl = blocksOn(date), pl = plannedOn(date);
+  const ivs = PLAN.blockIntervals(planState.blocks, date);
+  let html = '';
+  if (bl.length) html += `<div class="day-section-label">Blocked off</div>` + bl.map(b => `<div class="block-row"><span>\ud83d\udeab</span><span class="plan-title">${escH(b.label || 'Unavailable')}</span><span class="t">${b.allDay ? 'All day' : t12(b.start) + ' \u2013 ' + t12(b.end)}${b.kind === 'weekly' ? ' \u00b7 weekly' : ''}</span></div>`).join('');
+  if (pl.length) html += `<div class="day-section-label">Planned activities</div>` + pl.map(e => {
+    const T = PLAN.TYPES[e.type] || {}, clash = ivs.some(([a, z]) => PLAN.mins(e.start) < z && a < PLAN.mins(e.end));
+    return `<div class="plan-row${e.done ? ' done' : ''}" style="--c:${planColor(e.type)}">
+      <input type="checkbox" data-pdone="${escH(e.id)}" ${e.done ? 'checked' : ''} aria-label="Mark done: ${escH(e.title)}">
+      <div style="flex:1;min-width:0;"><div class="plan-title">${T.icon || ''} ${escH(e.title)}</div>
+        <div class="plan-detail">${t12(e.start)} \u2013 ${t12(e.end)}${e.detail ? ' \u00b7 ' + escH(e.detail) : ''}</div>
+        ${clash ? '<div class="plan-warn">\u26a0\ufe0f This is now inside a blocked-off time.</div>' : ''}</div>
+      <button type="button" class="plan-x" data-pdel="${escH(e.id)}" aria-label="Remove: ${escH(e.title)}">\u00d7</button></div>`;
+  }).join('');
+  $id('day-plan-list').innerHTML = html;
+  const sub = $id('day-detail-sub'), extra = [];
+  if (pl.length) extra.push(`${pl.length} planned`); if (bl.length) extra.push(`${bl.length} blocked`);
+  if (extra.length) sub.textContent = (sub.textContent === 'Nothing scheduled yet' ? '' : sub.textContent + ' \u00b7 ') + extra.join(' \u00b7 ');
+}
+function renderTodayPlanned() {
+  const list = plannedOn(localToday()), el = $id('today-list'); if (!list.length) return;
+  if (el.textContent.trim() === 'Nothing scheduled for today.') el.innerHTML = '';
+  el.insertAdjacentHTML('beforeend', list.map(e => `<div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(10,10,10,.05);">
+      <span style="width:8px;height:8px;border-radius:50%;background:${planColor(e.type)};flex-shrink:0;"></span>
+      <span style="flex:1;color:var(--cream);min-width:0;overflow-wrap:anywhere;${e.done ? 'text-decoration:line-through;opacity:.6;' : ''}">${escH(e.title)}</span>
+      <span style="font-family:'DM Mono',monospace;color:var(--slate);white-space:nowrap;">${t12(e.start)}</span></div>`).join(''));
+}
+function renderPlanLegend() {
+  $id('legend').insertAdjacentHTML('beforeend', `<div style="margin-top:8px;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--slate);">Planned activities</div>` +
+    Object.entries(PLAN.TYPES).map(([k, T]) => `<div style="display:flex;align-items:center;gap:6px;"><span style="width:8px;height:8px;border-radius:50%;background:${T.color};display:inline-block;"></span>${T.icon} ${T.label}</div>`).join('') +
+    `<div style="display:flex;align-items:center;gap:6px;margin-top:4px;"><span style="width:10px;height:10px;border-radius:2px;background:repeating-linear-gradient(135deg,#9aa8bb 0 3px,transparent 3px 6px);display:inline-block;border:1px solid var(--slate);"></span>Blocked off</div>`);
+}
+document.addEventListener('change', e => {
+  const t = e.target;
+  if (t.matches && t.matches('#day-plan-list [data-pdone]')) { const ev = planState.events.find(x => x.id === t.dataset.pdone); if (ev) { ev.done = t.checked; savePlan(); renderCalendar(); } }
+});
+document.addEventListener('click', e => {
+  const del = e.target.closest && e.target.closest('#day-plan-list [data-pdel]');
+  if (del) { planState.events = planState.events.filter(x => x.id !== del.dataset.pdel); savePlan(); renderCalendar(); }
+});
+
+// ── block out time ──
+const BLOCK_PRESETS = {
+  work:   { label: 'Day job',     repeat: 'weekly', days: [1,2,3,4,5],       start: '09:00', end: '17:00' },
+  lunch:  { label: 'Lunch',       repeat: 'weekly', days: [1,2,3,4,5,6,7],   start: '12:00', end: '13:00' },
+  family: { label: 'Family time', repeat: 'weekly', days: [1,2,3,4,5,6,7],   start: '18:00', end: '19:30' },
+};
+function dayPills(containerId, name, checked) {
+  $id(containerId).innerHTML = DOW3.map((d, i) => `<label><input type="checkbox" name="${name}" value="${i + 1}" ${checked.includes(i + 1) ? 'checked' : ''}> ${d}</label>`).join('');
+}
+const pickedDays = name => [...document.querySelectorAll(`input[name="${name}"]:checked`)].map(x => +x.value);
+function openBlockModal(date) {
+  $id('bf-label').value = ''; $id('bf-repeat').value = date ? 'once' : 'weekly'; $id('bf-all').checked = false;
+  $id('bf-start').value = '09:00'; $id('bf-end').value = '17:00'; $id('bf-date').value = date || selectedDate; $id('bf-msg').textContent = '';
+  dayPills('bf-days', 'bfd', [1,2,3,4,5]); toggleBlockFields(); renderBlockList();
+  $id('block-modal').classList.add('open'); $id('bf-label').focus();
+}
+function closeBlockModal() { $id('block-modal').classList.remove('open'); }
+function toggleBlockFields() {
+  const once = $id('bf-repeat').value === 'once';
+  $id('bf-days-wrap').style.display = once ? 'none' : ''; $id('bf-date-wrap').style.display = once ? '' : 'none';
+  $id('bf-times').style.display = $id('bf-all').checked ? 'none' : '';
+}
+function applyBlockPreset(name) {
+  const p = BLOCK_PRESETS[name]; if (!p) return;
+  $id('bf-label').value = p.label; $id('bf-repeat').value = p.repeat; $id('bf-all').checked = false;
+  $id('bf-start').value = p.start; $id('bf-end').value = p.end; dayPills('bf-days', 'bfd', p.days); toggleBlockFields();
+}
+function saveBlock() {
+  const msg = $id('bf-msg'); msg.textContent = '';
+  const kind = $id('bf-repeat').value, allDay = $id('bf-all').checked, start = $id('bf-start').value, end = $id('bf-end').value;
+  const b = { id: `blk_${Date.now()}`, kind, label: $id('bf-label').value.trim().slice(0, 60) || 'Unavailable', allDay };
+  if (kind === 'weekly') { b.days = pickedDays('bfd'); if (!b.days.length) { msg.textContent = 'Pick at least one day.'; return; } }
+  else { b.date = $id('bf-date').value; if (!b.date) { msg.textContent = 'Pick a date.'; return; } }
+  if (!allDay) {
+    if (!start || !end) { msg.textContent = 'Set a start and end time, or choose All day.'; return; }
+    if (PLAN.mins(end) <= PLAN.mins(start)) { msg.textContent = 'The end time must be after the start time. For something overnight, block each day separately.'; return; }
+    b.start = start; b.end = end;
+  }
+  planState.blocks.push(b); if (!savePlan()) { planState.blocks.pop(); return; }
+  const clash = planState.events.filter(ev => !ev.done && blocksOn(ev.date).some(x => x.id === b.id) && PLAN.blockIntervals([b], ev.date).some(([a, z]) => PLAN.mins(ev.start) < z && a < PLAN.mins(ev.end))).length;
+  renderBlockList(); renderCalendar(); toast(clash ? `\ud83d\udeab Blocked. ${clash} planned ${clash === 1 ? 'activity is' : 'activities are'} now inside it.` : '\ud83d\udeab Time blocked off');
+}
+function deleteBlock(id) { planState.blocks = planState.blocks.filter(b => b.id !== id); savePlan(); renderBlockList(); renderCalendar(); }
+function renderBlockList() {
+  $id('bf-list').innerHTML = planState.blocks.length
+    ? planState.blocks.map(b => `<div class="block-row"><span>\ud83d\udeab</span><span class="plan-title" style="font-weight:400;font-size:12px;">${escH(blockText(b))}</span><button type="button" class="plan-x" onclick="deleteBlock('${escH(b.id)}')" aria-label="Remove block: ${escH(b.label)}">\u00d7</button></div>`).join('')
+    : '<div style="font-size:12px;color:var(--slate);">Nothing blocked yet.</div>';
+}
+
+// ── suggest my week ──
+const weekStarts = () => { const t = PLAN.weekStartOf(localToday()); return [t, PLAN.addDays(t, 7)]; };
+const weekRange = ws => { const f = d => PLAN.parseYmd(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); return `${f(ws)} \u2013 ${f(PLAN.addDays(ws, 6))}`; };
+function hubWeekGoals(ws) {   // open weekly goals from the hub's My Goals & Vision section
+  try { const items = ((JSON.parse(localStorage.getItem('dba_hub_goals_v1') || '{}')[agentId] || {}).items) || []; return items.filter(g => g.period === 'week' && g.key === ws && !g.done).map(g => g.text); } catch (e) { return []; }
+}
+function defaultLeaders() { const l = session.level || 0; return l >= 60 ? 2 : l >= 40 ? 1 : 0; }
+function openPlanModal() {
+  const D = { ...PLAN.DEFAULTS, ...planState.settings }, ws = weekStarts();
+  $id('pf-week').innerHTML = ws.map((w, i) => `<option value="${w}">${i ? 'Next week' : 'This week'} (${weekRange(w)})</option>`).join('');
+  if (PLAN.isoDow(localToday()) >= 6) $id('pf-week').value = ws[1];     // it's the weekend: this week is nearly over, so default to next week
+  $id('pf-mult').value = String(D.multiplier); if ($id('pf-mult').value !== String(D.multiplier)) $id('pf-mult').value = '1.5';
+  $id('pf-annual').value = D.annualReviews; $id('pf-team').value = D.teamCalls;
+  $id('pf-leader').value = planState.settings.leadershipCalls == null ? defaultLeaders() : planState.settings.leadershipCalls;
+  $id('pf-maxh').value = D.maxHoursPerDay; $id('pf-start').value = D.dayStart; $id('pf-end').value = D.dayEnd;
+  dayPills('pf-days', 'pfd', D.workDays); $id('pf-sunrev').checked = D.sundayReview !== false; $id('pf-goals').checked = planState.settings.useGoals !== false;
+  const n = hubWeekGoals(ws[0]).length; $id('pf-goals-n').textContent = n ? `(${n} open this week)` : '(none set yet \u2014 add some in My Goals on the hub)';
+  $id('plan-form').style.display = ''; $id('plan-result').style.display = 'none';
+  const mine = planState.events.filter(e => e.source === 'suggested' && !e.done && e.date >= ws[0]).length;
+  $id('pf-clear').style.display = mine ? '' : 'none'; $id('pf-clear').textContent = `Clear my ${mine} not-yet-done suggested activit${mine === 1 ? 'y' : 'ies'} from this week on`;
+  $id('plan-modal').classList.add('open');
+}
+function closePlanModal() { $id('plan-modal').classList.remove('open'); }
+function readPlanForm() {
+  const num = (id, lo, hi, dflt) => { const v = parseInt($id(id).value, 10); return isNaN(v) ? dflt : Math.min(hi, Math.max(lo, v)); };
+  let start = $id('pf-start').value || '08:00', end = $id('pf-end').value || '21:00';
+  if (PLAN.mins(end) - PLAN.mins(start) < 120) { start = '08:00'; end = '21:00'; }
+  return { multiplier: parseFloat($id('pf-mult').value) || 1.5, annualReviews: num('pf-annual', 0, 10, 2), teamCalls: num('pf-team', 0, 5, 1), leadershipCalls: num('pf-leader', 0, 5, defaultLeaders()),
+    maxHoursPerDay: num('pf-maxh', 2, 14, 9), dayStart: start, dayEnd: end, workDays: pickedDays('pfd'), sundayReview: $id('pf-sunrev').checked, useGoals: $id('pf-goals').checked };
+}
+let planDraft = null;
+function buildPlan() {
+  const settings = readPlanForm(), ws = $id('pf-week').value;
+  if (!settings.workDays.length) { toast('Pick at least one day you work'); return; }
+  planState.settings = settings; savePlan();
+  // Planning next week? Goals are usually set during the week, so fall back to this week's open goals.
+  let goals = settings.useGoals ? hubWeekGoals(ws) : [];
+  if (settings.useGoals && !goals.length && ws !== weekStarts()[0]) goals = hubWeekGoals(weekStarts()[0]);
+  const opts = { weekStart: ws, blocks: planState.blocks, appointments: appointments.filter(a => a.time), planned: planState.events, settings: { ...settings, goalBlocks: settings.useGoals ? 3 : 0 }, level: session.level || 0, goals, now: new Date() };
+  const res = PLAN.suggestWeek(opts);
+  planDraft = { res, ws, mult: settings.multiplier, fit: res.summary.unplaced ? PLAN.maxMultiplierThatFits(opts) : settings.multiplier, picked: new Set(res.events.map(e => e.id)) };
+  renderPlanResult();
+}
+function renderPlanResult() {
+  const { res, ws, mult, fit } = planDraft, S = res.summary, pct = S.needHours ? Math.round(S.placedHours / S.needHours * 100) : 100;
+  const short = S.byType.filter(r => r.short > 0);
+  let h = `<div class="plan-summary"><b>${weekRange(ws)}</b><br>The Perfect Week at ${mult}&times; plus your extras needs about <b>${S.needHours.toFixed(1)} hours</b>. You have <b>${S.freeHours.toFixed(1)} free hours</b> after blocked times and appointments. I found room for <b>${S.placedHours.toFixed(1)} hours</b> (${pct}%).</div>`;
+  const lateInWeek = ws === weekStarts()[0] && PLAN.isoDow(localToday()) >= 3;
+  if (lateInWeek) h += `<div class="plan-short" style="background:rgba(201,168,76,.15);color:var(--cream);">Part of this week has already passed, so there is limited room left. Choose <b>Next week</b> for a full plan.</div>`;
+  if (short.length) {
+    h += `<div class="plan-short"><b>Not everything fits.</b> Time was shared evenly, so no activity was dropped to make room for another:<br>${short.map(r => `${r.icon} ${escH(r.label)}: ${r.placed} of ${r.needed}`).join('<br>')}<br>` +
+      (lateInWeek ? '' : (fit != null ? `<b>Everything fits at about ${fit}&times;.</b> Pick that standard, or free up more time.` : `Even at &frac12;&times; it does not all fit. Try unblocking time, raising your daily maximum, or trimming the extras.`)) + `</div>`;
+  }
+  if (!res.events.length) { $id('plan-result').innerHTML = h + `<div style="font-size:13px;color:var(--slate);margin:10px 0;">No free time was found for this week. Check your blocked times and working days.</div><button class="btn btn-ghost btn-block" onclick="backToPlanForm()">&larr; Back</button>`; showPlanResult(); return; }
+  const days = {}; res.events.forEach(e => (days[e.date] = days[e.date] || []).push(e));
+  h += Object.keys(days).sort().map(date => {
+    const list = days[date], hrs = list.reduce((n, e) => n + (PLAN.mins(e.end) - PLAN.mins(e.start)) / 60, 0);
+    return `<div class="plan-day-h"><span>${PLAN.parseYmd(date).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}</span><span>${hrs.toFixed(1)} h</span></div>` +
+      list.map(e => `<label class="plan-pick"><input type="checkbox" data-pick="${escH(e.id)}" ${planDraft.picked.has(e.id) ? 'checked' : ''}><span class="pt">${(PLAN.TYPES[e.type] || {}).icon || ''} ${escH(e.title)}<small>${t12(e.start)} \u2013 ${t12(e.end)}</small></span></label>`).join('');
+  }).join('');
+  h += `<div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;"><button class="btn btn-ghost" onclick="backToPlanForm()">&larr; Back</button>
+    <button class="btn btn-gold" style="flex:1;min-width:150px;" onclick="acceptPlan(false)">Add to my calendar</button>
+    <button class="btn btn-gold" style="flex:1;min-width:150px;" onclick="acceptPlan(true)">Add + save to phone</button></div>
+    <div class="sync-note">&ldquo;Save to phone&rdquo; downloads a calendar file that Apple, Google and Outlook calendars open.</div>`;
+  $id('plan-result').innerHTML = h; showPlanResult();
+}
+function showPlanResult() { $id('plan-form').style.display = 'none'; $id('plan-result').style.display = ''; $id('plan-modal').querySelector('.modal').scrollTop = 0; }
+function backToPlanForm() { $id('plan-form').style.display = ''; $id('plan-result').style.display = 'none'; }
+document.addEventListener('change', e => {
+  const t = e.target; if (!(t.matches && t.matches('[data-pick]')) || !planDraft) return;
+  if (t.checked) planDraft.picked.add(t.dataset.pick); else planDraft.picked.delete(t.dataset.pick);
+});
+function acceptPlan(download) {
+  if (!planDraft) return;
+  const chosen = planDraft.res.events.filter(e => planDraft.picked.has(e.id));
+  if (!chosen.length) { toast('Tick at least one activity'); return; }
+  const have = new Set(planState.events.map(e => e.id)), add = chosen.filter(e => !have.has(e.id));
+  planState.events.push(...add); if (!savePlan()) { planState.events = planState.events.filter(e => !add.includes(e)); return; }
+  selectedDate = chosen[0].date; const d = PLAN.parseYmd(selectedDate); viewYear = d.getFullYear(); viewMonth = d.getMonth();
+  closePlanModal(); renderCalendar(); toast(`\u2728 ${add.length} activit${add.length === 1 ? 'y' : 'ies'} added to your calendar`);
+  if (download) downloadICS(chosen, `dba-week-${planDraft.ws}.ics`);
+}
+function clearWeekSuggestions() {
+  const from = weekStarts()[0], n = planState.events.filter(e => e.source === 'suggested' && !e.done && e.date >= from).length;
+  if (!n || !confirm(`Remove ${n} suggested activit${n === 1 ? 'y' : 'ies'} (this week on) that you haven't ticked off?`)) return;
+  planState.events = planState.events.filter(e => !(e.source === 'suggested' && !e.done && e.date >= from)); savePlan();
+  closePlanModal(); renderCalendar(); toast('Suggestions cleared');
+}
+
+// ── phone calendar file (.ics) ──
+function downloadICS(events, filename) {
+  if (!events.length) { toast('Nothing to export yet'); return; }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([PLAN.toICS(events, { name: 'DBA Schedule' })], { type: 'text/calendar;charset=utf-8' }));
+  a.download = filename; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+}
+function exportUpcoming() {
+  const up = planState.events.filter(e => e.date >= localToday()).sort((a, b) => a.date.localeCompare(b.date) || a.start.localeCompare(b.start));
+  if (!up.length) { toast('Nothing planned yet \u2014 tap \u201cSuggest My Week\u201d first'); return; }
+  downloadICS(up, 'dba-schedule.ics');
+}
+
 function openApptModal(editId) {
   document.getElementById('appt-modal').classList.add('open');
   document.getElementById('modal-sync-note').textContent = '';
