@@ -6,6 +6,7 @@
 <title>Dynasty — Top 25 Prospects</title>
 <script src="auth.js"></script>
 <script src="date-range.js"></script>
+<script src="cardscan.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap');
@@ -239,6 +240,19 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 
 /* Narrow screens: keep header buttons and tabs inside the page instead of running off the right edge */
 @media (max-width:700px){.topbar{flex-wrap:wrap;padding:0 14px;}.topbar-right{margin-left:0;width:100%;flex-wrap:wrap;gap:8px;padding:8px 0 12px;flex-shrink:1;}}
+
+/* ── Scan a business card ── */
+.scan-btn{padding:11px 16px;border-radius:10px;border:1px solid rgba(10,10,10,.15);background:rgba(10,10,10,.05);color:#182238;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;cursor:pointer;letter-spacing:.03em;}
+.scan-btn.gold{background:linear-gradient(135deg,#C9A84C,#E8C97A);border:none;color:#1E1A10;}
+.scan-btn:disabled{opacity:.55;cursor:wait;}
+.scan-in{width:100%;background:#FFFFFF;border:1px solid rgba(10,10,10,.12);color:#182238;border-radius:8px;padding:10px 12px;font-family:'Barlow',sans-serif;font-size:14px;outline:none;}
+.scan-in.scan-warn{border-color:#E67E22;box-shadow:0 0 0 2px rgba(230,126,34,.2);}
+.scan-lab{font-family:'DM Mono',monospace;font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;color:#6B7C93;margin:8px 0 3px;display:block;}
+.scan-note{font-size:12px;line-height:1.5;border-radius:8px;padding:8px 10px;margin:8px 0;}
+.scan-note.warn{background:rgba(230,126,34,.13);color:#7A3F06;}
+.scan-note.info{background:rgba(201,168,76,.12);color:#182238;}
+.scan-bar{height:8px;border-radius:5px;background:rgba(10,10,10,.08);overflow:hidden;margin:10px 0 6px;}
+.scan-bar>div{height:100%;width:0;background:linear-gradient(90deg,#C9A84C,#E8C97A);transition:width .25s;}
 </style>
 </head>
 <body>
@@ -264,6 +278,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
   <div class="topbar-right">
     <button class="icon-btn" onclick="loadProspects(true)" id="refresh-btn">↻ Refresh</button>
     <button class="icon-btn primary" onclick="openPhotoCapture()" style="gap:6px;">📷 Add from Photo</button>
+    <button class="icon-btn" onclick="openContactsPicker('scan')" style="gap:6px;background:rgba(201,168,76,.15);border-color:rgba(201,168,76,.4);color:#7A5C14;">&#128199; Scan Card</button>
     <button class="icon-btn" onclick="openContactsPicker()" style="gap:6px;background:rgba(52,152,219,.15);border-color:rgba(52,152,219,.3);color:#5DADE2;">📱 From Contacts</button>
     <button class="icon-btn" onclick="openShareModal()" id="share-qr-btn" style="gap:6px;background:rgba(155,89,182,.15);border-color:rgba(155,89,182,.3);color:#BB8FCE;">🔗 QR / Share Link</button>
     <label class="icon-btn" style="gap:6px;cursor:pointer;background:rgba(45,202,115,.1);border-color:rgba(45,202,115,.3);color:var(--green);">
@@ -1802,15 +1817,17 @@ async function pushToMonday() {
   for (let start = 0; start < toCreate.length; start += BATCH) {
     const batch = toCreate.slice(start, start + BATCH);
     const aliases = batch.map((row, i) => {
-      const itemName = (row.name || row.phone || 'New Prospect').replace(/"/g,'');
+      const itemNameLit = JSON.stringify(String(row.name || row.phone || 'New Prospect').replace(/[\u0000-\u001f]/g, ' ').slice(0, 255));
       const cv = {};
       if (row.phone) {
         const digits = row.phone.replace(/\D/g,'');
         if (digits) cv['phone_number__1'] = { phone: digits, countryShortName: 'US' };
       }
-      if (row.note || row.company) cv['text4__1'] = (row.note || row.company).slice(0, 200);
+      if (row.email)   cv['dup__of_notes__1'] = String(row.email).slice(0, 200);     // the email it read used to be thrown away
+      if (row.company) cv['text76__1']        = String(row.company).slice(0, 200);   // the company goes in Occupation
+      if (row.note)    cv['text4__1']         = String(row.note).slice(0, 200);
       const cvStr = JSON.stringify(JSON.stringify(cv));
-      return `p${i}: create_item(board_id: ${BOARD_ID}, group_id: "${NEW_PROSPECTS_GROUP}", item_name: "${itemName}", column_values: ${cvStr}) { id name }`;
+      return `p${i}: create_item(board_id: ${BOARD_ID}, group_id: "${NEW_PROSPECTS_GROUP}", item_name: ${itemNameLit}, column_values: ${cvStr}) { id name }`;
     }).join('\n  ');
 
     try {
@@ -1977,7 +1994,7 @@ function nativeShareLink() {
 // ════════════════════════════════════════════════════════════════
 let _ctQueue = []; // { name, phone, email, occupation }
 
-function openContactsPicker() {
+function openContactsPicker(tab) {
   _ctQueue = [];
   ctRenderQueue();
   // Clear inputs
@@ -1989,16 +2006,18 @@ function openContactsPicker() {
   if(preview) preview.innerHTML = '';
   document.getElementById('ct-import-status').textContent = '';
   document.getElementById('contacts-import-modal').style.display = 'flex';
-  ctSwitchTab('type');
+  ctSwitchTab(tab || 'type');
 }
 
 function closeContactsModal() {
   document.getElementById('contacts-import-modal').style.display = 'none';
   _ctQueue = [];
+  if (typeof scanReset === 'function') scanReset();
+  CARDSCAN.stop();           // free the scanner's memory; it reloads quickly next time
 }
 
 function ctSwitchTab(tab) {
-  const tabs = ['type','picker'];
+  const tabs = ['type','picker','scan'];
   tabs.forEach(t => {
     const view = document.getElementById('ct-view-' + t);
     const btn  = document.getElementById('ct-tab-' + t);
@@ -2011,6 +2030,7 @@ function ctSwitchTab(tab) {
 }
 
 // ── SINGLE ENTRY ─────────────────────────────────────────────
+const escQ = t => String(t == null ? '' : t).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
 function ctAddToQueue() {
   const name  = (document.getElementById('ct-name').value || '').trim();
   const phone = (document.getElementById('ct-phone').value || '').replace(/\D/g,'');
@@ -2104,9 +2124,9 @@ function ctRenderQueue() {
     <div style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;
       background:rgba(10,10,10,.04);border:1px solid rgba(10,10,10,.07);">
       <div style="flex:1;min-width:0;">
-        <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;">${p.name}</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;">${escQ(p.name)}</div>
         <div style="font-family:'DM Mono',monospace;font-size:10px;color:#6B7C93;">
-          ${p.phone||'no phone'}${p.email?' · '+p.email:''}${p.occupation?' · '+p.occupation:''}
+          ${escQ(p.phone||'no phone')}${p.email?' \u00b7 '+escQ(p.email):''}${p.occupation?' \u00b7 '+escQ(p.occupation):''}
         </div>
       </div>
       <button onclick="_ctQueue.splice(${i},1);ctRenderQueue();"
@@ -2115,6 +2135,112 @@ function ctRenderQueue() {
 }
 
 // ── NATIVE PICKER (Chrome Android only) ──────────────────────
+// ══ SCAN A BUSINESS CARD ═════════════════════════════════════════
+// Reads a photographed card ON THE DEVICE (cardscan.js + Tesseract in /ocr/), fills a review form, flags what is
+// doubtful, and adds the prospect to the same import queue the other "add" tabs use. The optional AI reading is the
+// only path that sends the photo anywhere, and only when the agent taps it.
+let scanState = { file: null, rotation: 0, res: null, busy: false };
+const $sc = id => document.getElementById(id);
+const scDigits = v => { let d = String(v || '').replace(/\D/g, ''); if (d.length === 11 && d[0] === '1') d = d.slice(1); return d; };
+function scanShow(which) { ['scan-start', 'scan-busy', 'scan-error', 'scan-form'].forEach(id => { const el = $sc(id); if (el) el.style.display = id === which ? 'block' : 'none'; }); }
+function scanPick(kind) { $sc(kind === 'cam' ? 'scan-cam' : 'scan-file').click(); }
+// Listeners are attached to the document (not to the form's own elements) because this script runs before that part of the page exists.
+document.addEventListener('change', e => { const t = e.target; if (t && (t.id === 'scan-cam' || t.id === 'scan-file')) { const f = t.files && t.files[0]; t.value = ''; if (f) scanStart(f, 0, true); } });
+function scanProgress(p, label) { $sc('scan-bar-fill').style.width = Math.round(Math.max(0, Math.min(1, p)) * 100) + '%'; if (label) $sc('scan-status').textContent = label; }
+async function scanStart(file, rotation, autoRotate) {
+  if (scanState.busy) return;
+  scanState = { file, rotation: rotation || 0, res: null, busy: true };
+  scanShow('scan-busy'); scanProgress(0.02, 'Preparing the photo\u2026');
+  const img = $sc('scan-busy-img'); try { img.src = URL.createObjectURL(file); img.style.display = 'block'; } catch (e) { img.style.display = 'none'; }
+  try {
+    const res = await CARDSCAN.scan(file, { rotation: scanState.rotation, autoRotate, onProgress: scanProgress });
+    scanState.res = res; scanState.rotation = res.rotation; scanState.busy = false; scanFillForm(res);
+  } catch (e) { scanState.busy = false; scanFail(e); }
+}
+function scanFail(e) {
+  console.warn('Card scan failed:', e);
+  const box = $sc('scan-error');
+  box.innerHTML = `<div class="scan-note warn"><strong>The scanner couldn\u2019t read this one.</strong><br>${escQ(e && e.message ? e.message : 'Something went wrong')}<br>The first scan needs a one-time download, so check your connection and try again. You can also let the AI read it, or type the details in.</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;"><button type="button" class="scan-btn gold" style="flex:1;" onclick="scanReset()">Try again</button>
+    <button type="button" class="scan-btn" style="flex:1;" onclick="scanTryAI()">\u2728 AI reading</button>
+    <button type="button" class="scan-btn" style="flex:1;" onclick="ctSwitchTab('type')">Type it in</button></div>`;
+  scanShow('scan-error');
+}
+function scanFillForm(res) {
+  const p = res.parsed;
+  $sc('scan-preview').src = res.preview;
+  $sc('sc-name').value = p.name || ''; $sc('sc-phone').value = p.phone ? (p.phone.length === 10 ? CARDSCAN.formatPhone(p.phone) : '+' + p.phone) : '';
+  $sc('sc-email').value = p.email || ''; $sc('sc-title').value = p.title || ''; $sc('sc-company').value = p.company || '';
+  $sc('sc-notes').value = CARDSCAN.buildNotes(p, new Date().toLocaleDateString('en-CA'));
+  $sc('scan-raw').textContent = (res.text || '').trim() || '(nothing was read)';
+  scanFlags(res); scanCheckDup(); scanShow('scan-form');
+  const first = document.querySelector('#scan-form .scan-warn') || $sc('sc-name'); first.focus({ preventScroll: false });
+}
+function scanFlags(res) {
+  const p = res.parsed, notes = [];
+  ['sc-name', 'sc-phone', 'sc-email'].forEach(id => $sc(id).classList.remove('scan-warn'));
+  if (res.confidence < 60) notes.push('<div class="scan-note warn">This was hard to read. Check every field, or retake the photo in better light.</div>');
+  if (p.flags.name === 'missing') { $sc('sc-name').classList.add('scan-warn'); notes.push('<div class="scan-note warn">No name found \u2014 please type it in.</div>'); }
+  else if (p.flags.name === 'check') { $sc('sc-name').classList.add('scan-warn'); notes.push('<div class="scan-note warn">Please check the name.</div>'); }
+  if (p.flags.phone === 'missing') { $sc('sc-phone').classList.add('scan-warn'); notes.push('<div class="scan-note warn">No phone number found.</div>'); }
+  else if (p.flags.phone === 'check') { $sc('sc-phone').classList.add('scan-warn'); notes.push('<div class="scan-note warn">Please check the phone number.</div>'); }
+  if (p.flags.email === 'check' && p.emailSuggestion) { $sc('sc-email').classList.add('scan-warn'); notes.push(`<div class="scan-note warn">Check the email \u2014 the first letter may be misread. Did you mean <button type="button" data-sugg="${escQ(p.emailSuggestion)}" style="border:none;background:none;color:#7A3F06;font-weight:700;text-decoration:underline;cursor:pointer;padding:0;">${escQ(p.emailSuggestion)}</button>?</div>`); }
+  $sc('scan-flags').innerHTML = notes.join('');
+}
+document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('#scan-flags [data-sugg]'); if (b) { $sc('sc-email').value = b.dataset.sugg; $sc('sc-email').classList.remove('scan-warn'); b.closest('.scan-note').remove(); scanCheckDup(); } });
+document.addEventListener('input', e => { const id = e.target && e.target.id; if (id === 'sc-name' || id === 'sc-phone' || id === 'sc-email') { e.target.classList.remove('scan-warn'); scanCheckDup(); } });
+// Is this person already on the board, or already in the list being built?
+function scanCheckDup() {
+  const phone = scDigits($sc('sc-phone').value), email = $sc('sc-email').value.trim().toLowerCase();
+  let hit = null, where = 'on your Top 25', by = '';
+  if (phone) { hit = allProspects.find(q => scDigits(q.phone) === phone); by = 'phone number'; }
+  if (!hit && email) { hit = allProspects.find(q => String(q.email || '').trim().toLowerCase() === email); by = 'email'; }
+  if (!hit) { const q = _ctQueue.find(x => (phone && x.phone === phone) || (email && String(x.email || '').toLowerCase() === email)); if (q) { hit = q; where = 'in this list'; by = (phone && q.phone === phone) ? 'phone number' : 'email'; } }
+  $sc('scan-dup').innerHTML = hit ? `<div class="scan-note warn">\u26a0\ufe0f <strong>${escQ(hit.name)}</strong> is already ${where} (same ${by}). You can still add this one.</div>` : '';
+  $sc('scan-add').textContent = hit ? 'Add anyway' : 'Add to list'; $sc('scan-add-next').innerHTML = hit ? '\u2795 Add anyway &amp; scan next' : '\u2795 Add &amp; scan next';
+}
+function scanAdd(next) {
+  const nameEl = $sc('sc-name'), name = nameEl.value.replace(/\s+/g, ' ').trim();
+  if (!name) { nameEl.classList.add('scan-warn'); nameEl.focus(); toast('\u26a0\ufe0f Name is required'); return; }
+  const phoneRaw = $sc('sc-phone').value.trim(); let phone = scDigits(phoneRaw), notes = $sc('sc-notes').value.trim();
+  if (phoneRaw && phone.length !== 10) { notes = (notes ? notes + ' \u00b7 ' : '') + 'Phone: ' + phoneRaw; phone = ''; toast('That number isn\u2019t 10 digits, so it was saved in the notes'); }
+  const email = $sc('sc-email').value.trim().toLowerCase();
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { $sc('sc-email').classList.add('scan-warn'); $sc('sc-email').focus(); toast('\u26a0\ufe0f That email doesn\u2019t look right'); return; }
+  const occupation = [$sc('sc-title').value.trim(), $sc('sc-company').value.trim()].filter(Boolean).join(', ');
+  _ctQueue.push({ name, phone, email, occupation, notes });
+  ctRenderQueue(); toast(`\u2705 ${name} added \u2014 ${_ctQueue.length} in the list`);
+  scanReset(); if (next) scanPick('cam');                      // still inside the tap that started this, so the camera opens
+}
+function scanReset() {
+  scanState = { file: null, rotation: 0, res: null, busy: false };
+  if (!$sc('scan-start')) return;
+  ['sc-name', 'sc-phone', 'sc-email', 'sc-title', 'sc-company', 'sc-notes'].forEach(id => { $sc(id).value = ''; $sc(id).classList.remove('scan-warn'); });
+  $sc('scan-flags').innerHTML = ''; $sc('scan-dup').innerHTML = ''; $sc('scan-error').innerHTML = ''; $sc('scan-busy-img').style.display = 'none'; scanShow('scan-start');
+}
+function scanRotate() { if (scanState.file) scanStart(scanState.file, (scanState.rotation + 90) % 360, false); }
+// Optional: let the AI read the card (this is the only step that uploads the photo)
+async function scanTryAI() {
+  const file = scanState.file; if (!file) { scanReset(); return; }
+  const btn = $sc('scan-ai-btn'), label = btn.innerHTML; btn.disabled = true; btn.textContent = '\u2728 Asking the AI\u2026';
+  try {
+    const dataUrl = scanState.res ? scanState.res.aiImage : await CARDSCAN.downscale(file, scanState.rotation, 1600);
+    const entries = await extractFromImage(dataUrl, '');
+    if (!entries.length) throw new Error('no details were found in the photo');
+    const e = entries[0];
+    if ($sc('scan-form').style.display === 'none') { try { $sc('scan-preview').src = scanState.res ? scanState.res.preview : dataUrl; } catch (x) {} $sc('scan-raw').textContent = '(read by the AI)'; scanShow('scan-form'); }
+    if (e.name) $sc('sc-name').value = String(e.name).trim();
+    const d = scDigits(e.phone); if (d) $sc('sc-phone').value = d.length === 10 ? CARDSCAN.formatPhone(d) : String(e.phone);
+    if (e.email) $sc('sc-email').value = String(e.email).trim().toLowerCase();
+    if (e.company) $sc('sc-company').value = String(e.company).trim();
+    if (e.note) $sc('sc-notes').value = ($sc('sc-notes').value ? $sc('sc-notes').value + ' \u00b7 ' : '') + String(e.note).trim();
+    ['sc-name', 'sc-phone', 'sc-email'].forEach(id => $sc(id).classList.remove('scan-warn'));
+    $sc('scan-flags').innerHTML = '<div class="scan-note info">\u2728 Filled in by the AI. Please check each field before adding.</div>'; scanCheckDup();
+  } catch (err) {
+    if ($sc('scan-form').style.display === 'none') scanShow('scan-form');
+    $sc('scan-flags').innerHTML = `<div class="scan-note warn">The AI couldn\u2019t read it right now (${escQ(err.message)}). You can type the details in.</div>`;
+  } finally { btn.disabled = false; btn.innerHTML = label; }
+}
+
 async function ctNativePicker() {
   const statusEl = document.getElementById('ct-picker-status');
   const resultEl = document.getElementById('ct-picker-result');
@@ -2476,13 +2602,13 @@ async function batchCreateProspects(prospects, onProgress) {
     if(onProgress) onProgress(i, prospects.length);
 
     const mutations = batch.map((p, j) => {
-      const itemName = (p.name || 'Unknown').replace(/"/g,'\\"').slice(0, 255);
+      const itemNameLit = JSON.stringify(String(p.name || 'Unknown').replace(/[\u0000-\u001f]/g, ' ').slice(0, 255));
       const cv = {};
       if(p.phone)      cv['phone_number__1']   = { phone: p.phone, countryShortName: 'US' };
       if(p.email)      cv['dup__of_notes__1']   = p.email;
       if(p.occupation) cv['text76__1']           = p.occupation;
-      if(p.notes)      cv['text4__1']            = p.notes;
-      return `p${j}: create_item(board_id: ${BOARD_ID}, group_id: "${NEW_PROSPECTS_GROUP}", item_name: "${itemName}", column_values: ${JSON.stringify(JSON.stringify(cv))}, create_labels_if_missing: true) { id name }`;
+      if(p.notes)      cv['text4__1']            = String(p.notes).slice(0, 1000);
+      return `p${j}: create_item(board_id: ${BOARD_ID}, group_id: "${NEW_PROSPECTS_GROUP}", item_name: ${itemNameLit}, column_values: ${JSON.stringify(JSON.stringify(cv))}, create_labels_if_missing: true) { id name }`;
     }).join('\n  ');
 
     try {
@@ -2699,6 +2825,11 @@ if(!document.getElementById('xlsx-script')) {
         background:none;border:none;border-bottom:3px solid transparent;color:#6B7C93;cursor:pointer;letter-spacing:.04em;">
         📲 Phone Contacts
       </button>
+      <button id="ct-tab-scan" onclick="ctSwitchTab('scan')"
+        style="flex:1;padding:9px;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;
+        background:none;border:none;border-bottom:3px solid transparent;color:#6B7C93;cursor:pointer;letter-spacing:.04em;">
+        &#128199; Scan Card
+      </button>
     </div>
 
     <!-- TAB: TYPE / PASTE -->
@@ -2751,6 +2882,53 @@ if(!document.getElementById('xlsx-script')) {
         📲 Open Phone Contacts
       </button>
       <div id="ct-picker-result" style="margin-top:16px;"></div>
+    </div>
+
+    <!-- TAB: SCAN A BUSINESS CARD -->
+    <div id="ct-view-scan" style="display:none;">
+      <div id="scan-start">
+        <div style="font-family:'DM Mono',monospace;font-size:11px;color:#6B7C93;line-height:1.7;margin-bottom:12px;">
+          Lay the card flat in good light and fill the frame. The text is read <strong style="color:#182238;">on your phone &mdash; the photo is never uploaded.</strong>
+          Then check the details, add the card to the list, and scan the next one.
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button type="button" class="scan-btn gold" style="flex:1;min-width:150px;" onclick="scanPick('cam')">&#128247; Take a photo</button>
+          <button type="button" class="scan-btn" style="flex:1;min-width:150px;" onclick="scanPick('file')">&#128444;&#65039; Choose a photo</button>
+        </div>
+        <input id="scan-cam" type="file" accept="image/*" capture="environment" hidden>
+        <input id="scan-file" type="file" accept="image/*" hidden>
+      </div>
+      <div id="scan-busy" style="display:none;">
+        <img id="scan-busy-img" alt="" style="width:100%;max-height:170px;object-fit:contain;border-radius:8px;background:rgba(10,10,10,.05);display:none;">
+        <div class="scan-bar"><div id="scan-bar-fill"></div></div>
+        <div id="scan-status" style="font-family:'DM Mono',monospace;font-size:11px;color:#6B7C93;" role="status"></div>
+      </div>
+      <div id="scan-error" style="display:none;"></div>
+      <div id="scan-form" style="display:none;">
+        <img id="scan-preview" alt="The scanned card" style="width:100%;max-height:150px;object-fit:contain;border-radius:8px;background:rgba(10,10,10,.05);">
+        <div id="scan-flags"></div>
+        <label class="scan-lab" for="sc-name">Name *</label><input id="sc-name" class="scan-in" type="text" maxlength="120" autocomplete="off">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div><label class="scan-lab" for="sc-phone">Phone</label><input id="sc-phone" class="scan-in" type="tel" maxlength="30"></div>
+          <div><label class="scan-lab" for="sc-email">Email</label><input id="sc-email" class="scan-in" type="email" maxlength="120"></div>
+          <div><label class="scan-lab" for="sc-title">Job title</label><input id="sc-title" class="scan-in" type="text" maxlength="100"></div>
+          <div><label class="scan-lab" for="sc-company">Company</label><input id="sc-company" class="scan-in" type="text" maxlength="100"></div>
+        </div>
+        <label class="scan-lab" for="sc-notes">Notes (website, address, other numbers)</label>
+        <textarea id="sc-notes" class="scan-in" rows="3" maxlength="480" style="resize:vertical;"></textarea>
+        <div id="scan-dup"></div>
+        <details style="margin:8px 0;"><summary style="font-family:'DM Mono',monospace;font-size:10px;color:#6B7C93;cursor:pointer;">What the scanner read</summary><pre id="scan-raw" style="white-space:pre-wrap;font-size:11px;color:#182238;background:rgba(10,10,10,.04);border-radius:6px;padding:8px;margin-top:6px;max-height:140px;overflow:auto;"></pre></details>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+          <button type="button" id="scan-add-next" class="scan-btn gold" style="flex:2;min-width:170px;" onclick="scanAdd(true)">&#10133; Add &amp; scan next</button>
+          <button type="button" id="scan-add" class="scan-btn" style="flex:1;min-width:100px;" onclick="scanAdd(false)">Add to list</button>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+          <button type="button" class="scan-btn" style="flex:1;font-size:13px;" onclick="scanRotate()">&#8635; Rotate &amp; rescan</button>
+          <button type="button" id="scan-ai-btn" class="scan-btn" style="flex:2;font-size:13px;" onclick="scanTryAI()">&#10024; Try AI reading</button>
+          <button type="button" class="scan-btn" style="flex:1;font-size:13px;" onclick="scanReset()">Start over</button>
+        </div>
+        <div style="font-family:'DM Mono',monospace;font-size:9.5px;color:#6B7C93;margin-top:6px;line-height:1.5;">AI reading sends this card photo to the AI service &mdash; use it only if the scan above missed things.</div>
+      </div>
     </div>
 
     <!-- QUEUE LIST -->

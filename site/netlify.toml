@@ -106,3 +106,9 @@
 #
 # TOKEN_SECRET secures all session tokens. If compromised, rotate it
 # and all agents will need to log in again (tokens invalidated).
+
+# On-device business card scanner (OCR engine + English data). Big, never changes: let phones cache it.
+[[headers]]
+  for = "/ocr/*"
+  [headers.values]
+    Cache-Control = "public, max-age=2592000"
